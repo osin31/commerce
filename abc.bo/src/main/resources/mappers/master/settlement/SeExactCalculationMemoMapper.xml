@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationMemoDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationMemo">
+    
+     /*+ kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationMemoDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			SE_EXACT_CALCULATION_MEMO
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+     <select id="selectSeExactCalculationMemoData" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationMemo" resultType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationMemo">
+    	/*+ kr.co.abcmart.bo.settlement.model.master.SeExactCalculationMemoDao.selectSeExactCalculationMemoData [정산 메모 조회] [이상호] */
+    	
+	    	SELECT A.EXCCLC_SEQ
+			     , A.EXCCLC_MEMO_SEQ
+			     , A.MEMO_TEXT
+			     , A.DEL_YN
+			     , A.RGSTER_NO
+			     , B.LOGIN_ID
+    	         , B.ADMIN_NAME
+			     , CONVERT(CHAR(19), A.RGST_DTM, 20) AS RGST_DATE 
+			FROM SE_EXACT_CALCULATION_MEMO A
+			LEFT JOIN SY_ADMIN B
+              ON A.RGSTER_NO = B.ADMIN_NO
+    	   WHERE A.EXCCLC_SEQ = #{excclcSeq} 
+    	 <if test="excclcMemoSeq != null">
+    	   AND A.EXCCLC_MEMO_SEQ = #{excclcMemoSeq}
+    	 </if>
+    	 	 AND A.DEL_YN = 'N' 
+    	 ORDER BY A.RGST_DTM DESC
+    </select>
+    
+    <insert id="insertSeExactCalculationMemo" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationMemo">
+    	/*+kr.co.abcmart.bo.settlement.model.master.SeExactCalculationMemoDao.insertSeExactCalculationMemo [정산 관리자 메모 등록] [이상호] */
+    	
+    	<selectKey resultType="int" keyProperty="excclcMemoSeq" order="BEFORE">
+			SELECT ISNULL(MAX(EXCCLC_MEMO_SEQ), 0)+1 
+			  FROM SE_EXACT_CALCULATION_MEMO
+			 WHERE EXCCLC_SEQ = #{excclcSeq}
+		</selectKey>
+		
+        INSERT INTO SE_EXACT_CALCULATION_MEMO(
+			   EXCCLC_SEQ
+			  ,EXCCLC_MEMO_SEQ
+			  ,MEMO_TEXT
+			  ,RGSTER_NO
+			  ,RGST_DTM
+		) VALUES (
+			   #{excclcSeq, jdbcType=VARCHAR} 
+			  ,#{excclcMemoSeq, jdbcType=NUMERIC}
+			  ,#{memoText, jdbcType=VARCHAR} 
+			  ,#{rgsterNo}  
+			  ,GETDATE() 
+		)
+    </insert>
+    
+    <update id="updateSeExactCalculationMemo" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationMemo">
+    
+     /*+ kr.co.abcmart.bo.settlement.model.master.SeExactCalculationMemoDao.updateSeExactCalculationMemo [접수메모  update 쿼리] [Generator] */
+    
+		UPDATE SE_EXACT_CALCULATION_MEMO
+		<set> 
+			<if test="delYn != null"> 
+				del_yn = #{delYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="rgsterNo != null"> 
+				rgster_no = #{rgsterNo, jdbcType=VARCHAR}, 
+			</if> 
+			rgst_dtm = GETDATE() 
+		</set> 
+		WHERE 
+			 EXCCLC_SEQ = #{excclcSeq, jdbcType=INTEGER} AND EXCCLC_MEMO_SEQ = #{excclcMemoSeq, jdbcType=INTEGER}   
+    </update>
+
+</mapper>

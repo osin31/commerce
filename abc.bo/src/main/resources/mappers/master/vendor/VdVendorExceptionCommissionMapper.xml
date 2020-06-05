@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.vendor.repository.master.VdVendorExceptionCommissionDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.vendor.model.master.VdVendorExceptionCommission">
+
+     /*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorExceptionCommissionDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			vd_vendor_exception_commission WITH (NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+	<select id="selectVndrExceptCmsnSeq" parameterType="kr.co.abcmart.bo.vendor.model.master.VdVendorExceptionCommission" resultType="int">
+	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorExceptionCommissionDao.selectVndrExceptCmsnSeq [업체예외수수료순번] [유성민] */
+		SELECT ISNULL(MAX(VNDR_EXCEPT_CMSN_SEQ), 0)+ 1
+		  FROM VD_VENDOR_EXCEPTION_COMMISSION
+		 WHERE VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+	</select>
+
+	<update id="updateVendorExceptionCommissionDelYn" parameterType="kr.co.abcmart.bo.vendor.model.master.VdVendorExceptionCommission">
+	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorExceptionCommissionDao.updateVendorExceptionCommissionDelYn [업체예외수수료삭제] [유성민] */
+		UPDATE VD_VENDOR_EXCEPTION_COMMISSION
+		   SET DEL_YN = 'Y'
+			 , MODER_NO = #{moderNo, jdbcType=VARCHAR}
+			 , MOD_DTM = GETDATE()
+		 WHERE <include refid="pk-columns" />
+	</update>
+
+	<select id="selectVendorExceptionCommission" parameterType="kr.co.abcmart.bo.vendor.model.master.VdVendorExceptionCommission" resultType="kr.co.abcmart.bo.vendor.model.master.VdVendorExceptionCommission">
+	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorExceptionCommissionDao.selectVendorExceptionCommission [업체예외수수료조회] [유성민] */
+		SELECT <include refid="select-columns" />
+		  FROM VD_VENDOR_EXCEPTION_COMMISSION WITH (NOLOCK)
+		 WHERE VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+		   AND DEL_YN = 'N'
+		   AND GETDATE() <![CDATA[<]]> APPLY_END_YMD
+	</select>
+
+	<select id="selectVendorExceptionCommissionHistoryListCount" parameterType="pageable" resultType="int">
+	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorExceptionCommissionDao.selectVendorExceptionCommissionHistoryListCount [업체예외수수료이력 조회 카운트] [유성민] */
+		SELECT <include refid="Paging.totalCount" />
+		  FROM VD_VENDOR_EXCEPTION_COMMISSION WITH (NOLOCK)
+		 WHERE VNDR_NO = #{bean.vndrNo, jdbcType=VARCHAR}
+	</select>
+
+	<select id="selectVendorExceptionCommissionHistoryList" parameterType="pageable" resultType="kr.co.abcmart.bo.vendor.model.master.VdVendorExceptionCommission">
+	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorExceptionCommissionDao.selectVendorExceptionCommissionHistoryList [업체예외수수료이력 조회] [유성민] */
+		SELECT <include refid="select-columns" />
+		  FROM VD_VENDOR_EXCEPTION_COMMISSION WITH (NOLOCK)
+		 WHERE VNDR_NO = #{bean.vndrNo, jdbcType=VARCHAR}
+	<choose>
+		<when test="sortColumn != null">
+			ORDER BY
+			<choose>
+				<when test="sortColumn == 'stdCtgrNo'.toString()">
+					STD_CTGR_NO
+				</when>
+				<when test="sortColumn == 'brandNo'.toString()">
+					BRAND_NO
+				</when>
+				<when test="sortColumn == 'rgstDtm'.toString()">
+					RGST_DTM
+				</when>
+				<otherwise>
+					VNDR_EXCEPT_CMSN_SEQ
+				</otherwise>
+			</choose>
+			<if test="sortType == 'DESC'.toString()">
+				DESC
+			</if>
+		</when>
+		<otherwise>
+			ORDER BY VNDR_EXCEPT_CMSN_SEQ DESC
+		</otherwise>
+		</choose>
+		<include refid="Paging.mssql" />
+	</select>
+
+
+	<select id="selectExceptionCommissionData" parameterType="kr.co.abcmart.bo.vendor.model.master.VdVendorExceptionCommission" resultType="kr.co.abcmart.bo.vendor.model.master.VdVendorExceptionCommission">
+		/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorExceptionCommissionDao.selectExceptionCommissionData [업체예외수수료이력 조회] [유성민] */
+		SELECT <include refid="select-columns" />
+		  FROM VD_VENDOR_EXCEPTION_COMMISSION WITH (NOLOCK)
+		 WHERE VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+		   AND STD_CTGR_NO = #{stdCtgrNo, jdbcType=VARCHAR}
+		   AND BRAND_NO = #{brandNo, jdbcType=VARCHAR}
+		   AND APPLY_END_YMD = CONVERT(DATE, #{applyEndYmd, jdbcType=DATE})
+		   AND DEL_YN = 'N'
+	</select>
+</mapper>

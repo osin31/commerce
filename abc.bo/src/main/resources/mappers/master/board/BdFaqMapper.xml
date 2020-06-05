@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.board.repository.master.BdFaqDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.board.model.master.BdFaq">
+    
+     /*+ kr.co.abcmart.bo.board.repository.master.BdFaqDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			bd_faq WITH (NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+
+	<sql id="searchKey">
+    	<trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test="bean.top10SetupYn != null and bean.top10SetupYn !=''">
+				AND A.TOP10_SETUP_YN = #{bean.top10SetupYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.dispYn !=null and bean.dispYn !=''">
+				AND A.DISP_YN = #{bean.dispYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.cnslTypeCode != null and bean.cnslTypeCode !=''">
+				AND A.CNSL_TYPE_CODE = #{bean.cnslTypeCode, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.cnslTypeDtlCode != null and bean.cnslTypeDtlCode !=''">
+				AND A.CNSL_TYPE_DTL_CODE = #{bean.cnslTypeDtlCode, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.searchKey != null and bean.searchKey != '' and bean.searchValue != null and bean.searchValue != ''">
+				<choose>
+					<when test="bean.searchKey == 'faqTitleText'">
+			 			AND (A.FAQ_TITLE_TEXT LIKE CONCAT('%', #{bean.searchValue, jdbcType=VARCHAR}, '%')
+			 				 OR A.FAQ_CONT_TEXT LIKE CONCAT('%', #{bean.searchValue, jdbcType=VARCHAR}, '%'))
+			   		</when>
+					<when test="bean.searchKey == 'rgsterName'">
+			   			AND EXISTS 
+			   			  ( SELECT Z.ADMIN_NO
+							  FROM SY_ADMIN Z WITH (NOLOCK)
+							 WHERE A.RGSTER_NO = Z.ADMIN_NO
+							   AND Z.ADMIN_NAME LIKE CONCAT('%', #{bean.searchValue, jdbcType=VARCHAR}, '%')
+                		   )
+			   		</when>
+				</choose>
+			</if>
+		</trim>
+    </sql>
+	
+	<select id="selectBdFaqListCount" parameterType="pageable" resultType="int">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdFaqDao.selectBdFaqListCount [FAQ그리도 조회 결과 개수] [신인철] */ 
+		SELECT <include refid="Paging.totalCount" />
+		  FROM BD_FAQ A WITH (NOLOCK)
+		<include refid="searchKey" />
+	</select>
+	
+	<select id="selectTop10ListCount" parameterType="pageable" resultType="int">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdFaqDao.selectBdFaqListCount [TOP10 그리도 조회 결과 개수] [신인철] */ 
+		SELECT <include refid="Paging.totalCount" />
+		  FROM BD_FAQ A WITH (NOLOCK)
+		 WHERE TOP10_SETUP_YN = 'Y'
+		   AND DISP_YN = 'Y'
+	</select>
+	
+	<select id="selectTop10SetCount" resultType="int">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdFaqDao.selectTop10SetCount [TOP10 설정할때 현재 설정된 개수] [신인철] */
+		SELECT COUNT(1)
+		  FROM BD_FAQ WITH(NOLOCK)
+		 WHERE TOP10_SETUP_YN ='Y'
+	</select>
+	
+	<select id="selectTop10UpdateCount" resultType="int">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdFaqDao.selectBdFaqListCount [TOP10 업데이트전 갯수 ] [신인철] */ 
+		SELECT ISNULL(MAX(TOP10_SORT_SEQ),0)+1
+		  FROM BD_FAQ WITH(NOLOCK)
+		 WHERE TOP10_SETUP_YN = 'Y'
+		   AND DISP_YN = 'Y'
+	</select>
+	
+	<select id="selectTop10List" parameterType="pageable" resultType="kr.co.abcmart.bo.board.model.master.BdFaq">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdFaqDao.selectTop10List [top10 그리도 조회] [신인철] */ 
+		SELECT A.FAQ_SEQ
+			 , CONCAT(T.CODE_DTL_NAME, '>' , D.CODE_DTL_NAME) AS CNSL_TYPE_NAME
+			 , A.TOP10_SETUP_YN
+			 , A.TOP10_SORT_SEQ
+			 , A.DISP_YN
+			 , A.FAQ_TITLE_TEXT
+		  FROM BD_FAQ A WITH (NOLOCK)
+		  JOIN SY_CODE_DETAIL T WITH (NOLOCK) ON A.CNSL_TYPE_CODE = T.CODE_DTL_NO AND T.CODE_FIELD='CNSL_TYPE_CODE'
+		  JOIN SY_CODE_DETAIL D WITH (NOLOCK) ON A.CNSL_TYPE_DTL_CODE = D.CODE_DTL_NO AND D.CODE_FIELD='CNSL_TYPE_DTL_CODE'
+		 WHERE TOP10_SETUP_YN = 'Y'
+		   AND DISP_YN = 'Y'
+		 ORDER BY TOP10_SORT_SEQ 
+		 <include refid="Paging.mssql" />
+	</select>
+	 
+	<select id="selectBdFaqList" parameterType="pageable" resultType="kr.co.abcmart.bo.board.model.master.BdFaq">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdFaqDao.selectBdFaqListCount [FAQ그리도 조회] [신인철] */ 
+		SELECT A.FAQ_SEQ
+			 , CONCAT(T.CODE_DTL_NAME, '>' , D.CODE_DTL_NAME) AS CNSL_TYPE_NAME
+			 , A.FAQ_TITLE_TEXT
+			 , A.FAQ_CONT_TEXT
+			 , A.TOP10_SETUP_YN
+			 , A.TOP10_SORT_SEQ
+			 , A.DISP_YN
+			 , A.RGSTER_NO
+			 , A.RGST_DTM
+			 , RG.LOGIN_ID AS RGSTER_ID
+  			 , RG.ADMIN_NAME AS RGSTER_NAME
+			 , A.MODER_NO
+			 , A.MOD_DTM
+			 , CASE WHEN (A.TOP10_SETUP_YN = 'Y' AND A.TOP10_SORT_SEQ BETWEEN 1 AND 10)
+			 		THEN 'Y'
+			 		ELSE 'N'
+			 	END AS TOP10_CHECKED
+		  FROM BD_FAQ A WITH (NOLOCK)
+		  LEFT JOIN SY_ADMIN RG WITH (NOLOCK) ON A.RGSTER_NO = RG.ADMIN_NO
+		  JOIN SY_CODE_DETAIL T WITH (NOLOCK) ON A.CNSL_TYPE_CODE = T.CODE_DTL_NO AND T.CODE_FIELD='CNSL_TYPE_CODE'
+		  JOIN SY_CODE_DETAIL D WITH (NOLOCK) ON A.CNSL_TYPE_DTL_CODE = D.CODE_DTL_NO AND D.CODE_FIELD='CNSL_TYPE_DTL_CODE'
+		  <include refid="searchKey" />
+		  <choose> 
+			<when test="sortColumn != null">
+		 ORDER BY
+				<if test="sortColumn == 'top10SetupYn'.toString()">
+			   A.TOP10_SETUP_YN
+				</if>
+				<if test="sortColumn == 'faqTitleText'.toString()">
+			   A.FAQ_TITLE_TEXT
+			 	</if>
+				<if test="sortColumn == 'dispYn'.toString()">
+			   A.DISP_YN
+				</if>
+				<if test="sortColumn == 'rgstDtm'.toString()">
+			   A.RGST_DTM
+				</if>
+				<if test="sortType == 'DESC'.toString()">
+			   DESC
+			 	</if>
+			</when>
+			<otherwise>
+		 ORDER BY A.RGST_DTM DESC
+			</otherwise>
+		  </choose>
+		  <include refid="Paging.mssql" />
+	</select>
+	
+	<select id="selectFaqDetail" parameterType="kr.co.abcmart.bo.board.model.master.BdFaq" resultType="kr.co.abcmart.bo.board.model.master.BdFaq"> 
+	/*+ kr.co.abcmart.bo.board.repository.master.BdFaqDao.selectFaqDetail [FAQ 상세 조회] [신인철] */ 
+		SELECT A.FAQ_SEQ
+			 , A.CNSL_TYPE_CODE
+			 , A.CNSL_TYPE_DTL_CODE
+			 , A.FAQ_TITLE_TEXT
+			 , A.FAQ_CONT_TEXT
+			 , A.TOP10_SETUP_YN
+			 , A.TOP10_SORT_SEQ
+			 , A.DISP_YN
+			 , A.RGSTER_NO
+			 , A.RGST_DTM
+			 , RG.LOGIN_ID AS RGSTER_ID
+  			 , RG.ADMIN_NAME AS RGSTER_NAME
+			 , A.MODER_NO
+			 , A.MOD_DTM
+			 , MO.LOGIN_ID AS MODER_ID
+	  		 , MO.ADMIN_NAME AS MODER_NAME
+		  FROM BD_FAQ A WITH (NOLOCK)
+		  LEFT OUTER JOIN SY_ADMIN RG WITH (NOLOCK) ON A.RGSTER_NO = RG.ADMIN_NO
+		  LEFT OUTER JOIN SY_ADMIN MO WITH (NOLOCK) ON A.MODER_NO = MO.ADMIN_NO
+		 WHERE A.FAQ_SEQ = #{faqSeq, jdbcType = VARCHAR}
+	</select>
+	
+	<select id="selectPuulingTop10List" parameterType="kr.co.abcmart.bo.board.model.master.BdFaq" resultType="kr.co.abcmart.bo.board.model.master.BdFaq"> 
+	/*+ kr.co.abcmart.bo.board.repository.master.BdFaqDao.selectPuulingTop10List [TOP10 설정이 되었던 FAQ삭제나 수정후에 정렬순번 맞출 리스트 호출] [신인철] */ 
+		SELECT A.FAQ_SEQ
+			 , A.TOP10_SETUP_YN
+			 , A.TOP10_SORT_SEQ
+			 , A.DISP_YN
+		  FROM BD_FAQ A WITH (NOLOCK)
+		 WHERE A.TOP10_SORT_SEQ <![CDATA[>]]> 
+		 	   (SELECT B.TOP10_SORT_SEQ
+		 		  FROM BD_FAQ B WITH(NOLOCK)
+		 		 WHERE B.FAQ_SEQ = #{faqSeq, jdbcType=INTEGER}
+		 	   )
+	</select>
+	
+	<insert id="insertFaqDetail" parameterType="kr.co.abcmart.bo.board.model.master.BdFaq">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdFaqDao.insertFaqDetail [FAQ 등록] [신인철] */ 
+		INSERT INTO BD_FAQ( 
+			   CNSL_TYPE_CODE
+			 , CNSL_TYPE_DTL_CODE
+			 , FAQ_TITLE_TEXT
+			 , FAQ_CONT_TEXT
+			 , TOP10_SETUP_YN
+			 , TOP10_SORT_SEQ
+			 , DISP_YN
+			 , RGSTER_NO
+			 , RGST_DTM
+			 , MODER_NO
+			 , MOD_DTM ) 
+		VALUES 
+			 ( #{cnslTypeCode, jdbcType=VARCHAR}
+			 , #{cnslTypeDtlCode, jdbcType=VARCHAR}
+			 , #{faqTitleText, jdbcType=VARCHAR}
+			 , #{faqContText, jdbcType=VARCHAR}
+			 , #{top10SetupYn, jdbcType=CHAR}
+			 , #{top10SortSeq, jdbcType=CHAR}
+			 , #{dispYn, jdbcType=CHAR}
+			 , #{rgsterNo, jdbcType=VARCHAR}
+			 , GETDATE()
+			 , #{moderNo, jdbcType=VARCHAR}
+			 , GETDATE() )  
+	</insert>
+	
+	<insert id="insertTop10Faq" parameterType="kr.co.abcmart.bo.board.model.master.BdFaq">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdFaqDao.insertFaqDetail [FAQ 등록] [신인철] */ 
+		<selectKey keyProperty="top10SortSeq" resultType="Int" order="BEFORE">
+			SELECT ISNULL(MAX(TOP10_SORT_SEQ),0)+1
+			  FROM BD_FAQ
+			 WHERE TOP10_SETUP_YN = 'Y'
+			   AND DISP_YN = 'Y'
+		</selectKey>
+		INSERT INTO BD_FAQ( 
+			   CNSL_TYPE_CODE
+			 , CNSL_TYPE_DTL_CODE
+			 , FAQ_TITLE_TEXT
+			 , FAQ_CONT_TEXT
+			 , TOP10_SETUP_YN
+			 , top10_SORT_SEQ
+			 , DISP_YN
+			 , RGSTER_NO
+			 , RGST_DTM
+			 , MODER_NO
+			 , MOD_DTM ) 
+		VALUES 
+			 ( #{cnslTypeCode, jdbcType=VARCHAR}
+			 , #{cnslTypeDtlCode, jdbcType=VARCHAR}
+			 , #{faqTitleText, jdbcType=VARCHAR}
+			 , #{faqContText, jdbcType=VARCHAR}
+			 , #{top10SetupYn, jdbcType=CHAR}
+			 , #{top10SortSeq, jdbcType=INTEGER}
+			 , #{dispYn, jdbcType=CHAR}
+			 , #{rgsterNo, jdbcType=VARCHAR}
+			 , GETDATE()
+			 , #{moderNo, jdbcType=VARCHAR}
+			 , GETDATE() )  
+	</insert>
+	
+	<update id="updateFaqDetail" parameterType="kr.co.abcmart.bo.board.model.master.BdFaq">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdFaqDao.updateFaqDetail [FAQ 수정] [신인철] */ 
+		UPDATE BD_FAQ
+		   SET MODER_NO = #{moderNo, jdbcType = VARCHAR}
+			 <if test ="cnslTypeCode != null and cnslTypeCode != ''">
+			 , CNSL_TYPE_CODE = #{cnslTypeCode, jdbcType = VARCHAR}
+			 </if>
+			 <if test ="cnslTypeDtlCode != null and cnslTypeDtlCode != ''">
+			 , CNSL_TYPE_DTL_CODE = #{cnslTypeDtlCode, jdbcType = VARCHAR}
+			 </if>
+			 <if test ="faqTitleText != null and faqTitleText != ''">
+			 , FAQ_TITLE_TEXT = #{faqTitleText, jdbcType = VARCHAR}
+			 </if>
+			 <if test ="faqContText != null and faqContText != ''">
+			 , FAQ_CONT_TEXT = #{faqContText, jdbcType = VARCHAR}
+			 </if>
+			 <if test ="top10SetupYn != null and top10SetupYn != ''">
+			 , TOP10_SETUP_YN = #{top10SetupYn, jdbcType = VARCHAR}
+			 </if>
+			 <if test ="dispYn != null and dispYn != ''">
+			 , DISP_YN = #{dispYn, jdbcType = VARCHAR}
+			 </if>
+			 <if test = "top10SortSeq != null">
+			 , TOP10_SORT_SEQ = #{top10SortSeq, jdbcType = INTEGER}
+			 </if>
+			 , MOD_DTM = GETDATE()
+		 WHERE FAQ_SEQ = #{faqSeq, jdbcType = VARCHAR}
+	</update>
+	
+	<update id="updateTop10Sort" parameterType="kr.co.abcmart.bo.board.model.master.BdFaq">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdFaqDao.updateTop10Sort [TOP10 정렬순서 저장] [신인철] */
+		UPDATE BD_FAQ
+		   SET MODER_NO = #{moderNo, jdbcType = VARCHAR}
+			 <if test ="top10SortSeq != null and '' != top10SortSeq">
+			 , TOP10_SORT_SEQ = #{top10SortSeq, jdbcType = INTEGER}
+			 </if>
+			 , MOD_DTM = GETDATE()
+		 WHERE FAQ_SEQ = #{faqSeq, jdbcType = VARCHAR}
+		
+	</update>
+	
+	<update id="updateMultiTop10Sort" parameterType="java.util.List">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdFaqDao.updateMultiTop10Sort [리스트로 넘긴 FAQ TOP10 정렬순서 저장] [신인철] */
+		<foreach collection="list" item='item' separator=";">
+			UPDATE BD_FAQ
+			   SET MODER_NO = #{item.moderNo, jdbcType = VARCHAR}
+				 <if test ="item.top10SortSeq != null and '' != item.top10SortSeq">
+				 , TOP10_SORT_SEQ = #{item.top10SortSeq, jdbcType = INTEGER}
+				 </if>
+				 , MOD_DTM = GETDATE()
+			 WHERE FAQ_SEQ = #{item.faqSeq, jdbcType = VARCHAR}
+		</foreach>
+	</update>
+	
+	<delete id="deleteFaqDetail" parameterType="kr.co.abcmart.bo.board.model.master.BdFaq">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdFaqDao.deleteFaqDetail [FAQ 삭제] [신인철] */ 
+		DELETE FROM BD_FAQ
+		 WHERE FAQ_SEQ = #{faqSeq, jdbcType = VARCHAR}
+	</delete>
+	
+</mapper>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.display.repository.master.CmStoreServiceDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.display.model.master.CmStoreService">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.CmStoreServiceDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			CM_STORE_SERVICE
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <insert id="insertCmStoreService" parameterType="kr.co.abcmart.bo.display.model.master.CmStoreService">
+    /*+ kr.co.abcmart.bo.display.repository.master.CmStoreServiceDao.insertCmStoreService [오프라인 매장 제공 서비스 등록] [이가영] */
+    
+    	<selectKey resultType="Integer" keyProperty="storeServiceSeq" order="BEFORE">
+			SELECT ISNULL(MAX(STORE_SERVICE_SEQ)+1, 1) FROM CM_STORE_SERVICE
+		</selectKey>
+    
+    	INSERT INTO CM_STORE_SERVICE (
+    		STORE_NO,
+    		STORE_SERVICE_SEQ,
+    		STORE_SERVICE_CODE,
+    		PSBLT_YN,
+    		RGSTER_NO,
+    		RGST_DTM,
+    		MODER_NO,
+    		MOD_DTM
+    	) VALUES (
+    		#{storeNo, jdbcType=VARCHAR},
+    		#{storeServiceSeq, jdbcType=INTEGER},
+    		#{storeServiceCode, jdbcType=VARCHAR},
+    		#{psbltYn, jdbcType=CHAR},
+    		#{rgsterNo, jdbcType=VARCHAR},
+			getdate(),
+			#{moderNo, jdbcType=VARCHAR},
+			getdate()
+    	)
+    </insert>
+
+	<delete id="deleteCmStoreService" parameterType="kr.co.abcmart.bo.display.model.master.CmStoreService">
+    /*+ kr.co.abcmart.bo.display.repository.master.CmStoreServiceDao.deleteCmStoreService [오프라인 매장 제공 서비스 삭제] [이가영] */
+    
+    	DELETE FROM
+    		CM_STORE_SERVICE
+    	WHERE
+    		STORE_NO = #{storeNo, jdbcType=VARCHAR}
+    </delete>
+    
+    <delete id="deleteCmStoreServiceByStoreNo" parameterType="String">
+    /*+ kr.co.abcmart.bo.display.repository.master.CmStoreServiceDao.deleteCmStoreServiceByStoreNo [오프라인 매장 제공 서비스 삭제 (by storeNo)] [이가영] */
+    
+    	DELETE FROM
+    		cm_store_service
+    	WHERE
+    		store_no = #{storeNo, jdbcType=VARCHAR}
+    </delete>
+</mapper>

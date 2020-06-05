@@ -1,0 +1,875 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.settlement.repository.master.PgDao">
+
+	
+	<select id="selectKakaoList" parameterType="pageable" resultType="kr.co.abcmart.bo.settlement.vo.RvKakaoComparision">
+	/*+ kr.co.abcmart.bo.settlement.repository.master.PgDao.selectKakaoList [카카오 대사 조회] [신인철] */
+		SELECT RKC.TID					-- 결제고유번호
+			 , RKC.AID					-- 호출고유번호
+			 , RKC.CID					-- 가맹점코드
+			 , RKC.STATUS				-- 결제상태값
+			 , RKC.PAYMENT_METHOD_TYPE	-- 결제수단 CARD : 카드,MONEY : 현금
+			 , RKC.CARD_BIN				-- 카드빈
+			 , RKC.INSTALL_MONTH		-- 할부개월수
+			 , RKC.CARD_CORP_NAME		-- 카드사정보
+			 , RKC.INTEREST_FREE_INSTALL-- 무이자할부여부
+			 , RKC.APPROVED_AT			-- 결제/취소거래시간
+			 , RKC.AMOUNT				-- 결제/취소총액
+			 , RKC.PAYMENT_ACTION_TYPE	-- 결제타입   결제 - PAYMENT,  취소 - CANCEL
+			 , RKC.ORG_ORDER_NO			-- 주문번호
+			 , RKC.MAPNG_YN				-- 매칭 여부
+			 , RKC.SEND_PARM_DATE		--매칠 일자
+		  FROM RV_KAKAO_COMPARISON RKC
+		  JOIN OC_ORDER OO
+			ON RKC.ORG_ORDER_NO = OO.ORDER_NO
+		   AND RKC.ORDER_NO = OO.ORDER_NO
+		   <trim prefix="WHERE" prefixOverrides="AND|OR">
+		   <if test="bean.fromDate != null and bean.toDate != null">
+		   AND RKC.APPROVED_AT BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+		   </if>
+		   <if test="bean.siteNo != null">
+		   AND RKC.CID = #{bean.cid, jdbcType=VARCHAR}
+		   </if>
+		   <if test="bean.paymentActionTypes != null and bean.paymentActionTypes.length > 0" >
+		   AND ( RKC.PAYMENT_ACTION_TYPE IN
+		   			<foreach item="item" collection="bean.paymentActionTypes" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+		   		)
+		   </if>
+		   <if test='bean.srchType != null and bean.srchType == "orgOrderNo"'>
+		   AND RKC.ORG_ORDER_NO = #{bean.searchWord, jdbcType=VARCHAR}
+		   </if>
+		   <if test='bean.srchType != null and bean.srchType == "tid"'>
+		   AND RKC.TID = #{bean.searchWord, jdbcType=VARCHAR}
+		   </if>
+		   <if test="bean.mapngYn != null">
+		   AND RKC.MAPNG_YN = #{bean.mapngYn, jdbcType=VARCHAR}
+		   </if>
+		   </trim>
+		 ORDER BY RKC.APPROVED_AT DESC
+		   <include refid="Paging.mssql" />
+	</select>
+	
+	<select id="selectKakaoCount" parameterType="pageable" resultType="int">
+	/*+ kr.co.abcmart.bo.settlement.repository.master.PgDao.selectKakaoCount [카카오 대사 조회 카운트] [신인철] */
+		SELECT <include refid="Paging.totalCount" />
+		  FROM RV_KAKAO_COMPARISON RKC
+		  JOIN OC_ORDER OO
+			ON RKC.ORG_ORDER_NO = OO.ORDER_NO
+		   AND RKC.ORDER_NO = OO.ORDER_NO
+		   <trim prefix="WHERE" prefixOverrides="AND|OR">
+		   <if test="bean.fromDate != null and bean.toDate != null">
+		   AND RKC.APPROVED_AT BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+		   </if>
+		   <if test="bean.siteNo != null">
+		   AND RKC.CID = #{bean.cid, jdbcType=VARCHAR}
+		   </if>
+		   <if test="bean.paymentActionTypes != null and bean.paymentActionTypes.length > 0" >
+		   AND ( RKC.PAYMENT_ACTION_TYPE IN
+		   			<foreach item="item" collection="bean.paymentActionTypes" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+		   		)
+		   </if>
+		   <if test='bean.srchType != null and bean.srchType == "orgOrderNo"'>
+		   AND RKC.ORG_ORDER_NO = #{bean.searchWord, jdbcType=VARCHAR}
+		   </if>
+		   <if test='bean.srchType != null and bean.srchType == "tid"'>
+		   AND RKC.TID = #{bean.searchWord, jdbcType=VARCHAR}
+		   </if>
+		   <if test="bean.mapngYn != null">
+		   AND RKC.MAPNG_YN = #{bean.mapngYn, jdbcType=VARCHAR}
+		   </if>
+		   </trim>
+	</select>
+	
+	<select id="selectKakaoExcelList" parameterType="kr.co.abcmart.bo.settlement.vo.RvKakaoComparision" resultType="kr.co.abcmart.bo.settlement.vo.RvKakaoComparision">
+	/*+ kr.co.abcmart.bo.settlement.repository.master.PgDao.selectKakaoList [카카오 대사 엑셀다운로드] [신인철] */
+		SELECT RKC.TID											-- 결제고유번호
+			 , RKC.AID											-- 호출고유번호
+			 , RKC.CID											-- 가맹점코드
+			 , RKC.STATUS										-- 결제상태값
+			 , CASE WHEN RKC.PAYMENT_METHOD_TYPE = 'CARD'		-- 결제수단 CARD : 카드,MONEY : 현금
+			 		THEN '카드'
+			 		WHEN RKC.PAYMENT_METHOD_TYPE = 'MONEY'
+			 		THEN '현금'
+			 	END AS PAYMENT_METHOD_TYPE
+			 , RKC.CARD_BIN										-- 카드빈
+			 , RKC.INSTALL_MONTH								-- 할부개월수
+			 , RKC.CARD_CORP_NAME								-- 카드사정보
+			 , RKC.INTEREST_FREE_INSTALL						-- 무이자할부여부
+			 , RKC.APPROVED_AT									-- 결제/취소거래시간
+			 , RKC.AMOUNT										-- 결제/취소총액
+			 , CASE WHEN RKC.PAYMENT_ACTION_TYPE = 'PAYMENT'	-- 결제타입   결제 - PAYMENT,  취소 - CANCEL
+					THEN '결제'
+					WHEN RKC.PAYMENT_ACTION_TYPE = 'CANCEL'
+					THEN '취소'
+				END AS PAYMENT_ACTION_TYPE
+			 , RKC.ORG_ORDER_NO									-- 주문번호
+			 , CASE WHEN RKC.MAPNG_YN = 'Y'						-- 매칭 여부
+			 		THEN '매칭'
+			 		ELSE '미매칭'
+			 	END AS MAPNG_YN
+			 , RKC.SEND_PARM_DATE								--매칠 일자
+		  FROM RV_KAKAO_COMPARISON RKC
+		  JOIN OC_ORDER OO
+			ON RKC.ORG_ORDER_NO = OO.ORDER_NO
+		   AND RKC.ORDER_NO = OO.ORDER_NO
+		   <trim prefix="WHERE" prefixOverrides="AND|OR">
+		   <if test="fromDate != null and toDate != null">
+		   AND RKC.APPROVED_AT BETWEEN CONVERT(DATETIME, CONCAT(#{fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+		   </if>
+		   <if test="siteNo != null">
+		   AND RKC.CID = #{cid, jdbcType=VARCHAR}
+		   </if>
+		   <if test="paymentActionTypes != null and paymentActionTypes.length > 0" >
+		   AND ( RKC.PAYMENT_ACTION_TYPE IN
+		   			<foreach item="item" collection="paymentActionTypes" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+		   		)
+		   </if>
+		   <if test='srchType != null and srchType == "orgOrderNo"'>
+		   AND RKC.ORG_ORDER_NO = #{searchWord, jdbcType=VARCHAR}
+		   </if>
+		   <if test='srchType != null and srchType == "tid"'>
+		   AND RKC.TID = #{searchWord, jdbcType=VARCHAR}
+		   </if>
+		   <if test="mapngYn != null">
+		   AND RKC.MAPNG_YN = #{mapngYn, jdbcType=VARCHAR}
+		   </if>
+		   </trim>
+		 ORDER BY RKC.APPROVED_AT DESC
+	</select>
+	
+	<select id="selectKakaoSettlementHistory" parameterType="kr.co.abcmart.bo.settlement.vo.RvKakaoComparision" resultType="kr.co.abcmart.bo.settlement.vo.RvKakaoComparision">
+	/*+ kr.co.abcmart.bo.settlement.repository.master.PgDao.selectSettlementHistory [카카오 대사 정산내역 조회] [신인철] */
+		SELECT ISNULL(SUM(TT.TOTAL_PAY), 0) AS TOTAL_PAY
+			 , ISNULL(SUM(TT.MAPNG_PAY), 0) AS MAPNG_PAY
+			 , ISNULL(SUM(TT.NOT_MAPNG_PAY), 0) AS NOT_MAPNG_PAY
+		  FROM (
+				SELECT CASE WHEN RKC.PAYMENT_ACTION_TYPE = 'PAYMENT'
+							THEN RKC.AMOUNT
+							WHEN RKC.PAYMENT_ACTION_TYPE = 'CANCEL'
+							THEN RKC.AMOUNT * -1
+						END AS TOTAL_PAY
+					 , CASE WHEN RKC.MAPNG_YN = 'Y' AND RKC.PAYMENT_ACTION_TYPE = 'PAYMENT'
+							THEN RKC.AMOUNT
+							WHEN RKC.MAPNG_YN = 'Y' AND RKC.PAYMENT_ACTION_TYPE = 'CANCEL'
+							THEN RKC.AMOUNT * -1
+							ELSE 0
+						END AS MAPNG_PAY
+					 , CASE WHEN RKC.MAPNG_YN = 'N' AND RKC.PAYMENT_ACTION_TYPE = 'PAYMENT'
+							THEN RKC.AMOUNT
+							WHEN RKC.MAPNG_YN = 'N' AND RKC.PAYMENT_ACTION_TYPE = 'CANCEL'
+							THEN RKC.AMOUNT * -1
+							ELSE 0
+						END AS NOT_MAPNG_PAY
+				  FROM RV_KAKAO_COMPARISON RKC
+				  JOIN OC_ORDER OO
+					ON RKC.ORG_ORDER_NO = OO.ORDER_NO
+				   AND RKC.ORDER_NO = OO.ORDER_NO
+				   <trim prefix="WHERE" prefixOverrides="AND|OR">
+				    <if test="fromDate != null and toDate != null">
+				   AND RKC.APPROVED_AT BETWEEN CONVERT(DATETIME, CONCAT(#{fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+				   </if>
+				   <if test="siteNo != null">
+				   AND RKC.CID = #{cid, jdbcType=VARCHAR}
+				   </if>
+				   <if test="paymentActionTypes != null and paymentActionTypes.length > 0" >
+				   AND ( RKC.PAYMENT_ACTION_TYPE IN
+				   			<foreach item="item" collection="paymentActionTypes" open="(" separator="," close=")">
+								#{item}
+							</foreach>
+				   		)
+				   </if>
+				   <if test='srchType != null and srchType == "orgOrderNo"'>
+				   AND RKC.ORG_ORDER_NO = #{searchWord, jdbcType=VARCHAR}
+				   </if>
+				   <if test='srchType != null and srchType == "tid"'>
+				   AND RKC.TID = #{searchWord, jdbcType=VARCHAR}
+				   </if>
+				   <if test="mapngYn != null">
+				   AND RKC.MAPNG_YN = #{mapngYn, jdbcType=VARCHAR}
+				   </if>
+				   </trim>
+				)TT
+	</select>
+	
+	<select id="selectNaverList" parameterType="pageable" resultType="kr.co.abcmart.bo.settlement.vo.RvNaverComparision">
+	/*+ kr.co.abcmart.bo.settlement.repository.master.PgDao.selectNaverList [네이버 대사 조회] [신인철] */
+		SELECT RNC.PAY_HIST_ID					-- 네이버페이결제이력번호
+			 , RNC.PAY_MENT_ID					-- 네이버페이결제번호
+			 , RNC.ADMISSION_TYPE_CODE			-- 결제승인유형   CODE  결제 :01 , 취소 : 03,04
+			 , RNC.MERCHANT_ID					-- 가맹점센터로그인아이디   
+			 , RNC.ADMISSION_YMDT				-- 결제/취소일시
+			 , RNC.TOTAL_PAY_AMOUNT				-- 총결제/취소금액
+			 , RNC.ADMISSION_STATE				-- 결제상태 ( SUCCESS : 성공 , FAIL : 실패 )
+			 , RNC.PRIMARY_COMMISSION_AMOUNT	-- 정산수수료
+			 , RNC.PRIMARY_SETTLE_AMOUNT		-- 정산금액
+			 , RNC.TOTAL_SETTLE_AMOUNT			-- 전체정산금액
+			 , RNC.TOTAL_COMMISSION_AMOUNT		-- 전체정산수수료
+			 , RNC.ORG_ORDER_NO					-- 주문번호
+			 , RNC.MAPNG_YN						-- 매칭 여부
+			 , RNC.SEND_PARM_DATE				-- 매칭일자
+		  FROM RV_NAVER_COMPARISON RNC
+		  JOIN OC_ORDER OO
+			ON RNC.ORG_ORDER_NO = OO.ORDER_NO
+		   AND RNC.ORDER_NO = OO.ORDER_NO
+		   <trim prefix="WHERE" prefixOverrides="AND|OR">
+		   <if test="bean.fromDate != null and bean.toDate != null">
+		   AND RNC.ADMISSION_YMDT BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+		   </if>
+		   <if test="bean.siteNo != null">
+		   AND RNC.MERCHANT_ID = #{bean.merchantId, jdbcType=VARCHAR}
+		   </if>
+		   <if test="bean.admissionTypeCodes != null and bean.admissionTypeCodes.length > 1" >
+		   AND ( RNC.ADMISSION_TYPE_CODE IN
+		   			<foreach item="item" collection="bean.admissionTypeCodes" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+		   		)
+		   </if>
+		   <if test='bean.srchType != null and bean.srchType == "orgOrderNo"'>
+		   AND RNC.ORG_ORDER_NO = #{bean.searchWord, jdbcType=VARCHAR}
+		   </if>
+		   <if test='bean.srchType != null and bean.srchType == "payMentId"'>
+		   AND RNC.PAY_MENT_ID = #{bean.searchWord, jdbcType=VARCHAR}
+		   </if>
+		   <if test="bean.mapngYn != null">
+		   AND RNC.MAPNG_YN = #{bean.mapngYn, jdbcType=VARCHAR}
+		   </if>
+		   </trim>
+		 ORDER BY RNC.ADMISSION_YMDT DESC
+		   <include refid="Paging.mssql" />
+	</select>
+	
+	
+	
+	<select id="selectNaverCount" parameterType="pageable" resultType="int">
+	/*+ kr.co.abcmart.bo.settlement.repository.master.PgDao.selectNaverCount [네이버 대사 조회 카운트] [신인철] */
+		SELECT <include refid="Paging.totalCount" />
+		  FROM RV_NAVER_COMPARISON RNC
+		  JOIN OC_ORDER OO
+			ON RNC.ORG_ORDER_NO = OO.ORDER_NO
+		   AND RNC.ORDER_NO = OO.ORDER_NO
+		   <trim prefix="WHERE" prefixOverrides="AND|OR">
+		   <if test="bean.fromDate != null and bean.toDate != null">
+		   AND RNC.ADMISSION_YMDT BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+		   </if>
+		   <if test="bean.siteNo != null">
+		   AND RNC.MERCHANT_ID = #{bean.merchantId, jdbcType=VARCHAR}
+		   </if>
+		   <if test="bean.admissionTypeCodes != null and bean.admissionTypeCodes.length > 1" >
+		   AND ( RNC.ADMISSION_TYPE_CODE IN
+		   			<foreach item="item" collection="bean.admissionTypeCodes" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+		   		)
+		   </if>
+		   <if test='bean.srchType != null and bean.srchType == "orgOrderNo"'>
+		   AND RNC.ORG_ORDER_NO = #{bean.searchWord, jdbcType=VARCHAR}
+		   </if>
+		   <if test='bean.srchType != null and bean.srchType == "payMentId"'>
+		   AND RNC.PAY_MENT_ID = #{bean.searchWord, jdbcType=VARCHAR}
+		   </if>
+		   <if test="bean.mapngYn != null">
+		   AND RNC.MAPNG_YN = #{bean.mapngYn, jdbcType=VARCHAR}
+		   </if>
+		   </trim>
+	</select>
+	
+	
+	<select id="selectNaverExcelList" parameterType="kr.co.abcmart.bo.settlement.vo.RvNaverComparision" resultType="kr.co.abcmart.bo.settlement.vo.RvNaverComparision">
+	/*+ kr.co.abcmart.bo.settlement.repository.master.PgDao.selectNaverList [네이버 대사 엑셀다운로드] [신인철] */
+		SELECT RNC.PAY_HIST_ID									-- 네이버페이결제이력번호
+			 , RNC.PAY_MENT_ID									-- 네이버페이결제번호
+			 , CASE WHEN RNC.ADMISSION_TYPE_CODE = '01'			-- 결제승인유형   CODE  결제 :01 , 취소 : 03,04
+			 		THEN '결제'
+			 		WHEN RNC.ADMISSION_TYPE_CODE IN ('03', '04')
+			 		THEN '취소'
+			 	END AS ADMISSION_TYPE_CODE
+			 , RNC.MERCHANT_ID									-- 가맹점센터로그인아이디   
+			 , RNC.ADMISSION_YMDT								-- 결제/취소일시
+			 , RNC.TOTAL_PAY_AMOUNT								-- 총결제/취소금액
+			 , CASE WHEN RNC.ADMISSION_STATE = 'SUCCESS'		-- 결제상태 ( SUCCESS : 성공 , FAIL : 실패 )
+			 		THEN '성공'
+			 		WHEN RNC.ADMISSION_STATE = 'FAIL'
+			 		THEN '실패'
+			 	END AS ADMISSION_STATE
+			 , RNC.PRIMARY_COMMISSION_AMOUNT					-- 정산수수료
+			 , RNC.PRIMARY_SETTLE_AMOUNT						-- 정산금액
+			 , RNC.TOTAL_SETTLE_AMOUNT							-- 전체정산금액
+			 , RNC.TOTAL_COMMISSION_AMOUNT						-- 전체정산수수료
+			 , RNC.ORG_ORDER_NO									-- 주문번호
+			 , CASE WHEN RNC.MAPNG_YN = 'Y'						-- 매칭 여부
+			 		THEN '매칭'
+			 		ELSE '미매칭'
+			 	END AS MAPNG_YN
+			 , RNC.SEND_PARM_DATE								-- 매칭일자
+		  FROM RV_NAVER_COMPARISON RNC
+		  JOIN OC_ORDER OO
+			ON RNC.ORG_ORDER_NO = OO.ORDER_NO
+		   AND RNC.ORDER_NO = OO.ORDER_NO
+		   <trim prefix="WHERE" prefixOverrides="AND|OR">
+		   <if test="fromDate != null and toDate != null">
+		   AND RNC.ADMISSION_YMDT BETWEEN CONVERT(DATETIME, CONCAT(#{fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+		   </if>
+		   <if test="siteNo != null">
+		   AND RNC.MERCHANT_ID = #{merchantId, jdbcType=VARCHAR}
+		   </if>
+		   <if test="admissionTypeCodes != null and admissionTypeCodes.length > 1" >
+		   AND ( RNC.ADMISSION_TYPE_CODE IN
+		   			<foreach item="item" collection="admissionTypeCodes" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+		   		)
+		   </if>
+		   <if test='srchType != null and srchType == "orgOrderNo"'>
+		   AND RNC.ORG_ORDER_NO = #{searchWord, jdbcType=VARCHAR}
+		   </if>
+		   <if test='srchType != null and srchType == "payMentId"'>
+		   AND RNC.PAY_MENT_ID = #{searchWord, jdbcType=VARCHAR}
+		   </if>
+		   <if test="mapngYn != null">
+		   AND RNC.MAPNG_YN = #{mapngYn, jdbcType=VARCHAR}
+		   </if>
+		   </trim>
+		 ORDER BY RNC.ADMISSION_YMDT DESC
+	</select>
+	
+	
+	
+	<select id="selectNaverSettlementHistory" parameterType="kr.co.abcmart.bo.settlement.vo.RvNaverComparision" resultType="kr.co.abcmart.bo.settlement.vo.RvNaverComparision">
+	/*+ kr.co.abcmart.bo.settlement.repository.master.PgDao.selectNaverSettlementHistory [네이버 대사 정산내역 조회] [신인철] */
+		SELECT ISNULL(SUM(TT.TOTAL_PAY), 0) AS TOTAL_PAY
+			 , ISNULL(SUM(TT.MAPNG_PAY), 0) AS MAPNG_PAY
+			 , ISNULL(SUM(TT.NOT_MAPNG_PAY), 0) AS NOT_MAPNG_PAY
+		  FROM (       
+				SELECT CASE WHEN RNC.ADMISSION_TYPE_CODE = '01'
+							THEN RNC.TOTAL_PAY_AMOUNT
+							WHEN RNC.ADMISSION_TYPE_CODE IN ('03', '04')
+							THEN RNC.TOTAL_PAY_AMOUNT * -1
+						END AS TOTAL_PAY
+					 , CASE WHEN RNC.MAPNG_YN = 'Y' AND RNC.ADMISSION_TYPE_CODE = '01'
+							THEN RNC.TOTAL_PAY_AMOUNT
+							WHEN RNC.MAPNG_YN = 'Y' AND RNC.ADMISSION_TYPE_CODE IN ('03', '04')
+							THEN RNC.TOTAL_PAY_AMOUNT * -1
+						END AS MAPNG_PAY
+					 , CASE WHEN RNC.MAPNG_YN = 'N' AND RNC.ADMISSION_TYPE_CODE = '01'
+							THEN RNC.TOTAL_PAY_AMOUNT
+							WHEN RNC.MAPNG_YN = 'N' AND RNC.ADMISSION_TYPE_CODE IN ('03', '04')
+							THEN RNC.TOTAL_PAY_AMOUNT * -1
+						END AS NOT_MAPNG_PAY
+				  FROM RV_NAVER_COMPARISON RNC
+				  JOIN OC_ORDER OO
+					ON RNC.ORG_ORDER_NO = OO.ORDER_NO
+				   AND RNC.ORDER_NO = OO.ORDER_NO
+				 WHERE RNC.ADMISSION_STATE = 'SUCCESS'
+				   <if test="fromDate != null and toDate != null">
+				   AND RNC.ADMISSION_YMDT BETWEEN CONVERT(DATETIME, CONCAT(#{fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+				   </if>
+				   <if test="siteNo != null">
+				   AND RNC.MERCHANT_ID = #{merchantId, jdbcType=VARCHAR}
+				   </if>
+				   <if test="admissionTypeCodes != null and admissionTypeCodes.length > 1" >
+				   AND ( RNC.ADMISSION_TYPE_CODE IN
+				   			<foreach item="item" collection="admissionTypeCodes" open="(" separator="," close=")">
+								#{item}
+							</foreach>
+				   		)
+				   </if>
+				   <if test='srchType != null and srchType == "orgOrderNo"'>
+				   AND RNC.ORG_ORDER_NO = #{searchWord, jdbcType=VARCHAR}
+				   </if>
+				   <if test='srchType != null and srchType == "payMentId"'>
+				   AND RNC.PAY_MENT_ID = #{searchWord, jdbcType=VARCHAR}
+				   </if>
+				   <if test="mapngYn != null">
+				   AND RNC.MAPNG_YN = #{mapngYn, jdbcType=VARCHAR}
+				   </if>
+				)TT
+	</select>
+	
+	<select id="selectGiftCardList" parameterType="pageable" resultType="kr.co.abcmart.bo.settlement.vo.RvGiftCardComparision">
+	/*+ kr.co.abcmart.bo.settlement.repository.master.PgDao.selectGiftCardList [기프트카드  대사 조회] [신인철] */
+		SELECT RGCC.NICE_SERVICE_TYPE
+			 , RGCC.APPR_NO				--      승인번호
+			 , RGCC.TRAN_DT				--      거래일자
+			 , RGCC.TRAN_HMS			--      거래시간
+			 , RGCC.STORE_CD			--      점포코드
+			 , RGCC.VOUCHER_FROM		--      카드번호
+			 , CASE WHEN RGCC.NICE_SERVICE_TYPE = '0215' AND RGCC.TRAN_KD ='01'
+			 		THEN '회수'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0215' AND RGCC.TRAN_KD ='21'
+			 		THEN '회수취소'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_KD ='01'
+			 		THEN '판매승인'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_KD ='21'
+			 		THEN '판매취소'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_KD ='08'
+			 		THEN '충전형승인'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_KD ='28'
+			 		THEN '충전취소'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_KD ='0X'
+			 		THEN '판매대형승인'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_KD ='2X'
+			 		THEN '판매대형승인취소'
+			 	END TRAN_KD				--      서비스코드 0215 : 회수:01, 회수취소:21 / 0216 : 판매승인(01), 판매취소(21), 충전형 승인(08), 충전취소(28) 판매대행승인(0X), 판매대행승인취소(2X)
+			 , CASE WHEN RGCC.TRANS_STATUS = '0'
+			 		THEN '승인'
+			 		WHEN RGCC.TRANS_STATUS = '2'
+			 		THEN '강제취소'
+			 		WHEN RGCC.TRANS_STATUS = '1'
+			 		THEN '망상취소'
+			 		ELSE '망상취소'
+			 	END TRANS_STATUS		--      거래상태  0 : 승인 , 2: 강제취소 , 1 : 망상취소 , 그외 망상취소,
+			 , CASE WHEN RGCC.NICE_SERVICE_TYPE = '0215' AND RGCC.TRAN_TYPE = '1'
+			 		THEN '일반회수'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0215' AND RGCC.TRAN_TYPE = '2'
+			 		THEN '교환'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_TYPE = '4'
+			 		THEN '잔액환불'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_TYPE = 'B'
+			 		THEN '낙전'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_TYPE = '1'
+			 		THEN '일반판매'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_TYPE = '2'
+			 		THEN '교환판매'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_TYPE = '3'
+			 		THEN '특판판매'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_TYPE = '4'
+			 		THEN '자가소비'
+			 	 END TRAN_TYPE			--      구분코드  0215 : "1" : 일반 회수, "2" : 교환, "4" : 잔액환불, "B" : 낙전 /0216 - "1" : 일반 판매 "2" : 교환 판매(카드교체, 잔액이전 시) "3" : 특판 판매 "4" : 자가소비(발행사소비)
+			 , RGCC.PURCHASE_AMT		--      액면가( Hidden 처리)
+			 , RGCC.TRAN_AMT			--      회수/판매금액
+			 , RGCC.SALER_KIND			--      판매형태 그대로 표기
+			 , RGCC.RETURN_TYPE			--      환불대상자 ( Hidden 처리)
+			 , RGCC.ORI_APPR_DT			--      원거래일자 ( Hidden 처리)
+			 , RGCC.ORI_APPR_NO			--      원거래승인번호 ( Hidden 처리)
+			 , RGCC.CUST_ID				--      회원번호 ( Hidden 처리)
+			 , RGCC.PAY_CD				--      결재수단 ( Hidden 처리)
+			 , RGCC.COMPANY_INFO		--      가맹점영역 ( Hidden 처리)
+			 , RGCC.MAPNG_YN			--      매핑여부
+			 , RGCC.GIFT_CARD_ORDER_NO	--      기프트카드주문번호 ( Hidden 처리)
+			 , RGCC.RSN_CONT			--      사유내용 ( Hidden 처리)
+			 , RGCC.RSN_RGSTER_NO		--      사유등록자번호 ( Hidden 처리)
+			 , RGCC.RSN_RGST_DTM		--      사유등록일시 ( Hidden 처리)
+			 , RGCC.INTRLK_DTM			--      연동일시 ( Hidden 처리)
+			 , RGCC.SEND_PARM_DATE		--      매칭일자
+			 , RGCC.ORG_ORDER_NO		--      원주문번호
+			 , RGCC.ORDER_NO			--      주문번호 ( Hidden 처리)
+		  FROM RV_GIFT_CARD_COMPARISON RGCC
+		  JOIN OC_ORDER OO
+			ON RGCC.ORG_ORDER_NO = OO.ORDER_NO
+		   AND RGCC.ORDER_NO = OO.ORDER_NO
+		   <trim prefix="WHERE" prefixOverrides="AND|OR">
+		   <if test='bean.fromDate != null and bean.toDate != null'>
+			   AND RGCC.TRAN_DT BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+		   </if>
+		   <if test='bean.niceServiceTypes != null and bean.niceServiceTypes.length > 0' >
+			   AND ( RGCC.NICE_SERVICE_TYPE IN
+			   			<foreach item="item" collection="bean.niceServiceTypes" open="(" separator="," close=")">
+							#{item}
+						</foreach>
+			   		)
+			   </if>
+			   <if test='bean.srchType != null and bean.srchType == "orgOrderNo"'>
+			   AND RGCC.ORG_ORDER_NO = #{bean.searchWord, jdbcType=VARCHAR}
+			   </if>
+			   <if test='bean.srchType != null and bean.srchType == "apprNo"'>
+			   AND RGCC.APPR_NO = #{bean.searchWord, jdbcType=VARCHAR}
+			   </if>
+			   <if test="bean.mapngYn != null">
+			   AND RGCC.MAPNG_YN = #{bean.mapngYn, jdbcType=VARCHAR}
+		   </if>
+		   </trim>
+		 ORDER BY RGCC.TRAN_DT DESC, RGCC.TRAN_HMS
+		 <include refid="Paging.mssql" />
+	</select>
+	
+	<select id="selectGiftCardCount" parameterType="pageable" resultType="int">
+	/*+ kr.co.abcmart.bo.settlement.repository.master.PgDao.selectGiftCardCount [기프트카드 대사 조회  카운트] [신인철] */
+		SELECT <include refid="Paging.totalCount" />
+		  FROM RV_GIFT_CARD_COMPARISON RGCC
+		  JOIN OC_ORDER OO
+			ON RGCC.ORG_ORDER_NO = OO.ORDER_NO
+		   AND RGCC.ORDER_NO = OO.ORDER_NO
+		   <trim prefix="WHERE" prefixOverrides="AND|OR">
+		    <if test="bean.fromDate != null and bean.toDate != null">
+			   AND RGCC.TRAN_DT BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+		   </if>
+		   <if test="bean.niceServiceTypes != null and bean.niceServiceTypes.length > 0" >
+			   AND ( RGCC.NICE_SERVICE_TYPE IN
+			   			<foreach item="item" collection="bean.niceServiceTypes" open="(" separator="," close=")">
+							#{item}
+						</foreach>
+			   		)
+			   </if>
+			   <if test='bean.srchType != null and bean.srchType == "orgOrderNo"'>
+			   AND RGCC.ORG_ORDER_NO = #{bean.searchWord, jdbcType=VARCHAR}
+			   </if>
+			   <if test='bean.srchType != null and bean.srchType == "apprNo"'>
+			   AND RGCC.APPR_NO = #{bean.searchWord, jdbcType=VARCHAR}
+			   </if>
+			   <if test="bean.mapngYn != null">
+			   AND RGCC.MAPNG_YN = #{bean.mapngYn, jdbcType=VARCHAR}
+		   </if>
+		   </trim>
+	</select>
+	
+	
+	<select id="selectGiftCardExcelList" parameterType="kr.co.abcmart.bo.settlement.vo.RvGiftCardComparision" resultType="kr.co.abcmart.bo.settlement.vo.RvGiftCardComparision">
+	/*+ kr.co.abcmart.bo.settlement.repository.master.PgDao.selectGiftCardList [기프트카드 대사 엑셀다운로드] [신인철] */
+		SELECT CASE WHEN RGCC.NICE_SERVICE_TYPE = '0215'
+					THEN '회수'
+					WHEN RGCC.NICE_SERVICE_TYPE = '0216'
+					THEN '판매'
+				END NICE_SERVICE_TYPE
+			 , RGCC.APPR_NO				--      승인번호
+			 , RGCC.TRAN_DT				--      거래일자
+			 , RGCC.TRAN_HMS			--      거래시간
+			 , RGCC.STORE_CD			--      점포코드
+			 , RGCC.VOUCHER_FROM		--      카드번호
+			 , CASE WHEN RGCC.NICE_SERVICE_TYPE = '0215' AND RGCC.TRAN_KD ='01'
+			 		THEN '회수'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0215' AND RGCC.TRAN_KD ='21'
+			 		THEN '회수취소'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_KD ='01'
+			 		THEN '판매승인'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_KD ='21'
+			 		THEN '판매취소'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_KD ='08'
+			 		THEN '충전형승인'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_KD ='28'
+			 		THEN '충전취소'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_KD ='0X'
+			 		THEN '판매대형승인'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_KD ='2X'
+			 		THEN '판매대형승인취소'
+			 	END TRAN_KD				--      서비스코드 0215 : 회수:01, 회수취소:21 / 0216 : 판매승인(01), 판매취소(21), 충전형 승인(08), 충전취소(28) 판매대행승인(0X), 판매대행승인취소(2X)
+			 , CASE WHEN RGCC.TRANS_STATUS = '0'
+			 		THEN '승인'
+			 		WHEN RGCC.TRANS_STATUS = '2'
+			 		THEN '강제취소'
+			 		WHEN RGCC.TRANS_STATUS = '1'
+			 		THEN '망상취소'
+			 		ELSE '망상취소'
+			 	END TRANS_STATUS		--      거래상태  0 : 승인 , 2: 강제취소 , 1 : 망상취소 , 그외 망상취소,
+			 , CASE WHEN RGCC.NICE_SERVICE_TYPE = '0215' AND RGCC.TRAN_TYPE = '1'
+			 		THEN '일반회수'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0215' AND RGCC.TRAN_TYPE = '2'
+			 		THEN '교환'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_TYPE = '4'
+			 		THEN '잔액환불'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_TYPE = 'B'
+			 		THEN '낙전'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_TYPE = '1'
+			 		THEN '일반판매'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_TYPE = '2'
+			 		THEN '교환판매'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_TYPE = '3'
+			 		THEN '특판판매'
+			 		WHEN RGCC.NICE_SERVICE_TYPE = '0216' AND RGCC.TRAN_TYPE = '4'
+			 		THEN '자가소비'
+			 	 END TRAN_TYPE			--      구분코드  0215 : "1" : 일반 회수, "2" : 교환, "4" : 잔액환불, "B" : 낙전 /0216 - "1" : 일반 판매 "2" : 교환 판매(카드교체, 잔액이전 시) "3" : 특판 판매 "4" : 자가소비(발행사소비)
+			 , RGCC.PURCHASE_AMT		--      액면가( Hidden 처리)
+			 , RGCC.TRAN_AMT			--      회수/판매금액
+			 , RGCC.SALER_KIND			--      판매형태 그대로 표기
+			 , RGCC.RETURN_TYPE			--      환불대상자 ( Hidden 처리)
+			 , RGCC.ORI_APPR_DT			--      원거래일자 ( Hidden 처리)
+			 , RGCC.ORI_APPR_NO			--      원거래승인번호 ( Hidden 처리)
+			 , RGCC.CUST_ID				--      회원번호 ( Hidden 처리)
+			 , RGCC.PAY_CD				--      결재수단 ( Hidden 처리)
+			 , RGCC.COMPANY_INFO		--      가맹점영역 ( Hidden 처리)
+			 , CASE WHEN RGCC.MAPNG_YN = 'Y'
+			 		THEN '매칭'
+			 		WHEN RGCC.MAPNG_YN = 'N'
+			 		THEN '미매칭'
+			 	END MAPNG_YN			--      매핑여부
+			 , RGCC.GIFT_CARD_ORDER_NO	--      기프트카드주문번호 ( Hidden 처리)
+			 , RGCC.RSN_CONT			--      사유내용 ( Hidden 처리)
+			 , RGCC.RSN_RGSTER_NO		--      사유등록자번호 ( Hidden 처리)
+			 , RGCC.RSN_RGST_DTM		--      사유등록일시 ( Hidden 처리)
+			 , RGCC.INTRLK_DTM			--      연동일시 ( Hidden 처리)
+			 , RGCC.SEND_PARM_DATE		--      매칭일자
+			 , RGCC.ORG_ORDER_NO		--      원주문번호
+			 , RGCC.ORDER_NO			--      주문번호 ( Hidden 처리)
+		  FROM RV_GIFT_CARD_COMPARISON RGCC
+		  JOIN OC_ORDER OO
+			ON RGCC.ORG_ORDER_NO = OO.ORDER_NO
+		   AND RGCC.ORDER_NO = OO.ORDER_NO
+		   <trim prefix="WHERE" prefixOverrides="AND|OR">
+		   <if test='fromDate != null and toDate != null'>
+			   AND RGCC.TRAN_DT BETWEEN CONVERT(DATETIME, CONCAT(#{fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+		   </if>
+		   <if test='niceServiceTypes != null and niceServiceTypes.length > 0' >
+			   AND ( RGCC.NICE_SERVICE_TYPE IN
+			   			<foreach item="item" collection="niceServiceTypes" open="(" separator="," close=")">
+							#{item}
+						</foreach>
+			   		)
+			   </if>
+			   <if test='srchType != null and srchType == "orgOrderNo"'>
+			   AND RGCC.ORG_ORDER_NO = #{searchWord, jdbcType=VARCHAR}
+			   </if>
+			   <if test='srchType != null and srchType == "apprNo"'>
+			   AND RGCC.APPR_NO = #{searchWord, jdbcType=VARCHAR}
+			   </if>
+			   <if test="mapngYn != null">
+			   AND RGCC.MAPNG_YN = #{mapngYn, jdbcType=VARCHAR}
+		   </if>
+		   </trim>
+		 ORDER BY RGCC.TRAN_DT DESC, RGCC.TRAN_HMS DESC
+	</select>
+	
+	<select id="selectGiftCardSettlementHistory" parameterType="kr.co.abcmart.bo.settlement.vo.RvGiftCardComparision" resultType="kr.co.abcmart.bo.settlement.vo.RvGiftCardComparision">
+	/*+ kr.co.abcmart.bo.settlement.repository.master.PgDao.selectGiftCardSettlementHistory [기프트카드 대사 정산내역 조회] [신인철] */
+		SELECT ISNULL(SUM(TT.RECOVERY_AMOUNT), 0) AS RECOVERY_AMOUNT
+			 , ISNULL(SUM(TT.SALE_AMOUNT), 0) AS SALE_AMOUNT
+			 , ISNULL(SUM(TT.MAPNG_PAY), 0) AS MAPNG_PAY
+			 , ISNULL(SUM(TT.NOT_MAPNG_PAY), 0) AS NOT_MAPNG_PAY
+		  FROM (
+  		  		SELECT CASE WHEN A.NICE_SERVICE_TYPE = '0215'
+		  					THEN A.TRAN_AMT
+		  				END AS RECOVERY_AMOUNT
+		  			 , CASE WHEN A.NICE_SERVICE_TYPE = '0216'
+		  			 		THEN A.TRAN_AMT
+		  			 	END AS SALE_AMOUNT
+		  			 , CASE WHEN A.MAPNG_YN = 'Y'
+		  			 		THEN A.TRAN_AMT
+		  			 	END AS MAPNG_PAY
+		  			 , CASE WHEN A.MAPNG_YN = 'N'
+		  			 		THEN A.TRAN_AMT
+		  			 	END AS NOT_MAPNG_PAY
+  		  		  FROM RV_GIFT_CARD_COMPARISON A
+  		  		  JOIN OC_ORDER OO
+					ON A.ORG_ORDER_NO = OO.ORDER_NO
+				   AND A.ORDER_NO = OO.ORDER_NO
+				   <trim prefix="WHERE" prefixOverrides="AND|OR">
+				   <if test='fromDate != null and toDate != null'>
+					   AND A.TRAN_DT BETWEEN CONVERT(DATETIME, CONCAT(#{fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+				   </if>
+				   <if test='niceServiceTypes != null and niceServiceTypes.length > 0' >
+					   AND ( A.NICE_SERVICE_TYPE IN
+					   			<foreach item="item" collection="niceServiceTypes" open="(" separator="," close=")">
+									#{item}
+								</foreach>
+					   		)
+					   </if>
+					   <if test='srchType != null and srchType == "orgOrderNo"'>
+					   AND A.ORG_ORDER_NO = #{searchWord, jdbcType=VARCHAR}
+					   </if>
+					   <if test='srchType != null and srchType == "apprNo"'>
+					   AND A.APPR_NO = #{searchWord, jdbcType=VARCHAR}
+					   </if>
+					   <if test="mapngYn != null">
+					   AND A.MAPNG_YN = #{mapngYn, jdbcType=VARCHAR}
+				   </if>
+				   </trim>
+		  		)TT
+	</select>
+	
+	<select id="selectKcpList" parameterType="pageable" resultType="kr.co.abcmart.bo.settlement.vo.RvKcpComparision">
+	/*+ kr.co.abcmart.bo.settlement.repository.master.PgDao.selectKcpList [KCP 대사 조회] [신인철] */
+		SELECT RKC.KCP_DEAL_HIS_SEQ
+			 , dbo.FN_GET_IDXDATA_LIKE_SPLIT((CASE WHEN CHARINDEX('-', RKC.ORDER_NUM) <![CDATA[ < ]]>  1 THEN 'ORDER-'+ RKC.ORDER_NUM ELSE RKC.ORDER_NUM END), 1, '-') AS COMPARISON_TYPE
+			 , RKC.KCP_DEAL_NUM
+			 , RKC.PYMNT_DTM
+			 , RKC.PYMNT_ORG_DTM
+			 , RKC.LGD_DTM
+			 , RKC.LGD_BANK_DTM
+			 , RKC.PYMNT_STAT_CODE
+			 , RKC.ORDER_NUM
+			 , RKC.PYMNT_AMT
+			 , RKC.PYMNT_CHARGE
+			 , RKC.FREE_CHARGE
+			 , RKC.PYMNT_SUR_TAX
+			 , RKC.ACCOUNTS_AMT
+			 , RKC.DEADLINE_DTM
+			 , RKC.RECEIVE_MONTH
+			 , RKC.ACCOUNTS_DTM
+			 , RKC.ESCROW_CHARGE
+			 , RKC.ESCROW_SURTAX
+			 , RKC.BANK_CODE
+			 , RKC.LGD_ACCOUNTNUM
+			 , RKC.LGD_CASSEQNO
+			 , RKC.LGD_PAYER
+			 , RKC.ISTMT_COUNT
+			 , RKC.PRMT_NUM
+			 , RKC.CRDT_CARD_CODE
+			 , RKC.MERCHANT_NAME
+			 , RKC.PRDT_CODE
+			 , RKC.PYMNT_MEANS
+			 , RKC.RGST_DTM
+			 , RKC.ORG_ORDER_NO
+			 , RKC.MAPNG_YN
+			 , RKC.SEND_PARM_DATE
+		  FROM RV_KCP_COMPARISON RKC
+		  JOIN OC_ORDER OO
+			ON RKC.ORG_ORDER_NO = OO.ORDER_NO
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+		   <if test='bean.fromDate != null and bean.toDate != null'>
+			   AND RKC.PYMNT_ORG_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+		   </if>
+		   	<if test='bean.pymntStatCode != null' >
+			   AND RKC.PYMNT_STAT_CODE = #{bean.pymntStatCode, jdbcType=VARCHAR}
+		   </if>
+		   <if test="bean.siteNo != null">
+			   AND OO.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+		   </if>
+		   <if test='bean.srchType != null and bean.srchType == "orgOrderNo"'>
+			   AND RKC.ORG_ORDER_NO = #{bean.searchWord, jdbcType=VARCHAR}
+		   </if>
+		   <if test='bean.srchType != null and bean.srchType == "prmtNum"'>
+			   AND RKC.PRMT_NUM = #{bean.searchWord, jdbcType=VARCHAR}
+		   </if>
+		   <if test="bean.mapngYn != null">
+			   AND RKC.MAPNG_YN = #{bean.mapngYn, jdbcType=VARCHAR}
+		   </if>
+		</trim>
+		 ORDER BY RKC.PYMNT_DTM DESC
+		<include refid="Paging.mssql" />
+	</select>
+	
+	<select id="selectKcpCount" parameterType="pageable" resultType="int">
+	/*+ kr.co.abcmart.bo.settlement.repository.master.PgDao.selectKcpCount [KCP 대사 조회  카운트] [신인철] */
+		SELECT <include refid="Paging.totalCount" />
+		  FROM RV_KCP_COMPARISON RKC
+		  JOIN OC_ORDER OO
+			ON RKC.ORG_ORDER_NO = OO.ORDER_NO
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+		   <if test='bean.fromDate != null and bean.toDate != null'>
+			   AND RKC.PYMNT_ORG_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+		   </if>
+		   	<if test='bean.pymntStatCode != null' >
+			   AND RKC.PYMNT_STAT_CODE = #{bean.pymntStatCode, jdbcType=VARCHAR}
+		   </if>
+		   <if test="bean.siteNo != null">
+			   AND OO.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+		   </if>
+		   <if test='bean.srchType != null and bean.srchType == "orgOrderNo"'>
+			   AND RKC.ORG_ORDER_NO = #{bean.searchWord, jdbcType=VARCHAR}
+		   </if>
+		   <if test='bean.srchType != null and bean.srchType == "prmtNum"'>
+			   AND RKC.PRMT_NUM = #{bean.searchWord, jdbcType=VARCHAR}
+		   </if>
+		   <if test="bean.mapngYn != null">
+			   AND RKC.MAPNG_YN = #{bean.mapngYn, jdbcType=VARCHAR}
+		   </if>
+		</trim>
+	</select>
+	
+	
+	<select id="selectKcpExcelList" parameterType="kr.co.abcmart.bo.settlement.vo.RvKcpComparision" resultType="kr.co.abcmart.bo.settlement.vo.RvKcpComparision">
+	/*+ kr.co.abcmart.bo.settlement.repository.master.PgDao.selectKcpExcelList [KCP 대사 엑셀다운로드] [신인철] */
+		SELECT RKC.KCP_DEAL_NUM
+			 , RKC.PYMNT_DTM
+			 , CASE WHEN RKC.PYMNT_STAT_CODE = 'STJY'
+					THEN '대금정산'
+					WHEN RKC.PYMNT_STAT_CODE = 'STMO'
+					THEN '취소정산'
+					WHEN RKC.PYMNT_STAT_CODE = 'STPC'
+					THEN '부분취소정산'
+					WHEN RKC.PYMNT_STAT_CODE = 'STMH'
+					THEN '환불정산'
+					WHEN RKC.PYMNT_STAT_CODE = 'STMP'
+					THEN '부분환불정산'
+					WHEN RKC.PYMNT_STAT_CODE = 'RN01'
+					THEN '매입반송'
+					WHEN RKC.PYMNT_STAT_CODE = 'RN02'
+					THEN '취소반송'
+					WHEN RKC.PYMNT_STAT_CODE = 'RN03'
+					THEN '카드사보류'
+					WHEN RKC.PYMNT_STAT_CODE = 'RN04'
+					THEN '카드사보류해제'
+					WHEN RKC.PYMNT_STAT_CODE = 'RN07'
+					THEN '부분취소정산'
+					WHEN RKC.PYMNT_STAT_CODE = 'RN09'
+					THEN '매입반송해제'
+					WHEN RKC.PYMNT_STAT_CODE = 'RN10'
+					THEN '취소반송해제'
+				END PYMNT_STAT_CODE
+			 , RKC.ORDER_NUM
+			 , RKC.PYMNT_AMT
+			 , RKC.ACCOUNTS_AMT
+			 , RKC.ACCOUNTS_DTM
+			 , RKC.ESCROW_CHARGE
+			 , RKC.ESCROW_SURTAX
+			 , RKC.ISTMT_COUNT
+			 , RKC.PRMT_NUM
+			 , RKC.MERCHANT_NAME
+			 , RKC.PYMNT_MEANS
+			 , RKC.ORG_ORDER_NO
+			 , RKC.MAPNG_YN
+			 , RKC.SEND_PARM_DATE
+		  FROM RV_KCP_COMPARISON RKC
+		  JOIN OC_ORDER OO
+			ON RKC.ORG_ORDER_NO = OO.ORDER_NO
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test='fromDate != null and toDate != null'>
+			   AND RKC.PYMNT_ORG_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+			</if>
+			<if test='pymntStatCode != null' >
+			   AND RKC.PYMNT_STAT_CODE = #{pymntStatCode, jdbcType=VARCHAR}
+			</if>
+			<if test="siteNo != null">
+			   AND OO.SITE_NO = #{siteNo, jdbcType=VARCHAR}
+			</if>
+			<if test='srchType != null and srchType == "orgOrderNo"'>
+			   AND RKC.ORG_ORDER_NO = #{searchWord, jdbcType=VARCHAR}
+			</if>
+			<if test='srchType != null and srchType == "prmtNum"'>
+			   AND RKC.PRMT_NUM = #{searchWord, jdbcType=VARCHAR}
+			</if>
+			<if test="mapngYn != null">
+			   AND RKC.MAPNG_YN = #{mapngYn, jdbcType=VARCHAR}
+			</if>
+		</trim>
+	</select>
+	
+	<select id="selectKcpSettlementHistory" parameterType="kr.co.abcmart.bo.settlement.vo.RvKcpComparision" resultType="kr.co.abcmart.bo.settlement.vo.RvKcpComparision">
+	/*+ kr.co.abcmart.bo.settlement.repository.master.PgDao.selectKcpSettlementHistory [KCP 대사 정산내역 조회] [신인철] */
+		SELECT ISNULL(SUM(CASE WHEN RKC.COMPARISON_TYPE = 'ORDER' THEN RKC.PYMNT_AMT END), 0) AS TOTAL_ORDER_PAY
+			 , ISNULL(SUM(CASE WHEN RKC.COMPARISON_TYPE = 'CLAIM' THEN RKC.PYMNT_AMT END), 0) AS TOTAL_CLAIM_PAY
+			 , ISNULL(SUM(CASE WHEN RKC.COMPARISON_TYPE = 'GIFTCARD' THEN RKC.PYMNT_AMT END), 0) AS TOTAL_GIFTCARD_PAY
+			 , ISNULL(SUM(CASE WHEN RKC.COMPARISON_TYPE = 'AS' THEN RKC.PYMNT_AMT END), 0) AS TOTAL_AS_PAY
+			 , ISNULL(SUM(CASE WHEN RKC.MAPNG_YN = 'Y' THEN RKC.PYMNT_AMT END), 0) AS MAPNG_PAY
+			 , ISNULL(SUM(CASE WHEN RKC.MAPNG_YN = 'N' THEN RKC.PYMNT_AMT END), 0) AS NOT_MAPNG_PAY
+		  FROM (
+				 SELECT CASE WHEN A.PYMNT_STAT_CODE IN ('STJY', 'RN02', 'RN04', 'RN09')
+				 			 THEN A.PYMNT_AMT
+				 			 ELSE A.PYMNT_AMT * -1
+				 		 END AS PYMNT_AMT
+					  , A.PYMNT_STAT_CODE
+					  , A.MAPNG_YN
+					  , dbo.FN_GET_IDXDATA_LIKE_SPLIT((CASE WHEN CHARINDEX('-', A.ORDER_NUM) <![CDATA[ < ]]>  1 THEN 'ORDER-'+ A.ORDER_NUM ELSE A.ORDER_NUM END), 1, '-') AS COMPARISON_TYPE
+				   FROM RV_KCP_COMPARISON A
+				   JOIN OC_ORDER OO
+					 ON A.ORG_ORDER_NO = OO.ORDER_NO
+				<trim prefix="WHERE" prefixOverrides="AND|OR">
+					<if test='fromDate != null and toDate != null'>
+						AND A.PYMNT_ORG_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+					</if>
+					<if test='pymntStatCode != null' >
+						AND A.PYMNT_STAT_CODE = #{pymntStatCode, jdbcType=VARCHAR}
+					</if>
+					<if test="siteNo != null">
+						AND OO.SITE_NO = #{siteNo, jdbcType=VARCHAR}
+					</if>
+					<if test='srchType != null and srchType == "orgOrderNo"'>
+						AND A.ORG_ORDER_NO = #{searchWord, jdbcType=VARCHAR}
+					</if>
+					<if test='srchType != null and srchType == "prmtNum"'>
+						AND A.PRMT_NUM = #{searchWord, jdbcType=VARCHAR}
+					</if>
+					<if test="mapngYn != null">
+						AND A.MAPNG_YN = #{mapngYn, jdbcType=VARCHAR}
+					</if>
+				</trim>
+				)RKC
+	</select>
+	
+</mapper>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.PdProductIconDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.product.model.master.PdProductIcon">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductIconDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			pd_product_icon WITH(NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <delete id="deleteByForeignKeys" parameterType="kr.co.abcmart.bo.product.model.master.PdProductIcon">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductIconDao.deleteByForeignKeys [왜래키를 이용한 상품아이콘 삭제 쿼리] [김세훈] */
+		DELETE
+		FROM
+			pd_product_icon
+		WHERE
+			 prdt_no = #{prdtNo, jdbcType=VARCHAR}
+			 <!-- AND prdt_icon_seq NOT IN ( SELECT A.prdt_icon_seq FROM cm_product_icon A WITH(NOLOCK) INNER JOIN pd_product_icon B WITH(NOLOCK) ON A.prdt_icon_seq = B.prdt_icon_seq WHERE A.auto_apply_yn = 'Y' AND A.use_yn = 'Y' )자동적용 아이콘은 삭제대상에서 제외 -->
+    </delete>
+    
+    <select id="selectIconMappingProductListCount" parameterType="kr.co.abcmart.bo.product.model.master.CmProductIcon" resultType="int">
+    /*+ kr.co.abcmart.bo.product.repository.master.PdProductIconDao.selectIconMappingProductListCount [아이콘 대상 상품 카운트 조회] [이가영] */
+    
+    	SELECT
+			count(*)
+		FROM
+			pd_product_icon A with (nolock)
+		WHERE
+			A.prdt_icon_seq = #{bean.prdtIconSeq, jdbcType=VARCHAR}
+    </select>
+    
+    <select id="selectIconMappingProductList" parameterType="kr.co.abcmart.bo.product.model.master.CmProductIcon" resultType="kr.co.abcmart.bo.product.model.master.PdProductIcon">
+    /*+ kr.co.abcmart.bo.product.repository.master.PdProductIconDao.selectIconMappingProductList [아이콘 대상 상품 리스트 조회] [이가영] */
+    <!-- 첨부파일이 없는 경우가 있을 수 있으므로 외부조인 사용 -->
+    	SELECT
+			A.prdt_no,
+			B.chnnl_no,
+			D.chnnl_name,
+			B.std_ctgr_no,
+			E.std_ctgr_name,
+			B.sell_stat_code,
+			B.disp_yn,
+			C.image_name,
+			C.image_path_text,
+			C.image_url,
+			C.altrn_text
+		FROM
+			pd_product_icon A with (nolock)
+		JOIN pd_product B with (nolock) ON A.prdt_no = B.prdt_no
+		LEFT OUTER JOIN pd_product_relation_file C with (nolock) ON A.prdt_no = C.prdt_no AND C.prdt_rltn_file_seq = 1
+		JOIN sy_site_chnnl D with (nolock) ON B.chnnl_no = D.chnnl_no
+		JOIN sy_standard_category E with (nolock) ON B.std_ctgr_no = E.std_ctgr_no
+		WHERE
+			A.prdt_icon_seq = #{bean.prdtIconSeq, jdbcType=VARCHAR}
+		ORDER BY A.rgst_dtm DESC
+		<include refid="Paging.mssql" />
+    </select>
+
+</mapper>

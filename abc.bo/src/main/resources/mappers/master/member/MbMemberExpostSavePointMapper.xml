@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.member.repository.master.MbMemberExpostSavePointDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.member.model.master.MbMemberExpostSavePoint">
+    
+     /*+ kr.co.abcmart.bo.member.repository.master.MbMemberExpostSavePointDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			mb_member_expost_save_point with (nolock)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+	 <!-- 검색 조건 -->
+    <sql id="searchWhere">
+    	<trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test="bean.orderNo != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.orderNo)">
+				AND ( 
+				  S.BUY_NO_TEXT = #{bean.orderNo, jdbcType=VARCHAR}
+				  OR EXISTS(
+				    SELECT 1
+				    FROM OC_ORDER O1
+				    WHERE O1.ORDER_NO = P.ORDER_NO
+				    AND O1.ORDER_NO = #{bean.orderNo, jdbcType=VARCHAR}
+				  )
+				)
+			</if>
+			<if test="bean.orderNo == null or @kr.co.abcmart.common.util.UtilsText@isBlank(bean.orderNo)">
+				<if test="bean.fromDate != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.fromDate) and bean.toDate != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.toDate)">
+					AND P.RGST_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+				</if>
+				<if test="bean.onlnBuyYn != null">
+					AND S.ONLN_BUY_YN = #{bean.onlnBuyYn, jdbcType=VARCHAR}
+				</if>
+				<if test="bean.adminRgstYn != null">
+					AND S.ADMIN_RGST_YN = #{bean.adminRgstYn, jdbcType=VARCHAR}
+				</if>
+				<if test="bean.searchText != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.searchText)">
+					<if test="bean.searchKey == 'buyerName'">
+						AND EXISTS (
+							SELECT 1
+						    FROM OC_ORDER O2
+						    WHERE O2.ORDER_NO = P.ORDER_NO
+						    AND O2.BUYER_NAME LIKE CONCAT('%', #{bean.searchText, jdbcType=VARCHAR}, '%')
+						)
+					</if>
+					<if test="bean.searchKey == 'buyerLoginId'">
+						AND EXISTS(
+							SELECT 1
+							FROM OC_ORDER O2
+							JOIN MB_MEMBER M1 ON O2.MEMBER_NO = M1.MEMBER_NO
+							WHERE O2.ORDER_NO = P.ORDER_NO
+							AND M1.LOGIN_ID LIKE CONCAT('%', #{bean.searchText, jdbcType=VARCHAR}, '%')
+						)
+					</if>
+					<if test="bean.searchKey == 'saveId'">
+						AND EXISTS (
+							SELECT 1
+							FROM MB_MEMBER M2
+							WHERE M2.MEMBER_NO = P.MEMBER_NO
+							AND M2.LOGIN_ID LIKE CONCAT('%', #{bean.searchText, jdbcType=VARCHAR}, '%')
+						)
+					</if>
+				</if>
+			</if>
+		</trim>
+    </sql>
+	<select id="countAllAdminList" parameterType="pageable" resultType="int">
+		/*+ kr.co.abcmart.bo.member.repository.master.MbMemberExpostSavePointDao.selectAdminList [포인트 사후적립 주문 목록] [이재영] */
+		SELECT  
+			<include refid="Paging.totalCount" />
+		FROM    
+			MB_MEMBER_POINT P WITH (NOLOCK)
+		JOIN
+		    MB_MEMBER_EXPOST_SAVE_POINT S ON P.MEMBER_NO = S.MEMBER_NO AND P.EXPOST_SAVE_POINT_SEQ = S.EXPOST_SAVE_POINT_SEQ
+		JOIN
+		    MB_MEMBER M ON P.MEMBER_NO = M.MEMBER_NO
+		LEFT OUTER JOIN
+			SY_ADMIN A ON P.RGSTER_NO = A.ADMIN_NO
+		LEFT OUTER JOIN
+			MB_MEMBER MB ON P.RGSTER_NO = MB.MEMBER_NO
+		LEFT OUTER JOIN
+			OC_ORDER O ON S.CRTFC_NO_TEXT = O.CRTFC_NO_TEXT	
+		<include refid="searchWhere" />
+	</select>
+	
+	<select id="selectAdminList" parameterType="pageable" resultType="kr.co.abcmart.bo.order.vo.OcOrderMemberExpostSaveVO">
+		/*+ kr.co.abcmart.bo.member.repository.master.MbMemberExpostSavePointDao.selectAdminList [포인트 사후적립 주문 목록] [이재영] */
+		SELECT  
+			S.MEMBER_NO
+	        , S.ONLN_BUY_YN
+	        , S.ADMIN_RGST_YN
+	        , CASE S.BUY_NO_TEXT WHEN '' THEN P.ORDER_NO ELSE S.BUY_NO_TEXT END  AS ORDER_NO
+	        /* , S.BUY_NO_TEXT */        
+	        , P.SAVE_AMT
+	        , P.RGSTER_NO	        
+	        , O.SITE_NO
+	        , O.MEMBER_TYPE_CODE
+	        /* , dbo.FN_CODE_VALUE( 'MEMBER_TYPE_CODE' , O.MEMBER_TYPE_CODE ) AS MEMBER_TYPE_CODE_NAME */
+	        , O.BUYER_NAME
+	        , O.RGST_DTM AS ORDER_DTM
+	        , O.ORDER_PRDT_INFO
+	        , O.PYMNT_AMT
+	        , P.RGST_DTM AS SAVE_DTM 
+	        , M.LOGIN_ID AS SAVE_LOGIN_ID --적립ID
+	        , M.MEMBER_NAME AS SAVE_MEMBER_NAME--적립자명
+	        , A.ADMIN_NO        
+	        , A.LOGIN_ID AS ADMIN_LOGIN_ID
+	        , A.ADMIN_NAME
+	        , MB.MEMBER_NO AS RGSTER_MEMBER_NO
+	        , MB.LOGIN_ID AS RGSTER_LOGIN_ID
+	        , MB.MEMBER_NAME AS RGSTER_NAME
+		FROM    
+			MB_MEMBER_POINT P WITH (NOLOCK)
+		JOIN
+		    MB_MEMBER_EXPOST_SAVE_POINT S ON P.MEMBER_NO = S.MEMBER_NO AND P.EXPOST_SAVE_POINT_SEQ = S.EXPOST_SAVE_POINT_SEQ
+		JOIN
+		    MB_MEMBER M ON P.MEMBER_NO = M.MEMBER_NO
+		LEFT OUTER JOIN
+			SY_ADMIN A ON P.RGSTER_NO = A.ADMIN_NO
+		LEFT OUTER JOIN
+			MB_MEMBER MB ON P.RGSTER_NO = MB.MEMBER_NO
+		LEFT OUTER JOIN
+			OC_ORDER O ON S.CRTFC_NO_TEXT = O.CRTFC_NO_TEXT	
+		<include refid="searchWhere" />
+		<choose>
+			<when test="sortColumn != null">
+		 		ORDER BY
+		 		<if test="sortColumn == 'orderNo'.toString()">
+			 		ORDER_NO
+		 		</if>
+		 		<if test="sortColumn == 'pymntAmt'.toString()">
+			 		O.PYMNT_AMT
+		 		</if>
+		 		<if test="sortColumn == 'saveAmt'.toString()">
+			 		SAVE_AMT
+		 		</if>
+		 		<if test="sortColumn == 'saveDtm'.toString()">
+			 		SAVE_DTM
+		 		</if>
+		 		<if test="sortType == 'DESC'.toString()">
+		 			DESC
+		 		</if>
+		 	</when>
+			<otherwise>
+		 		ORDER BY SAVE_DTM DESC
+			</otherwise>
+		</choose>
+		<include refid="Paging.mssql" />
+	</select>
+	
+	<select id="getLatedSavePointRecent1MonthCount" parameterType="kr.co.abcmart.bo.member.model.master.MbMemberExpostSavePoint" resultType="int">
+		/*+ kr.co.abcmart.bo.member.repository.master.MbMemberExpostSavePointDao.getLatedSavePointRecent1MonthCount [1개월간 사후적립 신청 카운트] [이동엽] */
+		
+		SELECT COUNT(*)
+		  FROM MB_MEMBER_EXPOST_SAVE_POINT WITH (NOLOCK)
+		 WHERE MEMBER_NO = #{memberNo, jdbcType=VARCHAR}
+		   AND CONVERT(CHAR(10), APRV_DTM, 120) BETWEEN CONVERT(CHAR(7), GETDATE(), 121)+'-01'AND CONVERT(CHAR(7),DATEADD(MM,+1,GETDATE()),121)+'-01' 
+	</select>
+	
+	<select id="selectExpostSavePointSeqNextVal" parameterType="kr.co.abcmart.bo.member.model.master.MbMemberExpostSavePoint" resultType="int">
+	/*+ kr.co.abcmart.web.member.repository.master.MbMemberExpostSavePointDao.selectExpostSavePointSeqNextVal [사후적립 순번] [유성민] */
+		SELECT ISNULL(MAX(EXPOST_SAVE_POINT_SEQ), 0) + 1
+		  FROM MB_MEMBER_EXPOST_SAVE_POINT WITH (NOLOCK)
+		 WHERE MEMBER_NO = #{memberNo, jdbcType=VARCHAR}
+	</select>
+</mapper>

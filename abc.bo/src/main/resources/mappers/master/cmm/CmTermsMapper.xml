@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.cmm.repository.master.CmTermsDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.cmm.model.master.CmTerms" resultType="kr.co.abcmart.bo.cmm.model.master.CmTerms">
+
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmTermsDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			cm_terms WITH (NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+
+
+	<select id="selectTermsGridCount" parameterType="pageable" resultType="int">
+		/* kr.co.abcmart.bo.system.repository.master.CmTermsDao.selectTermsGridCount [이용약관설정 그리드 개수 체크] [신인철] */
+		SELECT <include refid="Paging.totalCount" />
+		  FROM CM_TERMS With(nolock)
+		 WHERE TERMS_TYPE_CODE = #{bean.termsTypeCode, jdbcType=VARCHAR}
+		 <if test="bean.termsDtlCode !='all' and bean.termsDtlCode!=null">
+		   AND TERMS_DTL_CODE = #{bean.termsDtlCode, jdbcType=VARCHAR}
+		 </if>
+	</select>
+
+	<select id="selectTermsGrid" parameterType="pageable" resultType="kr.co.abcmart.bo.cmm.model.master.CmTerms">
+		/*+ kr.co.abcmart.bo.cmm.repository.master.CmTermsDao.selectTermsGrid [약관 그리드 호출] [신인철] */
+		SELECT TERMS.TERMS_SEQ
+			 , TERMS.TERMS_TYPE_CODE
+			 , TERMS.TERMS_DTL_CODE
+			 , TERMS.TERMS_APPLY_YMD
+			 , ISNULL(AD.LOGIN_ID, '-') AS MODER_ID
+			 , ISNULL(AD.ADMIN_NAME, '-') AS MODER_NAME
+			 , TERMS.MODER_NO
+			 , TERMS.MOD_DTM
+			 , CDDT.CODE_DTL_NAME AS TERMS_CODE_NAME
+			 , CASE WHEN TERMS.TERMS_SEQ = (SELECT TOP 1
+												   A.TERMS_SEQ
+											  FROM CM_TERMS A WITH (NOLOCK)
+											  JOIN CM_TERMS_DETAIL B WITH (NOLOCK)
+											    ON A.TERMS_SEQ = B.TERMS_SEQ
+											 WHERE TERMS.TERMS_DTL_CODE = A.TERMS_DTL_CODE
+											   AND A.TERMS_APPLY_YMD <![CDATA[<= GETDATE()]]>
+											   AND B.DISP_YN = 'Y'
+											 ORDER BY A.TERMS_APPLY_YMD DESC
+			 									 , A.MOD_DTM DESC
+											)
+					THEN '시행중' 
+					ELSE '-'
+				END LIVE_DISP
+		  FROM CM_TERMS TERMS WITH (NOLOCK)
+		 INNER JOIN SY_CODE_DETAIL CDDT WITH (NOLOCK)
+			ON CDDT.CODE_FIELD ='TERMS_DTL_CODE'
+		   AND CDDT.CODE_DTL_NO = TERMS.TERMS_DTL_CODE
+		  LEFT JOIN SY_ADMIN AD WITH (NOLOCK)
+			ON TERMS.MODER_NO = AD.ADMIN_NO
+		 WHERE TERMS.TERMS_TYPE_CODE = #{bean.termsTypeCode, jdbcType=VARCHAR}
+		 <if test="bean.termsDtlCode !='all' and bean.termsDtlCode!=null">
+		   AND TERMS.TERMS_DTL_CODE = #{bean.termsDtlCode, jdbcType=VARCHAR}
+		 </if>
+		 <choose> 
+			<when test="sortColumn != null">
+		 ORDER BY
+				<if test="sortColumn == 'termsCodeName'.toString()">
+			   CDDT.CODE_DTL_NAME
+				</if>
+				<if test="sortColumn == 'termsApplyYmd'.toString()">
+			   TERMS.TERMS_APPLY_YMD
+			 	</if>
+				<if test="sortColumn == 'modDtm'.toString()">
+			   TERMS.MOD_DTM
+				</if>
+				<if test="sortType == 'DESC'.toString()">
+			   DESC
+			 	</if>
+			</when>
+			<otherwise>
+		 ORDER BY TERMS.TERMS_APPLY_YMD DESC, TERMS.MOD_DTM DESC
+			</otherwise>
+		  </choose>
+		 <include refid="Paging.mssql" />
+	</select>
+
+	<insert id="insertTerms" useGeneratedKeys="true" keyProperty="termsSeq" parameterType="kr.co.abcmart.bo.cmm.model.master.CmTerms">
+	/*+ kr.co.abcmart.bo.cmm.repository.master.CmTermsDao.insertTerms [이용약관 등록] [신인철] */
+		INSERT INTO CM_TERMS(
+			   TERMS_TYPE_CODE
+			 , TERMS_DTL_CODE
+			 , TERMS_APPLY_YMD
+			 , RGSTER_NO
+			 , RGST_DTM
+			 , MODER_NO
+			 , MOD_DTM )
+		VALUES (#{termsTypeCode, jdbcType=VARCHAR}
+			 , #{termsDtlCode, jdbcType=VARCHAR}
+			 , #{termsApplyYmd, jdbcType=TIMESTAMP}
+			 , #{rgsterNo, jdbcType=VARCHAR}
+			 , GETDATE()
+			 , #{moderNo, jdbcType=VARCHAR}
+			 , GETDATE()
+			)
+	</insert>
+	
+	<select id="selectDispTerms" parameterType="kr.co.abcmart.bo.cmm.model.master.CmTerms" resultType="kr.co.abcmart.bo.cmm.model.master.CmTermsDetail">
+	/*+ kr.co.abcmart.bo.cmm.repository.master.CmTermsDao.selectDispTerms [전시중인 약관 보기] [신인철] */
+		SELECT TOP 1
+			   CTD.TERMS_SEQ
+			 , CTD.TERMS_DTL_SEQ
+			 , CTD.TERMS_NAME
+			 , CTD.TERMS_INFO
+			 , CTD.REQ_AGREE_YN
+		  FROM CM_TERMS CT WITH (NOLOCK)
+		  JOIN CM_TERMS_DETAIL CTD WITH (NOLOCK)
+			ON CT.TERMS_SEQ = CTD.TERMS_SEQ
+		 WHERE CT.TERMS_TYPE_CODE = #{termsTypeCode, jdbcType=VARCHAR}
+		   AND CT.TERMS_DTL_CODE = #{termsDtlCode, jdbcType=VARCHAR}
+		   AND CTD.DISP_YN = 'Y'
+		   AND <![CDATA[CT.TERMS_APPLY_YMD <= GETDATE()	]]>
+		 ORDER BY CT.TERMS_APPLY_YMD DESC
+			 , CT.MOD_DTM DESC
+	</select>
+
+	<select id="selectTermsDetail" parameterType="kr.co.abcmart.bo.cmm.model.master.CmTerms" resultType="kr.co.abcmart.bo.cmm.model.master.CmTerms">
+		/*+ kr.co.abcmart.bo.cmm.repository.master.CmTermsDao.selectTermsDetail [약관 상세보기] [신인철] */
+		SELECT A.TERMS_SEQ
+			 , A.TERMS_TYPE_CODE
+			 , A.TERMS_DTL_CODE
+			 , A.TERMS_APPLY_YMD
+			 , ISNULL(B.LOGIN_ID, '-') AS MODER_ID
+			 , ISNULL(B.ADMIN_NAME, '-') AS MODER_NAME
+			 , A.RGSTER_NO
+			 , A.RGST_DTM
+			 , A.MODER_NO
+			 , A.MOD_DTM
+  		  FROM CM_TERMS A WITH (NOLOCK)
+  		  LEFT JOIN SY_ADMIN B WITH (NOLOCK)
+			ON A.MODER_NO = B.ADMIN_NO
+  		 WHERE TERMS_SEQ = #{termsSeq, jdbcType=INTEGER}
+	</select>
+
+	<delete id="deleteTerms" parameterType="kr.co.abcmart.bo.cmm.model.master.CmTerms">
+		/*+ kr.co.abcmart.bo.cmm.repository.master.CmTermsDao.deleteTerms [약관 삭제] [신인철] */
+		DELETE FROM CM_TERMS
+		 WHERE TERMS_SEQ = #{termsSeq, jdbcType=INTEGER}
+	</delete>
+
+</mapper>

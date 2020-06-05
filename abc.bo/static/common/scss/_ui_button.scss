@@ -1,0 +1,186 @@
+@import 'scss_header';
+
+/**********************************************************************************
+** default
+***********************************************************************************/
+
+a, button, input[type=button], input[type=submit], input[type=reset] {
+	& + & {
+		margin-left: 5px;
+	}
+}
+
+
+input[type=button], input[type=submit], input[type=reset] {
+	width: auto;
+
+	&[class*='btn-'] {
+		line-height: 1;
+	}
+}
+
+.btn-sm + .search-item {
+	margin-left: 14px;
+}
+
+/**********************************************************************************
+** 높이별 버튼
+***********************************************************************************/
+.btn-normal, .btn-sm, .btn-lg {
+	display: inline-block;
+	vertical-align: top;
+	font-weight: 700;
+}
+
+.btn-normal {
+	min-width: 100px;
+	height: 32px;
+	padding: 0 10px;
+	font-size: $defaultFontSize;
+	letter-spacing: -0.3px;
+	text-align: center;
+	line-height: 30px;
+}
+
+.btn-sm {
+	height: 23px;
+	min-width: 43px;
+	padding: 0 9px;
+	font-size: $defaultFontSize - 1px;
+	line-height: 21px;
+	letter-spacing: -0.275px;
+
+	.ico {
+		margin: 5px 3px 0 0;
+	}
+
+	+ .td-text-list {
+		margin-top: 5px;
+	}
+}
+
+.btn-lg {
+	min-width: 120px;
+	height: 38px;
+	padding: 0 10px;
+	font-size: $defaultFontSize + 1px;
+	letter-spacing: -0.325px;
+	text-align: center;
+	line-height: 36px;
+}
+
+/**********************************************************************************
+** 기능별 버튼
+***********************************************************************************/
+/* 취소, 닫기 , 삭제와 같은  기능, 내용 등을 무효화 하는 버튼 */
+.btn-del {
+	background-color: #666;
+	border: 1px solid #666;
+	color: #fff;
+
+	&:active {
+		background-color: #111;
+		border: 1px solid #111;
+		color: #fffefe;
+	}
+
+	&.disabled, &:disabled {
+		background-color: #a3a3a3;
+		border: 1px solid #a3a3a3;
+		color: #d6d6d6;
+	}
+}
+
+
+/* 새창 링크 이동 or 새창 팝업(윈도우) */
+.btn-link, .btn-save {
+	background-color: #111;
+	border: 1px solid #111;
+	color: #fff;
+
+	&:active, &:active {
+		background-color: #000;
+		border: 1px solid #000;
+		color: #fffefe;
+	}
+
+	&.disabled, &:disabled {
+		background-color: #a3a3a3;
+		border: 1px solid #a3a3a3;
+		color: #d6d6d6;
+	}
+}
+
+/* 본 창 內 기능 적용 버튼 */
+.btn-func {
+	background-color: #fff;
+	border: 1px solid #111;
+	color: #111;
+
+	&:active {
+		background-color: #000;
+		border: 1px solid #000;
+		color: #fffefe;
+	}
+
+	&.disabled, &:disabled {
+		background-color: #a3a3a3;
+		border: 1px solid #a3a3a3;
+		color: #d6d6d6;
+	}
+
+	&.ico-refresh {
+		padding-left: 20px;
+		background: #fff url(../../images/icon/ico_refresh_normal.png) 9px 5px no-repeat;
+
+		&:active {
+			background-color: #000;
+			background-image: url(../../images/icon/ico_refresh_active.png);
+		}
+
+		&:disabled {
+			background-color: #a3a3a3;
+			background-image: url(../../images/icon/ico_refresh_disabled.png);
+		}
+	}
+}
+
+.btn-only-ico {
+	min-width: 23px;
+	padding: 0 5px;
+	background-color: #fff;
+	border: 1px solid #111;
+	text-align: center;
+	color: #111;
+	font-size: 15px;
+
+	.fa, .fas, .far {
+		margin-right: 0;
+	}
+
+	&:active {
+		background-color: #000;
+		border: 1px solid #000;
+		color: #fffefe;
+	}
+
+	&.disabled, &:disabled {
+		background-color: #a3a3a3;
+		border: 1px solid #a3a3a3;
+		color: #d6d6d6;
+	}
+
+	&.ico-left-arr, &.ico-right-arr {
+		min-width: 18px;
+		height: 38px;
+		//padding: 0;
+		//vertical-align: 36px;
+
+		.fa {
+			&:before {
+				display: inline-block;
+				line-height: 36px;
+			}
+		}
+	}
+}

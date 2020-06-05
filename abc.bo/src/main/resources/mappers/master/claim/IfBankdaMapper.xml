@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.claim.repository.master.IfBankdaDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.claim.model.master.IfBankda">
+    
+     /*+ kr.co.abcmart.bo.claim.repository.master.IfBankdaDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			if_bankda
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <sql id="searchWhere">
+    	<trim prefix="WHERE" prefixOverrides="AND|OR">
+    		<if test="bean.acctno != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.acctno) ">
+    			AND acctno = #{bean.acctno, jdbcType=VARCHAR}
+    		</if>
+    		<if test="bean.bkjukyo != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.bkjukyo) ">
+    			AND bkjukyo = #{bean.bkjukyo, jdbcType=VARCHAR}
+    		</if>
+    		<if test="bean.fromDate != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.fromDate) and bean.toDate != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.toDate)">
+    			AND bkdate BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+			</if>
+			<if test="bean.depositinfo != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.depositinfo) ">
+				AND depositinfo = #{bean.depositinfo, jdbcType=VARCHAR}
+    		</if>
+    		<if test="bean.depositconfirm != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.depositconfirm) and bean.depositconfirm != 'all'">
+    			AND depositconfirm = #{bean.depositconfirm, jdbcType=VARCHAR}
+    		</if>    		
+    	</trim>
+    </sql>
+    
+    <select id="selectListBankda" parameterType="pageable" resultType="kr.co.abcmart.bo.claim.model.master.IfBankda">
+        /*+ kr.co.abcmart.bo.claim.repository.master.IfBankdaDao.selectListBankda [자동 입금 확인 서비스 관리 목록] [이재영] */
+    	SELECT 
+    		<include refid="select-columns" />
+    	FROM 
+    		if_bankda
+    	<include refid="searchWhere" />
+    	<choose>
+			<when test="sortColumn != null">
+		 		ORDER BY
+		 		<if test="sortColumn == 'bkjango'.toString()">
+			 		bkjango
+		 		</if>
+		 		<if test="sortType == 'DESC'.toString()">
+		 			DESC
+		 		</if>
+		 	</when>
+			<otherwise>	
+		 		ORDER BY bkdate DESC
+			</otherwise>
+		</choose>
+		<include refid="Paging.mssql" />
+    </select>
+    
+	<select id="selectListBankdaCount"  parameterType="pageable" resultType="int">
+		/*+ kr.co.abcmart.bo.claim.repository.master.IfBankdaDao.selectListBankdaCount [자동 입금 확인 서비스 관리 목록 갯수] [이재영] */
+		SELECT
+			<include refid="Paging.totalCount" />
+		FROM
+			if_bankda
+		<include refid="searchWhere" />
+	</select>
+	
+	<select id="selectTodayInfoOfBankda" parameterType="kr.co.abcmart.bo.claim.model.master.IfBankda" resultType="kr.co.abcmart.bo.claim.model.master.IfBankda">
+		/*+ kr.co.abcmart.bo.claim.repository.master.IfBankdaDao.selectTodayInfoOfBankda [자동 입금 확인 서비스 TODAYINFO] [이재영] */
+		SELECT 
+			ISNULL(SUM(bkinput), 0) todayInput
+			, ISNULL(SUM(bkoutput), 0) todayOutput
+			, ISNULL(
+						(	
+							SELECT 
+								TOP 1 bkjango
+							FROM 
+								if_bankda
+	                        WHERE 
+	                        	acctno =#{acctno, jdbcType=VARCHAR}
+	                        ORDER BY bkcode desc
+                        )
+                        , 0
+                     ) jango
+        FROM
+        	if_bankda
+        WHERE
+        	bkdate = CONVERT(CHAR(8), GETDATE(), 112)
+        AND
+        	acctno =  #{acctno, jdbcType=VARCHAR}
+	</select>
+	
+	<select id="selectMaxBankdaCode" parameterType="kr.co.abcmart.bo.claim.model.master.IfBankda" resultType="int">
+		SELECT 
+			ISNULL(max(bkcode), 0)
+        FROM   
+        	if_bankda
+        WHERE  
+        	acctno = #{acctno, jdbcType=VARCHAR}
+	</select>
+</mapper>

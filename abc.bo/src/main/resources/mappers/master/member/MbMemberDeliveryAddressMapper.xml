@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.member.repository.master.MbMemberDeliveryAddressDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.member.model.master.MbMemberDeliveryAddress">
+    
+     /*+ kr.co.abcmart.bo.member.repository.master.MbMemberDeliveryAddressDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			mb_member_delivery_address with (nolock)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectMemberDeliveryListCount" parameterType="pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.member.repository.master.MbMemberDeliveryAddressDao.selectMemberDeliveryListCount [회원 배송지 목록 카운터 조회(리스트용)] [이동엽] */
+    	SELECT <include refid="Paging.totalCount" />
+          FROM MB_MEMBER_DELIVERY_ADDRESS WITH (NOLOCK)
+         WHERE MEMBER_NO = #{bean.memberNo}
+    
+    </select>
+    
+    <select id="selectMemberDeliveryList" parameterType="pageable" resultType="kr.co.abcmart.bo.member.model.master.MbMemberDeliveryAddress">
+    	/*+ kr.co.abcmart.bo.member.repository.master.MbMemberDeliveryAddressDao.selectMemberDeliveryList [회원 배송지 목록 조회(리스트용)] [이동엽] */
+    	SELECT MEMBER_NO
+             , DLVY_ADDR_SEQ
+             , ADD_DLVY_ADDR_YN
+             , DFLT_DLVY_ADDR_YN
+             , DLVY_ADDR_NAME
+             , RCVR_NAME
+             , HDPHN_NO_TEXT
+             , POST_CODE_TEXT
+             , POST_ADDR_TEXT
+             , DTL_ADDR_TEXT
+             , CONCAT(POST_ADDR_TEXT, ' ', DTL_ADDR_TEXT) AS DTL_ADDRESS_TEXT
+             , RGSTER_NO
+             , RGST_DTM
+             , MODER_NO
+             , MOD_DTM
+          FROM MB_MEMBER_DELIVERY_ADDRESS WITH (NOLOCK)
+         WHERE MEMBER_NO = #{bean.memberNo}
+         ORDER BY DLVY_ADDR_SEQ DESC
+    	 <include refid="Paging.mssql" />
+    </select>
+    
+    <select id="selectMemberDfltDeliveryAddress" parameterType="kr.co.abcmart.bo.member.model.master.MbMemberDeliveryAddress" resultType="kr.co.abcmart.bo.member.model.master.MbMemberDeliveryAddress">
+    	/*+ kr.co.abcmart.bo.member.repository.master.MbMemberDeliveryAddressDao.selectMemberDfltDeliveryAddress [회원 기본 배송지 조회(상세용)] [이동엽] */
+    	
+    	SELECT MEMBER_NO
+             , DLVY_ADDR_SEQ
+             , ADD_DLVY_ADDR_YN
+             , DFLT_DLVY_ADDR_YN
+             , DLVY_ADDR_NAME
+             , RCVR_NAME
+             , HDPHN_NO_TEXT
+             , POST_CODE_TEXT
+             , POST_ADDR_TEXT
+             , DTL_ADDR_TEXT
+             , CONCAT(POST_ADDR_TEXT, ' ', DTL_ADDR_TEXT) AS DTL_ADDRESS_TEXT
+             , RGSTER_NO
+             , RGST_DTM
+             , MODER_NO
+             , MOD_DTM
+          FROM MB_MEMBER_DELIVERY_ADDRESS WITH (NOLOCK)
+         WHERE MEMBER_NO = #{memberNo}
+         <if test="dfltDlvyAddrYn  != null">
+           AND DFLT_DLVY_ADDR_YN = #{dfltDlvyAddrYn}
+         </if>
+    </select>
+    
+    <insert id="insertMemberDeliveryAddressData" parameterType="kr.co.abcmart.bo.member.model.master.MbMemberDeliveryAddress">
+    	/*+ kr.co.abcmart.bo.member.repository.master.MbMemberDeliveryAddressDao.insertMemberDeliveryAddressData [회원 배송지 등록] [이동엽] */
+    	<selectKey resultType="int" keyProperty="dlvyAddrSeq" order="BEFORE">
+    		SELECT ISNULL(MAX(DLVY_ADDR_SEQ), 0)+1
+    		  FROM MB_MEMBER_DELIVERY_ADDRESS
+    		 WHERE MEMBER_NO = #{memberNo}
+    	</selectKey>
+    	
+    	INSERT INTO MB_MEMBER_DELIVERY_ADDRESS (
+			    	MEMBER_NO
+				  , DLVY_ADDR_SEQ
+				  , ADD_DLVY_ADDR_YN
+				  , DFLT_DLVY_ADDR_YN
+				  , DLVY_ADDR_NAME
+				  , RCVR_NAME
+				  , HDPHN_NO_TEXT
+				  , POST_CODE_TEXT
+				  , POST_ADDR_TEXT
+				  , DTL_ADDR_TEXT
+				  , RGSTER_NO
+				  , RGST_DTM
+				  , MODER_NO
+				  , MOD_DTM
+    	)VALUES(
+    			    #{memberNo}
+    			  , #{dlvyAddrSeq}
+    			  , #{addDlvyAddrYn}
+    			  , #{dfltDlvyAddrYn}
+    			  , #{dlvyAddrName}
+    			  , #{rcvrName}
+    			  , #{hdphnNoText}
+    			  , #{postCodeText}
+    			  , #{postAddrText}
+    			  , #{dtlAddrText}
+    			  , #{rgsterNo}
+    			  , GETDATE()
+    			  , #{moderNo}
+    			  , GETDATE()
+    	)
+    </insert>
+    
+    <update id="updateMemberDeliveryAddressData" parameterType="kr.co.abcmart.bo.member.model.master.MbMemberDeliveryAddress">
+    	/*+ kr.co.abcmart.bo.member.repository.master.MbMemberDeliveryAddressDao.updateMemberDeliveryAddressData [회원 배송지 수정] [이동엽] */
+    
+    	UPDATE MB_MEMBER_DELIVERY_ADDRESS
+    	<trim prefix="SET" prefixOverrides=",">
+    		<if test="addDlvyAddrYn != null">
+             , ADD_DLVY_ADDR_YN = #{addDlvyAddrYn, jdbcType=CHAR}
+    		</if>
+    		<if test="dfltDlvyAddrYn  != null">
+             , DFLT_DLVY_ADDR_YN = #{dfltDlvyAddrYn, jdbcType=CHAR}
+    		</if>
+    		<if test="dlvyAddrName  != null">
+             , DLVY_ADDR_NAME = #{dlvyAddrName, jdbcType=VARCHAR}
+    		</if>
+    		<if test="rcvrName  != null">
+             , RCVR_NAME = #{rcvrName, jdbcType=VARCHAR}
+    		</if>
+    		<if test="hdphnNoText  != null">
+             , HDPHN_NO_TEXT = #{hdphnNoText, jdbcType=VARCHAR}
+    		</if>
+    		<if test="postCodeText  != null">
+             , POST_CODE_TEXT = #{postCodeText, jdbcType=VARCHAR}
+    		</if>
+    		<if test="postAddrText  != null">
+             , POST_ADDR_TEXT = #{postAddrText, jdbcType=VARCHAR}
+    		</if>
+    		<if test="dtlAddrText  != null">
+             , DTL_ADDR_TEXT = #{dtlAddrText, jdbcType=VARCHAR}
+    		</if>
+             , MODER_NO = #{moderNo, jdbcType=VARCHAR}
+             , MOD_DTM = GETDATE()
+    	</trim>
+    	 WHERE MEMBER_NO = #{memberNo, jdbcType=VARCHAR}
+    	 <if test="dtlAddrText  != null">
+    	   AND DFLT_DLVY_ADDR_YN = #{dfltDlvyAddrYn, jdbcType=CHAR}
+    	 </if>
+    </update>
+
+</mapper>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.vendor.repository.master.VdVendorBrandEmployeeDiscountDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.vendor.model.master.VdVendorBrandEmployeeDiscount">
+
+     /*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorBrandEmployeeDiscountDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			vd_vendor_brand_employee_discount WITH (NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+	<select id="selectBrandEmployeeDiscount" parameterType="kr.co.abcmart.bo.vendor.model.master.VdVendorBrandEmployeeDiscount" resultType="kr.co.abcmart.bo.vendor.model.master.VdVendorBrandEmployeeDiscount">
+	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorBrandEmployeeDiscountDao.selectBrandEmployeeDiscount [업체브랜드임직원할인 조회 쿼리] [유성민] */
+		SELECT <include refid="select-columns" />
+		  FROM VD_VENDOR_BRAND_EMPLOYEE_DISCOUNT WITH (NOLOCK)
+		 WHERE VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+		   AND DEL_YN = 'N'
+		   AND GETDATE() BETWEEN CONVERT(DATE, APPLY_START_YMD) AND DATEADD(DD, 1, CONVERT(DATE, APPLY_END_YMD))
+	</select>
+
+	<select id="selectVndrBrandEmpDscntSeq" parameterType="kr.co.abcmart.bo.vendor.model.master.VdVendorBrandEmployeeDiscount" resultType="int">
+	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorBrandEmployeeDiscountDao.selectVndrBrandEmpDscntSeq [업체브랜드임직원할인순번] [유성민] */
+		SELECT ISNULL(MAX(VNDR_BRAND_EMP_DSCNT_SEQ), 0)+ 1
+		  FROM VD_VENDOR_BRAND_EMPLOYEE_DISCOUNT
+		 WHERE VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+	</select>
+
+	<select id="getVendorBrandEmployeeDiscountList" parameterType="String" resultType="kr.co.abcmart.bo.vendor.model.master.VdVendorBrandEmployeeDiscount">
+	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorBrandEmployeeDiscountDao.getVendorBrandEmployeeDiscountList [업체브랜드입직원할인 조회] [유성민] */
+		SELECT VNDR_NO
+			 , VNDR_BRAND_EMP_DSCNT_SEQ
+			 , BRAND_NO
+			 , DSCNT_RATE
+		  FROM VD_VENDOR_BRAND_EMPLOYEE_DISCOUNT WITH (NOLOCK)
+		 WHERE VNDR_NO #{vndrNo, jdbcType=VARCHAR}
+		   AND CONVERT(CHAR(8), GETDATE(), 112) BETWEEN APPLY_START_YMD AND APPLY_END_YMD
+		   AND DEL_YN = 'N'
+	</select>
+
+</mapper>

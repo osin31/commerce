@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationBrandDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrand">
+    
+     /*+ kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationBrandDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			SE_EXACT_CALCULATION_BRAND
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+     <select id="selectSeExactCalcMonthSettleMentCount" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculation"  resultType="int">
+	/*+ kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandDao.selectSeExactCalcMonthSettleMentCount [월 정산 목록 카운트 쿼리] [이상호] */
+		SELECT <include refid="Paging.totalCount" />
+		  FROM SE_EXACT_CALCULATION_BRAND SECB
+		  --JOIN SE_EXACT_CALCULATION SEC WITH(NOLOCK) ON SECB.EXCCLC_SEQ = SEC.EXCCLC_SEQ
+		 WHERE SECB.EXCCLC_SEQ = #{bean.excclcSeq}
+	</select>
+
+	<select id="selectSeExactCalcMonthSettleMentList" parameterType="pageable"  resultType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrand">
+	/*+ kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandDao.selectSeExactCalcMonthSettleMentList [월 정산   리스트 조회 쿼리] [이상호] */
+	SELECT SECB.BRAND_NO
+		 , (SELECT BRAND_NAME FROM DP_BRAND WHERE BRAND_NO = SECB.BRAND_NO) AS BRAND_NAME
+	     , SECB.PYMNT_AMT
+	     , SECB.SELL_CMSN_AMT
+	     , SECB.PROMO_AMT
+	     , SECB.PENLTY_COUNT
+	     , SECB.PENLTY_TRGT_AMT
+	     , SECB.PENLTY_MDAT_AMT
+	     , SECB.EXCCLC_AMT
+	     , SECB.EXCCLC_MDAT_AMT
+	     , SECB.EXCCLC_SEQ
+	     , SECB.BRAND_NO
+	     , SEC.EXCCLC_DCSN_YN
+	  FROM SE_EXACT_CALCULATION_BRAND SECB
+	  JOIN SE_EXACT_CALCULATION SEC WITH(NOLOCK) ON SECB.EXCCLC_SEQ = SEC.EXCCLC_SEQ
+	 WHERE SECB.EXCCLC_SEQ = #{bean.excclcSeq}
+	</select>
+	
+	
+	 <update id="updateSeExactCalBrand" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrand">
+    
+     /*+ kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationBrandDao.update [정산 브랜드 조정 금액 update] [이상호] */
+    
+		UPDATE SE_EXACT_CALCULATION_BRAND
+		<set> 
+			<if test="penltyMdatAmt != null"> 
+				penlty_mdat_amt = #{penltyMdatAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="excclcMdatAmt != null"> 
+				excclc_mdat_amt = #{excclcMdatAmt, jdbcType=INTEGER}, 
+			</if> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+				mod_dtm = GETDATE(), 
+		</set> 
+		WHERE brand_no = #{brandNo, jdbcType=VARCHAR} 
+		  AND excclc_seq = #{excclcSeq, jdbcType=INTEGER}   
+    </update>
+    
+    
+    <select id="selectMdatAmt" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrand"  resultType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrand">
+	/*+ kr.co.abcmart.bo.settlement.model.master.SeExactCalculationDao.selectMdatAmt [월정산 브랜드 - 조정금액 SUM  조회 쿼리] [이상호] */
+	
+		
+		SELECT  ISNULL(SUM(PENLTY_MDAT_AMT),0) AS PENLTY_MDAT_AMT
+			  , ISNULL(SUM(EXCCLC_MDAT_AMT),0) AS EXCCLC_MDAT_AMT
+		  FROM  SE_EXACT_CALCULATION_BRAND
+		 WHERE  EXCCLC_SEQ = #{excclcSeq}
+		 GROUP BY EXCCLC_SEQ
+	</select>
+
+</mapper>

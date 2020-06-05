@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.board.repository.master.BdCorprBoardAttachFileDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.board.model.master.BdCorprBoardAttachFile">
+    
+     /*+ kr.co.abcmart.bo.board.repository.master.BdCorprBoardAttachFileDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			bd_corpr_board_attach_file WITH (NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+
+	<delete id="deleteCorprBoardAttachFileByAtchFileSeq" parameterType="kr.co.abcmart.bo.board.model.master.BdCorprBoardAttachFile">
+		/*+ kr.co.abcmart.bo.board.repository.master.BdCorprBoardAttachFileDao.deleteCorprBoardAttachFileByAtchFileSeq [ removeAtchFileSeq를 키로 관리자공지의 첨부파일 하나를 삭제하는 쿼리  ] [안석진] */
+		DELETE FROM bd_corpr_board_attach_file
+		 WHERE CORPR_BOARD_SEQ = #{corprBoardSeq,      jdbcType=INTEGER}
+		   AND ATCH_FILE_SEQ  = #{atchFileSeq,		 jdbcType=INTEGER}
+	</delete>
+
+	<delete id="deleteCorprBoardAttachFile" parameterType="int">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdCorprBoardAttachFileDao.deleteCorprBoardAttachFile [관리자공지의 첨부파일 삭제하는 쿼리  ] [안석진] */
+		DELETE FROM bd_corpr_board_attach_file
+		 WHERE CORPR_BOARD_SEQ = #{corprBoardSeq}
+	</delete>
+</mapper>

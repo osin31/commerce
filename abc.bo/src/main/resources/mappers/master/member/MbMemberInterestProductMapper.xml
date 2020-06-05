@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.member.repository.master.MbMemberInterestProductDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.member.model.master.MbMemberInterestProduct">
+    
+     /*+ kr.co.abcmart.bo.member.repository.master.MbMemberInterestProductDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			mb_member_interest_product
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectWarehousingAlertList" parameterType="kr.co.abcmart.bo.member.model.master.MbMemberInterestProduct" resultType="kr.co.abcmart.bo.member.model.master.MbMemberInterestProduct">
+    /*+ kr.co.abcmart.bo.member.repository.master.MbMemberInterestProductDao.selectWarehousingAlertList [재입고 알림 서비스 리스트 조회] [이가영] */
+    
+    	SELECT
+			I.member_no,
+			I.intrst_prdt_seq,
+			I.site_no,
+			I.chnnl_no,
+			I.ctgr_no,
+			I.prdt_no,
+			I.prdt_optn_no,
+			I.wrhs_alert_req_yn,
+			I.hdphn_no_text,
+			I.rgst_dtm,
+			I.wrhs_alert_send_yn,
+			I.wrhs_alert_send_dtm,
+			I.wrhs_alert_stat_code,
+			I.wrhs_alert_type,
+			I.order_yn,
+			I.order_no,
+			I.order_dtm,
+			I.stock_gbn_code,
+			I.pymnt_amt,
+			M.login_id,
+			M.member_name,
+			P.prdt_no,
+			P.prdt_name,
+			P.style_info,
+			P.disp_yn,
+			O.optn_name,
+			O.order_psblt_qty,
+			O.add_optn2_text,
+			dbo.FN_PRDT_NORMAL_PRICE(I.prdt_no) AS normal_amt,
+			dbo.FN_PRDT_PROMO_PRICE(I.prdt_no) AS sell_amt,
+			dbo.FN_DISCOUNT_RATE(I.prdt_no) AS dscnt_rate,
+			(select B.brand_name from dp_brand B where B.brand_no = P.brand_no) AS brand_name,
+			O.USE_YN,
+			CASE WHEN O.USE_YN = 'Y'
+				 THEN '전시'
+				 ELSE '전시안함'
+			 END AS USE_YN_STR
+		FROM mb_member_interest_product I with (nolock)
+		JOIN mb_member M with (nolock) ON I.member_no = M.member_no
+		JOIN pd_product P with (nolock) ON I.prdt_no = P.prdt_no
+		JOIN pd_product_option O with (nolock) ON I.prdt_no = O.prdt_no AND I.prdt_optn_no = O.prdt_optn_no
+		<where>
+			I.wrhs_alert_req_yn = 'Y'
+			AND I.wrhs_alert_type = 'N'
+			<if test="bean.memberNo != null"> 
+				 AND I.member_no = #{bean.memberNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.intrstPrdtSeq != null"> 
+				 AND I.intrst_prdt_seq = #{bean.intrstPrdtSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="bean.siteNo != null"> 
+				 AND I.site_no = #{bean.siteNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.chnnlNo != null"> 
+				 AND I.chnnl_no = #{bean.chnnlNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.ctgrNo != null"> 
+				 AND I.ctgr_no = #{bean.ctgrNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.prdtNo != null"> 
+				 AND I.prdt_no = #{bean.prdtNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.prdtOptnNo != null"> 
+				 AND I.prdt_optn_no = #{bean.prdtOptnNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.hdphnNoText != null"> 
+				 AND I.hdphn_no_text = #{bean.hdphnNoText, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.rgstDtm != null">
+				 AND I.rgst_dtm = #{bean.rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="bean.wrhsAlertSendYn != null"> 
+				 AND I.wrhs_alert_send_yn = #{bean.wrhsAlertSendYn, jdbcType=CHAR}
+			</if> 
+			<if test="bean.wrhsAlertSendDtm != null"> 
+				 AND I.wrhs_alert_send_dtm = #{bean.wrhsAlertSendDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="bean.wrhsAlertStatCode != null">
+				 AND I.wrhs_alert_stat_code = #{bean.wrhsAlertStatCode, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.wrhsAlertType != null"> 
+				 AND I.wrhs_alert_type = #{bean.wrhsAlertType, jdbcType=CHAR}
+			</if>
+			<if test="bean.orderYn != null"> 
+				 AND I.order_yn = #{bean.orderYn, jdbcType=VARCHAR}
+			</if> 
+			<if test='bean.startYmd != null and bean.startYmd != ""'>
+				AND I.RGST_DTM >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})
+			</if>
+			<if test='bean.endYmd != null and bean.endYmd != ""'>
+				AND CONVERT(DATETIME, #{bean.endYmd, jdbcType=VARCHAR}+' 23:59:59') >= I.RGST_DTM  
+			</if>
+			<if test="bean.memberSearchType != null and bean.memberSearchWord != null">
+				<choose>
+					<when test='bean.memberSearchType == "N"'>
+						AND M.member_name LIKE '%' + #{bean.memberSearchWord, jdbcType=VARCHAR} + '%'
+					</when>
+					<otherwise>
+						AND M.login_id LIKE '%' + #{bean.memberSearchWord, jdbcType=VARCHAR} + '%'
+					</otherwise>
+				</choose>
+			</if>
+			<if test="bean.productSearchType != null and bean.productSearchWord != null"> 
+				 <choose>
+					<when test='bean.productSearchType == "N"'>
+						AND P.prdt_name LIKE '%' + #{bean.productSearchWord, jdbcType=VARCHAR} + '%'
+					</when>
+					<when test='bean.productSearchType == "I"'>
+						AND P.prdt_no LIKE '%' + #{bean.productSearchWord, jdbcType=VARCHAR} + '%'
+					</when>
+					<otherwise>
+						AND P.style_info LIKE '%' + #{bean.productSearchWord, jdbcType=VARCHAR} + '%'
+					</otherwise>
+				</choose>
+			</if>
+			<if test="bean.sellStatCodeArr != null and bean.sellStatCodeArr.length > 0">
+				AND P.sell_stat_code IN
+				<foreach collection="bean.sellStatCodeArr" item="sellStatCode" open="(" close=")" separator=",">
+					#{sellStatCode}
+				</foreach>
+			</if>
+			<if test="bean.wrhsAlertStatCodeArr != null and bean.wrhsAlertStatCodeArr.length > 0">
+				AND I.wrhs_alert_stat_code IN
+				<foreach collection="bean.wrhsAlertStatCodeArr" item="wrhsAlertStatCode" open="(" close=")" separator=",">
+					#{wrhsAlertStatCode}
+				</foreach>
+			</if>
+		</where>
+		<choose>
+			<when test="sortColumn != null">
+				ORDER BY 
+				<if test='sortColumn == "rgstDtm".toString'>I.rgst_dtm</if>
+				<if test='sortColumn == "prdtNo".toString'>P.prdt_no</if>
+				<if test='sortColumn == "wrhsAlertSendDtm".toString'>I.wrhs_alert_send_dtm</if>
+				<if test='sortColumn == "orderDtm".toString'>I.order_dtm</if>
+				<if test='sortColumn == "orderNo".toString'>I.order_no</if>
+				<if test="sortType == 'DESC'.toString()">DESC</if>
+			</when>
+			<otherwise>ORDER BY I.rgst_dtm DESC</otherwise>
+		</choose>		
+		<include refid="Paging.mssql" />
+    </select>
+    
+    <select id="selectWarehousingAlertCount" parameterType="kr.co.abcmart.bo.member.model.master.MbMemberInterestProduct" resultType="int">    
+    /*+ kr.co.abcmart.bo.member.repository.master.MbMemberInterestProductDao.selectWarehousingAlertCount [재입고 알림 서비스 카운트 조회] [이가영] */  
+    
+		SELECT <include refid="Paging.totalCount" />
+		FROM mb_member_interest_product I with (nolock)
+		JOIN mb_member M with (nolock) ON I.member_no = M.member_no
+		JOIN pd_product P with (nolock) ON I.prdt_no = P.prdt_no
+		JOIN pd_product_option O with (nolock) ON I.prdt_no = O.prdt_no AND I.prdt_optn_no = O.prdt_optn_no
+		<where>
+			I.wrhs_alert_req_yn = 'Y'
+			AND I.wrhs_alert_type = 'N'
+			<if test="bean.memberNo != null"> 
+				 AND I.member_no = #{bean.memberNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.intrstPrdtSeq != null"> 
+				 AND I.intrst_prdt_seq = #{bean.intrstPrdtSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="bean.siteNo != null"> 
+				 AND I.site_no = #{bean.siteNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.chnnlNo != null"> 
+				 AND I.chnnl_no = #{bean.chnnlNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.ctgrNo != null"> 
+				 AND I.ctgr_no = #{bean.ctgrNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.prdtNo != null"> 
+				 AND I.prdt_no = #{bean.prdtNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.prdtOptnNo != null"> 
+				 AND I.prdt_optn_no = #{bean.prdtOptnNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.hdphnNoText != null"> 
+				 AND I.hdphn_no_text = #{bean.hdphnNoText, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.rgstDtm != null">
+				 AND I.rgst_dtm = #{bean.rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="bean.wrhsAlertSendYn != null"> 
+				 AND I.wrhs_alert_send_yn = #{bean.wrhsAlertSendYn, jdbcType=CHAR}
+			</if> 
+			<if test="bean.wrhsAlertSendDtm != null"> 
+				 AND I.wrhs_alert_send_dtm = #{bean.wrhsAlertSendDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="bean.wrhsAlertStatCode != null">
+				 AND I.wrhs_alert_stat_code = #{bean.wrhsAlertStatCode, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.wrhsAlertType != null"> 
+				 AND I.wrhs_alert_type = #{bean.wrhsAlertType, jdbcType=CHAR}
+			</if>
+			<if test="bean.orderYn != null"> 
+				 AND I.order_yn = #{bean.orderYn, jdbcType=VARCHAR}
+			</if> 
+			<if test='bean.startYmd != null and bean.startYmd != ""'>
+				AND I.RGST_DTM >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})
+			</if>
+			<if test='bean.endYmd != null and bean.endYmd != ""'>
+				AND CONVERT(DATETIME, #{bean.endYmd, jdbcType=VARCHAR}+' 23:59:59') >= I.RGST_DTM  
+			</if>
+			<if test="bean.memberSearchType != null and bean.memberSearchWord != null">
+				<choose>
+					<when test='bean.memberSearchType == "N"'>
+						AND M.member_name LIKE '%' + #{bean.memberSearchWord, jdbcType=VARCHAR} + '%'
+					</when>
+					<otherwise>
+						AND M.login_id LIKE '%' + #{bean.memberSearchWord, jdbcType=VARCHAR} + '%'
+					</otherwise>
+				</choose>
+			</if>
+			<if test="bean.productSearchType != null and bean.productSearchWord != null"> 
+				 <choose>
+					<when test='bean.productSearchType == "N"'>
+						AND P.prdt_name LIKE '%' + #{bean.productSearchWord, jdbcType=VARCHAR} + '%'
+					</when>
+					<when test='bean.productSearchType == "I"'>
+						AND P.prdt_no LIKE '%' + #{bean.productSearchWord, jdbcType=VARCHAR} + '%'
+					</when>
+					<otherwise>
+						AND P.style_info LIKE '%' + #{bean.productSearchWord, jdbcType=VARCHAR} + '%'
+					</otherwise>
+				</choose>
+			</if>
+			<if test="bean.sellStatCodeArr != null and bean.sellStatCodeArr.length > 0">
+				AND P.sell_stat_code IN
+				<foreach collection="bean.sellStatCodeArr" item="sellStatCode" open="(" close=")" separator=",">
+					#{sellStatCode}
+				</foreach>
+			</if>
+			<if test="bean.wrhsAlertStatCodeArr != null and bean.wrhsAlertStatCodeArr.length > 0">
+				AND I.wrhs_alert_stat_code IN
+				<foreach collection="bean.wrhsAlertStatCodeArr" item="wrhsAlertStatCode" open="(" close=")" separator=",">
+					#{wrhsAlertStatCode}
+				</foreach>
+			</if>
+		</where>
+    </select>
+    
+    <update id="updateMemberReStockAlarm" parameterType="kr.co.abcmart.bo.member.model.master.MbMemberInterestProduct">
+		/*+ kr.co.abcmart.bo.member.repository.master.MbMemberInterestProductDao.deleteMemberReStockAlarm [알림톡 발송후 발송시각 및 상태값 변경] [김영진] */
+		UPDATE MB_MEMBER_INTEREST_PRODUCT
+	       SET WRHS_ALERT_SEND_YN = 'Y'
+	         , WRHS_ALERT_SEND_DTM = GETDATE()
+	         , WRHS_ALERT_STAT_CODE = '10001'
+	     WHERE PRDT_NO = #{prdtNo, jdbcType=VARCHAR}
+	       AND PRDT_OPTN_NO = #{prdtOptnNo, jdbcType=VARCHAR}
+		   AND HDPHN_NO_TEXT = #{hdphnNoText, jdbcType=VARCHAR}
+    </update>
+    
+    <update id="updateMemberReStockAlarmCancel" parameterType="kr.co.abcmart.bo.member.model.master.MbMemberInterestProduct">
+    /*+ kr.co.abcmart.bo.member.repository.master.MbMemberInterestProductDao.updateMemberReStockAlarmCancel [재입고 알림 서비스 신청 취소] [이가영] */
+	
+		UPDATE MB_MEMBER_INTEREST_PRODUCT
+	       SET WRHS_ALERT_STAT_CODE = '10002'
+	         , WRHS_ALERT_SEND_DTM = GETDATE()
+	     WHERE PRDT_NO = #{prdtNo, jdbcType=VARCHAR}
+	       AND PRDT_OPTN_NO = #{prdtOptnNo, jdbcType=VARCHAR}
+		   AND HDPHN_NO_TEXT = #{hdphnNoText, jdbcType=VARCHAR}
+    </update>
+</mapper>

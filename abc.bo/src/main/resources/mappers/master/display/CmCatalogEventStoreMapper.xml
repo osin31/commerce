@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.display.repository.master.CmCatalogEventStoreDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.display.model.master.CmCatalogEventStore">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.CmCatalogEventStoreDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			cm_catalog_event_store
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectCmCatalogEventStoreListByCtlgEventNo" resultType="kr.co.abcmart.bo.display.model.master.CmCatalogEventStore">
+    /*+ kr.co.abcmart.bo.display.repository.master.CmCatalogEventStoreDao.selectCmCatalogEventStoreListByCtlgEventNo [카탈로그 이벤트 매장 목록 조회] [이가영] */
+    	
+    	SELECT
+    		A.ctlg_event_no,
+			A.store_no,
+    		B.store_name
+    	FROM cm_catalog_event_store A with (nolock)
+    	JOIN cm_store B with (nolock) on A.store_no = B.store_no 
+    	WHERE
+    		A.ctlg_event_no = #{ctlgEventNo, jdbcType=VARCHAR}    		
+    	ORDER BY
+    		B.rgst_dtm
+    </select>
+    
+    <insert id="insertCmCatalogEventStore" parameterType="kr.co.abcmart.bo.display.model.master.CmCatalogEvent" useGeneratedKeys="false">
+    /*+ kr.co.abcmart.bo.display.repository.master.CmCatalogEventStoreDao.insertCmCatalogEventStore [카탈로그 이벤트 매장 등록] [이가영] */
+    
+    	<foreach collection="storeNoArr" item="storeNo">
+    		INSERT INTO cm_catalog_event_store (
+	    		ctlg_event_no,
+	    		store_no
+	    	) VALUES (
+	    		#{ctlgEventNo, jdbcType=VARCHAR},
+	    		#{storeNo}
+	    	)
+    	</foreach>    	
+    </insert>
+    
+    <delete id="deleteCmCatalogEventStoreByCtlgEventNo" parameterType="String">
+    /*+ kr.co.abcmart.bo.display.repository.master.CmCatalogEventStoreDao.deleteCmCatalogEventStoreByCtlgEventNo [카탈로그 이벤트 매장 삭제] [이가영] */
+    
+    	DELETE FROM cm_catalog_event_store
+    	WHERE
+    		ctlg_event_no = #{ctlgEventNo, jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

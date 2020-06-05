@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.order.repository.master.OcGiftCardOrderDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.order.model.master.OcGiftCardOrder">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.OcGiftCardOrderDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			oc_gift_card_order
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectMemberGiftCardListCount" parameterType="pageable" resultType="int">
+    
+    /*+ kr.co.abcmart.bo.order.model.master.OcGiftCardOrderDao.selectMemberGiftCardListCount [기프트카드목록 갯수 조회 쿼리] [이상호] */  
+    
+    	 SELECT <include refid="Paging.totalCount" />
+		   FROM OC_GIFT_CARD_ORDER 	C WITH (NOLOCK)
+		   JOIN OC_GIFT_CARD_ORDER_PAYMENT 	D WITH (NOLOCK) 
+		     ON C.GIFT_CARD_ORDER_NO   = D.GIFT_CARD_ORDER_NO
+		   LEFT OUTER JOIN MB_MEMBER_GIFT_CARD MMGC WITH(NOLOCK) 
+		     ON MMGC.CARD_NO_TEXT = C.CARD_NO_TEXT
+		    AND MMGC.MEMBER_NO =  C.MEMBER_NO
+		  
+    	 <trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test='bean.memberNo != null and bean.memberNo != ""'> 
+				 AND C.MEMBER_NO = #{bean.memberNo}
+			</if>
+			<if test='bean.orderNo != null and bean.orderNo != ""'> 
+				 AND C.GIFT_CARD_ORDER_NO = #{bean.giftCardOrderNo}
+			</if>
+			<if test='bean.pymntMeansCode != null and bean.pymntMeansCode != ""'> 
+				 AND D.PYMNT_MEANS_CODE = #{bean.pymntMeansCode}
+			</if>
+			<if test="bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+           		 AND C.RGST_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+        	</if>
+			<if test='bean.cardNoText != null and bean.cardNoText != ""'> 
+				 AND C.CARD_NO_TEXT = #{bean.cardNoText}
+			</if>
+			  AND C.ORDER_STAT_CODE != '10000'
+			  AND ISNULL(MMGC.DEL_YN,'N') = 'N'
+    	 </trim>
+    </select>
+    
+     <select id="selectMemberGiftCardList" parameterType="pageable" resultType="kr.co.abcmart.bo.order.model.master.OcGiftCardOrder">
+    
+    /*+ kr.co.abcmart.bo.order.model.master.OcGiftCardOrderDao.selectMemberGiftCardList [기프트카드 목록 조회 쿼리] [이상호] */  
+    		SELECT C.GIFT_CARD_ORDER_NO
+			     , C.GIFT_CARD_ORDER_TYPE_CODE
+			     , C.CARD_NO_TEXT
+			     , D.PYMNT_DTM
+			     , CASE WHEN C.ORDER_STAT_CODE = '10005'
+	                    THEN C.MOD_DTM
+	                    ELSE NULL
+		           END AS MOD_DTM
+			     , C.MOD_DTM
+			     , D.PYMNT_MEANS_CODE
+			     , C.PYMNT_AMT
+			     , CASE WHEN C.ORDER_STAT_CODE = '10005' AND  C.GIFT_CARD_STAT_CODE = '10002'
+	                    THEN DBO.FN_CODE_VALUE('ORDER_STAT_CODE', C.ORDER_STAT_CODE)+'('+DBO.FN_CODE_VALUE('GIFT_CARD_STAT_CODE', C.GIFT_CARD_STAT_CODE)+')'
+	                    ELSE DBO.FN_CODE_VALUE('ORDER_STAT_CODE', C.ORDER_STAT_CODE)
+	               END AS ORDER_STAT_CODE_NAME
+			     , C.ORDER_STAT_CODE
+			     , CONVERT(VARCHAR(50) ,D.PYMNT_DTM,23) AS PYMNT_DATE
+			     , C.ORDER_STAT_CODE
+			     , CASE WHEN DATEDIFF(DD,PYMNT_DTM,GETDATE()) > 90 THEN GETDATE() 
+			            ELSE NULL 
+			       END  AS MMS_RE_SEND_DTM
+			     , C.GIFT_CARD_STAT_CODE 
+			FROM OC_GIFT_CARD_ORDER 	C WITH (NOLOCK)
+			JOIN OC_GIFT_CARD_ORDER_PAYMENT 	D WITH (NOLOCK) 
+			  ON C.GIFT_CARD_ORDER_NO   = D.GIFT_CARD_ORDER_NO
+			LEFT OUTER JOIN MB_MEMBER_GIFT_CARD MMGC WITH(NOLOCK) 
+			  ON MMGC.CARD_NO_TEXT = C.CARD_NO_TEXT
+			 AND MMGC.MEMBER_NO =  C.MEMBER_NO
+		 <trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test='bean.memberNo != null and bean.memberNo != ""'> 
+				 AND C.MEMBER_NO = #{bean.memberNo}
+			</if>
+			<if test='bean.orderNo != null and bean.orderNo != ""'> 
+				 AND C.GIFT_CARD_ORDER_NO = #{bean.giftCardOrderNo}
+			</if>
+			<if test='bean.pymntMeansCode != null and bean.pymntMeansCode != ""'> 
+				 AND D.PYMNT_MEANS_CODE = #{bean.pymntMeansCode}
+			</if>
+			<if test="bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+           		 AND C.RGST_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+        	</if>
+			<if test='bean.cardNoText != null and bean.cardNoText != ""'> 
+				 AND C.CARD_NO_TEXT = #{bean.cardNoText}
+			</if>
+			     AND C.ORDER_STAT_CODE != '10000'
+			     AND ISNULL(MMGC.DEL_YN,'N') = 'N'
+    	 </trim>
+    	 
+		ORDER BY C.GIFT_CARD_ORDER_NO DESC
+		<include refid="Paging.mssql" />
+    </select>
+    
+     <select id="selectGiftCardHistoryCount" parameterType="kr.co.abcmart.bo.order.model.master.OcGiftCardOrder" resultType="int">
+    
+    /*+ kr.co.abcmart.bo.order.model.master.OcGiftCardOrderDao.selectGiftCardHistoryCount [구매,선물,충전 결제 내역 카운트 쿼리] [YSW] */
+    
+    	SELECT 
+    		count(*) as cnt
+    	FROM OC_GIFT_CARD_ORDER a
+   		WHERE 1=1
+   		AND A.ORDER_STAT_CODE != '10000'
+  		<if test="memberNo != null"> 
+			AND member_no = #{memberNo, jdbcType=VARCHAR}
+		</if>
+		<if test="historyStartDtm != null">
+		<![CDATA[
+			and rgst_dtm >= #{historyStartDtm}
+		]]>
+		</if>
+		<if test="historyEndDtm != null">
+		<![CDATA[
+			and rgst_dtm <= #{historyEndDtm}
+		]]>
+		</if>
+    </select>
+    
+    <select id="selectGiftCardHistoryForCancel" parameterType="kr.co.abcmart.bo.order.model.master.OcGiftCardOrder" resultType="kr.co.abcmart.bo.order.model.master.OcGiftCardOrder">
+    
+    /*+ kr.co.abcmart.bo.order.model.master.OcGiftCardOrderDao.selectGiftCardHistoryForCancel [구매,선물,충전 결제 내역 조회 쿼리] [LSH] */
+    
+    	SELECT 
+    		gift_card_order_no
+    		, (SELECT pymnt_aprv_no_text FROM OC_GIFT_CARD_ORDER_PAYMENT WHERE gift_card_order_no = a.gift_card_order_no) as pymnt_aprv_no_text
+    		, order_dtm
+    		, site_no
+    		, emp_order_yn
+    		, member_no
+    		, member_type_code
+    		, mbshp_grade_code
+    		, emp_yn
+    		, ots_vip_yn
+    		, device_code
+    		, buyer_name
+    		, buyer_hdphn_no_text
+    		, rcvr_name
+    		, rcvr_hdphn_no_text
+    		, gift_card_no
+    		, pymnt_amt
+    		, gift_card_aprv_no_text
+    		, gift_card_aprv_dtm
+    		, card_no_text
+    		, card_pin_no_text
+    		, gift_card_order_type_code
+    		, gift_card_stat_code
+    		, cash_rcpt_issue_yn
+    		, tax_bill_issue_stat_code
+    		, mms_send_mesg_text
+    		, mms_re_send_dtm
+    		, order_stat_code
+    		, rgster_no
+    		, rgst_dtm
+    		, moder_no
+    		, mod_dtm
+    	FROM OC_GIFT_CARD_ORDER a
+   		WHERE 1=1
+  		<if test="giftCardOrderNo != null"> 
+			AND gift_card_order_no = #{giftCardOrderNo, jdbcType=VARCHAR}
+		</if>
+		AND A.ORDER_STAT_CODE != '10000'
+		ORDER BY A.GIFT_CARD_ORDER_NO DESC
+    </select>
+    
+    <update id="updateGiftCardOrderCancelStat" parameterType="kr.co.abcmart.bo.order.model.master.OcGiftCardOrder">
+    
+    /*+ kr.co.abcmart.bo.order.model.master.OcGiftCardOrderDao.updateGiftCardOrderCancelStat [구매,선물,충전 결제 내역 취소 상태 업데이트 쿼리] [LSH] */
+    
+    	UPDATE oc_gift_card_order
+		<set> 
+			<if test="orderStatCode != null"> 
+				order_stat_code = #{orderStatCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 gift_card_order_no = #{giftCardOrderNo, jdbcType=VARCHAR}   
+    </update>
+    
+    <update id="updateGiftCardMmsResend" parameterType="kr.co.abcmart.bo.order.model.master.OcGiftCardOrder">
+    
+   	 /*+ kr.co.abcmart.bo.order.model.master.OcGiftCardOrderDao.updateGiftCardMmsResend [MMS 재전송 후 날짜 업데이트 쿼리] [LSH] */
+    
+    	UPDATE OC_GIFT_CARD_ORDER
+    	SET
+    		MMS_RE_SEND_DTM = GETDATE()
+    	WHERE 1=1
+   		<if test="giftCardOrderNo != null"> 
+			AND GIFT_CARD_ORDER_NO = #{giftCardOrderNo, jdbcType=VARCHAR}
+		</if>
+    </update>
+
+</mapper>

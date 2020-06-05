@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.display.repository.master.DpDisplayPageCornerDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.display.model.master.DpDisplayPageCorner">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayPageCornerDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			DP_DISPLAY_PAGE_CORNER
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <delete id="deleteDpPageCorner" parameterType="kr.co.abcmart.bo.display.model.master.DpDisplayPageCorner">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayPageCornerDao.deleteDpPageCorner [전시카테고리 코너 삭제] [이가영] */
+    
+		DELETE FROM DP_DISPLAY_PAGE_CORNER
+		WHERE 
+			 disp_page_no = #{dispPageNo, jdbcType=VARCHAR}
+			 AND disp_tmpl_no = #{dispTmplNo, jdbcType=VARCHAR} 
+    </delete>
+    
+    <select id="selectDpPageCornerList" parameterType="pageable" resultType="kr.co.abcmart.bo.display.model.master.DpDisplayTemplateCorner">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayPageCornerDao.selectDpPageCornerList [전시카테고리 코너 리스트 조회] [박민우] */
+	    SELECT
+			A.disp_tmpl_no,
+			A.disp_tmpl_corner_seq,
+			A.corner_name,
+			A.corner_name_disp_type,
+			A.set_count,
+			A.note_text,
+			A.sort_seq,
+			A.use_yn,
+			A.rgster_no,
+			A.rgst_dtm,
+			A.moder_no,
+			A.mod_dtm,
+			B.LOGIN_ID AS RGSTER_ID,
+			B.ADMIN_NAME AS RGSTER_NAME,
+			C.LOGIN_ID AS MODER_ID,
+			C.ADMIN_NAME AS MODER_NAME,
+			D.DISP_YN,
+			(
+			select
+				STUFF((
+				select
+					DISTINCT ',' + DBO.FN_CODE_VALUE('CONT_TYPE_CODE',
+					AA.CONT_TYPE_CODE)
+				from
+					dp_display_template_corner_set AA
+				WHERE
+					AA.DISP_CONT_COUNT > 0
+					and AA.DISP_TMPL_NO = a.DISP_TMPL_NO
+					and AA.DISP_TMPL_CORNER_SEQ = a.DISP_TMPL_CORNER_SEQ for xml path('') ),
+				1,
+				1,
+				'') ) as corner_set_name
+		FROM
+			dp_display_template_corner A WITH(NOLOCK)
+		LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON
+			A.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON
+			A.MODER_NO = C.ADMIN_NO
+		INNER JOIN DP_DISPLAY_PAGE_CORNER D WITH(NOLOCK) ON D.DISP_TMPL_CORNER_SEQ = A.DISP_TMPL_CORNER_SEQ
+		WHERE
+			A.disp_tmpl_no = #{bean.dispTmplNo, jdbcType=VARCHAR}
+			AND D.DISP_PAGE_NO = #{bean.dispPageNo, jdbcType=VARCHAR}    
+		ORDER BY A.sort_seq ASC
+		<include refid="Paging.mssql" /> 
+    </select>
+    
+    <select id="selectDpPageCornerListCount" parameterType="pageable" resultType="int">
+     /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayPageCornerDao.selectDpCategoryCornerListCount [전시카테고리 코너 리스트 카운트 조회] [박민우] */
+		SELECT <include refid="Paging.totalCount" /> 
+		FROM
+			dp_display_template_corner A WITH(NOLOCK)
+		LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON
+			A.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON
+			A.MODER_NO = C.ADMIN_NO
+		INNER JOIN DP_DISPLAY_PAGE_CORNER D WITH(NOLOCK) ON D.DISP_TMPL_CORNER_SEQ = A.DISP_TMPL_CORNER_SEQ
+		WHERE
+			A.disp_tmpl_no = #{bean.dispTmplNo, jdbcType=VARCHAR}
+			AND D.DISP_PAGE_NO = #{bean.dispPageNo, jdbcType=VARCHAR}
+    </select>
+    
+	<delete id="updateDispYn" parameterType="kr.co.abcmart.bo.display.model.master.DpDisplayPageCorner">
+	/*+ kr.co.abcmart.bo.display.repository.master.DpDisplayPageCornerDao.updateDispYn [전시콘텐츠 관리 코너 영역 전시여부 수정] [신인철] */
+		UPDATE DP_DISPLAY_PAGE_CORNER
+		   SET DISP_YN = #{dispYn, jdbcType=VARCHAR}
+		 WHERE DISP_PAGE_NO = #{dispPageNo, jdbcType=VARCHAR}
+		   AND DISP_TMPL_NO = #{dispTmplNo, jdbcType=VARCHAR}
+		   AND DISP_TMPL_CORNER_SEQ = #{dispTmplCornerSeq, jdbcType=VARCHAR}
+    </delete>
+    
+
+</mapper>

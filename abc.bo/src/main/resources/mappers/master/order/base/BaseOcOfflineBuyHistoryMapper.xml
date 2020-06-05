@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.order.repository.master.OcOfflineBuyHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	ofln_buy_hist_seq, safe_key, safe_key_seq, sell_ymd, store_no, pos_no_text, deal_no_text, prdt_no, prdt_optn_no, sale_qty, cnsmr_amt, dscnt_amt, sell_amt, rtn_yn, rgster_no, rgst_dtm, moder_no, mod_dtm, rtn_store_no, member_no, expost_save_point_seq, rtn_ymd, buy_cnfrm_yn, buy_cnfrm_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	ofln_buy_hist_seq = #{oflnBuyHistSeq, jdbcType=INTEGER}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.order.model.master.OcOfflineBuyHistory" resultType="kr.co.abcmart.bo.order.model.master.OcOfflineBuyHistory">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOfflineBuyHistoryDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			OC_OFFLINE_BUY_HISTORY
+		<where> 
+			<if test="oflnBuyHistSeq != null"> 
+				 ofln_buy_hist_seq = #{oflnBuyHistSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="safeKey != null"> 
+				 AND safe_key = #{safeKey, jdbcType=VARCHAR}
+			</if> 
+			<if test="safeKeySeq != null"> 
+				 AND safe_key_seq = #{safeKeySeq, jdbcType=VARCHAR}
+			</if> 
+			<if test="sellYmd != null"> 
+				 AND sell_ymd = #{sellYmd, jdbcType=VARCHAR}
+			</if> 
+			<if test="storeNo != null"> 
+				 AND store_no = #{storeNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="posNoText != null"> 
+				 AND pos_no_text = #{posNoText, jdbcType=VARCHAR}
+			</if> 
+			<if test="dealNoText != null"> 
+				 AND deal_no_text = #{dealNoText, jdbcType=VARCHAR}
+			</if> 
+			<if test="prdtNo != null"> 
+				 AND prdt_no = #{prdtNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="prdtOptnNo != null"> 
+				 AND prdt_optn_no = #{prdtOptnNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="saleQty != null"> 
+				 AND sale_qty = #{saleQty, jdbcType=SMALLINT}
+			</if> 
+			<if test="cnsmrAmt != null"> 
+				 AND cnsmr_amt = #{cnsmrAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="dscntAmt != null"> 
+				 AND dscnt_amt = #{dscntAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="sellAmt != null"> 
+				 AND sell_amt = #{sellAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="rtnYn != null"> 
+				 AND rtn_yn = #{rtnYn, jdbcType=CHAR}
+			</if> 
+			<if test="rgsterNo != null"> 
+				 AND rgster_no = #{rgsterNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="rgstDtm != null"> 
+				 AND rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="moderNo != null"> 
+				 AND moder_no = #{moderNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="modDtm != null"> 
+				 AND mod_dtm = #{modDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="rtnStoreNo != null"> 
+				 AND rtn_store_no = #{rtnStoreNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="memberNo != null"> 
+				 AND member_no = #{memberNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="expostSavePointSeq != null"> 
+				 AND expost_save_point_seq = #{expostSavePointSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="rtnYmd != null"> 
+				 AND rtn_ymd = #{rtnYmd, jdbcType=VARCHAR}
+			</if> 
+			<if test="buyCnfrmYn != null"> 
+				 AND buy_cnfrm_yn = #{buyCnfrmYn, jdbcType=CHAR}
+			</if> 
+			<if test="buyCnfrmDtm != null"> 
+				 AND buy_cnfrm_dtm = #{buyCnfrmDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+	<insert id="insert" useGeneratedKeys="true" keyProperty="oflnBuyHistSeq">
+
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOfflineBuyHistoryDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO OC_OFFLINE_BUY_HISTORY
+			 ( safe_key, safe_key_seq, sell_ymd, store_no, pos_no_text, deal_no_text, prdt_no, prdt_optn_no, sale_qty, cnsmr_amt, dscnt_amt, sell_amt, rtn_yn, rgster_no, rgst_dtm, moder_no, mod_dtm, rtn_store_no, member_no, expost_save_point_seq, rtn_ymd, buy_cnfrm_yn, buy_cnfrm_dtm ) 
+
+		VALUES 
+			 ( #{safeKey, jdbcType=VARCHAR}, #{safeKeySeq, jdbcType=VARCHAR}, #{sellYmd, jdbcType=VARCHAR}, #{storeNo, jdbcType=VARCHAR}, #{posNoText, jdbcType=VARCHAR}, #{dealNoText, jdbcType=VARCHAR}, #{prdtNo, jdbcType=VARCHAR}, #{prdtOptnNo, jdbcType=VARCHAR}, #{saleQty, jdbcType=SMALLINT}, #{cnsmrAmt, jdbcType=INTEGER}, #{dscntAmt, jdbcType=INTEGER}, #{sellAmt, jdbcType=INTEGER}, #{rtnYn, jdbcType=CHAR}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{rtnStoreNo, jdbcType=VARCHAR}, #{memberNo, jdbcType=VARCHAR}, #{expostSavePointSeq, jdbcType=INTEGER}, #{rtnYmd, jdbcType=VARCHAR}, #{buyCnfrmYn, jdbcType=CHAR}, <choose><when test="buyCnfrmDtm != null">#{buyCnfrmDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.order.model.master.OcOfflineBuyHistory">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOfflineBuyHistoryDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE OC_OFFLINE_BUY_HISTORY
+		<set> 
+			<if test="oflnBuyHistSeq != null"> 
+				ofln_buy_hist_seq = #{oflnBuyHistSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="safeKey != null"> 
+				safe_key = #{safeKey, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="safeKeySeq != null"> 
+				safe_key_seq = #{safeKeySeq, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="sellYmd != null"> 
+				sell_ymd = #{sellYmd, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="storeNo != null"> 
+				store_no = #{storeNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="posNoText != null"> 
+				pos_no_text = #{posNoText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="dealNoText != null"> 
+				deal_no_text = #{dealNoText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="prdtNo != null"> 
+				prdt_no = #{prdtNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="prdtOptnNo != null"> 
+				prdt_optn_no = #{prdtOptnNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="saleQty != null"> 
+				sale_qty = #{saleQty, jdbcType=SMALLINT}, 
+			</if> 
+			<if test="cnsmrAmt != null"> 
+				cnsmr_amt = #{cnsmrAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="dscntAmt != null"> 
+				dscnt_amt = #{dscntAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="sellAmt != null"> 
+				sell_amt = #{sellAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="rtnYn != null"> 
+				rtn_yn = #{rtnYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="rgsterNo != null"> 
+				rgster_no = #{rgsterNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="rtnStoreNo != null"> 
+				rtn_store_no = #{rtnStoreNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="memberNo != null"> 
+				member_no = #{memberNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="expostSavePointSeq != null"> 
+				expost_save_point_seq = #{expostSavePointSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="rtnYmd != null"> 
+				rtn_ymd = #{rtnYmd, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="buyCnfrmYn != null"> 
+				buy_cnfrm_yn = #{buyCnfrmYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="buyCnfrmDtm != null"> 
+				buy_cnfrm_dtm = #{buyCnfrmDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 ofln_buy_hist_seq = #{oflnBuyHistSeq, jdbcType=INTEGER}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.order.model.master.OcOfflineBuyHistory">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOfflineBuyHistoryDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM OC_OFFLINE_BUY_HISTORY
+		WHERE 
+			 ofln_buy_hist_seq = #{oflnBuyHistSeq, jdbcType=INTEGER}  
+    </delete>
+</mapper>

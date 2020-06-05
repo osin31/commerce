@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculation">
+    
+     /*+ kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			SE_EXACT_CALCULATION
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectSettleMentListCount" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculation"  resultType="int">
+	/*+ kr.co.abcmart.bo.settlement.model.master.SeExactCalculationDao.selectSettleMentListCount [정산 조회 카운트 쿼리] [이상호] */
+		SELECT <include refid="Paging.totalCount" />
+	      FROM SE_EXACT_CALCULATION 
+		 WHERE EXCCLC_YM = #{bean.excclcYm}
+	</select>
+
+	<select id="selectSettleMentList" parameterType="pageable"  resultType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculation">
+	/*+ kr.co.abcmart.bo.settlement.model.master.SeExactCalculationDao.selectMemberJoinList [정산 리스트 조회 쿼리] [이상호] */
+	
+		SELECT SEC.EXCCLC_SEQ
+		     , SEC.VNDR_NO -- 입접사코드
+		     , (SELECT VNDR_NAME FROM VD_VENDOR  WHERE VNDR_NO = SEC.VNDR_NO)  AS VNDR_NAME -- 업체명
+		     , SEC.PYMNT_COUNT
+		     , SEC.PYMNT_AMT
+		     , SEC.DLVY_AMT
+		     , SEC.SELL_CMSN_AMT --판매수수료
+		     , SEC.PROMO_AMT --프로모션비용
+		     , SEC.PENLTY_COUNT	--	패널티건수
+		     , SEC.PENLTY_AMT	--	패널티금액
+		     , SEC.EXCCLC_AMT	--	정산금액
+		     , SEC.EXCCLC_DCSN_YN --확정여부
+		     , SEC.EXCCLC_YM 
+		 FROM  SE_EXACT_CALCULATION SEC
+		 WHERE SEC.EXCCLC_YM = #{bean.excclcYm}
+		 ORDER BY SEC.RGST_DTM
+	 <include refid="Paging.mssql" />
+	</select>
+	
+	
+	  <select id="selectSettleMentTotalAmt" resultType="String">
+		/*+ kr.co.abcmart.bo.settlement.model.master.SeExactCalculationDao.selectSettleMentTotalAmt [입점가 최종정산금액] [이상호]*/
+		
+		SELECT SUM(EXCCLC_AMT) AS EXCCLC_AMT
+		  FROM SE_EXACT_CALCULATION
+		  WHERE EXCCLC_YM = #{excclcYm}
+	</select>
+	
+	
+	<select id="selectSettleMentHistory" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculation"  resultType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculation">
+	/*+ kr.co.abcmart.bo.settlement.model.master.SeExactCalculationDao.selectSettleMentHistory [정산내역 조회 쿼리] [이상호] */
+	
+		SELECT 
+			<if test='tabGubun == "2"'>
+			   CASE WHEN EXCCLC_DCSN_YN='N' THEN SELL_CMSN_AMT  ELSE 0 END AS SELL_CMSN_AMT_N
+			 , CASE WHEN EXCCLC_DCSN_YN='N' THEN SELL_CMSN_COUNT  ELSE 0 END AS SELL_CMSN_COUNT_N
+		     , CASE WHEN EXCCLC_DCSN_YN='Y' THEN SELL_CMSN_AMT  ELSE 0 END AS SELL_CMSN_AMT_Y
+			 , CASE WHEN EXCCLC_DCSN_YN='Y' THEN SELL_CMSN_COUNT  ELSE 0 END AS SELL_CMSN_COUNT_Y
+			</if>
+		   <if test='tabGubun == "3"'>
+		       CASE WHEN EXCCLC_DCSN_YN='N' THEN DLVY_AMT  ELSE 0 END AS DLVY_AMT_N
+			 , CASE WHEN EXCCLC_DCSN_YN='N' THEN DLVY_AMT_COUNT  ELSE 0 END AS DLVY_AMT_COUNT_N
+		     , CASE WHEN EXCCLC_DCSN_YN='Y' THEN DLVY_AMT  ELSE 0 END AS DLVY_AMT_Y
+			 , CASE WHEN EXCCLC_DCSN_YN='Y' THEN DLVY_AMT_COUNT  ELSE 0 END AS DLVY_AMT_COUNT_Y
+			</if>
+			<if test='tabGubun == "4"'>
+			   CASE WHEN EXCCLC_DCSN_YN='N' THEN PROMO_AMT  ELSE 0 END AS PROMO_AMT_N
+			 , CASE WHEN EXCCLC_DCSN_YN='N' THEN PROMO_COUNT  ELSE 0 END AS PROMO_COUNT_N
+		     , CASE WHEN EXCCLC_DCSN_YN='Y' THEN PROMO_AMT  ELSE 0 END AS PROMO_AMT_Y
+			 , CASE WHEN EXCCLC_DCSN_YN='Y' THEN PROMO_COUNT  ELSE 0 END AS PROMO_COUNT_Y
+		     </if>
+ 			<if test='tabGubun == "5"'>
+ 			   CASE WHEN EXCCLC_DCSN_YN='N' THEN PENLTY_AMT  ELSE 0 END AS PENLTY_AMT_N
+			 , CASE WHEN EXCCLC_DCSN_YN='N' THEN PENLTY_COUNT  ELSE 0 END AS PENLTY_COUNT_N
+		     , CASE WHEN EXCCLC_DCSN_YN='Y' THEN PENLTY_AMT  ELSE 0 END AS PENLTY_AMT_Y
+			 , CASE WHEN EXCCLC_DCSN_YN='Y' THEN PENLTY_COUNT  ELSE 0 END AS PENLTY_COUNT_Y 
+			 , PENLTY_LEVY_RATE
+			 , PENLTY_OCRNC_RATE
+			 , DLVY_DAY_COUNT
+			</if>
+		 FROM  SE_EXACT_CALCULATION
+		 WHERE EXCCLC_SEQ = #{excclcSeq}
+		   AND EXCCLC_YM = #{excclcYm}
+	</select>
+	
+	<select id="selectSettleMentMonth" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculation"  resultType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculation">
+	/*+ kr.co.abcmart.bo.settlement.model.master.SeExactCalculationDao.selectSettleMentMonth [월정산  조회 쿼리] [이상호] */
+		SELECT  PENLTY_LEVY_RATE
+			  , PENLTY_OCRNC_RATE
+			  , DLVY_DAY_COUNT
+			  , PYMNT_COUNT
+			  , PYMNT_AMT
+			  , DLVY_AMT_COUNT
+			  , DLVY_AMT
+			  , SELL_CMSN_COUNT
+			  , SELL_CMSN_AMT
+			  , PROMO_COUNT
+			  , PROMO_AMT
+			  , PENLTY_COUNT
+			  , PENLTY_AMT
+			  , PENLTY_MDAT_AMT
+			  , EXCCLC_AMT
+			  , EXCCLC_MDAT_AMT
+		  FROM  SE_EXACT_CALCULATION
+		 WHERE  EXCCLC_SEQ = #{excclcSeq}
+		   AND  EXCCLC_YM = #{excclcYm}
+	</select>
+	
+	 <update id="updateSeExactCalculationMod" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculation">
+    
+     /*+ kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationDao.updateSeExactCalculationMod [정산 조정금액 UPDATE] [이상호] */
+    
+		UPDATE SE_EXACT_CALCULATION
+		<set> 
+			
+			<if test="penltyMdatAmt != null"> 
+				penlty_mdat_amt = #{penltyMdatAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="excclcMdatAmt != null"> 
+				excclc_mdat_amt = #{excclcMdatAmt, jdbcType=INTEGER}, 
+			</if>
+			<if test="excclcAmt != null">  
+				excclc_amt = #{excclcAmt, jdbcType=INTEGER} - (#{penltyMdatAmt, jdbcType=INTEGER}+ #{excclcMdatAmt, jdbcType=INTEGER}) , 
+			</if>
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+				mod_dtm = GETDATE(), 
+		</set> 
+		WHERE 
+			 excclc_seq = #{excclcSeq, jdbcType=INTEGER}   
+    </update>
+    
+    	
+	 <update id="updateExcclcConfirmation" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculation">
+    
+     /*+ kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationDao.updateExcclcConfirmation [정산확정 UPDATE] [이상호] */
+    
+		UPDATE SE_EXACT_CALCULATION
+		<set> 
+			
+			<if test="excclcDcsnYn != null"> 
+				EXCCLC_DCSN_YN = #{excclcDcsnYn, jdbcType=INTEGER}, 
+			</if> 
+			moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			mod_dtm = GETDATE(), 
+		</set> 
+		WHERE 
+			 excclc_seq = #{excclcSeq, jdbcType=INTEGER}   
+    </update>
+    
+    
+    <parameterMap id="paramMap" type="hashMap">
+		<parameter property="excclcSeq" javaType="java.lang.Integer" jdbcType="INTEGER" mode="IN" />
+		<parameter property="excclcYm" javaType="java.lang.String" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="vndrNo" javaType="java.lang.String" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="output" javaType="java.lang.String" jdbcType="VARCHAR" mode="OUT" />
+	</parameterMap>
+	
+	<select id="callProcedurePropertySettleMent" statementType="CALLABLE" parameterMap="paramMap">
+		{ call dbo.PR_EXACT_CALCULATION_ORDER (?, ?, ?, ?) }
+	</select>
+	
+	
+	
+	 <select id="selectSeExactCal" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculation"  resultType="String">
+	/*+ kr.co.abcmart.bo.settlement.model.master.SeExactCalculationDao.selectSeExactCal [정산 순번 조회  쿼리] [이상호] */
+		SELECT ISNULL(EXCCLC_SEQ,0) AS EXCCLC_SEQ
+	      FROM SE_EXACT_CALCULATION 
+		 WHERE EXCCLC_YM = #{excclcYm}
+		   AND VNDR_NO = #{vndrNo}
+	</select>
+
+</mapper>

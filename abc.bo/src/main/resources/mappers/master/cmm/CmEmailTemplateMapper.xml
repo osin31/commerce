@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.cmm.repository.master.CmEmailTemplateDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.cmm.model.master.CmEmailTemplate">
+
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmEmailTemplateDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			CM_EMAIL_TEMPLATE WITH (NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectCmEmailTemplateDetail" parameterType="Object" resultType="kr.co.abcmart.bo.cmm.model.master.CmEmailTemplate">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmEmailTemplateDao.selectCmEmailTemplateDetail [이메일 템플릿 상세 조회] [김진성] */
+		SELECT A.EMAIL_TMPL_SEQ
+		     , ISNULL(A.SITE_NO, '99999') AS SITE_NO
+		     , A.EMAIL_TYPE_CODE
+		     , A.EMAIL_TITLE_TEXT
+		     , A.EMAIL_TMPL_NAME
+		     , A.EMAIL_CONT_TEXT
+		     , A.EMAIL_KEY_TEXT
+		     , A.EMAIL_CNFRM_COUNT
+		     , A.EMAIL_ID
+		     , A.SEND_DTM
+		     , A.MOD_DTM
+		     , A.MODER_NO
+		     , B.LOGIN_ID AS MODER_ID
+		     , B.ADMIN_NAME AS MODER_NAME
+		  FROM CM_EMAIL_TEMPLATE A WITH (NOLOCK)
+		  LEFT JOIN SY_ADMIN B WITH (NOLOCK) ON A.MODER_NO = B.ADMIN_NO
+		 WHERE A.EMAIL_TMPL_SEQ = #{emailTmplSeq, jdbcType=INTEGER}
+		   AND A.EMAIL_TMPL_YN = #{emailTmplYn, jdbcType=CHAR}
+		   AND A.SEND_PROC_GBN_TYPE = #{sendProcGbnType, jdbcType=CHAR}
+    </select>
+
+    <!-- 검색 조건 -->
+    <sql id="searchWhere">
+    	<trim prefix="WHERE" prefixOverrides="AND|OR">
+    		<if test="bean.emailTmplYn != null and bean.emailTmplYn != ''">
+		   AND A.EMAIL_TMPL_YN = #{bean.emailTmplYn, jdbcType=CHAR}
+    	    </if>
+    		<if test="bean.sendProcGbnType != null and bean.sendProcGbnType != ''">
+		   AND A.SEND_PROC_GBN_TYPE = #{bean.sendProcGbnType, jdbcType=INTEGER}
+    	    </if>
+    		<if test="bean.emailTmplSeq != null and bean.emailTmplSeq != ''">
+		   AND A.EMAIL_TMPL_SEQ = #{bean.emailTmplSeq, jdbcType=INTEGER}
+    	    </if>
+    	    <if test="bean.siteNo != null and bean.siteNo != ''">
+		   AND A.SITE_NO <choose><when test="bean.siteNo == '99999'">IS NULL</when><otherwise>= #{bean.siteNo, jdbcType=VARCHAR}</otherwise></choose>
+    	    </if>
+    	    <if test="bean.emailTitleText != null and bean.emailTitleText != ''">
+    	   AND A.EMAIL_TITLE_TEXT LIKE CONCAT('%', #{bean.emailTitleText, jdbcType=VARCHAR}, '%')
+    	    </if>
+    		<if test="bean.emailTypeCode != null and bean.emailTypeCode != ''">
+    	   AND A.EMAIL_TYPE_CODE = #{bean.emailTypeCode, jdbcType=VARCHAR}
+    	    </if>
+    		<if test="bean.emailKeyText != null and bean.emailKeyText != ''">
+    	   AND A.EMAIL_KEY_TEXT LIKE CONCAT('%', #{bean.emailKeyText, jdbcType=VARCHAR}, '%')
+    	    </if>
+    		<if test="bean.adminLoginId != null and bean.adminLoginId != ''">
+    	   AND B.LOGIN_ID LIKE CONCAT('%', #{bean.adminLoginId, jdbcType=VARCHAR}, '%')
+    	    </if>
+    		<if test="bean.searchDateKey != null and bean.searchDateKey != ''">
+    			<choose>
+    				<when test="bean.searchDateKey == 'rgstDtm'">
+    	   AND A.RGST_DTM <![CDATA[>=]]> #{bean.fromDtm, jdbcType=TIMESTAMP} AND  A.RGST_DTM <![CDATA[<]]> #{bean.toDtm, jdbcType=TIMESTAMP}
+    	       		</when>
+    	       		<when test="bean.searchDateKey == 'sendDtm'">
+    	   AND A.SEND_DTM <![CDATA[>=]]> #{bean.fromDtm, jdbcType=TIMESTAMP} AND  A.SEND_DTM <![CDATA[<]]> #{bean.toDtm, jdbcType=TIMESTAMP}
+    	       		</when>
+    	       		<when test="bean.searchDateKey == 'modDtm'">
+    	   AND A.MOD_DTM <![CDATA[>=]]> #{bean.fromDtm, jdbcType=TIMESTAMP} AND  A.MOD_DTM <![CDATA[<]]> #{bean.toDtm, jdbcType=TIMESTAMP}
+    	       		</when>
+    	       	</choose>
+    	    </if>
+    	    <if test="bean.emailId != null and bean.emailId != ''">
+    	   AND A.EMAIL_ID LIKE CONCAT('%', #{bean.emailId, jdbcType=VARCHAR}, '%')
+    	    </if>
+    	</trim>
+    </sql>
+
+    <select id="selectCmEmailTemplateListCount" parameterType="pageable" resultType="int">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmEmailTemplateDao.selectCmEmailTemplateListCount [이메일 템플릿 검색 결과 개수][김진성] */
+    	SELECT <include refid="Paging.totalCount" />
+    	  FROM CM_EMAIL_TEMPLATE A WITH (NOLOCK)
+    	  LEFT OUTER JOIN SY_ADMIN B WITH (NOLOCK) ON A.MODER_NO = B.ADMIN_NO
+		<include refid="searchWhere" />
+    </select>
+
+    <select id="selectCmEmailTemplateList" parameterType="pageable" resultType="kr.co.abcmart.bo.cmm.model.master.CmEmailTemplate">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmEmailTemplateDao.selectCmEmailTemplateList [이메일 템플릿 검색 결과][김진성] */
+		SELECT A.EMAIL_TMPL_SEQ
+		     , dbo.FN_CODE_VALUE('EMAIL_TYPE_CODE',  A.EMAIL_TYPE_CODE) AS EMAIL_TYPE_CODE_NAME
+		     , A.EMAIL_TITLE_TEXT
+		     , A.EMAIL_TMPL_NAME
+		     , A.EMAIL_KEY_TEXT
+		     , A.EMAIL_CNFRM_COUNT
+		     , A.EMAIL_ID
+		     , A.SEND_DTM
+		     , A.MOD_DTM
+		     , B.LOGIN_ID AS MODER_ID
+		     , B.ADMIN_NAME AS MODER_NAME
+		     , ISNULL(C.SITE_NAME, '공통') AS SITE_NAME
+		     , A.MODER_NO
+		  FROM CM_EMAIL_TEMPLATE A WITH (NOLOCK)
+		  LEFT OUTER JOIN SY_ADMIN B WITH (NOLOCK) ON A.MODER_NO = B.ADMIN_NO
+		  LEFT OUTER JOIN SY_SITE C WITH (NOLOCK) ON A.SITE_NO = C.SITE_NO
+		<include refid="searchWhere" />
+		<choose>
+			<when test="sortColumn != null">
+				ORDER BY
+				<if test="sortColumn == 'modDtm'.toString()">
+					A.MOD_DTM
+				</if> 
+				<if test="sortType == 'DESC'.toString()">
+					DESC
+				</if>
+			</when>
+			<otherwise>
+				ORDER BY A.MOD_DTM DESC
+			</otherwise>
+		</choose>
+		<include refid="Paging.mssql" />
+    </select>
+
+    <insert id="insertCmEmailTemplate"  parameterType="kr.co.abcmart.bo.cmm.model.master.CmEmailTemplate">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmEmailTemplateDao.insertCmEmailTemplate [이메일 템플릿 정보를 등록한다.][김진성] */
+		INSERT INTO CM_EMAIL_TEMPLATE
+		(
+		       SITE_NO
+		     , EMAIL_TMPL_YN
+		     , EMAIL_TYPE_CODE
+		     , EMAIL_TMPL_NAME
+		     , EMAIL_TITLE_TEXT
+		     , EMAIL_CONT_TEXT
+		     , EMAIL_KEY_TEXT
+		     , EMAIL_ID
+		     , SEND_DTM
+		     , SEND_PROC_GBN_TYPE
+		     , EMAIL_CNFRM_COUNT
+		     , RGSTER_NO
+		     , RGST_DTM
+		     , MODER_NO
+		     , MOD_DTM
+		) VALUES (
+		       <choose><when test="siteNo == '99999'">NULL</when><otherwise>#{siteNo, jdbcType=VARCHAR}</otherwise></choose>
+		     , #{emailTmplYn, jdbcType=CHAR}
+		     , #{emailTypeCode, jdbcType=VARCHAR}
+		     , #{emailTmplName, jdbcType=VARCHAR}
+		     , #{emailTitleText, jdbcType=VARCHAR}
+		     , #{emailContText, jdbcType=VARCHAR}
+		     , #{emailKeyText, jdbcType=VARCHAR}
+		     , #{emailId, jdbcType=VARCHAR}
+		     , <choose><when test="sendDtm != null">#{sendDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>
+		     , #{sendProcGbnType, jdbcType=CHAR}
+		     , #{emailCnfrmCount, jdbcType=INTEGER}
+		     , #{rgsterNo, jdbcType=VARCHAR}
+		     , <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>
+		     , #{moderNo, jdbcType=VARCHAR}
+		     , <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>
+		)
+    </insert>
+
+    <update id="updateCmEmailTemplate" parameterType="kr.co.abcmart.bo.cmm.model.master.CmEmailTemplate">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmEmailTemplateDao.updateCmEmailTemplate [이메일 템플릿 정보를 수정한다.][김진성] */
+    	UPDATE CM_EMAIL_TEMPLATE
+    	   SET SITE_NO = <choose><when test="siteNo == '99999'">NULL</when><otherwise>#{siteNo, jdbcType=VARCHAR}</otherwise></choose>
+    	     , EMAIL_TITLE_TEXT = #{emailTitleText, jdbcType=VARCHAR}
+		<if test="emailTypeCode != null and emailTypeCode != ''">
+    	     , EMAIL_TYPE_CODE = #{emailTypeCode, jdbcType=VARCHAR}
+		</if>
+		<if test="emailTmplName != null and emailTmplName != ''">
+    	     , EMAIL_TMPL_NAME = #{emailTmplName, jdbcType=VARCHAR}
+		</if>
+    	     , EMAIL_CONT_TEXT = #{emailContText, jdbcType=VARCHAR}
+    	     , SEND_DTM = #{sendDtm, jdbcType=TIMESTAMP}
+    	     , MODER_NO = #{moderNo, jdbcType=VARCHAR}
+    	     , MOD_DTM = GETDATE()
+    	 WHERE EMAIL_TMPL_SEQ = #{emailTmplSeq, jdbcType=INTEGER}
+    </update>
+
+    <select id="selectEmailSendPopTemplateList" parameterType="kr.co.abcmart.bo.cmm.vo.EmailTemplateSearchVO" resultType="kr.co.abcmart.bo.cmm.model.master.CmEmailTemplate">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmEmailTemplateDao.selectEmailSendPopTemplateList [이메일 발송 팝업에서 템플릿 조회][김진성] */
+		SELECT EMAIL_TMPL_SEQ
+		     , SITE_NO
+		     , EMAIL_TMPL_NAME
+		<if test="emailTmplSeq != null and emailTmplSeq > 0">
+		     , EMAIL_TITLE_TEXT
+		     , EMAIL_CONT_TEXT
+		</if>
+		     , EMAIL_KEY_TEXT
+		  FROM CM_EMAIL_TEMPLATE WITH (NOLOCK)
+		 WHERE EMAIL_TYPE_CODE = #{emailTypeCode, jdbcType=VARCHAR}
+		   AND EMAIL_TMPL_YN = #{emailTmplYn, jdbcType=VARCHAR}
+		   AND SEND_PROC_GBN_TYPE = #{sendProcGbnType, jdbcType=VARCHAR}
+		<if test="siteNo != null and siteNo != ''">
+		   AND SITE_NO <choose><when test="siteNo == '99999'">IS NULL</when><otherwise>= #{siteNo, jdbcType=VARCHAR}</otherwise></choose>
+		</if>
+		<if test="emailTmplSeq != null and emailTmplSeq > 0">
+		   AND EMAIL_TMPL_SEQ = #{emailTmplSeq, jdbcType=INTEGER}
+		</if>
+    </select>
+
+    <select id="selectCmEmailTemplateByEmailId" parameterType="String" resultType="kr.co.abcmart.bo.cmm.model.master.CmEmailTemplate">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmEmailTemplateDao.selectCmEmailTemplateByEmailId [메일ID 템플릿 조회][김영현] */
+		SELECT
+				email_tmpl_seq
+				, site_no
+				, email_type_code
+				, email_tmpl_name
+				, email_title_text
+				, email_cont_text
+				, email_key_text
+		  FROM	cm_email_template with (nolock)
+		 WHERE	email_id = #{value, jdbcType=VARCHAR}
+		 AND	email_tmpl_yn = 'Y'
+    </select>
+    
+    <select id="selectCmEmailIdCount" parameterType="String" resultType="int">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmEmailTemplateDao.selectCmEmailIdCount [동일 이메일 검색결과 개수 ][고웅환] */
+    	SELECT <include refid="Paging.totalCount" />
+    	  FROM CM_EMAIL_TEMPLATE WITH (NOLOCK)
+    	 WHERE EMAIL_ID = #{emailId, jdbcType=VARCHAR}
+    </select>
+</mapper>

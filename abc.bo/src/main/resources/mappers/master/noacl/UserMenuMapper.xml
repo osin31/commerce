@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.noacl.repository.master.UserMenuDao">
+
+	<select id="getUserMenuList" parameterType="kr.co.abcmart.bo.noacl.vo.UserMenuVO" resultType="kr.co.abcmart.bo.noacl.vo.UserMenuVO">
+		/*+ kr.co.abcmart.bo.noacl.repository.master.UserMenuDao.getUserMenuList [메뉴목록] [유성민]*/
+		WITH MENU_CTE AS (
+			SELECT MENU_NO
+				 , UP_MENU_NO
+				 , MENU_NAME
+				 , MENU_GBN_TYPE
+				 , MENU_URL
+				 , ALL_PATH_MENU_NO
+				 , CONVERT(VARCHAR(255), RIGHT('000' + CONVERT(VARCHAR(3), SORT_SEQ), 3)) DEPTH_SORT
+			  FROM SY_MENU with (nolock)
+			 WHERE ISNULL(UP_MENU_NO, '') = ''
+			   AND USE_YN = 'Y'
+		 UNION ALL
+			SELECT A.MENU_NO
+				 , A.UP_MENU_NO
+				 , A.MENU_NAME
+				 , A.MENU_GBN_TYPE
+				 , A.MENU_URL
+				 , A.ALL_PATH_MENU_NO
+				 , CONVERT(VARCHAR(255), B.DEPTH_SORT + ' > ' + RIGHT('000' + CONVERT(VARCHAR(3), A.SORT_SEQ), 3) + A.MENU_NO) DEPTH_SORT
+			  FROM SY_MENU A with (nolock)
+			 INNER JOIN MENU_CTE B
+				ON A.UP_MENU_NO = B.MENU_NO
+			   AND A.USE_YN = 'Y'
+			   AND A.DISP_YN = 'Y'
+			   AND A.AUTH_APPLY_SYSTEM_TYPE = #{authApplySystemType}
+		 )
+		 SELECT DISTINCT A.MENU_NO
+			  , A.UP_MENU_NO
+			  , A.MENU_NAME
+			  , A.MENU_GBN_TYPE
+			  , A.MENU_URL
+			  , A.ALL_PATH_MENU_NO
+			  , A.DEPTH_SORT
+			  , B.AUTH_NO
+			  , (SELECT (CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END)
+				   FROM MENU_CTE Z
+				  WHERE Z.UP_MENU_NO = A.MENU_NO ) AS HAVE_CHILD
+		   FROM MENU_CTE A
+		   INNER JOIN SY_AUTHORITY_MENU B with (nolock)
+			 ON A.MENU_NO = B.MENU_NO
+			AND B.USE_YN ='Y'
+		  WHERE ISNULL(A.UP_MENU_NO, '') != ''
+			AND B.AUTH_NO IN
+			<foreach collection="adminAuthorities" item="item" open="(" separator="," close=")">
+				#{item.authNo}
+			</foreach>
+		  ORDER BY A.DEPTH_SORT
+	</select>
+
+	<select id="getFavoriteMenuList" parameterType="kr.co.abcmart.bo.noacl.vo.UserMenuVO" resultType="kr.co.abcmart.bo.noacl.vo.UserMenuVO">
+		/*+ kr.co.abcmart.bo.noacl.repository.master.UserMenuDao.getFavoriteMenuList [즐겨찾기 목록] [유성민] @NoAccessHis */
+		SELECT DISTINCT A.MENU_NO
+			 , B.MENU_NAME
+			 , B.MENU_URL
+			 , B.ALL_PATH_MENU_NO
+		  FROM SY_ADMIN_FAVORITES A with (nolock)
+		 INNER JOIN SY_MENU B with (nolock)
+			ON A.MENU_NO = B.MENU_NO
+		   AND B.USE_YN = 'Y'
+		   AND B.DISP_YN = 'Y'
+		 INNER JOIN SY_AUTHORITY_MENU C with (nolock)
+			ON A.MENU_NO = C.MENU_NO
+		   AND C.USE_YN = 'Y'
+		   AND C.AUTH_NO IN
+			<foreach collection="adminAuthorities" item="item" open="(" separator="," close=")">
+				#{item.authNo}
+			</foreach>
+		 WHERE A.ADMIN_NO = #{adminNo, jdbcType=VARCHAR}
+	</select>
+
+	<select id="selectFavoritesMenuCountByUser" parameterType="kr.co.abcmart.bo.noacl.vo.UserMenuVO" resultType="int">
+		/*+ kr.co.abcmart.bo.noacl.repository.master.UserMenuDao.selectFavoritesMenuCount [개인별 등록한 즐겨찾기 중복체크] [유성민]*/
+		SELECT COUNT(*)
+		  FROM SY_ADMIN_FAVORITES
+		 WHERE ADMIN_NO = #{adminNo, jdbcType=VARCHAR}
+		   AND MENU_NO = #{menuNo, jdbcType=VARCHAR}
+	</select>
+
+	<select id="selectFavoritesMenuCount" parameterType="kr.co.abcmart.bo.noacl.vo.UserMenuVO" resultType="int">
+		/*+ kr.co.abcmart.bo.noacl.repository.master.UserMenuDao.selectFavoritesMenuCount [개인별 등록한 즐겨찾기 카운트] [유성민]*/
+		SELECT COUNT(*)
+		  FROM SY_ADMIN_FAVORITES with (nolock)
+		 WHERE ADMIN_NO = #{adminNo, jdbcType=VARCHAR}
+	</select>
+
+	<insert id="insertFavoritesMenu" parameterType="kr.co.abcmart.bo.noacl.vo.UserMenuVO">
+		/*+ kr.co.abcmart.bo.noacl.repository.master.UserMenuDao.insertFavoritesMenu [즐겨찾기 등록] [유성민]*/
+		INSERT INTO SY_ADMIN_FAVORITES (
+			  ADMIN_NO
+			, MENU_NO
+			, SORT_SEQ
+		)
+		VALUES (
+			  #{adminNo, jdbcType=VARCHAR}
+			, #{menuNo, jdbcType=VARCHAR}
+			, #{sortSeq, jdbcType=INTEGER}
+		)
+	</insert>
+
+	<delete id="deleteFavoritesMenu" parameterType="kr.co.abcmart.bo.noacl.vo.UserMenuVO">
+		/*+ kr.co.abcmart.bo.noacl.repository.master.UserMenuDao.deleteFavoritesMenu [즐겨찾기 삭제] [유성민]*/
+		DELETE FROM SY_ADMIN_FAVORITES
+		 WHERE admin_no = #{adminNo, jdbcType=VARCHAR}
+		   AND menu_no = #{menuNo, jdbcType=VARCHAR}
+	</delete>
+
+
+</mapper>

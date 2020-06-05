@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyAdminUseHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	admin_no, use_hist_seq, use_hist_class_code, access_url, use_cont_text, menu_no, access_ip_text, session_id, success_yn, login_fail_rsn_code, rgster_no, rgst_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	admin_no = #{adminNo, jdbcType=VARCHAR} AND use_hist_seq = #{useHistSeq, jdbcType=INTEGER}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.system.model.master.SyAdminUseHistory" resultType="kr.co.abcmart.bo.system.model.master.SyAdminUseHistory">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyAdminUseHistoryDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			sy_admin_use_history WITH (NOLOCK)
+
+		<where> 
+			<if test="adminNo != null"> 
+				 admin_no = #{adminNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="useHistSeq != null"> 
+				 AND use_hist_seq = #{useHistSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="useHistClassCode != null"> 
+				 AND use_hist_class_code = #{useHistClassCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="accessUrl != null"> 
+				 AND access_url = #{accessUrl, jdbcType=VARCHAR}
+			</if> 
+			<if test="useContText != null"> 
+				 AND use_cont_text = #{useContText, jdbcType=VARCHAR}
+			</if> 
+			<if test="menuNo != null"> 
+				 AND menu_no = #{menuNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="accessIpText != null"> 
+				 AND access_ip_text = #{accessIpText, jdbcType=VARCHAR}
+			</if> 
+			<if test="sessionId != null"> 
+				 AND session_id = #{sessionId, jdbcType=VARCHAR}
+			</if> 
+			<if test="successYn != null"> 
+				 AND success_yn = #{successYn, jdbcType=CHAR}
+			</if> 
+			<if test="loginFailRsnCode != null"> 
+				 AND login_fail_rsn_code = #{loginFailRsnCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="rgsterNo != null"> 
+				 AND rgster_no = #{rgsterNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="rgstDtm != null"> 
+				 AND rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <insert id="insert" parameterType="kr.co.abcmart.bo.system.model.master.SyAdminUseHistory">	
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SyAdminUseHistoryDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO sy_admin_use_history
+			 ( admin_no, use_hist_seq, use_hist_class_code, access_url, use_cont_text, menu_no, access_ip_text, session_id, success_yn, login_fail_rsn_code, rgster_no, rgst_dtm ) 
+
+		VALUES 
+			 ( #{adminNo, jdbcType=VARCHAR}, #{useHistSeq, jdbcType=INTEGER}, #{useHistClassCode, jdbcType=VARCHAR}, #{accessUrl, jdbcType=VARCHAR}, #{useContText, jdbcType=VARCHAR}, #{menuNo, jdbcType=VARCHAR}, #{accessIpText, jdbcType=VARCHAR}, #{sessionId, jdbcType=VARCHAR}, #{successYn, jdbcType=CHAR}, #{loginFailRsnCode, jdbcType=VARCHAR}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.system.model.master.SyAdminUseHistory">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyAdminUseHistoryDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE sy_admin_use_history
+		<set> 
+			<if test="adminNo != null"> 
+				admin_no = #{adminNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="useHistSeq != null"> 
+				use_hist_seq = #{useHistSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="useHistClassCode != null"> 
+				use_hist_class_code = #{useHistClassCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="accessUrl != null"> 
+				access_url = #{accessUrl, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="useContText != null"> 
+				use_cont_text = #{useContText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="menuNo != null"> 
+				menu_no = #{menuNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="accessIpText != null"> 
+				access_ip_text = #{accessIpText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="sessionId != null"> 
+				session_id = #{sessionId, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="successYn != null"> 
+				success_yn = #{successYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="loginFailRsnCode != null"> 
+				login_fail_rsn_code = #{loginFailRsnCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgsterNo != null"> 
+				rgster_no = #{rgsterNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 admin_no = #{adminNo, jdbcType=VARCHAR} AND use_hist_seq = #{useHistSeq, jdbcType=INTEGER}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.system.model.master.SyAdminUseHistory">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyAdminUseHistoryDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM sy_admin_use_history
+		WHERE 
+			 admin_no = #{adminNo, jdbcType=VARCHAR} AND use_hist_seq = #{useHistSeq, jdbcType=INTEGER}  
+    </delete>
+</mapper>

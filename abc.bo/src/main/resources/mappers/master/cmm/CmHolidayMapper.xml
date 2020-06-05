@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.cmm.repository.master.CmHolidayDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.cmm.model.master.CmHoliday" resultType="kr.co.abcmart.bo.cmm.model.master.CmHoliday">
+    
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmHolidayDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			cm_holiday
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectHolidayYearListCount" parameterType="pageable" resultType="int" >
+    	/*+ kr.co.abcmart.bo.system.repository.master.CmHolidayDao.selectHolidayYearListCount [휴일 리스트 카운트 가져오기] [최경호]*/
+    	SELECT <include refid="Paging.totalCount" />
+			FROM CM_HOLIDAY A with (nolock)
+			INNER JOIN SY_ADMIN B with (nolock) ON A.RGSTER_NO = B.ADMIN_NO
+      	  WHERE A.HLDY_YN = 'Y'
+      	    AND A.HLDY_GBN_TYPE = #{bean.hldyGbnType}
+		    <if test='bean.year != null and bean.year != ""'>
+		    AND CONVERT(VARCHAR(4),A.HLDY_YMD,120) = #{bean.year}
+		    </if>
+		    <if test='bean.vndrNo != null and bean.vndrNo != ""'>
+		    AND A.VNDR_NO = #{bean.vndrNo}
+		    </if>
+    </select>
+    
+    <select id="selectHolidayYearList" parameterType="pageable" resultType="kr.co.abcmart.bo.cmm.model.master.CmHoliday" >
+    	/*+ kr.co.abcmart.bo.system.repository.master.CmHolidayDao.selectHolidayYearList [그리드 휴일 리스트 가져오기] [최경호]*/
+		SELECT A.HLDY_SEQ
+			, A.HLDY_YMD
+		    , A.HLDY_NAME
+		    , A.VNDR_NO
+		    , A.RGSTER_NO
+		    , CASE WHEN A.MOD_DTM IS NOT NULL THEN A.MOD_DTM ELSE A.RGST_DTM END AS RGST_DTM
+			, CASE WHEN A.MODER_NO IS NOT NULL THEN (SELECT X.LOGIN_ID FROM SY_ADMIN X WHERE A.MODER_NO = X.ADMIN_NO)
+                   ELSE B.LOGIN_ID END AS LOGIN_ID
+            , CASE WHEN A.MODER_NO IS NOT NULL THEN (SELECT X.ADMIN_NAME FROM SY_ADMIN X WHERE A.MODER_NO = X.ADMIN_NO)
+                   ELSE B.ADMIN_NAME END AS ADMIN_NAME
+			FROM CM_HOLIDAY A with (nolock)
+			INNER JOIN SY_ADMIN B with (nolock) ON A.RGSTER_NO = B.ADMIN_NO
+		  WHERE A.HLDY_YN = 'Y'
+		    AND A.HLDY_GBN_TYPE = #{bean.hldyGbnType}
+		    <if test='bean.year != null and bean.year != ""'>
+		    AND CONVERT(VARCHAR(4),A.HLDY_YMD,120) = #{bean.year}
+		    </if>
+		    <if test='bean.vndrNo != null and bean.vndrNo != ""'>
+		    AND A.VNDR_NO = #{bean.vndrNo}
+		    </if>
+		ORDER BY A.HLDY_YMD      
+      <include refid="Paging.mssql" />
+    </select>
+    
+    <select id="selectHolidayDetailCalendarPop" parameterType="kr.co.abcmart.bo.cmm.model.master.CmHoliday" resultType="kr.co.abcmart.bo.cmm.model.master.CmHoliday" >
+    	/*+ kr.co.abcmart.bo.system.repository.master.CmHolidayDao.selectHolidayDetailCalendarPop [휴일 캘린더로 보기 리스트 가져오기] [최경호]*/
+		SELECT A.HLDY_SEQ AS HLDY_SEQ
+		    , A.HLDY_YMD AS HLDY_YMD
+		    , C.HLDY_NAME AS HLDY_NAME
+		    , A.HLDY_YN AS HLDY_YN
+		    , A.VNDR_NO AS VNDR_NO
+		    , A.RGSTER_NO AS RGSTER_NO
+		    , A.RGST_DTM AS RGST_DTM
+			FROM CM_HOLIDAY A with (nolock)
+			INNER JOIN SY_ADMIN B with (nolock) ON A.RGSTER_NO = B.ADMIN_NO
+			INNER JOIN CM_HOLIDAY C with (nolock) ON A.HLDY_YMD = C.HLDY_YMD
+		  WHERE CONVERT(VARCHAR(6),A.HLDY_YMD ,112) = #{yyyyMm}
+		    <if test='vndrNo != null and vndrNo != ""'> 
+		    AND A.VNDR_NO   = #{vndrNo}
+		    </if>
+			AND A.HLDY_GBN_TYPE = #{hldyGbnType}
+			AND C.HLDY_GBN_TYPE = 'S'
+		ORDER BY A.HLDY_YMD
+    </select>
+    
+    <select id="selectHolidayList" parameterType="kr.co.abcmart.bo.cmm.model.master.CmHoliday" resultType="kr.co.abcmart.bo.cmm.model.master.CmHoliday" >
+    	/*+ kr.co.abcmart.bo.system.repository.master.CmHolidayDao.selectHolidayList [휴일 정보 리스트 가져오기] [최경호]*/
+		SELECT CONVERT(CHAR(8), A.HLDY_YMD, 112) AS YYYY_MM 
+		    FROM CM_HOLIDAY A with (nolock)
+		  WHERE CONVERT(VARCHAR(4), A.HLDY_YMD, 112) = #{yyyyMm}
+		    <if test='vndrNo != null and vndrNo != ""'>
+		    AND A.VNDR_NO = #{vndrNo}
+		    </if>
+		    <if test='hldyGbnType != null and hldyGbnType != ""'>
+		    AND A.HLDY_GBN_TYPE = #{hldyGbnType}
+		    </if>
+		ORDER BY A.HLDY_YMD
+    </select>
+
+    <select id="selectStandardHolidayList" parameterType="kr.co.abcmart.bo.cmm.model.master.CmHoliday" resultType="kr.co.abcmart.bo.cmm.model.master.CmHoliday" >
+    	/*+ kr.co.abcmart.bo.system.repository.master.CmHolidayDao.selectStandardHolidayList [시스템 휴일 정보 리스트 가져오기] [최경호]*/
+		SELECT CONVERT(CHAR(8), A.HLDY_YMD, 112) AS YYYY_MM 
+		    FROM CM_HOLIDAY A with (nolock)
+		  WHERE CONVERT(VARCHAR(4), A.HLDY_YMD, 112) = #{yyyyMm}
+		    AND A.HLDY_YN = 'Y'
+		    AND A.HLDY_GBN_TYPE = 'S'
+		ORDER BY A.HLDY_YMD
+    </select>
+    
+    <select id="selectStandardHolidayListAll" parameterType="kr.co.abcmart.bo.cmm.model.master.CmHoliday" resultType="kr.co.abcmart.bo.cmm.model.master.CmHoliday" >
+    	/*+ kr.co.abcmart.bo.system.repository.master.CmHolidayDao.selectStandardHolidayListAll [시스템 휴일 정보 리스트 가져오기] [최경호]*/
+		SELECT A.HLDY_YMD
+			 , A.HLDY_NAME
+			 , A.HLDY_GBN_TYPE
+			 , A.HLDY_YN
+		    FROM CM_HOLIDAY A with (nolock)
+		  WHERE CONVERT(VARCHAR(4), A.HLDY_YMD, 112) = #{insertYear}
+		    AND A.HLDY_GBN_TYPE = 'S'
+		ORDER BY 1
+    </select>
+    
+    <insert id="insertHoliday" parameterType="java.util.List">
+    	/*+ kr.co.abcmart.bo.system.repository.master.CmHolidayDao.insertsystemHolidayNo [시스템 휴일 등록] [최경호]*/
+		INSERT INTO CM_HOLIDAY
+		          ( HLDY_YMD
+		          , HLDY_NAME
+		          , HLDY_GBN_TYPE
+		          , VNDR_NO
+		          , HLDY_YN
+		          , RGSTER_NO
+		          , RGST_DTM
+		          )
+		     VALUES
+		     <foreach collection="list" item="item" separator=",">
+		          ( #{item.hldyYmd}
+		          , #{item.hldyName}
+		          , #{item.hldyGbnType}
+		          , #{item.vndrNo}
+		          , #{item.hldyYn}
+		          , #{item.rgsterNo}
+		          , GETDATE()
+				   )
+			</foreach>
+    </insert>
+
+    <insert id="insertsystemHolidayNo" parameterType="java.util.List">
+    	/*+ kr.co.abcmart.bo.system.repository.master.CmHolidayDao.insertsystemHolidayNo [시스템 휴일 등록] [최경호]*/
+		INSERT INTO CM_HOLIDAY
+		          ( HLDY_YMD
+		          , HLDY_NAME
+		          , HLDY_GBN_TYPE
+		          , VNDR_NO
+		          , HLDY_YN
+		          , RGSTER_NO
+		          , RGST_DTM
+		          )
+		     VALUES
+		     <foreach collection="list" item="item" separator=",">
+		          ( #{item.locdate}
+		          , #{item.dateName}
+		          , 'S'
+		          , #{item.vndrNo}
+		          , #{item.isHoliday}
+		          , #{item.rgsterNo}
+		          , GETDATE()
+				   )
+			</foreach>
+    </insert>
+    
+    <update id="updateHoliday" parameterType="kr.co.abcmart.bo.cmm.model.master.CmHoliday">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmCounselScriptDao.updateHoliday [휴일관리 업데이트] [최경호] */
+	UPDATE CM_HOLIDAY
+	   SET HLDY_YN   = #{hldyYn}
+	     , MODER_NO  = #{moderNo}
+	     , MOD_DTM   = GETDATE()
+	  WHERE HLDY_YMD = #{hldyYmd}
+	    AND VNDR_NO  = #{vndrNo}
+    </update>
+
+    <update id="updateCommonHoliday" parameterType="kr.co.abcmart.bo.cmm.model.master.CmHoliday">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmCounselScriptDao.updateCommonHoliday [공통 휴일 데이터 업데이트] [최경호] */
+	UPDATE CM_HOLIDAY
+	   SET HLDY_YN   = #{hldyYn}
+	     , MODER_NO  = #{moderNo}
+	     , MOD_DTM   = GETDATE()
+	  WHERE HLDY_YMD = #{hldyYmd}
+	    AND HLDY_GBN_TYPE  = 'C'
+    </update>
+
+    <update id="updateHolidayGrid" parameterType="kr.co.abcmart.bo.cmm.model.master.CmHoliday">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmCounselScriptDao.updateHolidayGrid [그리드에서 휴일관리 N으로 업데이트] [최경호] */
+	UPDATE CM_HOLIDAY
+	   SET HLDY_YN   = #{hldyYn}
+	     , MODER_NO  = #{moderNo}
+	     , MOD_DTM   = GETDATE()
+	  WHERE HLDY_YMD = #{hldyYmd}
+	    AND HLDY_GBN_TYPE != 'S'
+	    <if test='isVendor != null and isVendor != "" and isVendor eq "true"'>
+	    AND VNDR_NO = #{vndrNo}
+	    </if>
+    </update>
+    
+    <insert id="insertSystemHolidayVndr" parameterType="kr.co.abcmart.bo.cmm.model.master.CmHoliday">
+    	/*+ kr.co.abcmart.bo.system.repository.master.CmHolidayDao.insertSystemHolidayVndr [신규 업체의 시스템 휴일 등록] [최경호]*/
+		INSERT INTO CM_HOLIDAY( HLDY_YMD, HLDY_NAME, VNDR_NO, HLDY_YN, RGSTER_NO, RGST_DTM, MODER_NO, MOD_DTM )
+			SELECT HLDY_YMD, HLDY_NAME, #{vndrNo}, HLDY_YN, #{rgsterNo}, GETDATE(), #{moderNo}, GETDATE()
+				FROM CM_HOLIDAY A
+			  WHERE A.HLDY_GBN_TYPE = 'C'
+				AND CONVERT(VARCHAR(4), A.HLDY_YMD,120) = #{year}
+	</insert>
+    
+</mapper>

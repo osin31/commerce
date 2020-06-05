@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.DpSizeChartDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	size_chart_seq, size_chart_name, std_ctgr_no, theme_type, brand_assign_yn, brand_no, image_name, image_path_text, image_url, altrn_text, use_yn, rgster_no, rgst_dtm, moder_no, mod_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	size_chart_seq = #{sizeChartSeq, jdbcType=INTEGER}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.product.model.master.DpSizeChart" resultType="kr.co.abcmart.bo.product.model.master.DpSizeChart">
+    
+     /*+ kr.co.abcmart.bo.product.repository.master.DpSizeChartDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			DP_SIZE_CHART
+		<where> 
+			<if test="sizeChartSeq != null"> 
+				 size_chart_seq = #{sizeChartSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="sizeChartName != null"> 
+				 AND size_chart_name = #{sizeChartName, jdbcType=VARCHAR}
+			</if> 
+			<if test="stdCtgrNo != null"> 
+				 AND std_ctgr_no = #{stdCtgrNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="themeType != null"> 
+				 AND theme_type = #{themeType, jdbcType=CHAR}
+			</if> 
+			<if test="brandAssignYn != null"> 
+				 AND brand_assign_yn = #{brandAssignYn, jdbcType=CHAR}
+			</if> 
+			<if test="brandNo != null"> 
+				 AND brand_no = #{brandNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="imageName != null"> 
+				 AND image_name = #{imageName, jdbcType=VARCHAR}
+			</if> 
+			<if test="imagePathText != null"> 
+				 AND image_path_text = #{imagePathText, jdbcType=VARCHAR}
+			</if> 
+			<if test="imageUrl != null"> 
+				 AND image_url = #{imageUrl, jdbcType=VARCHAR}
+			</if> 
+			<if test="altrnText != null"> 
+				 AND altrn_text = #{altrnText, jdbcType=VARCHAR}
+			</if> 
+			<if test="useYn != null"> 
+				 AND use_yn = #{useYn, jdbcType=CHAR}
+			</if> 
+			<if test="rgsterNo != null"> 
+				 AND rgster_no = #{rgsterNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="rgstDtm != null"> 
+				 AND rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="moderNo != null"> 
+				 AND moder_no = #{moderNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="modDtm != null"> 
+				 AND mod_dtm = #{modDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+	<insert id="insert" useGeneratedKeys="true" keyProperty="sizeChartSeq">
+
+     /*+ kr.co.abcmart.bo.product.repository.master.DpSizeChartDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO DP_SIZE_CHART
+			 ( size_chart_name, std_ctgr_no, theme_type, brand_assign_yn, brand_no, image_name, image_path_text, image_url, altrn_text, use_yn, rgster_no, rgst_dtm, moder_no, mod_dtm ) 
+
+		VALUES 
+			 ( #{sizeChartName, jdbcType=VARCHAR}, #{stdCtgrNo, jdbcType=VARCHAR}, #{themeType, jdbcType=CHAR}, #{brandAssignYn, jdbcType=CHAR}, #{brandNo, jdbcType=VARCHAR}, #{imageName, jdbcType=VARCHAR}, #{imagePathText, jdbcType=VARCHAR}, #{imageUrl, jdbcType=VARCHAR}, #{altrnText, jdbcType=VARCHAR}, #{useYn, jdbcType=CHAR}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.product.model.master.DpSizeChart">
+    
+     /*+ kr.co.abcmart.bo.product.repository.master.DpSizeChartDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE DP_SIZE_CHART
+		<set> 
+			<if test="sizeChartSeq != null"> 
+				size_chart_seq = #{sizeChartSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="sizeChartName != null"> 
+				size_chart_name = #{sizeChartName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="stdCtgrNo != null"> 
+				std_ctgr_no = #{stdCtgrNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="themeType != null"> 
+				theme_type = #{themeType, jdbcType=CHAR}, 
+			</if> 
+			<if test="brandAssignYn != null"> 
+				brand_assign_yn = #{brandAssignYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="brandNo != null"> 
+				brand_no = #{brandNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="imageName != null"> 
+				image_name = #{imageName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="imagePathText != null"> 
+				image_path_text = #{imagePathText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="imageUrl != null"> 
+				image_url = #{imageUrl, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="altrnText != null"> 
+				altrn_text = #{altrnText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="useYn != null"> 
+				use_yn = #{useYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="rgsterNo != null"> 
+				rgster_no = #{rgsterNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 size_chart_seq = #{sizeChartSeq, jdbcType=INTEGER}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.product.model.master.DpSizeChart">
+    
+     /*+ kr.co.abcmart.bo.product.repository.master.DpSizeChartDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM DP_SIZE_CHART
+		WHERE 
+			 size_chart_seq = #{sizeChartSeq, jdbcType=INTEGER}  
+    </delete>
+</mapper>

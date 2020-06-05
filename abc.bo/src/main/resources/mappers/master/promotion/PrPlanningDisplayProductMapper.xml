@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayProductDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.0
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayProduct">
+    
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayProductDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			PR_PLANNING_DISPLAY_PRODUCT
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectPrPlanningDisplayProductListCount" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayProduct" resultType="int">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayProductDao.selectPrPlanningDisplayProductListCount [기획전 상품 목록 카운트 조회] [이가영] */
+    
+    	SELECT
+    		count(A.PLNDP_NO)
+    	FROM
+    		PR_PLANNING_DISPLAY_PRODUCT A with (nolock)
+    	INNER JOIN PD_PRODUCT B with (nolock) ON A.PRDT_NO = B.PRDT_NO
+    	WHERE
+    		A.PLNDP_NO = #{bean.plndpNo, jdbcType=VARCHAR}
+    </select>
+    
+    <select id="selectPrPlanningDisplayProductList" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayProduct" resultType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayProduct">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayProductDao.selectPrPlanningDisplayProductList [기획전 상품 목록 조회] [이가영] */
+    
+    	SELECT
+    		A.plndp_no,
+    		A.prdt_no,
+    		A.sort_seq,
+    		B.prdt_name,
+    		B.vndr_no,
+    		B.chnnl_no,
+    		B.sell_stat_code,
+    		B.disp_yn,
+    		B.rgst_dtm,
+    		B.style_info,
+    		B.prdt_color_info,
+    		B.mmny_prdt_yn,
+    		C.BRAND_NAME,
+    		D.STD_CTGR_NAME,
+    		E.IMAGE_URL,
+			E.ALTRN_TEXT
+    	FROM
+    		PR_PLANNING_DISPLAY_PRODUCT A with (nolock)
+    	INNER JOIN PD_PRODUCT B with (nolock) ON A.PRDT_NO = B.PRDT_NO
+    	INNER JOIN DP_BRAND C with (nolock) ON B.BRAND_NO = C.BRAND_NO
+		INNER JOIN SY_STANDARD_CATEGORY D with (nolock) ON B.STD_CTGR_NO = D.STD_CTGR_NO
+		INNER JOIN PD_PRODUCT_RELATION_FILE E with (nolock) ON E.PRDT_NO = B.PRDT_NO AND E.PRDT_RLTN_FILE_SEQ = '1'
+    	WHERE
+    		A.PLNDP_NO = #{bean.plndpNo, jdbcType=VARCHAR}
+    	ORDER BY
+    		A.SORT_SEQ
+    	<include refid="Paging.mssql" />
+    </select>
+    
+    <insert id="insertPrPlanningDisplayProduct" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayProduct">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayProductDao.insertPrPlanningDisplayProduct [기획전 상품 등록] [이가영] */
+    	
+    	INSERT INTO PR_PLANNING_DISPLAY_PRODUCT (
+    		plndp_no,
+    		prdt_no,
+    		sort_seq
+    	) VALUES (
+    		#{plndpNo, jdbcType=VARCHAR},
+    		#{prdtNo, jdbcType=VARCHAR},
+    		#{sortSeq, jdbcType=INTEGER}
+    	)
+    </insert>
+    
+    <update id="updatePrPlanningDisplayProduct" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayProduct">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayProductDao.updatePrPlanningDisplayProduct [기획전 상품 수정] [이가영] */
+    
+    	UPDATE PR_PLANNING_DISPLAY_PRODUCT
+		<set> 
+			<if test="sortSeq != null and sortSeq != ''">
+				sort_seq = #{sortSeq, jdbcType=INTEGER}, 
+			</if>
+		</set>
+		WHERE 
+			plndp_no = #{plndpNo, jdbcType=VARCHAR}
+			AND prdt_no = #{prdtNo, jdbcType=VARCHAR}   
+    </update>
+    
+    <delete id="deletePrPlanningDisplayProduct" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayProduct">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayProductDao.deletePrPlanningDisplayProduct [기획전 상품 삭제] [이가영] */
+    
+    	DELETE FROM PR_PLANNING_DISPLAY_PRODUCT
+    	WHERE
+    		PLNDP_NO = #{plndpNo, jdbcType=VARCHAR}
+    		<if test="prdtNoArr != null">
+    			AND PRDT_NO IN 
+	    		<foreach item="item" index="index" collection="prdtNoArr" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+    		</if>    		
+    </delete>
+    
+    <select id="selectByExhibitionPlanningForProduct" parameterType="pageable" resultType="kr.co.abcmart.bo.promotion.vo.PrExhibitionPlanningVO">
+		/*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayProductDao.selectByExhibitionPlanningForProduct [한 상품에 대한 기획전 정보 조회 쿼리] [김세훈] */  
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY B.sort_seq DESC) AS sort_seq,
+			A.plndp_no,
+			A.plndp_name,
+			C.site_no,
+			C.site_name,
+			C.chnnl_no,
+			C.chnnl_name,
+			A.pc_plndp_url,
+			A.mobile_plndp_url,
+			A.plndp_start_dtm,
+			A.plndp_end_dtm
+		FROM
+			pr_planning_display A WITH(NOLOCK)
+			LEFT JOIN pr_planning_display_product B WITH(NOLOCK) ON A.plndp_no = B.plndp_no
+			LEFT JOIN
+			(
+				SELECT
+					A.site_no,
+					A.site_name,
+					B.chnnl_no,
+					B.chnnl_name
+				FROM
+					sy_site A WITH(NOLOCK)
+					LEFT JOIN sy_site_chnnl B WITH(NOLOCK) ON A.site_no = B.site_no
+			) C ON A.chnnl_no = C.chnnl_no
+		WHERE
+			A.disp_yn = 'Y'
+			AND A.use_yn = 'Y'
+			AND B.prdt_no = #{bean.prdtNo, jdbcType=VARCHAR}
+		ORDER BY
+			B.sort_seq DESC
+		<include refid="Paging.mssql" /> 
+    </select>
+    
+    <select id="selectByExhibitionPlanningForProductTotalCount" parameterType="pageable" resultType="java.lang.Integer">
+		/*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayProductDao.selectByExhibitionPlanningForProductTotalCount [한 상품에 대한 기획전 정보 전체 갯수 조회 쿼리] [김세훈] */  
+		SELECT
+			<include refid="Paging.totalCount" />
+		FROM
+			pr_planning_display A WITH(NOLOCK)
+			LEFT JOIN pr_planning_display_product B WITH(NOLOCK) ON A.plndp_no = B.plndp_no
+		WHERE
+			A.disp_yn = 'Y'
+			AND A.use_yn = 'Y'
+			AND B.prdt_no = #{bean.prdtNo, jdbcType=VARCHAR}
+    </select>
+
+</mapper>

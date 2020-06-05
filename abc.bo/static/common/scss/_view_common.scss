@@ -1,0 +1,427 @@
+@import 'scss_header';
+
+.dashboard-box {
+
+	.content-header {
+		.content-title {
+			color: #666;
+		}
+
+		.company-name {
+			display: inline-block;
+			color: #000;
+
+			&:before {
+				content: ':';
+				display: inline-block;
+				color: #666;
+				margin: 0 5px;
+			}
+		}
+
+		.btn-sm {
+			margin-left: 10px;
+			transform: translateY(-2px);
+		}
+	}
+
+	.card-box {
+		background: #fff;
+
+		.card-header {
+			padding: 10px;
+			border: 1px solid $defaultBorderColor;
+			@include clearfix;
+
+			.fl {
+				float: left;
+
+				.btn-sm {
+					margin-left: 10px;
+				}
+			}
+
+			.fr {
+				float: right;
+			}
+
+			.card-title {
+				position: relative;
+				padding-left: 12px;
+				font-size: $defaultFontSize;
+				font-weight: 700;
+				line-height: 23px;
+
+				+ .date-range {
+					margin-left: 10px;
+				}
+
+				&:before {
+					content: '';
+					position: absolute;
+					top: 5px;
+					left: 0;
+					display: block;
+					width: 6px;
+					height: 6px;
+					background: url(../../images/icon/ico_bul_ttitle.gif) 0 0 no-repeat;
+				}
+			}
+		}
+
+		.card-body {
+			display: flex;
+			flex-direction: column;
+			height: calc(100% - 45px);
+			padding: 20px;
+			border: {
+				left: 1px solid $defaultBorderColor;
+				right: 1px solid $defaultBorderColor;
+				bottom: 1px solid $defaultBorderColor;
+			}
+
+			&.gray {
+				background: #fafafa;
+			}
+		}
+
+		&.table, &.has-tab {
+			.card-body {
+				//padding: 0;
+			}
+		}
+
+		&.table {
+			background: none;
+
+			.card-header {
+				background: #fff;
+				border-bottom: none;
+			}
+
+			.card-body {
+				padding: 0;
+				border: none;
+
+				.tbl-col {
+					tbody {
+						td {
+							padding: {
+								top: 8px;
+								bottom: 8px;
+							}
+
+							span, a {
+								@include ellipsis;
+							}
+
+							a {
+								text-decoration: underline;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		&.has-tab {
+			.tab-wrap {
+				overflow: visible;
+				display: flex;
+				flex: 1;
+				flex-direction: column;
+				min-height: 283px;
+				height: 283px;
+
+				.tabs {
+					-webkit-transform: translateY(-1px);
+					-moz-transform: translateY(-1px);
+					-ms-transform: translateY(-1px);
+					-o-transform: translateY(-1px);
+					transform: translateY(-1px);
+
+					li {
+						min-width: auto;
+
+						a {
+							background: #fff;
+						}
+
+						&.ui-tabs-active {
+							background: #fff;
+							border-bottom-color: #fff;
+
+							a {
+								padding: 0 21px;
+							}
+						}
+					}
+				}
+
+				.tab-content {
+					display: flex;
+					flex: 1;
+					flex-direction: column;
+
+					.status-list {
+						padding: 20px;
+					}
+				}
+			}
+		}
+	}
+
+	.status-list, .selling-status-list {
+		display: flex;
+		flex-direction: column;
+		-webkit-box-pack: justify;
+		-ms-flex-pack: justify;
+		justify-content: space-around;
+		-webkit-justify-content: space-around;
+		height: 100%;
+
+		.status-item {
+			font-size: $defaultFontSize;
+			@include justify_width;
+
+			.item-label {
+				flex: 1;
+			}
+
+			.item-value {
+			}
+		}
+	}
+
+	.status-list {
+		min-height: 100px;
+	}
+
+	.selling-status-list {
+		height: 120px;
+		padding: 30px 0;
+	}
+
+	.selling-status-wrap {
+		height: 100%;
+
+		.selling-status-range {
+			background: #f3f3f3;
+			text-align: center;
+			font-size: 14px;
+			font-weight: 700;
+			line-height: 24px;
+
+			+ .status-list {
+				padding-top: 20px;
+			}
+		}
+	}
+
+	.flex-box {
+		@include justify_width(false, 'start');
+
+		.flex-box {
+			flex: 1;
+		}
+
+		.card-box {
+			flex: 1;
+
+			+ .card-box {
+				margin-left: 10px;
+			}
+		}
+
+		.channel-list {
+			margin-right: 10px;
+		}
+
+		.status-list {
+			flex: 1;
+			height: calc(100% - 24px);
+		}
+
+		~ .flex-box, ~ .card-box {
+			margin-top: 10px;
+		}
+
+		&.card-wrap {
+			flex-wrap: wrap;
+
+			.card-box {
+				flex: {
+					grow: 0;
+					shrink: 1;
+					basis: calc(50% - 5px);
+				}
+				flex: 0 1 calc(50% - 5px);
+
+				&:nth-child(n + 3) {
+					margin-top: 10px;
+				}
+
+				&:nth-child(2n + 1) {
+					margin-left: 0;
+				}
+			}
+		}
+
+		&.col-2by1 {
+			> .card-box {
+				flex: {
+					grow: 1;
+					shrink: 1;
+					basis: calc(100% / 3 - 5px);
+				}
+				flex: 1 1 calc(100% / 3 - 5px);
+
+				&:first-child {
+					flex: {
+						grow: 1;
+						shrink: 1;
+						basis: calc((100% / 3 * 2) - 5px);
+					}
+					flex: 1 1 calc((100% / 3 * 2) - 5px);
+				}
+			}
+		}
+
+		&.col-3by1 {
+			> .card-box {
+				flex: {
+					grow: 1;
+					shrink: 1;
+					basis: calc(100% / 4 - 5px);
+				}
+				flex: 1 1 calc(100% / 4 - 5px);
+
+				&:first-child {
+					flex: {
+						grow: 1;
+						shrink: 1;
+						basis: calc((100% / 4 * 3) - 5px);
+					}
+					flex: 1 1 calc((100% / 4 * 3) - 5px);
+				}
+			}
+		}
+
+		&.col-4by2 {
+			> .card-box {
+				flex: {
+					grow: 0;
+					shrink: 1;
+					basis: calc((100% - 20px) / 4);
+				}
+				flex: 1 1 calc((100% - 20px) / 4);
+
+				&:last-child {
+					flex: {
+						grow: 1;
+						shrink: 1;
+						basis: calc(100% / 4 * 2);
+					}
+					flex: 1 1 calc(100% / 4 * 2);
+				}
+			}
+		}
+	}
+
+	.date-range {
+		color: #666;
+		font-size: $defaultFontSize;
+	}
+
+	.cnt {
+		display: inline-block;
+		color: $pointColorRed;
+		margin-right: 3px;
+		text-decoration: underline;
+		font-size: 16px;
+		font-weight: 700;
+
+		&.black {
+			text-decoration: none;
+			color: $defaultTextColor;
+		}
+
+		&.blue {
+			color: $pointColorBlue;
+		}
+	}
+
+	.channel-list {
+
+		li {
+			width: 50px;
+			height: 46px;
+
+			.item {
+				position: relative;
+				display: block;
+				height: 100%;
+
+				input {
+					position: absolute;
+					width: 1px;
+					height: 1px;
+					padding: 0;
+					margin: -1px;
+					overflow: hidden;
+					clip: rect(0, 0, 0, 0);
+					border: 0;
+
+					+ label {
+						display: block;
+						cursor: pointer;
+						-webkit-user-select: none;
+						-moz-user-select: none;
+						-ms-user-select: none;
+						font-size: $defaultFontSize;
+						text-align: center;
+						line-height: 46px;
+
+						&:before {
+							content: '';
+							position: absolute;
+							left: 0;
+							top: 0;
+							right: 0;
+							bottom: 0;
+							border: 1px solid #d5d5d5;
+						}
+
+						&:after {
+							content: '';
+							position: absolute;
+							left: 0;
+							top: 0;
+							right: 0;
+							bottom: 0;
+							z-index: 2;
+							border: 1px solid transparent;
+						}
+					}
+
+					&:checked + label {
+						color: $pointColorRed;
+						font-weight: 700;
+
+						&:after {
+							border-color: $pointColorRed;
+						}
+					}
+
+					&:disabled + label {
+						opacity: 0.6;
+					}
+				}
+			}
+
+			~ li {
+				margin-top: -1px;
+			}
+		}
+	}
+}

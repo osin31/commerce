@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.cmm.repository.master.CmOnlineMemberPolicyDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.cmm.model.master.CmOnlineMemberPolicy" resultType="kr.co.abcmart.bo.cmm.model.master.CmOnlineMemberPolicy">
+    
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmOnlineMemberPolicyDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			cm_online_member_policy with (nolock)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+
+	<select id="selectOnlinePolicyListCount" parameterType="kr.co.abcmart.common.paging.Pageable" resultType="int" >
+    	/*+ kr.co.abcmart.bo.system.repository.master.CmOnlineMemberPolicyDao.selectOnlinePolicyListCount [온라인 정책 카운트 가져오기] [최경호]*/
+		SELECT <include refid="Paging.totalCount" />
+			FROM CM_ONLINE_MEMBER_POLICY A with (nolock)
+			INNER JOIN SY_ADMIN B with (nolock) ON A.RGSTER_NO = B.ADMIN_NO
+	</select>
+	
+	<select id="selectOnlinePolicyList" parameterType="kr.co.abcmart.common.paging.Pageable" resultType="kr.co.abcmart.bo.cmm.model.master.CmOnlineMemberPolicy" >
+    	/*+ kr.co.abcmart.bo.system.repository.master.CmOnlineMemberPolicyDao.selectOnlinePolicyListCount [온라인 정책 리스트 가져오기] [최경호]*/
+		SELECT A.PLCY_SEQ
+			 , A.PLCY_APPLY_YMD
+			 , A.RGSTER_NO
+			 , A.RGST_DTM
+			 , A.MODER_NO
+			 , A.MOD_DTM 
+			 , B.LOGIN_ID
+		     , B.ADMIN_NAME
+			FROM CM_ONLINE_MEMBER_POLICY A with (nolock)
+			INNER JOIN SY_ADMIN B with (nolock) ON A.RGSTER_NO = B.ADMIN_NO 
+      	<choose>
+	      	<when test="sortColumn != null">
+			ORDER BY
+			<if test="sortColumn == 'rgstDtm'.toString()">
+				A.RGST_DTM
+			</if>
+			<if test="sortType == 'DESC'.toString()">
+				DESC
+			</if>
+			</when>
+			<otherwise>
+	      	ORDER BY PLCY_SEQ DESC
+			</otherwise>
+      	</choose>
+      	<include refid="Paging.mssql" />
+	</select>
+	
+	<select id="selectOnlinePolicyData" parameterType="kr.co.abcmart.bo.cmm.model.master.CmOnlineMemberPolicy" resultType="kr.co.abcmart.bo.cmm.model.master.CmOnlineMemberPolicy">
+	   	/*+ kr.co.abcmart.bo.system.repository.master.CmOnlineMemberPolicyDao.selectOnlinePolicyData [온라인 정책 기본 데이터 가져오기] [최경호]*/
+		SELECT A.PLCY_SEQ mbshpMemberJoinCpnName
+		 	 , A.PLCY_APPLY_YMD
+			 , A.MEMBER_JOIN_POINT_AMT
+			 , A.FIRST_BUY_POINT_AMT
+			 , A.BUY_POINT_RATE
+			 , A.ANNVR_FIRST_BUY_POINT_PAY_YN
+			 , A.ANNVR_FIRST_BUY_POINT_MULT_COUNT
+			 , A.MIN_USE_POINT_AMT
+			 , A.POINT_EXTN_YEAR_COUNT
+			 , A.PRDT_RVW_POINT_AMT
+			 , A.PHOTO_PRDT_RVW_POINT_AMT
+			 , A.MONTH_BEST_RVW_COUNT
+			 , A.MONTH_BEST_RVW_POINT_AMT
+			 , A.ONLN_SAVE_TERM_COUNT
+			 , A.OFLN_SAVE_TERM_COUNT
+			 , A.MBSHP_MEMBER_JOIN_CPN_NO
+			 , A.ONLN_MEMBER_JOIN_CPN_NO
+			 , A.BIRTH_DAY_CPN_NO
+			 , A.SOLD_OUT_CMPNS_CPN_NO
+			 , A.ART_APP_LOGIN_CPN_NO
+			 , A.OTS_APP_LOGIN_CPN_NO
+			 , A.RGSTER_NO
+			 , A.RGST_DTM
+			 , A.MODER_NO
+			 , A.MOD_DTM
+			 , C.CPN_NAME AS MBSHP_MEMBER_JOIN_CPN_NAME
+			 , D.CPN_NAME AS ONLN_MEMBER_JOIN_CPN_NAME
+			 , E.CPN_NAME AS BIRTH_DAY_CPN_NAME
+			 , F.CPN_NAME AS SOLD_OUT_CMPNS_CPN_NAME
+			 , G.CPN_NAME AS ART_APP_LOGIN_CPN_NAME
+			 , H.CPN_NAME AS OTS_APP_LOGIN_CPN_NAME
+			 , C.VALID_TERM_GBN_TYPE AS MBSHP_MEMBER_JOIN_VALID_TERM_GBN_TYPE
+             , D.VALID_TERM_GBN_TYPE AS ONLN_MEMBER_JOIN_VALID_TERM_GBN_TYPE
+             , E.VALID_TERM_GBN_TYPE AS BIRTH_DAY_VALID_TERM_GBN_TYPE
+             , F.VALID_TERM_GBN_TYPE AS SOLD_OUT_CMPNS_VALID_TERM_GBN_TYPE
+             , G.VALID_TERM_GBN_TYPE AS ART_APP_LOGIN_VALID_TERM_GBN_TYPE
+			 , H.VALID_TERM_GBN_TYPE AS OTS_APP_LOGIN_VALID_TERM_GBN_TYPE
+             , C.VALID_START_DTM AS MBSHP_MEMBER_JOIN_VALID_START_DTM
+             , D.VALID_START_DTM AS ONLN_MEMBER_JOIN_VALID_START_DTM
+             , E.VALID_START_DTM AS BIRTH_DAY_VALID_START_DTM
+             , F.VALID_START_DTM AS SOLD_OUT_CMPNS_VALID_START_DTM
+             , G.VALID_START_DTM AS ART_APP_LOGIN_VALID_START_DTM
+			 , H.VALID_START_DTM AS OTS_APP_LOGIN_VALID_START_DTM
+             , C.VALID_END_DTM AS MBSHP_MEMBER_JOIN_VALID_END_DTM
+             , D.VALID_END_DTM AS ONLN_MEMBER_JOIN_VALID_END_DTM
+             , E.VALID_END_DTM AS BIRTH_DAY_VALID_END_DTM
+             , F.VALID_END_DTM AS SOLD_OUT_CMPNS_VALID_END_DTM
+             , G.VALID_END_DTM AS ART_APP_LOGIN_VALID_END_DTM
+			 , H.VALID_END_DTM AS OTS_APP_LOGIN_VALID_END_DTM
+             , C.USE_LIMIT_DAY_COUNT AS MBSHP_MEMBER_JOIN_USE_LIMIT_DAY_COUNT
+             , D.USE_LIMIT_DAY_COUNT AS ONLN_MEMBER_JOIN_USE_LIMIT_DAY_COUNT
+             , E.USE_LIMIT_DAY_COUNT AS BIRTH_DAY_USE_LIMIT_DAY_COUNT
+             , F.USE_LIMIT_DAY_COUNT AS SOLD_OUT_CMPNS_USE_LIMIT_DAY_COUNT
+             , G.USE_LIMIT_DAY_COUNT AS ART_APP_LOGIN_USE_LIMIT_DAY_COUNT
+			 , H.USE_LIMIT_DAY_COUNT AS OTS_APP_LOGIN_USE_LIMIT_DAY_COUNT
+			 , B.LOGIN_ID
+		     , B.ADMIN_NAME
+			FROM CM_ONLINE_MEMBER_POLICY A with (nolock)
+			   INNER JOIN SY_ADMIN B with (nolock) ON A.RGSTER_NO = B.ADMIN_NO
+		       INNER JOIN PR_COUPON C with (nolock) ON A.MBSHP_MEMBER_JOIN_CPN_NO = C.CPN_NO
+		       INNER JOIN PR_COUPON D with (nolock) ON A.ONLN_MEMBER_JOIN_CPN_NO = D.CPN_NO
+		       INNER JOIN PR_COUPON E with (nolock) ON A.BIRTH_DAY_CPN_NO = E.CPN_NO
+		       LEFT OUTER JOIN PR_COUPON F with (nolock) ON A.SOLD_OUT_CMPNS_CPN_NO = F.CPN_NO
+		       LEFT OUTER JOIN PR_COUPON G with (nolock) ON A.ART_APP_LOGIN_CPN_NO = G.CPN_NO
+			   LEFT OUTER JOIN PR_COUPON H with (nolock) ON A.OTS_APP_LOGIN_CPN_NO = H.CPN_NO
+		WHERE plcy_seq = #{plcySeq}
+	</select>
+	
+	<select id="selectOnlinePolicyDtlData" parameterType="kr.co.abcmart.bo.cmm.model.master.CmOnlineMemberPolicy" resultType="kr.co.abcmart.bo.cmm.model.master.CmOnlineMemberPolicy">
+    	/*+ kr.co.abcmart.bo.system.repository.master.CmOnlineMemberPolicyDao.selectOnlinePolicyDtlData [온라인 정책 혜택/보상 데이터 가져오기] [최경호]*/
+		SELECT A.PLCY_SEQ
+		     , A.PLCY_APPLY_YMD
+		     , B.PLCY_DTL_SEQ
+			 , B.BUY_AMT
+		     , B.BUY_QTY
+		     , C.PAY_QTY
+		     , C.CPN_NO
+		     , D.CPN_NAME
+		    FROM CM_ONLINE_MEMBER_POLICY A with (nolock)
+		         INNER JOIN CM_ONLINE_MEMBER_POLICY_DETAIL B with (nolock) ON A.PLCY_SEQ = B.PLCY_SEQ
+		         LEFT OUTER JOIN CM_ONLINE_MEMBER_POLICY_COUPON C with (nolock) ON B.PLCY_DTL_SEQ = C.PLCY_DTL_SEQ AND A.PLCY_SEQ = C.PLCY_SEQ
+		         LEFT OUTER JOIN PR_COUPON D with (nolock) ON C.CPN_NO = D.CPN_NO
+		WHERE A.PLCY_SEQ  =  #{plcySeq} 
+		ORDER BY B.PLCY_DTL_SEQ
+	</select>
+	
+	<select id="selectOnlinePolicySeq" parameterType="kr.co.abcmart.bo.cmm.model.master.CmOnlineMemberPolicy" resultType="string">
+    	/*+ kr.co.abcmart.bo.system.repository.master.CmOnlineMemberPolicyDao.selectOnlinePolicySeq [온라인 정책 혜택/보상 데이터 가져오기] [최경호]*/
+		SELECT A.PLCY_DTL_SEQ
+			FROM CM_ONLINE_MEMBER_POLICY_DETAIL A with (nolock)
+		  WHERE A.PLCY_SEQ  = #{plcySeq} 
+	</select>
+
+	<select id="selectOnlinePolicyCouponData" parameterType="kr.co.abcmart.bo.cmm.model.master.CmOnlineMemberPolicy" resultType="kr.co.abcmart.bo.cmm.model.master.CmOnlineMemberPolicy">
+    	/*+ kr.co.abcmart.bo.system.repository.master.CmOnlineMemberPolicyDao.selectOnlinePolicyCouponData [온라인 정책 혜택/보상 데이터 가져오기] [최경호]*/
+		SELECT A.PLCY_SEQ
+			 , CAST(A.PLCY_APPLY_YMD AS DATE) AS PLCY_APPLY_YMD
+		     , B.PLCY_DTL_SEQ
+			 , B.BUY_AMT
+		     , B.BUY_QTY
+		     , C.PAY_QTY
+		     , C.CPN_NO
+		     , D.CPN_NAME
+		     , D.VALID_TERM_GBN_TYPE
+		     , D.VALID_START_DTM
+		     , D.VALID_END_DTM
+		     , D.USE_LIMIT_DAY_COUNT
+		    FROM CM_ONLINE_MEMBER_POLICY A with (nolock)
+		         INNER JOIN CM_ONLINE_MEMBER_POLICY_DETAIL B with (nolock) ON A.PLCY_SEQ = B.PLCY_SEQ
+		         INNER JOIN CM_ONLINE_MEMBER_POLICY_COUPON C with (nolock) ON B.PLCY_DTL_SEQ = C.PLCY_DTL_SEQ
+		         INNER JOIN PR_COUPON D with (nolock) ON C.CPN_NO = D.CPN_NO
+		WHERE A.PLCY_SEQ     = C.PLCY_SEQ
+		  AND A.PLCY_SEQ     = #{plcySeq} 
+		  AND B.PLCY_DTL_SEQ = #{plcyDtlSeq}
+		ORDER BY B.PLCY_DTL_SEQ
+	</select>
+	
+	<insert id="insertOnlinePolicy" parameterType="kr.co.abcmart.bo.cmm.model.master.CmOnlineMemberPolicy" useGeneratedKeys="true" keyProperty="plcySeq">
+		/*+ kr.co.abcmart.bo.system.repository.master.CmOnlineMemberPolicyDao.insertOnlinePolicy [온라인 정책  데이터 등록하기] [최경호]*/
+		INSERT INTO CM_ONLINE_MEMBER_POLICY
+		     ( PLCY_APPLY_YMD
+		     , MEMBER_JOIN_POINT_AMT
+		     , FIRST_BUY_POINT_AMT
+		     , BUY_POINT_RATE
+		     , ANNVR_FIRST_BUY_POINT_PAY_YN
+		     , ANNVR_FIRST_BUY_POINT_MULT_COUNT
+		     , MIN_USE_POINT_AMT
+		     , POINT_EXTN_YEAR_COUNT
+		     , PRDT_RVW_POINT_AMT
+		     , PHOTO_PRDT_RVW_POINT_AMT
+		     , MONTH_BEST_RVW_COUNT
+		     , MONTH_BEST_RVW_POINT_AMT
+		     , ONLN_SAVE_TERM_COUNT
+		     , OFLN_SAVE_TERM_COUNT
+		     , MBSHP_MEMBER_JOIN_CPN_NO
+		     , ONLN_MEMBER_JOIN_CPN_NO
+		     , BIRTH_DAY_CPN_NO
+		     , SOLD_OUT_CMPNS_CPN_NO
+		     , ART_APP_LOGIN_CPN_NO
+		     , OTS_APP_LOGIN_CPN_NO
+		     , RGSTER_NO
+		     , RGST_DTM
+		     , MODER_NO
+		     , MOD_DTM)
+			VALUES
+			 ( #{plcyApplyYmd}
+			 , #{memberJoinPointAmt}
+			 , #{firstBuyPointAmt}
+			 , #{buyPointRate}
+			 , #{annvrFirstBuyPointPayYn}
+			 , #{annvrFirstBuyPointMultCount}
+			 , #{minUsePointAmt}
+			 , #{pointExtnYearCount}
+			 , #{prdtRvwPointAmt}
+			 , #{photoPrdtRvwPointAmt}
+			 , #{monthBestRvwCount}
+			 , #{monthBestRvwPointAmt}
+			 , #{onlnSaveTermCount}
+			 , #{oflnSaveTermCount}
+			 , #{mbshpMemberJoinCpnNo}
+			 , #{onlnMemberJoinCpnNo}
+			 , #{birthDayCpnNo}
+			 , #{soldOutCmpnsCpnNo}
+			 , #{artAppLoginCpnNo}
+			 , #{otsAppLoginCpnNo}
+			 , #{rgsterNo}
+			 , GETDATE()
+			 , #{moderNo}
+			 , GETDATE())
+	</insert>
+
+	<insert id="insertOnlinePolicyDetail" parameterType="kr.co.abcmart.bo.cmm.model.master.CmOnlineMemberPolicy">
+		/*+ kr.co.abcmart.bo.system.repository.master.CmOnlineMemberPolicyDao.insertOnlinePolicyDetail [온라인 정책 상세 데이터 등록하기] [최경호]*/
+		INSERT INTO CM_ONLINE_MEMBER_POLICY_DETAIL
+		          ( PLCY_SEQ
+		          , PLCY_DTL_SEQ
+		          , BUY_AMT
+		          , BUY_QTY
+		          , RGSTER_NO
+		          , RGST_DTM
+		          , MODER_NO
+		          , MOD_DTM)
+		     VALUES
+		          ( #{plcySeq}
+		          , #{plcyDtlSeq}
+		          , #{buyAmt}
+		          , #{buyQty}
+		          , #{rgsterNo}
+		          , GETDATE()
+		          , #{moderNo}
+		          , GETDATE())
+	</insert>
+
+	<insert id="insertOnlinePolicyCoupon" parameterType="kr.co.abcmart.bo.cmm.model.master.CmOnlineMemberPolicy">
+		/*+ kr.co.abcmart.bo.system.repository.master.CmOnlineMemberPolicyDao.insertOnlinePolicyCoupon [온라인 정책 쿠폰 데이터 등록하기] [최경호]*/
+		INSERT INTO CM_ONLINE_MEMBER_POLICY_COUPON
+		          ( PLCY_SEQ
+		          , PLCY_DTL_SEQ
+		          , CPN_NO
+		          , PAY_QTY
+		          , RGSTER_NO
+		          , RGST_DTM)
+			VALUES( #{plcySeq}
+		          , #{plcyDtlSeq}
+		          , #{cpnNo}
+		          , #{payQty}
+		          , #{rgsterNo}
+		          , GETDATE())
+	</insert>
+	
+	<update id="updateOnlinePolicyUseYn" parameterType="kr.co.abcmart.bo.cmm.model.master.CmOnlineMemberPolicy">
+		/*+ kr.co.abcmart.bo.system.repository.master.CmOnlineMemberPolicyDao.updateOnlinePolicyUseYn [온라인 정책 USE_YN=N 업데이트] [최경호]*/
+		UPDATE CM_ONLINE_MEMBER_POLICY
+		   SET PLCY_APPLY_YMD = #{endDate}
+		     , MODER_NO     = #{moderNo}
+		     , MOD_DTM      = GETDATE()
+		   WHERE PLCY_SEQ = (SELECT TOP 1
+						             A.PLCY_SEQ
+						          FROM CM_ONLINE_MEMBER_POLICY A
+						        WHERE A.PLCY_APPLY_YMD <![CDATA[<=]]> GETDATE()
+						      ORDER BY A.PLCY_SEQ DESC)
+	</update>
+	
+	<select id="selectMembershipData" parameterType="kr.co.abcmart.bo.cmm.model.master.CmOnlineMemberPolicy" resultType="kr.co.abcmart.bo.cmm.model.master.CmOnlineMemberPolicy" >
+    	/*+ kr.co.abcmart.bo.system.repository.master.CmOnlineMemberPolicyDao.selectMembershipData [온라인 정책 관련 데이터] [최경호]*/
+		SELECT <include refid="select-columns" />
+		    FROM CM_ONLINE_MEMBER_POLICY A
+		  WHERE A.PLCY_SEQ = (SELECT TOP 1
+		                             A.PLCY_SEQ
+		                          FROM CM_ONLINE_MEMBER_POLICY A
+		                        WHERE A.PLCY_APPLY_YMD <![CDATA[<=]]> GETDATE()
+		                      ORDER BY A.PLCY_SEQ DESC)
+      	  
+	</select>
+
+</mapper>

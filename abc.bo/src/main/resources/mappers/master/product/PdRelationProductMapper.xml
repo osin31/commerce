@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.PdRelationProductDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+
+    <sql id="select-columns-alias-a">
+    	A.prdt_no, A.rltn_prdt_type_code, A.rltn_prdt_no, A.sort_seq, A.rgster_no, A.rgst_dtm
+    </sql>
+
+    <sql id="where-alias-a">
+    	<where>
+			<if test="bean.prdtNo != null">
+				 A.prdt_no = #{bean.prdtNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.rltnPrdtTypeCode != null">
+				 AND A.rltn_prdt_type_code = #{bean.rltnPrdtTypeCode, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.rltnPrdtNo != null">
+				 AND A.rltn_prdt_no = #{bean.rltnPrdtNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.sortSeq != null">
+				 AND A.sort_seq = #{bean.sortSeq, jdbcType=INTEGER}
+			</if>
+			<if test="bean.rgsterNo != null">
+				 AND A.rgster_no = #{bean.rgsterNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.rgstDtm != null">
+				 AND A.rgst_dtm = #{bean.rgstDtm, jdbcType=TIMESTAMP}
+			</if>
+		</where>
+    </sql>
+
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.product.model.master.PdRelationProduct">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdRelationProductDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			pd_relation_product WITH(NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <insert id="insertWithPrimaryKey" parameterType="kr.co.abcmart.bo.product.model.master.PdRelationProduct">
+    	<selectKey resultType="java.lang.Integer" keyProperty="sortSeq" order="BEFORE">
+    		SELECT ISNULL(MAX(sort_seq) + 1, 1) AS sort_seq
+    		  FROM PD_RELATION_PRODUCT A WITH(NOLOCK)
+    		 WHERE A.prdt_no = #{prdtNo, jdbcType=VARCHAR}
+    		   AND A.RLTN_PRDT_TYPE_CODE = #{rltnPrdtTypeCode, jdbcType=VARCHAR}
+    	</selectKey>
+		/*+ kr.co.abcmart.bo.product.repository.master.PdRelationProductDao.insertWithPrimaryKey [연관 상품 등록 쿼리] [김세훈] */
+		INSERT INTO pd_relation_product
+			 ( prdt_no, rltn_prdt_type_code, rltn_prdt_no, sort_seq, rgster_no, rgst_dtm )
+		VALUES
+			 ( #{prdtNo, jdbcType=VARCHAR}, #{rltnPrdtTypeCode, jdbcType=VARCHAR}, #{rltnPrdtNo, jdbcType=VARCHAR}, #{sortSeq, jdbcType=INTEGER}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )
+    </insert>
+    
+    <insert id="insertWithKeyReverse" parameterType="kr.co.abcmart.bo.product.model.master.PdRelationProduct">
+    /*+ kr.co.abcmart.bo.product.repository.master.PdRelationProductDao.insertWithKeyReverse [연관 상품 역으로 등록 ] [신인철] */
+    	<selectKey resultType="java.lang.Integer" keyProperty="sortSeq" order="BEFORE">
+    	   SELECT ISNULL(MAX(sort_seq) + 1, 1) AS sort_seq
+    		 FROM PD_RELATION_PRODUCT A WITH(NOLOCK)
+    		WHERE A.prdt_no = #{rltnPrdtNo, jdbcType=VARCHAR}
+    		  AND A.RLTN_PRDT_TYPE_CODE = #{rltnPrdtTypeCode, jdbcType=VARCHAR}
+    	</selectKey>
+			MERGE INTO PD_RELATION_PRODUCT A
+			USING (SELECT 1 AS X) X
+			   ON A.PRDT_NO = #{rltnPrdtNo, jdbcType=VARCHAR}
+			  AND A.RLTN_PRDT_TYPE_CODE = #{rltnPrdtTypeCode, jdbcType=VARCHAR}
+			  AND A.RLTN_PRDT_NO = #{prdtNo, jdbcType=VARCHAR}
+			 WHEN MATCHED THEN
+		   UPDATE SET 
+		   		  A.SORT_SEQ = #{sortSeq, jdbcType=INTEGER}
+				, A.RGSTER_NO = #{rgsterNo, jdbcType=VARCHAR}
+				, A.RGST_DTM = GETDATE()
+			 WHEN NOT MATCHED THEN
+		   INSERT ( 
+				  PRDT_NO
+				, RLTN_PRDT_TYPE_CODE
+				, RLTN_PRDT_NO
+				, SORT_SEQ
+				, RGSTER_NO
+				, RGST_DTM 
+				  )
+		   VALUES ( 
+				  #{rltnPrdtNo, jdbcType=VARCHAR}
+				, #{rltnPrdtTypeCode, jdbcType=VARCHAR}
+				, #{prdtNo, jdbcType=VARCHAR}
+				, #{sortSeq, jdbcType=INTEGER}
+				, #{rgsterNo, jdbcType=VARCHAR}
+				, GETDATE()
+				  );
+    </insert>
+
+    <select id="selectRelationProduct" parameterType="pageable" resultType="kr.co.abcmart.bo.product.model.master.PdRelationProduct">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdRelationProductDao.selectRelationProduct [관련 상품 조회 쿼리] [김세훈] */
+    	SELECT
+    		<include refid="select-columns-alias-a" />,
+    		PRODUCT.PRDT_NAME,
+    		<!--카테고리명 depth 나열로 수정 -->
+    		dbo.FN_STD_CTGR_NAME_INLINE(PRODUCT.STD_CTGR_NO) AS STD_CTGR_NAME,  
+    		dbo.FN_DP_CTGR_NAME_INLINE(PRODUCT.STDR_CTGR_NO) AS STDR_CTGR_NAME,
+			SITE_CHNNL.CHNNL_NAME,
+			BRAND.BRAND_NAME
+    	FROM
+    		pd_relation_product A WITH(NOLOCK)
+    		INNER JOIN pd_product PRODUCT WITH(NOLOCK) ON A.rltn_prdt_no = PRODUCT.prdt_no
+    		LEFT OUTER JOIN sy_standard_category STANDARD_CATEGORY WITH(NOLOCK) ON PRODUCT.std_ctgr_no = STANDARD_CATEGORY.std_ctgr_no
+			LEFT OUTER JOIN dp_category CATEGORY WITH(NOLOCK) ON PRODUCT.stdr_ctgr_no = CATEGORY.ctgr_no
+			LEFT OUTER JOIN sy_site_chnnl SITE_CHNNL WITH(NOLOCK) ON PRODUCT.chnnl_no = SITE_CHNNL.chnnl_no
+			LEFT OUTER JOIN dp_brand BRAND WITH(NOLOCK) ON PRODUCT.brand_no = BRAND.brand_no
+    	<include refid="where-alias-a" />
+		ORDER BY
+			A.sort_seq ASC
+		<include refid="Paging.mssql" />
+    </select>
+
+    <select id="selectRelationProductCount" parameterType="pageable" resultType="java.lang.Integer">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdRelationProductDao.selectRelationProductCount [관련 상품 갯수 조회 쿼리] [김세훈] */
+    	SELECT
+    		<include refid="Paging.totalCount" />
+    	FROM
+    		pd_relation_product A WITH(NOLOCK)
+    	<include refid="where-alias-a" />
+    </select>
+
+    <delete id="deleteByRltnPrdtTypeCode" parameterType="kr.co.abcmart.bo.product.model.master.PdRelationProduct">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdRelationProductDao.deleteByRltnPrdtTypeCode [관련상품유형코드를 사용한 연관상품 삭제 쿼리] [김세훈] */
+		DELETE
+			FROM pd_relation_product
+		WHERE
+			prdt_no = #{prdtNo, jdbcType=VARCHAR} AND rltn_prdt_type_code = #{rltnPrdtTypeCode, jdbcType=INTEGER}
+    </delete>
+
+    <delete id="deleteByPrdtNo" parameterType="java.lang.String">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdRelationProductDao.deleteByPrdtNo [상품번호로 관련상품 삭제 쿼리] [황성준] */
+		DELETE
+			FROM pd_relation_product
+		WHERE
+			 prdt_no = #{prdtNo, jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

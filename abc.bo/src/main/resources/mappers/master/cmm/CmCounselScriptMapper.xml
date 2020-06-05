@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.cmm.repository.master.CmCounselScriptDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.cmm.model.master.CmCounselScript" resultType="kr.co.abcmart.bo.cmm.model.master.CmCounselScript">
+
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmCounselScriptDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			CM_COUNSEL_SCRIPT WITH (NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <!-- 검색 조건 -->
+    <sql id="searchWhere">
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test="bean.cnslGbnCode != null and bean.cnslGbnCode != ''">
+		   AND A.CNSL_GBN_CODE = #{bean.cnslGbnCode, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.cnslTypeCode != null and bean.cnslTypeCode != ''">
+		   AND A.CNSL_TYPE_CODE = #{bean.cnslTypeCode, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.cnslTypeDtlCode != null and bean.cnslTypeDtlCode != ''">
+		   AND A.CNSL_TYPE_DTL_CODE = #{bean.cnslTypeDtlCode, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.useYn != null and bean.useYn != ''">
+		   AND A.USE_YN = #{bean.useYn, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.searchKey != null and bean.searchKey != '' and bean.searchValue != null and bean.searchValue != ''">
+				<choose>
+					<when test="bean.searchKey == 'cnslScriptTitleText'">
+		   AND (A.CNSL_SCRIPT_TITLE_TEXT LIKE '%' + #{bean.searchValue, jdbcType=VARCHAR} + '%'
+		        OR A.CNSL_SCRIPT_CONT_TEXT LIKE '%' + #{bean.searchValue, jdbcType=VARCHAR} + '%')
+			   		</when>
+					<when test="bean.searchKey == 'rgsterName'">
+		   AND A.RGSTER_NO IN (
+		   						SELECT Z.ADMIN_NO
+		   						  FROM SY_ADMIN Z
+		   						 WHERE Z.ADMIN_NAME LIKE '%' + #{bean.searchValue, jdbcType=VARCHAR} + '%'
+		                      )
+			   		</when>
+				</choose>
+			</if>
+		</trim>
+    </sql>
+
+    <select id="selectCmCounselScriptListCount" parameterType="pageable" resultType="int">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmCounselScriptDao.selectCmCounselScriptListCount [상담스크립트 검색 조회결과 개수] [김진성] */
+		SELECT <include refid="Paging.totalCount" />
+		  FROM CM_COUNSEL_SCRIPT A WITH (NOLOCK)
+		 <include refid="searchWhere" />
+    </select>
+
+    <select id="selectCmCounselScriptList" parameterType="kr.co.abcmart.bo.cmm.vo.CounselScriptSearchVO" resultType="kr.co.abcmart.bo.cmm.model.master.CmCounselScript">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmCounselScriptDao.selectCmCounselScriptList [상담스크립트 검색 조회결과] [김진성] */
+    	SELECT S.CNSL_SCRIPT_SEQ
+    	     , DBO.FN_CODE_VALUE('CNSL_GBN_CODE', S.CNSL_GBN_CODE) AS CNSL_GBN_CODE_NAME
+    	     , DBO.FN_CODE_VALUE('CNSL_TYPE_CODE', S.CNSL_TYPE_CODE) AS CNSL_TYPE_CODE_NAME
+    	     , DBO.FN_CODE_VALUE('CNSL_TYPE_DTL_CODE', S.CNSL_TYPE_DTL_CODE) AS CNSL_TYPE_DTL_CODE_NAME
+    	     , S.CNSL_SCRIPT_TITLE_TEXT
+    	     , S.POINT_PAY_YN
+    	     , S.USE_YN
+    	     , T.LOGIN_ID AS RGSTER_ID
+    	     , T.ADMIN_NAME AS RGSTER_NAME
+    	     , S.RGST_DTM
+    	  FROM (
+					SELECT A.CNSL_SCRIPT_SEQ
+					     , A.CNSL_GBN_CODE
+					     , A.CNSL_TYPE_CODE
+					     , A.CNSL_TYPE_DTL_CODE
+					     , A.CNSL_SCRIPT_TITLE_TEXT
+					     , A.POINT_PAY_YN
+					     , A.USE_YN
+					     , A.RGSTER_NO
+					     , A.RGST_DTM
+					  FROM CM_COUNSEL_SCRIPT A WITH (NOLOCK)
+					 <include refid="searchWhere" />
+					 <choose> 
+						<when test="sortColumn != null">
+					 ORDER BY
+							<if test="sortColumn == 'cnslScriptTitleText'.toString()">
+						   A.CNSL_SCRIPT_TITLE_TEXT
+						 	</if>
+							<if test="sortColumn == 'useYn'.toString()">
+						   A.USE_YN
+							</if>
+							<if test="sortColumn == 'rgstDtm'.toString()">
+						   A.RGST_DTM
+							</if>
+							<if test="sortType == 'DESC'.toString()">
+						   DESC
+						 	</if>
+						</when>
+						<otherwise>
+					 ORDER BY A.RGST_DTM DESC
+						</otherwise>
+					 </choose>
+					 <include refid="Paging.mssql" />
+		       ) S
+		  LEFT JOIN SY_ADMIN T WITH(NOLOCK) ON S.RGSTER_NO = T.ADMIN_NO
+    </select>
+
+    <select id="selectCmCounselScript" parameterType="kr.co.abcmart.bo.cmm.model.master.CmCounselScript" resultType="kr.co.abcmart.bo.cmm.model.master.CmCounselScript">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmCounselScriptDao.selectCmCounselScript [상담스크립트 상세] [김진성] */
+    	SELECT A.CNSL_SCRIPT_SEQ
+    	     , A.CNSL_GBN_CODE
+    	     , A.CNSL_TYPE_CODE
+    	     , A.CNSL_TYPE_DTL_CODE
+    	     , A.CNSL_SCRIPT_TITLE_TEXT
+    	     , A.CNSL_SCRIPT_CONT_TEXT
+    	     , A.POINT_PAY_YN
+    	     , A.ASWR_ALERT_TYPE
+    	     , A.ASWR_ALERT_ID
+    	     , A.USE_YN
+    	     , B.LOGIN_ID AS RGSTER_ID
+    	     , B.ADMIN_NAME AS RGSTER_NAME
+    	     , A.RGSTER_NO
+    	     , A.RGST_DTM
+    	     , C.LOGIN_ID AS MODER_ID
+    	     , C.ADMIN_NAME AS MODER_NAME
+    	     , A.MOD_DTM
+    	     , A.MODER_NO
+    	  FROM CM_COUNSEL_SCRIPT A WITH(NOLOCK)
+    	  LEFT JOIN SY_ADMIN B WITH(NOLOCK) ON A.RGSTER_NO = B.ADMIN_NO
+		  LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON A.MODER_NO = C.ADMIN_NO
+    	 WHERE A.CNSL_SCRIPT_SEQ =  #{cnslScriptSeq, jdbcType=VARCHAR}
+    </select>
+
+	<select id="selectCounselScriptTitle" parameterType="kr.co.abcmart.bo.cmm.model.master.CmCounselScript" resultType="kr.co.abcmart.bo.cmm.model.master.CmCounselScript">
+	/*+ kr.co.abcmart.bo.cmm.repository.master.CmCounselScriptDao.selectCounselScriptTitle [상담스크립트 내용 조회] [김진성] */
+    	SELECT A.CNSL_SCRIPT_SEQ
+    	     , A.CNSL_SCRIPT_TITLE_TEXT
+    	     , A.POINT_PAY_YN
+    	  FROM CM_COUNSEL_SCRIPT A WITH(NOLOCK)
+    	 WHERE A.CNSL_TYPE_CODE = #{cnslTypeCode, jdbcType=VARCHAR}
+    	   AND A.CNSL_TYPE_DTL_CODE = #{cnslTypeDtlCode, jdbcType=VARCHAR}
+    	   AND A.USE_YN = 'Y'
+	</select>
+	
+	<select id="selectAswrCnslScript" parameterType="java.lang.String" resultType="kr.co.abcmart.bo.cmm.model.master.CmCounselScript">
+	/*+ kr.co.abcmart.bo.cmm.repository.master.CmCounselScriptDao.selectCounselScriptTitle [상담스크립트 내용 조회] [김진성] */
+		SELECT A.CNSL_SCRIPT_SEQ
+			 , A.CNSL_GBN_CODE
+			 , A.CNSL_TYPE_CODE
+			 , A.CNSL_TYPE_DTL_CODE
+			 , A.CNSL_SCRIPT_TITLE_TEXT
+		  FROM CM_COUNSEL_SCRIPT A WITH(NOLOCK)
+		 WHERE A.CNSL_SCRIPT_SEQ = #{cnslScriptSeq, jdbcType=VARCHAR}
+	</select>
+	
+	
+
+
+    <insert id="insertCmCounselScript" parameterType="kr.co.abcmart.bo.cmm.model.master.CmCounselScript">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmCounselScriptDao.insertCmCounselScript [상담스크립트 등록] [김진성] */
+		<selectKey resultType="String" keyProperty="cnslScriptSeq" order="BEFORE">
+		SELECT CASE WHEN COUNT(1) > 0 THEN CONVERT(VARCHAR, CONVERT(INT, MAX(CNSL_SCRIPT_SEQ)) + 1)
+		            ELSE '10000'
+		       END AS CM_COUNSEL_SCRIPT
+		  FROM CM_COUNSEL_SCRIPT
+		</selectKey>
+
+    	INSERT INTO CM_COUNSEL_SCRIPT (
+			  CNSL_SCRIPT_SEQ
+			, CNSL_GBN_CODE
+			, CNSL_TYPE_CODE
+			, CNSL_TYPE_DTL_CODE
+			, CNSL_SCRIPT_TITLE_TEXT
+			, CNSL_SCRIPT_CONT_TEXT
+			, POINT_PAY_YN
+			, ASWR_ALERT_TYPE
+			, ASWR_ALERT_ID
+			, USE_YN
+			, RGSTER_NO
+			, RGST_DTM
+			, MODER_NO
+			, MOD_DTM
+    	) VALUES (
+			  #{cnslScriptSeq, jdbcType=VARCHAR}
+			, #{cnslGbnCode, jdbcType=VARCHAR}
+			, #{cnslTypeCode, jdbcType=VARCHAR}
+			, #{cnslTypeDtlCode, jdbcType=VARCHAR}
+			, #{cnslScriptTitleText, jdbcType=VARCHAR}
+			, #{cnslScriptContText, jdbcType=VARCHAR}
+			, #{pointPayYn, jdbcType=CHAR}
+			, #{aswrAlertType, jdbcType=CHAR}
+			, #{aswrAlertId, jdbcType=VARCHAR}
+			, #{useYn, jdbcType=CHAR}
+			, #{rgsterNo, jdbcType=VARCHAR}
+			, GETDATE()
+			, #{moderNo, jdbcType=VARCHAR}
+			, GETDATE()
+    	)
+    </insert>
+
+	<update id="updateCmCounselScript" parameterType="kr.co.abcmart.bo.cmm.model.master.CmCounselScript">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmCounselScriptDao.updateCmCounselScript [상담스크립트 수정] [김진성] */
+    	UPDATE CM_COUNSEL_SCRIPT
+    	<trim prefix="SET" prefixOverrides=",">
+			<if test="cnslScriptTitleText != null">
+			 , CNSL_SCRIPT_TITLE_TEXT = #{cnslScriptTitleText, jdbcType=VARCHAR}
+			</if>
+			<if test="cnslScriptContText != null">
+		     , CNSL_SCRIPT_CONT_TEXT = #{cnslScriptContText, jdbcType=VARCHAR}
+			</if>
+			<if test="pointPayYn != null">
+		     , POINT_PAY_YN = #{pointPayYn, jdbcType=CHAR}
+			</if>
+			<if test="aswrAlertType != null">
+		     , ASWR_ALERT_TYPE = #{aswrAlertType, jdbcType=CHAR}
+			</if>
+		     , ASWR_ALERT_ID = #{aswrAlertId, jdbcType=VARCHAR}
+			<if test="useYn != null">
+		     , USE_YN = #{useYn, jdbcType=CHAR}
+			</if>
+		     , MODER_NO = #{moderNo, jdbcType=VARCHAR}
+		     , MOD_DTM = GETDATE()
+    	</trim>
+    	WHERE CNSL_SCRIPT_SEQ = #{cnslScriptSeq, jdbcType=VARCHAR}
+	</update>
+
+</mapper>

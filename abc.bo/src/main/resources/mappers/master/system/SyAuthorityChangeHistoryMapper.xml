@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyAuthorityChangeHistoryDao">
+
+	<!--
+	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+ 	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+	-->
+	<select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.system.model.master.SyAuthorityChangeHistory" resultType="kr.co.abcmart.bo.system.model.master.SyAuthorityChangeHistory">
+
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAuthorityChangeHistoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			sy_authority_change_history WITH (NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+	</select>
+
+	<insert id="insertAuthorityGroupHistoryNoTrx" parameterType="kr.co.abcmart.bo.system.model.master.SyAuthorityChangeHistory">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAuthorityChangeHistoryDao.insertAuthorityGroupHistoryNoTrx [권한변경이력저장] [유성민] */
+		<selectKey resultType="int" keyProperty="chngHistSeq" order="BEFORE">
+			SELECT ISNULL(MAX(CHNG_HIST_SEQ), 0) + 1
+			  FROM SY_AUTHORITY_CHANGE_HISTORY
+			 WHERE AUTH_NO = #{authNo, jdbcType=VARCHAR}
+		</selectKey>
+		INSERT INTO SY_AUTHORITY_CHANGE_HISTORY(
+			  AUTH_NO
+			, CHNG_HIST_SEQ
+			, CHNG_FIELD
+			, CHNG_FIELD_NAME
+			, CHNG_BEFORE_FIELD_VALUE
+			, CHNG_AFTER_FIELD_VALUE
+			, RGSTER_NO
+			, RGST_DTM
+		)VALUES(
+			  #{authNo, jdbcType=VARCHAR}
+			, #{chngHistSeq, jdbcType=INTEGER}
+			, #{chngField, jdbcType=VARCHAR}
+			, #{chngFieldName, jdbcType=VARCHAR}
+			, #{chngBeforeFieldValue, jdbcType=VARCHAR}
+			, #{chngAfterFieldValue, jdbcType=VARCHAR}
+			, #{rgsterNo, jdbcType=VARCHAR}
+			, GETDATE()
+		)
+
+	</insert>
+
+	<select id="selectAuthorityGroupHistoryListCount" parameterType="pageable" resultType="int">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAuthorityChangeHistoryDao.selectAuthorityGroupHistoryListCount [권한변경이력카운터] [유성민] */
+		SELECT <include refid="Paging.totalCount" />
+		  FROM SY_AUTHORITY_CHANGE_HISTORY with (nolock)
+		<where>
+			<if test="bean.authNo != null and bean.authNo != ''">
+				AND AUTH_NO = #{bean.authNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.chngField != null and bean.chngField != ''">
+				AND CHNG_FIELD = #{bean.chngField, jdbcType=VARCHAR}
+			</if>
+ 			<if test="bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+				AND RGST_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+			</if>
+		</where>
+	</select>
+
+	<select id="selectAuthorityGroupHistoryList" parameterType="pageable" resultType="kr.co.abcmart.bo.system.model.master.SyAuthorityChangeHistory">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAuthorityChangeHistoryDao.selectAuthorityGroupHistoryList [권한변경이력조회] [유성민] */
+		SELECT A.AUTH_NO
+			 , B.AUTH_NAME
+			 , A.CHNG_HIST_SEQ
+			 , A.CHNG_FIELD
+			 , A.CHNG_FIELD_NAME
+			 , A.CHNG_BEFORE_FIELD_VALUE
+			 , A.CHNG_AFTER_FIELD_VALUE
+			 , CASE WHEN CHNG_FIELD != 'menuNo'
+			 		THEN CONCAT(A.CHNG_BEFORE_FIELD_VALUE, ' -> ', A.CHNG_AFTER_FIELD_VALUE)
+			 		ELSE '-'
+			 	END AS CHNG_FIELD_VALUE
+			 , A.RGSTER_NO
+			 , C.LOGIN_ID
+			 , C.ADMIN_NAME AS RGSTER_NAME
+			 , A.RGST_DTM
+		  FROM SY_AUTHORITY_CHANGE_HISTORY A WITH (NOLOCK)
+		  LEFT OUTER JOIN SY_AUTHORITY B WITH (NOLOCK)
+			ON A.AUTH_NO = B.AUTH_NO
+		  LEFT OUTER JOIN SY_ADMIN C
+			ON A.RGSTER_NO = C.ADMIN_NO
+		<where>
+			<if test="bean.authNo != null and bean.authNo != ''">
+				AND A.AUTH_NO = #{bean.authNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.chngField != null and bean.chngField != ''">
+				AND A.CHNG_FIELD = #{bean.chngField, jdbcType=VARCHAR}
+			</if>
+ 			<if test="bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+				AND A.RGST_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+			</if>
+		</where>
+		<choose>
+		 <when test="sortColumn != null">
+		 	ORDER BY
+		 	<choose>
+		 		<when test="sortColumn == 'rgstDtm'.toString()">
+		 			A.RGST_DTM
+		 		</when>
+		 		<when test="sortColumn == 'chngField'.toString()">
+		 			A.CHNG_FIELD
+		 		</when>
+		 	</choose>
+		 	<if test="sortType == 'DESC'.toString()">
+		 		DESC
+		 	</if>
+		 </when>
+		 <otherwise>
+		 	ORDER BY A.RGST_DTM DESC, A.CHNG_HIST_SEQ DESC
+		 </otherwise>
+		</choose>
+		<include refid="Paging.mssql" />
+	</select>
+
+	<delete id="deleteAuthorityChangeHistory" parameterType="kr.co.abcmart.bo.system.model.master.SyAuthorityChangeHistory">
+	/*+ kr.co.abcmart.bo.system.repository.master.SyAuthorityChangeHistoryDao.deleteAuthorityMenu [권한그룹 메뉴 삭제 쿼리] [유성민] */
+		DELETE FROM SY_AUTHORITY_CHANGE_HISTORY
+		WHERE AUTH_NO = #{authNo, jdbcType=VARCHAR}
+	</delete>
+
+</mapper>

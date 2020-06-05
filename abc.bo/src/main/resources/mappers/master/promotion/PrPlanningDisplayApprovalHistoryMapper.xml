@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayApprovalHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayApprovalHistory">
+    
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayApprovalHistoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			PR_PLANNING_DISPLAY_APPROVAL_HISTORY
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <insert id="insertPrPlanningDisplayApprovalHistory" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayApprovalHistory">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayApprovalHistoryDao.insertPrPlanningDisplayApprovalHistory [기획전 승인 내역 등록] [이가영] */
+    	
+    	<selectKey resultType="int" keyProperty="plndpAprvHistSeq" order="BEFORE">
+			SELECT ISNULL(MAX(plndp_aprv_hist_seq)+1, 1) FROM PR_PLANNING_DISPLAY_APPROVAL_HISTORY WHERE PLNDP_NO = #{plndpNo, jdbcType=VARCHAR}
+		</selectKey>
+    	
+    	INSERT INTO PR_PLANNING_DISPLAY_APPROVAL_HISTORY (
+    		plndp_no,
+    		plndp_aprv_hist_seq,
+    		reqtr_no,
+    		req_dtm,
+    		plndp_stat_code,
+    		return_rsn_text,
+    		aprver_no,
+    		aprver_dtm
+    	) VALUES (
+    		#{plndpNo, jdbcType=VARCHAR},
+    		#{plndpAprvHistSeq, jdbcType=INTEGER},
+    		#{reqtrNo, jdbcType=VARCHAR},
+    		#{reqDtm, jdbcType=TIMESTAMP},
+    		#{plndpStatCode, jdbcType=VARCHAR},
+    		#{returnRsnText, jdbcType=VARCHAR},
+    		#{aprverNo, jdbcType=VARCHAR},
+    		#{aprverDtm, jdbcType=TIMESTAMP}
+    	)
+    </insert>
+    
+    <delete id="deletePrPlanningDisplayApprovalHistorayByPlndpNo" parameterType="String">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayApprovalHistoryDao.deletePrPlanningDisplayApprovalHistorayByPlndpNo [기획전 승인 내역 삭제] [이가영] */
+    
+    	DELETE FROM
+    		PR_PLANNING_DISPLAY_APPROVAL_HISTORY
+    	WHERE
+    		plndp_no = #{plndpNo, jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

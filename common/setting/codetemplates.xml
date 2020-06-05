@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><templates><template autoinsert="false" context="methodcomment_context" deleted="false" description="Comment for non-overriding methods" enabled="true" id="org.eclipse.jdt.ui.text.codetemplates.methodcomment" name="methodcomment">/**
+ * @Desc      	:
+ * @Method Name : ${enclosing_method}
+ * @Date  	  	: ${date}
+ * @Author    	: ${user}
+ * ${tags}
+ */</template><template autoinsert="false" context="typecomment_context" deleted="false" description="Comment for created types" enabled="true" id="org.eclipse.jdt.ui.text.codetemplates.typecomment" name="typecomment">/**
+ * @Desc      :
+ * @FileName  : ${file_name}
+ * @Project   : ${project_name}
+ * @Date  	  : ${date}
+ * @Author    : ${user}
+ */</template></templates>

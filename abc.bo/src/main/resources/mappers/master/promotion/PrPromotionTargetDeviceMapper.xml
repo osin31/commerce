@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.promotion.repository.master.PrPromotionTargetDeviceDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.promotion.model.master.PrPromotionTargetDevice">
+    
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionTargetDeviceDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			PR_PROMOTION_TARGET_DEVICE
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectPrPromotionDeviceListByPromoNo" parameterType="String" resultType="kr.co.abcmart.bo.promotion.model.master.PrPromotionTargetDevice">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionTargetDeviceDao.selectPrPromotionDeviceListByPromoNo [프로모션 디바이스 조회 쿼리] [이지훈] */
+    	SELECT 
+			  A.promo_no
+			, A.device_code
+			, B.code_dtl_name AS device_name
+			, D.prdt_no
+			, D.chnnl_no
+		FROM 
+			PR_PROMOTION_TARGET_DEVICE A WITH(NOLOCK)
+		JOIN sy_code_detail B WITH(NOLOCK)
+		ON B.code_field = 'DEVICE_CODE'
+		AND A.device_code = B.code_dtl_no
+		JOIN (
+			SELECT TOP 1 promo_no, prdt_no FROM pr_promotion_target_product WITH(NOLOCK)
+			WHERE promo_no = #{promoNo, jdbcType=VARCHAR}
+			AND prdt_type = 'T' 
+			ORDER BY PROMO_NO
+		) C
+		ON A.promo_no = C.promo_no
+		JOIN pd_product D WITH(NOLOCK)
+		ON C.prdt_no = D.prdt_no
+		WHERE A.promo_no = #{promoNo, jdbcType=VARCHAR}
+    </select>
+    
+    <delete id="deleteByPromoNo" parameterType="String">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionTargetDeviceDao.deleteByPromoNo [프로모션 연계테이블 삭제 쿼리] [이지훈] */
+    	DELETE FROM PR_PROMOTION_TARGET_DEVICE
+		WHERE 
+			PROMO_NO = #{promoNo, jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

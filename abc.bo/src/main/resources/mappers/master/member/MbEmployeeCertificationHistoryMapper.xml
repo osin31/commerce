@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.member.repository.master.MbEmployeeCertificationHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.member.model.master.MbEmployeeCertificationHistory">
+    
+     /*+ kr.co.abcmart.bo.member.repository.master.MbEmployeeCertificationHistoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			mb_employee_certification_history with (nolock)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectEmpCertfiHistory" parameterType="String" resultType="kr.co.abcmart.bo.member.model.master.MbEmployeeCertificationHistory">
+    	/*+ kr.co.abcmart.bo.member.repository.master.MbEmployeeCertificationHistoryDao.selectEmpCertfiHistory [임직원 인증 이력 조회] */
+    	
+    	SELECT 
+    			a.member_no
+    		 ,	a.emp_no_text
+    		 ,	b.member_name as emp_nm
+    	  FROM 
+    			mb_employee_certification_history a  with (nolock)
+    	  JOIN
+    			mb_member b with (nolock)
+    	    ON	a.member_no = b.member_no
+		 WHERE
+				a.member_no = #{memberNo}
+    </select>
+
+</mapper>

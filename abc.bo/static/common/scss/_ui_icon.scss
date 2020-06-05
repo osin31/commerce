@@ -1,0 +1,198 @@
+@import 'scss_header';
+
+
+/**********************************************************************************
+** icon
+***********************************************************************************/
+.ico {
+	display: inline-block;
+	width: 0;
+	height: 0;
+	overflow: hidden;
+	background: url(../../images/common/sprite.png);
+	background-repeat: no-repeat;
+	vertical-align: top;
+
+	&.ico-home {
+		width: 14px;
+		height: 11px;
+		background-position: -30px -1px;
+	}
+
+	&.ico-refresh {
+		width: 9px;
+		height: 11px;
+		background-position: -1px -51px;
+	}
+
+	&.ico-logout {
+		width: 11px;
+		height: 13px;
+		background-position: -1px -1px;
+	}
+}
+
+.tbtn-lgray, .btn-func {
+	&:active {
+		.ico.ico-refresh {
+			background-position: -1px -63px;
+		}
+	}
+
+	&.disabled, &:disabled {
+
+		.ico.ico-refresh {
+			width: 9px;
+			height: 11px;
+			background-position: -1px -75px;
+		}
+	}
+}
+
+.btn-favorite-del, .btn-msg-list-del {
+
+	.ico.ico-del {
+		width: 13px;
+		height: 13px;
+		background-position: -63px -1px;
+	}
+
+	&:active .ico.ico-del, & .ico.ico-del:active {
+		background-position: -63px -15px;
+	}
+}
+
+.gnb-wrap .gnb li {
+
+	a {
+
+		.ico {
+			width: 18px;
+			height: 16px;
+		}
+
+		.ico-user {
+			background-position: -77px -1px;
+			margin-top: -1px;
+		}
+
+		.ico-prod {
+			background-position: -96px -1px;
+		}
+
+		.ico-show {
+			background-position: -115px -1px;
+		}
+
+		.ico-order {
+			background-position: -134px -1px;
+		}
+
+		.ico-cs {
+			background-position: -153px -1px;
+		}
+
+		.ico-support {
+			background-position: -172px -1px;
+		}
+
+		.ico-brand {
+			background-position: -191px -1px;
+		}
+
+		.ico-report {
+			background-position: -210px -1px;
+		}
+
+		.ico-system {
+			background-position: -229px -1px;
+		}
+	}
+
+	&.active, &:hover {
+		a {
+			.ico-user {
+				background-position: -77px -18px;
+			}
+
+			.ico-prod {
+				background-position: -96px -18px;
+			}
+
+			.ico-show {
+				background-position: -115px -18px;
+			}
+
+			.ico-order {
+				background-position: -134px -18px;
+			}
+
+			.ico-cs {
+				background-position: -153px -18px;
+			}
+
+			.ico-support {
+				background-position: -172px -18px;
+			}
+
+			.ico-brand {
+				background-position: -191px -18px;
+			}
+
+			.ico-report {
+				background-position: -210px -18px;
+			}
+
+			.ico-system {
+				background-position: -229px -18px;
+			}
+		}
+	}
+}
+
+.btn-favorites {
+
+	.ico.ico-star {
+		width: 16px;
+		height: 16px;
+		background-position: -13px -18px;
+	}
+
+	&.active .ico.ico-star {
+		background-position: -13px -1px;
+	}
+}
+
+.btn-file-del, .btn-item-del {
+	.ico.ico-fdel, .ico.ico-item-del {
+		width: 17px;
+		height: 17px;
+		background-position: -45px -1px;
+	}
+
+	&:active .ico.ico-fde, &:active .ico.ico-item-del,
+	& .ico.ico-fde:active, & .ico.ico-item-del:active {
+		background-position: -45px -18px;
+	}
+}
+
+.btn-tree-toggle {
+	.ico {
+		width: 6px;
+		height: 8px;
+		margin: 3px 0 0 3px;
+	}
+
+	.ico-tree-arr {
+		background-position: -30px -25px;
+	}
+}
+
+.treemap-list li.hide .btn-tree-toggle .ico-tree-arr {
+	background-position: -31px -14px;
+}
+
+.fa, .fas, .far {
+	margin-right: 5px;
+	font-size: 15px;
+}

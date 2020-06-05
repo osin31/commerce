@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.stats.repository.master.SaMemberLoginStatusDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.stats.model.master.SaMemberLoginStatus">
+    
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaMemberLoginStatusDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			sa_member_login_status
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectLoginList" parameterType="kr.co.abcmart.bo.stats.model.master.SaMemberLoginStatus" resultType="kr.co.abcmart.bo.stats.model.master.SaMemberLoginStatus">
+    /*+ kr.co.abcmart.bo.stats.repository.master.SaMemberLoginStatusDao.selectLoginList [로그인 현황 조회] [최경호] */
+    SELECT *
+	    FROM(
+			SELECT '합계' AS DATE_INFO
+			     , ISNULL(SUM(A.MAN_MEMBER_COUNT),0) AS MAN_MEMBER_COUNT
+			     , ISNULL(SUM(A.WOMAN_MEMBER_COUNT),0) AS WOMAN_MEMBER_COUNT
+			     , ISNULL(SUM(A.ETC_MEMBER_COUNT),0) AS ETC_MEMBER_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD0_COUNT),0) AS STATUS_FIELD0_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD1_COUNT),0) AS STATUS_FIELD1_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD2_COUNT),0) AS STATUS_FIELD2_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD3_COUNT),0) AS STATUS_FIELD3_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD4_COUNT),0) AS STATUS_FIELD4_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD5_COUNT),0) AS STATUS_FIELD5_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD6_COUNT),0) AS STATUS_FIELD6_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD7_COUNT),0) AS STATUS_FIELD7_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD8_COUNT),0) AS STATUS_FIELD8_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD9_COUNT),0) AS STATUS_FIELD9_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD10_COUNT),0) AS STATUS_FIELD10_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD11_COUNT),0) AS STATUS_FIELD11_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD12_COUNT),0) AS STATUS_FIELD12_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD13_COUNT),0) AS STATUS_FIELD13_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD14_COUNT),0) AS STATUS_FIELD14_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD15_COUNT),0) AS STATUS_FIELD15_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD16_COUNT),0) AS STATUS_FIELD16_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD17_COUNT),0) AS STATUS_FIELD17_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD18_COUNT),0) AS STATUS_FIELD18_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD19_COUNT),0) AS STATUS_FIELD19_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD20_COUNT),0) AS STATUS_FIELD20_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD21_COUNT),0) AS STATUS_FIELD21_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD22_COUNT),0) AS STATUS_FIELD22_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD23_COUNT),0) AS STATUS_FIELD23_COUNT
+			    FROM SA_MEMBER_LOGIN_STATUS A
+			    <where>
+			    	<if test='siteNo != null and siteNo != "" and siteNo != "All"'>
+			        A.SITE_NO = #{siteNo}
+			        </if>
+			        <if test='memberTypeCode != null and memberTypeCode != "" and memberTypeCode != "All"'>
+		            AND A.MEMBER_TYPE_CODE = #{memberTypeCode}
+			        </if>
+			        <if test="deviceTypeCodeArr != null and deviceTypeCodeArr != ''">
+					AND A.DEVICE_CODE IN
+					  <foreach item="item" index="index" collection="deviceTypeCodeArr" open="(" close=")" separator="," >
+					  #{item}
+					  </foreach>
+					</if>
+					<if test='chkSnsTypeCodeArr != null and chkSnsTypeCodeArr != "" and snsLoginYn == "Y"'>
+				    AND A.SNS_GBN_CODE IN
+				      <foreach item="item" index="index" collection="chkSnsTypeCodeArr" open="(" close=")" separator="," >
+				      #{item}
+				      </foreach>
+			        </if>
+			        <if test='snsLoginYn != "Y"'>
+				    AND A.SNS_GBN_CODE = 'N'
+			        </if>
+			        <if test="periodType == 'day'">
+					AND A.LOGIN_DAY BETWEEN CONVERT(DATE, CONCAT(#{fromDate}, ' 00:00:00')) AND CONVERT(DATE, CONCAT(#{toDate}, ' 23:59:59'))
+					</if>
+					<if test="periodType == 'month'">
+					AND CONVERT(VARCHAR(6), A.LOGIN_DAY , 112) BETWEEN #{periodMonthStart} AND #{periodMonthEnd}
+					</if>
+					<if test="periodType == 'year'">
+					AND CONVERT(VARCHAR(4), A.LOGIN_DAY , 112) BETWEEN #{periodYearStart} AND #{periodYearEnd}
+					</if>
+			    </where>
+			UNION ALL
+			SELECT <if test="periodType == 'day'">
+		           CONCAT(A.LOGIN_DAY, '<if test="isList"><![CDATA[<br/>]]></if>(', DOTW_NAME, ')') AS DATE_INFO
+		           </if>
+		      	   <if test="periodType == 'month'">
+		      	   CONVERT(VARCHAR(6), A.LOGIN_DAY , 112) AS DATE_INFO
+		      	   </if>
+		      	   <if test="periodType == 'year'">
+		      	   CONVERT(VARCHAR(4), A.LOGIN_DAY , 112) AS DATE_INFO
+		      	   </if>
+			     , ISNULL(SUM(A.MAN_MEMBER_COUNT),0) AS MAN_MEMBER_COUNT
+			     , ISNULL(SUM(A.WOMAN_MEMBER_COUNT),0) AS WOMAN_MEMBER_COUNT
+			     , ISNULL(SUM(A.ETC_MEMBER_COUNT),0) AS ETC_MEMBER_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD0_COUNT),0) AS STATUS_FIELD0_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD1_COUNT),0) AS STATUS_FIELD1_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD2_COUNT),0) AS STATUS_FIELD2_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD3_COUNT),0) AS STATUS_FIELD3_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD4_COUNT),0) AS STATUS_FIELD4_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD5_COUNT),0) AS STATUS_FIELD5_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD6_COUNT),0) AS STATUS_FIELD6_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD7_COUNT),0) AS STATUS_FIELD7_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD8_COUNT),0) AS STATUS_FIELD8_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD9_COUNT),0) AS STATUS_FIELD9_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD10_COUNT),0) AS STATUS_FIELD10_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD11_COUNT),0) AS STATUS_FIELD11_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD12_COUNT),0) AS STATUS_FIELD12_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD13_COUNT),0) AS STATUS_FIELD13_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD14_COUNT),0) AS STATUS_FIELD14_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD15_COUNT),0) AS STATUS_FIELD15_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD16_COUNT),0) AS STATUS_FIELD16_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD17_COUNT),0) AS STATUS_FIELD17_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD18_COUNT),0) AS STATUS_FIELD18_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD19_COUNT),0) AS STATUS_FIELD19_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD20_COUNT),0) AS STATUS_FIELD20_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD21_COUNT),0) AS STATUS_FIELD21_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD22_COUNT),0) AS STATUS_FIELD22_COUNT
+			     , ISNULL(SUM(A.STATUS_FIELD23_COUNT),0) AS STATUS_FIELD23_COUNT
+			    FROM SA_MEMBER_LOGIN_STATUS A
+			    <where>
+			    	<if test='siteNo != null and siteNo != "" and siteNo != "All"'>
+			        A.SITE_NO = #{siteNo}
+			        </if>
+			        <if test='memberTypeCode != null and memberTypeCode != "" and memberTypeCode != "All"'>
+		            AND A.MEMBER_TYPE_CODE = #{memberTypeCode}
+			        </if>
+			        <if test="deviceTypeCodeArr != null and deviceTypeCodeArr != ''">
+					AND A.DEVICE_CODE IN
+					  <foreach item="item" index="index" collection="deviceTypeCodeArr" open="(" close=")" separator="," >
+					  #{item}
+					  </foreach>
+					</if>
+					<if test='chkSnsTypeCodeArr != null and chkSnsTypeCodeArr != "" and snsLoginYn == "Y"'>
+				    AND A.SNS_GBN_CODE IN
+				      <foreach item="item" index="index" collection="chkSnsTypeCodeArr" open="(" close=")" separator="," >
+				      #{item}
+				      </foreach>
+			        </if>
+			        <if test='snsLoginYn != "Y"'>
+				    AND A.SNS_GBN_CODE = 'N'
+			        </if>
+			        <if test="periodType == 'day'">
+					AND A.LOGIN_DAY BETWEEN CONVERT(DATE, CONCAT(#{fromDate}, ' 00:00:00')) AND CONVERT(DATE, CONCAT(#{toDate}, ' 23:59:59'))
+					GROUP BY A.LOGIN_DAY, A.DOTW_NAME
+					</if>
+					<if test="periodType == 'month'">
+					AND CONVERT(VARCHAR(6), A.LOGIN_DAY , 112) BETWEEN #{periodMonthStart} AND #{periodMonthEnd}
+					GROUP BY CONVERT(VARCHAR(6), A.LOGIN_DAY , 112) -- 월별
+					</if>
+					<if test="periodType == 'year'">
+					AND CONVERT(VARCHAR(4), A.LOGIN_DAY , 112) BETWEEN #{periodYearStart} AND #{periodYearEnd}
+					GROUP BY CONVERT(VARCHAR(4), A.LOGIN_DAY , 112) -- 년별
+					</if>
+					)Y
+			ORDER BY(CASE Y.DATE_INFO WHEN '합계' THEN 'ASC' ELSE Y.DATE_INFO END )DESC
+	    </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.vendor.repository.master.VdVendorDefaultCommissionDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.vendor.model.master.VdVendorDefaultCommission">
+
+     /*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorDefaultCommissionDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			vd_vendor_default_commission WITH (NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+	<select id="getVendorDefaultCommissionList" parameterType="kr.co.abcmart.bo.vendor.model.master.VdVendorDefaultCommission" resultType="kr.co.abcmart.bo.vendor.model.master.VdVendorDefaultCommission">
+	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorDefaultCommissionDao.getVendorDefaultCommissionList [업체기본수수료 리스트] [유성민] */
+		SELECT <include refid="select-columns" />
+		  FROM VD_VENDOR_DEFAULT_COMMISSION WITH (NOLOCK)
+		 WHERE VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+		   AND APPLY_END_YMD <![CDATA[>=]]> CONVERT(VARCHAR(10),GETDATE(),120)
+	</select>
+
+	<select id="getVndrDfltCmsnSeqNextVal" parameterType="kr.co.abcmart.bo.vendor.model.master.VdVendorDefaultCommission" resultType="int">
+	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorDefaultCommissionDao.getVndrDfltCmsnSeqNextVal [업체기본수수료 SEQ] [유성민] */
+		SELECT ISNULL(MAX(VNDR_DFLT_CMSN_SEQ), 0) + 1
+		  FROM VD_VENDOR_DEFAULT_COMMISSION
+		 WHERE VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+	</select>
+</mapper>

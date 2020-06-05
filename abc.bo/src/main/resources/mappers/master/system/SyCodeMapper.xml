@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyCodeDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.system.model.master.SyCode" resultType="kr.co.abcmart.bo.system.model.master.SyCode">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyCodeDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			sy_code
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+
+	<select id="selectCodeListCount" parameterType="pageable" resultType="int">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDao.selectCodeListCount [코드그룹 개수 체크] [신인철] */
+		SELECT <include refid="Paging.totalCount" />
+		  FROM SY_CODE With(nolock) 
+	</select>
+	
+	<select id="selectMaxSortSeq" resultType="int" >
+	/* kr.co.abcmart.bo.system.repository.master.SyCodeDao.selectMaxSortSeq [코드그룹 전체 리스트] [신인철] */
+		SELECT ISNULL(MAX(SORT_SEQ), 0)+1
+		  FROM SY_CODE With(nolock) 
+	</select>
+	
+	<select id="selectOverlapCodefield" parameterType="kr.co.abcmart.bo.system.model.master.SyCode" resultType="int" >
+	/* kr.co.abcmart.bo.system.repository.master.SyCodeDao.selectMaxSortSeq [코드그룹 전체 리스트] [신인철] */
+		SELECT COUNT(CODE_FIELD)
+		  FROM SY_CODE With(nolock)
+		 WHERE CODE_FIELD=#{codeField, jdbcType=VARCHAR}
+	</select>
+	
+	<select id="selectCodeGroup" parameterType="pageable" resultType="kr.co.abcmart.bo.system.model.master.SyCode">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDao.selectCodeGroup [코드그룹 전체 리스트] [신인철] */
+		SELECT CODE_FIELD
+			 , CODE_NAME
+			 , ADD_INFO1
+			 , ADD_INFO2
+			 , ADD_INFO3
+			 , SYSTEM_CODE_YN
+			 , INSD_MGMT_INFO_TEXT
+			 , SORT_SEQ
+			 , USE_YN
+			 , NOTE_TEXT
+			 , RGSTER_NO
+			 , RGST_DTM
+			 , MODER_NO
+			 , MOD_DTM
+		  FROM SY_CODE With(nolock) 
+		  <choose>
+			<when test="sortColumn != null">
+				ORDER BY
+			 	<if test="sortColumn == 'sortSeq'.toString()">
+			 		SORT_SEQ
+			 	</if>
+			 	<if test="sortColumn == 'codeName'.toString()">
+			 		CODE_NAME
+			 	</if>
+			 	<if test="sortColumn == 'codeField'.toString()">
+			 		CODE_FIELD
+			 	</if>
+			 	<if test="sortColumn == 'systemCodeYn'.toString()">
+			 		SYSTEM_CODE_YN
+			 	</if>
+				<if test="sortType == 'DESC'.toString()">
+			 		DESC
+				</if>
+			</when>
+			<otherwise>
+				ORDER BY SORT_SEQ, MOD_DTM DESC, RGST_DTM DESC
+			</otherwise>
+		  </choose>
+		<include refid="Paging.mssql" />
+	</select>
+	
+	<select id="selectGroupDetail" parameterType="kr.co.abcmart.bo.system.model.master.SyCode" resultType="kr.co.abcmart.bo.system.model.master.SyCode">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDao.selectGroupDetail [코드그룹 상세조회] [신인철] */
+		SELECT A.CODE_FIELD
+			 , A.CODE_NAME
+			 , A.ADD_INFO1
+			 , A.ADD_INFO2
+			 , A.ADD_INFO3
+			 , A.SYSTEM_CODE_YN
+			 , A.INSD_MGMT_INFO_TEXT
+			 , A.SORT_SEQ
+			 , A.USE_YN
+			 , A.NOTE_TEXT
+			 , ISNULL((SELECT RADI.LOGIN_ID FROM SY_ADMIN RADI WITH(NOLOCK)
+			 			WHERE RADI.ADMIN_NO = A.RGSTER_NO), '-') AS RGSTER_ID
+			 , ISNULL((SELECT RADI.ADMIN_NAME FROM SY_ADMIN RADI WITH(NOLOCK)
+			 			WHERE RADI.ADMIN_NO = A.RGSTER_NO), '-') AS RGSTER_NAME
+			 , A.RGSTER_NO
+			 , CONVERT(VARCHAR(19), A.RGST_DTM, 120 ) AS RGST_DTM
+			 , ISNULL((SELECT MADI.LOGIN_ID FROM SY_ADMIN MADI WITH(NOLOCK)
+			 			WHERE MADI.ADMIN_NO = A.MODER_NO), '-') AS MODER_ID
+			 , ISNULL((SELECT MADI.ADMIN_NAME FROM SY_ADMIN MADI WITH(NOLOCK)
+			 			WHERE MADI.ADMIN_NO = A.MODER_NO), '-') AS MODER_NAME
+			 , A.MODER_NO
+			 , A.MOD_DTM 
+		  FROM SY_CODE A 
+		 WHERE CODE_FIELD=#{codeField, jdbcType=VARCHAR}
+	</select> 
+	
+	<update id="updateCodeGroup" parameterType="kr.co.abcmart.bo.system.model.master.SyCode">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDao.updateCodeGroup [코드그룹 수정] [신인철] */
+		UPDATE SY_CODE
+			<trim prefix="SET" prefixOverrides=",">
+			<if test="codeField != null and codeField != ''">
+				, CODE_FIELD = #{codeField, jdbcType=VARCHAR}
+			</if>
+			<if test="codeName != null and codeName != ''">
+				, CODE_NAME = #{codeName, jdbcType=VARCHAR}
+			</if>
+			<if test="addInfo1 != null and addInfo1 != ''">
+				, ADD_INFO1 = #{addInfo1, jdbcType=VARCHAR}
+			</if>
+			<if test="addInfo2 != null and addInfo2 != ''">
+				, ADD_INFO2 = #{addInfo2, jdbcType=VARCHAR}
+			</if>
+			<if test="addInfo3 != null and addInfo3 != ''">
+				, ADD_INFO3 = #{addInfo3, jdbcType=VARCHAR}
+			</if>
+			<if test="systemCodeYn != null and systemCodeYn != ''">
+				, SYSTEM_CODE_YN = #{systemCodeYn, jdbcType=CHAR}
+			</if>
+				, NOTE_TEXT = #{noteText, jdbcType=VARCHAR}
+			<if test="sortSeq != null and sortSeq != ''">
+				, SORT_SEQ = #{sortSeq, jdbcType=INTEGER}
+			</if>
+			<if test="useYn != null and useYn != ''">
+				, USE_YN = #{useYn, jdbcType=CHAR}
+			</if>
+				, MODER_NO = #{moderNo, jdbcType=VARCHAR}
+				, MOD_DTM = GETDATE()
+			</trim>
+		WHERE CODE_FIELD = #{codeField, jdbcType=VARCHAR}
+	</update>
+	
+	<insert id="insertCodeGroup" parameterType="kr.co.abcmart.bo.system.model.master.SyCode">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDao.insertCodeGroup [코드그룹 등록] [신인철] */
+		INSERT INTO SY_CODE(
+			   CODE_FIELD
+			 , CODE_NAME
+			 , ADD_INFO1
+			 , ADD_INFO2
+			 , ADD_INFO3
+			 , SYSTEM_CODE_YN
+			 , INSD_MGMT_INFO_TEXT
+			 , SORT_SEQ
+			 , USE_YN
+			 , NOTE_TEXT
+			 , RGSTER_NO
+			 , RGST_DTM
+			 , MODER_NO
+			 , MOD_DTM)
+		VALUES (
+			   #{codeField, jdbcType=VARCHAR}
+			 , #{codeName, jdbcType=VARCHAR}
+			 , #{addInfo1, jdbcType=VARCHAR}
+			 , #{addInfo2, jdbcType=VARCHAR}
+			 , #{addInfo3, jdbcType=VARCHAR}
+			 , #{systemCodeYn, jdbcType=CHAR}
+			 , #{insdMgmtInfoText, jdbcType=VARCHAR}
+			 , #{sortSeq, jdbcType=INTEGER}
+			 , #{useYn, jdbcType=CHAR}
+			 , #{noteText, jdbcType=VARCHAR}
+			 , #{rgsterNo, jdbcType=VARCHAR}
+			 , GETDATE()
+			 , #{moderNo, jdbcType=VARCHAR}
+			 , GETDATE() )
+	</insert>
+	
+	<delete id="deleteCodeGroup" parameterType="kr.co.abcmart.bo.system.model.master.SyCode">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDao.removeCodeGroup [코드그룹 삭제] [신인철] */
+		DELETE FROM SY_CODE
+		 WHERE CODE_FIELD=#{codeField, jdbcType=VARCHAR}
+	</delete>
+	
+	
+</mapper>

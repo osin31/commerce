@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.cmm.repository.master.CmPushSendHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	push_mesg_no, app_dwld_member_seq, app_os_code, fcm_token_text, send_dtm, send_stat_type, recv_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	app_dwld_member_seq = #{appDwldMemberSeq, jdbcType=BIGINT} AND push_mesg_no = #{pushMesgNo, jdbcType=VARCHAR}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.cmm.model.master.CmPushSendHistory" resultType="kr.co.abcmart.bo.cmm.model.master.CmPushSendHistory">
+    
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmPushSendHistoryDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			artkr_dm.dbo.cm_push_send_history WITH (NOLOCK)
+
+		<where> 
+			<if test="pushMesgNo != null"> 
+				 push_mesg_no = #{pushMesgNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="appDwldMemberSeq != null"> 
+				 AND app_dwld_member_seq = #{appDwldMemberSeq, jdbcType=BIGINT}
+			</if> 
+			<if test="appOsCode != null"> 
+				 AND app_os_code = #{appOsCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="fcmTokenText != null"> 
+				 AND fcm_token_text = #{fcmTokenText, jdbcType=VARCHAR}
+			</if> 
+			<if test="sendDtm != null"> 
+				 AND send_dtm = #{sendDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="sendStatType != null"> 
+				 AND send_stat_type = #{sendStatType, jdbcType=CHAR}
+			</if> 
+			<if test="recvDtm != null"> 
+				 AND recv_dtm = #{recvDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <insert id="insert" parameterType="kr.co.abcmart.bo.cmm.model.master.CmPushSendHistory">	
+
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmPushSendHistoryDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO artkr_dm.dbo.cm_push_send_history
+			 ( push_mesg_no, app_dwld_member_seq, app_os_code, fcm_token_text, send_dtm, send_stat_type, recv_dtm ) 
+
+		VALUES 
+			 ( #{pushMesgNo, jdbcType=VARCHAR}, #{appDwldMemberSeq, jdbcType=BIGINT}, #{appOsCode, jdbcType=VARCHAR}, #{fcmTokenText, jdbcType=VARCHAR}, <choose><when test="sendDtm != null">#{sendDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{sendStatType, jdbcType=CHAR}, <choose><when test="recvDtm != null">#{recvDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.cmm.model.master.CmPushSendHistory">
+    
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmPushSendHistoryDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE artkr_dm.dbo.cm_push_send_history
+		<set> 
+			<if test="pushMesgNo != null"> 
+				push_mesg_no = #{pushMesgNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="appDwldMemberSeq != null"> 
+				app_dwld_member_seq = #{appDwldMemberSeq, jdbcType=BIGINT}, 
+			</if> 
+			<if test="appOsCode != null"> 
+				app_os_code = #{appOsCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="fcmTokenText != null"> 
+				fcm_token_text = #{fcmTokenText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="sendDtm != null"> 
+				send_dtm = #{sendDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="sendStatType != null"> 
+				send_stat_type = #{sendStatType, jdbcType=CHAR}, 
+			</if> 
+			<if test="recvDtm != null"> 
+				recv_dtm = #{recvDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 app_dwld_member_seq = #{appDwldMemberSeq, jdbcType=BIGINT} AND push_mesg_no = #{pushMesgNo, jdbcType=VARCHAR}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.cmm.model.master.CmPushSendHistory">
+    
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmPushSendHistoryDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM artkr_dm.dbo.cm_push_send_history
+		WHERE 
+			 app_dwld_member_seq = #{appDwldMemberSeq, jdbcType=BIGINT} AND push_mesg_no = #{pushMesgNo, jdbcType=VARCHAR}  
+    </delete>
+</mapper>

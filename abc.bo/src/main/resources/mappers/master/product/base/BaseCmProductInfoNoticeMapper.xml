@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.CmProductInfoNoticeDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	prdt_info_notc_seq, item_code, prdt_info_notc_code, info_notc_name, info_notc_dflt_value, info_notc_write_info, req_yn, sort_seq, use_yn, rgster_no, rgst_dtm, moder_no, mod_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	prdt_info_notc_seq = #{prdtInfoNotcSeq, jdbcType=INTEGER}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.product.model.master.CmProductInfoNotice" resultType="kr.co.abcmart.bo.product.model.master.CmProductInfoNotice">
+    
+     /*+ kr.co.abcmart.bo.product.repository.master.CmProductInfoNoticeDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			CM_PRODUCT_INFO_NOTICE
+		<where> 
+			<if test="prdtInfoNotcSeq != null"> 
+				 prdt_info_notc_seq = #{prdtInfoNotcSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="itemCode != null"> 
+				 AND item_code = #{itemCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="prdtInfoNotcCode != null"> 
+				 AND prdt_info_notc_code = #{prdtInfoNotcCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="infoNotcName != null"> 
+				 AND info_notc_name = #{infoNotcName, jdbcType=VARCHAR}
+			</if> 
+			<if test="infoNotcDfltValue != null"> 
+				 AND info_notc_dflt_value = #{infoNotcDfltValue, jdbcType=VARCHAR}
+			</if> 
+			<if test="infoNotcWriteInfo != null"> 
+				 AND info_notc_write_info = #{infoNotcWriteInfo, jdbcType=VARCHAR}
+			</if> 
+			<if test="reqYn != null"> 
+				 AND req_yn = #{reqYn, jdbcType=CHAR}
+			</if> 
+			<if test="sortSeq != null"> 
+				 AND sort_seq = #{sortSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="useYn != null"> 
+				 AND use_yn = #{useYn, jdbcType=CHAR}
+			</if> 
+			<if test="rgsterNo != null"> 
+				 AND rgster_no = #{rgsterNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="rgstDtm != null"> 
+				 AND rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="moderNo != null"> 
+				 AND moder_no = #{moderNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="modDtm != null"> 
+				 AND mod_dtm = #{modDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+	<insert id="insert" useGeneratedKeys="true" keyProperty="prdtInfoNotcSeq">
+
+     /*+ kr.co.abcmart.bo.product.repository.master.CmProductInfoNoticeDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO CM_PRODUCT_INFO_NOTICE
+			 ( item_code, prdt_info_notc_code, info_notc_name, info_notc_dflt_value, info_notc_write_info, req_yn, sort_seq, use_yn, rgster_no, rgst_dtm, moder_no, mod_dtm ) 
+
+		VALUES 
+			 ( #{itemCode, jdbcType=VARCHAR}, #{prdtInfoNotcCode, jdbcType=VARCHAR}, #{infoNotcName, jdbcType=VARCHAR}, #{infoNotcDfltValue, jdbcType=VARCHAR}, #{infoNotcWriteInfo, jdbcType=VARCHAR}, #{reqYn, jdbcType=CHAR}, #{sortSeq, jdbcType=INTEGER}, #{useYn, jdbcType=CHAR}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.product.model.master.CmProductInfoNotice">
+    
+     /*+ kr.co.abcmart.bo.product.repository.master.CmProductInfoNoticeDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE CM_PRODUCT_INFO_NOTICE
+		<set> 
+			<if test="prdtInfoNotcSeq != null"> 
+				prdt_info_notc_seq = #{prdtInfoNotcSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="itemCode != null"> 
+				item_code = #{itemCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="prdtInfoNotcCode != null"> 
+				prdt_info_notc_code = #{prdtInfoNotcCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="infoNotcName != null"> 
+				info_notc_name = #{infoNotcName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="infoNotcDfltValue != null"> 
+				info_notc_dflt_value = #{infoNotcDfltValue, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="infoNotcWriteInfo != null"> 
+				info_notc_write_info = #{infoNotcWriteInfo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="reqYn != null"> 
+				req_yn = #{reqYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="sortSeq != null"> 
+				sort_seq = #{sortSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="useYn != null"> 
+				use_yn = #{useYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="rgsterNo != null"> 
+				rgster_no = #{rgsterNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 prdt_info_notc_seq = #{prdtInfoNotcSeq, jdbcType=INTEGER}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.product.model.master.CmProductInfoNotice">
+    
+     /*+ kr.co.abcmart.bo.product.repository.master.CmProductInfoNoticeDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM CM_PRODUCT_INFO_NOTICE
+		WHERE 
+			 prdt_info_notc_seq = #{prdtInfoNotcSeq, jdbcType=INTEGER}  
+    </delete>
+</mapper>

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.display.repository.master.DpDisplayTemplateCornerDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.display.model.master.DpDisplayTemplateCorner">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayTemplateCornerDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			dp_display_template_corner
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <insert id="insertTemplateCorner" parameterType="kr.co.abcmart.bo.display.model.master.DpDisplayTemplateCorner">	
+     /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayTemplateCornerDao.insertTemplateCorner [전시템플릿 코너 저장] [박민우] */
+    	<selectKey resultType="Integer" keyProperty="dispTmplCornerSeq" order="BEFORE">
+			SELECT ISNULL(MAX(DISP_TMPL_CORNER_SEQ)+1, 1000) FROM DP_DISPLAY_TEMPLATE_CORNER
+		</selectKey>
+		INSERT INTO DP_DISPLAY_TEMPLATE_CORNER
+			 ( disp_tmpl_no, disp_tmpl_corner_seq, corner_name, corner_name_disp_type, set_count, note_text, sort_seq, use_yn, rgster_no, rgst_dtm, moder_no, mod_dtm ) 
+		VALUES 
+			 ( #{dispTmplNo, jdbcType=VARCHAR}, #{dispTmplCornerSeq}, #{cornerName, jdbcType=VARCHAR}, #{cornerNameDispType, jdbcType=CHAR}, #{setCount, jdbcType=INTEGER}, #{noteText, jdbcType=VARCHAR}, #{sortSeq, jdbcType=INTEGER}, #{useYn, jdbcType=CHAR}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+     <select id="selectTemplateCornerList" parameterType="pageable" resultType="kr.co.abcmart.bo.display.model.master.DpDisplayTemplateCorner">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayTemplateCornerDao.selectTemplateCornerList [전시템플릿 코너 리스트 조회] [박민우] */
+	    SELECT
+			A.disp_tmpl_no,
+			A.disp_tmpl_corner_seq,
+			A.corner_name,
+			A.corner_name_disp_type,
+			A.set_count,
+			A.note_text,
+			A.sort_seq,
+			A.use_yn,
+			A.rgster_no,
+			A.rgst_dtm,
+			A.moder_no,
+			A.mod_dtm,
+			B.ADMIN_NAME AS RGSTER_NAME,
+			B.LOGIN_ID AS RGSTER_ID,
+    	    C.ADMIN_NAME AS MODER_NAME,
+			C.LOGIN_ID AS MODER_ID,
+			(
+			select
+				STUFF((
+				select
+					DISTINCT ',' + DBO.FN_CODE_VALUE('CONT_TYPE_CODE',
+					AA.CONT_TYPE_CODE)
+				from
+					dp_display_template_corner_set AA WITH(NOLOCK)
+				WHERE
+					AA.DISP_CONT_COUNT > 0
+					and AA.DISP_TMPL_NO = a.DISP_TMPL_NO
+					and AA.DISP_TMPL_CORNER_SEQ = a.DISP_TMPL_CORNER_SEQ for xml path('') ),
+				1,
+				1,
+				'') ) as corner_set_name
+		FROM
+			dp_display_template_corner A WITH(NOLOCK)
+		LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON
+			A.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON
+			A.MODER_NO = C.ADMIN_NO
+		WHERE
+			A.disp_tmpl_no = #{bean.dispTmplNo, jdbcType=VARCHAR}    
+		ORDER BY A.sort_seq ASC
+		<include refid="Paging.mssql" /> 
+    </select>
+    
+    <select id="selectTemplateCornerListCount" parameterType="pageable" resultType="int">
+     /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayTemplateCornerDao.selectTemplateCornerListCount [템플릿 코너 리스트 카운트 조회] [박민우] */
+		SELECT <include refid="Paging.totalCount" /> 
+		FROM
+			dp_display_template_corner A WITH(NOLOCK)
+		LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON
+			A.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON
+			A.MODER_NO = C.ADMIN_NO
+		WHERE
+			A.disp_tmpl_no = #{bean.dispTmplNo, jdbcType=VARCHAR}   
+    </select>
+
+	<delete id="deleteCornerByDispTmplCornerSeqArr" parameterType="kr.co.abcmart.bo.display.model.master.DpDisplayTemplateCorner">
+     /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayTemplateCornerDao.deleteCornerByDispTmplCornerSeqArr [코너 삭제] [박민우] */
+		DELETE FROM dp_display_template_corner
+		WHERE 
+			<if test="dispTmplCornerSeqArr != null and dispTmplCornerSeqArr.length > 0">
+			disp_tmpl_corner_seq in 
+			<foreach item="item" index="index" collection="dispTmplCornerSeqArr" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+			</if>
+    </delete>
+    
+    <update id="updateTemplCornerArr" parameterType="kr.co.abcmart.bo.display.model.master.DpDisplayTemplateCorner">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayTemplateCornerDao.updateTemplCornerArr [update 쿼리] [변지은] */
+    
+		UPDATE dp_display_template_corner
+		<set> 
+			<if test="dispTmplNo != null"> 
+				disp_tmpl_no = #{dispTmplNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="dispTmplCornerSeq != null"> 
+				disp_tmpl_corner_seq = #{dispTmplCornerSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="cornerName != null"> 
+				corner_name = #{cornerName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cornerNameDispType != null"> 
+				corner_name_disp_type = #{cornerNameDispType, jdbcType=CHAR}, 
+			</if> 
+			<if test="setCount != null"> 
+				set_count = #{setCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="noteText != null"> 
+				note_text = #{noteText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="sortSeq != null"> 
+				sort_seq = #{sortSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="sortSeq == null"> 
+				sort_seq = 0, 
+			</if> 
+			<if test="useYn != null"> 
+				use_yn = #{useYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="rgsterNo != null"> 
+				rgster_no = #{rgsterNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 disp_tmpl_corner_seq = #{dispTmplCornerSeq, jdbcType=INTEGER} AND disp_tmpl_no = #{dispTmplNo, jdbcType=VARCHAR}   
+    </update>
+    
+</mapper>

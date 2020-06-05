@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.event.repository.master.EvEventPublicationNumberDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.event.model.master.EvEventPublicationNumber">
+    
+     /*+ kr.co.abcmart.bo.event.repository.master.EvEventPublicationNumberDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			EV_EVENT_PUBLICATION_NUMBER
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectEvEventPublicationNumberCount" parameterType="String" resultType="Long">
+    /*+ kr.co.abcmart.bo.event.repository.master.EvEventPublicationNumberDao.selectEvEventPublicationNumberCount [이벤트 발행 카운트 조회 쿼리] [이지훈] */  
+    	SELECT
+    		COUNT(*) 
+		FROM 
+			EV_EVENT_PUBLICATION_NUMBER WITH(NOLOCK)
+		<if test='value != null and value != "" '>
+			WHERE EVENT_NO = #{value, jdbcType=VARCHAR}	
+		</if>		
+    </select>
+    
+    <select id="selectEvEventPublicationNumberListByEventNo" parameterType="String" resultType="kr.co.abcmart.bo.event.model.master.EvEventPublicationNumber">
+    /*+ kr.co.abcmart.bo.event.repository.master.EvEventPublicationNumberDao.selectEvEventPublicationNumberListByEventNo [이벤트 발행 조회 쿼리] [이지훈] */  
+    	SELECT EVENT_PBLICTE_NO
+    	  FROM EV_EVENT_PUBLICATION_NUMBER WITH(NOLOCK)
+		 WHERE EVENT_NO = #{eventNo, jdbcType=VARCHAR}	
+    </select>
+    
+    <select id="selectEvEventPublicationNumberSeq" parameterType="java.lang.Integer" resultType="Long">
+     /*+ kr.co.abcmart.bo.event.repository.master.EvEventPublicationNumberDao.selectEvEventPublicationNumberSeq [이벤트 발행 시퀀스 조회] [이지훈] */  
+    	SELECT NEXT VALUE FOR SEQ_EV_EVENT_PUBLICATION_NUMBER_EVENT_PBLICTE_NO WHERE #{seq, jdbcType=INTEGER} =  #{seq, jdbcType=INTEGER}
+    </select>
+    
+    <insert id="insertRows" parameterType="kr.co.abcmart.bo.event.model.master.EvEventPublicationNumber" useGeneratedKeys="false">	
+		/*+ kr.co.abcmart.bo.event.repository.master.EvEventPublicationNumberDao.insertRows [이벤트 난수 다중 등록 쿼리] [김세훈] */
+		INSERT INTO EV_EVENT_PUBLICATION_NUMBER ( event_no, event_pblicte_no, rgst_yn ) VALUES
+		<foreach collection="list" item="item" separator=",">
+			( #{item.eventNo, jdbcType=VARCHAR}, #{item.eventPblicteNo, jdbcType=VARCHAR}, 'N' )
+		</foreach>
+    </insert>
+
+</mapper>

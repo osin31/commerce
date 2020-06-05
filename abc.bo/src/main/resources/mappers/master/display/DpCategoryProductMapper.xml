@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.display.repository.master.DpCategoryProductDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.display.model.master.DpCategoryProduct">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpCategoryProductDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			DP_CATEGORY_PRODUCT
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+	<delete id="deleteByPrdtNo" parameterType="java.lang.String">
+		/*+ kr.co.abcmart.bo.display.repository.master.DpCategoryProductDao.deleteByPrdtNo [상품 번호 기반 삭제 쿼리] [김세훈] */
+		DELETE
+		FROM dp_category_product
+		WHERE
+			prdt_no = #{prdtNo, jdbcType=VARCHAR}
+	</delete>
+	
+	<select id="selectByExhibitionPageForProduct" parameterType="pageable" resultType="kr.co.abcmart.bo.display.vo.DpExhibitionPageVO">
+		/*+ kr.co.abcmart.bo.display.repository.master.DpCategoryProductDao.selectByExhibitionPageForProduct [한 상품과 연계된 전시 페이지 조회 쿼리] [김세훈] */
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY A.sort_seq DESC) AS sort_seq,
+			A.device_type,
+			A.site_no,
+			A.site_name,
+			A.chnnl_no,
+			A.chnnl_name,
+			A.disp_page_no,
+			A.disp_page_name,
+			A.disp_yn,
+			A.prdt_no,
+			DISP_START_DTM,
+			DISP_TMPL_CORNER_SET_SEQ
+		FROM
+			(
+			SELECT 
+				'PC' device_type,
+				A.site_no AS site_no,
+				SITE.site_name AS site_name,
+				A.chnnl_no AS chnnl_no,
+				CHNNL.chnnl_name AS chnnl_name,
+				A.disp_page_no AS disp_page_no,
+				A.disp_page_name+'('+c.CORNER_NAME+')' AS disp_page_name,
+				A.disp_yn AS disp_yn,
+				b.ADD_INFO1 AS prdt_no,
+				b.sort_seq AS sort_seq,
+				a.DISP_START_DTM as DISP_START_DTM,
+				b.DISP_TMPL_CORNER_SET_SEQ as DISP_TMPL_CORNER_SET_SEQ
+			FROM
+				dp_display_page A WITH(NOLOCK)
+				inner JOIN dp_display_page_corner_set b WITH(NOLOCK) ON A.pc_disp_tmpl_no = b.DISP_TMPL_NO and b.CONT_TYPE_CODE = '10001' and b.DISP_YN = 'Y' and a.DISP_PAGE_NO = b.DISP_PAGE_NO 
+				inner join dbo.DP_DISPLAY_TEMPLATE_CORNER c WITH(NOLOCK) on b.DISP_TMPL_CORNER_SEQ = c.DISP_TMPL_CORNER_SEQ  
+				inner JOIN sy_site SITE WITH(NOLOCK) ON A.site_no = SITE.site_no
+				inner JOIN sy_site_chnnl CHNNL WITH(NOLOCK) ON A.chnnl_no = CHNNL.chnnl_no
+			WHERE
+				A.disp_yn = 'Y'
+				AND A.use_yn = 'Y'
+				AND b.ADD_INFO1 = #{bean.prdtNo, jdbcType=VARCHAR}
+				and a.UP_DISP_PAGE_NO is not null
+			UNION ALL
+			SELECT 
+				'MOBILE' device_type,
+				A.site_no AS site_no,
+				SITE.site_name AS site_name,
+				A.chnnl_no AS chnnl_no,
+				CHNNL.chnnl_name AS chnnl_name,
+				A.disp_page_no AS disp_page_no,
+				A.disp_page_name+'('+c.CORNER_NAME+')' AS disp_page_name,
+				A.disp_yn AS disp_yn,
+				b.ADD_INFO1 AS prdt_no,
+				b.sort_seq AS sort_seq,
+				a.DISP_START_DTM as DISP_START_DTM,
+				b.DISP_TMPL_CORNER_SET_SEQ as DISP_TMPL_CORNER_SET_SEQ
+			FROM
+				dp_display_page A WITH(NOLOCK)
+				inner JOIN dp_display_page_corner_set b WITH(NOLOCK) ON A.mobile_disp_tmpl_no = b.DISP_TMPL_NO and b.CONT_TYPE_CODE = '10001' and b.DISP_YN = 'Y' and a.DISP_PAGE_NO = b.DISP_PAGE_NO 
+				inner join dbo.DP_DISPLAY_TEMPLATE_CORNER c WITH(NOLOCK) on b.DISP_TMPL_CORNER_SEQ = c.DISP_TMPL_CORNER_SEQ  
+				inner JOIN sy_site SITE WITH(NOLOCK) ON A.site_no = SITE.site_no
+				inner JOIN sy_site_chnnl CHNNL WITH(NOLOCK) ON A.chnnl_no = CHNNL.chnnl_no
+			WHERE
+				A.disp_yn = 'Y'
+				AND A.use_yn = 'Y'
+				AND b.ADD_INFO1 = #{bean.prdtNo, jdbcType=VARCHAR}
+				and a.UP_DISP_PAGE_NO is not null
+			) A
+			ORDER BY
+				A.sort_seq DESC	
+		<include refid="Paging.mssql" />
+    </select>
+    
+    <select id="selectByExhibitionPageForProductTotalCount" parameterType="pageable" resultType="java.lang.Integer">
+		/*+ kr.co.abcmart.bo.display.repository.master.DpCategoryProductDao.selectByExhibitionPageForProductTotalCount [한 상품과 연계된 전시 페이지 전체 갯수 조회 쿼리] [김세훈] */
+		SELECT
+			<include refid="Paging.totalCount" />
+		FROM
+			(  
+			SELECT 
+				'PC' device_type,
+				A.site_no AS site_no,
+				SITE.site_name AS site_name,
+				A.chnnl_no AS chnnl_no,
+				CHNNL.chnnl_name AS chnnl_name,
+				A.disp_page_no AS disp_page_no,
+				A.disp_page_name+'('+c.CORNER_NAME+')' AS disp_page_name,
+				A.disp_yn AS disp_yn,
+				b.ADD_INFO1 AS prdt_no,
+				b.sort_seq AS sort_seq,
+				a.DISP_START_DTM as DISP_START_DTM,
+				b.DISP_TMPL_CORNER_SET_SEQ as DISP_TMPL_CORNER_SET_SEQ
+			FROM
+				dp_display_page A WITH(NOLOCK)
+				inner JOIN dp_display_page_corner_set b WITH(NOLOCK) ON A.pc_disp_tmpl_no = b.DISP_TMPL_NO and b.CONT_TYPE_CODE = '10001' and b.DISP_YN = 'Y' and a.DISP_PAGE_NO = b.DISP_PAGE_NO 
+				inner join dbo.DP_DISPLAY_TEMPLATE_CORNER c WITH(NOLOCK) on b.DISP_TMPL_CORNER_SEQ = c.DISP_TMPL_CORNER_SEQ  
+				inner JOIN sy_site SITE WITH(NOLOCK) ON A.site_no = SITE.site_no
+				inner JOIN sy_site_chnnl CHNNL WITH(NOLOCK) ON A.chnnl_no = CHNNL.chnnl_no
+			WHERE
+				A.disp_yn = 'Y'
+				AND A.use_yn = 'Y'
+				AND b.ADD_INFO1 = #{bean.prdtNo, jdbcType=VARCHAR}
+				and a.UP_DISP_PAGE_NO is not null
+			UNION ALL
+			SELECT 
+				'MOBILE' device_type,
+				A.site_no AS site_no,
+				SITE.site_name AS site_name,
+				A.chnnl_no AS chnnl_no,
+				CHNNL.chnnl_name AS chnnl_name,
+				A.disp_page_no AS disp_page_no,
+				A.disp_page_name+'('+c.CORNER_NAME+')' AS disp_page_name,
+				A.disp_yn AS disp_yn,
+				b.ADD_INFO1 AS prdt_no,
+				b.sort_seq AS sort_seq,
+				a.DISP_START_DTM as DISP_START_DTM,
+				b.DISP_TMPL_CORNER_SET_SEQ as DISP_TMPL_CORNER_SET_SEQ
+			FROM
+				dp_display_page A WITH(NOLOCK)
+				inner JOIN dp_display_page_corner_set b WITH(NOLOCK) ON A.mobile_disp_tmpl_no = b.DISP_TMPL_NO and b.CONT_TYPE_CODE = '10001' and b.DISP_YN = 'Y' and a.DISP_PAGE_NO = b.DISP_PAGE_NO 
+				inner join dbo.DP_DISPLAY_TEMPLATE_CORNER c WITH(NOLOCK) on b.DISP_TMPL_CORNER_SEQ = c.DISP_TMPL_CORNER_SEQ  
+				inner JOIN sy_site SITE WITH(NOLOCK) ON A.site_no = SITE.site_no
+				inner JOIN sy_site_chnnl CHNNL WITH(NOLOCK) ON A.chnnl_no = CHNNL.chnnl_no
+			WHERE
+				A.disp_yn = 'Y'
+				AND A.use_yn = 'Y'
+				AND b.ADD_INFO1 = #{bean.prdtNo, jdbcType=VARCHAR}
+				and a.UP_DISP_PAGE_NO is not null
+			) A
+    </select>
+    
+    <select id="selectCountForRelatedProduct" parameterType="java.lang.String" resultType="java.lang.Integer">
+    	/*+ kr.co.abcmart.bo.display.repository.master.DpCategoryProductDao.selectCountForRelatedProduct [카테고리 번호 및 그와 연계된 카테고리에 연결된 상품 갯수 조회 쿼리] [김세훈] */
+		WITH ctgr_cte (ctgr_no, up_ctgr_no, leaf_ctgr_yn, ctgr_no_path)
+		AS (
+			SELECT
+				A.ctgr_no, 
+				A.up_ctgr_no, 
+				A.leaf_ctgr_yn,
+				CONVERT(VARCHAR(255), '.' + A.ctgr_no + '.') AS ctgr_no_path
+			FROM
+				dp_category A WITH(NOLOCK)
+			WHERE
+				(A.up_ctgr_no IS NULL OR A.up_ctgr_no = '')
+				--AND A.use_yn = 'Y'
+				--AND A.disp_yn = 'Y'
+			UNION ALL
+			SELECT
+				B.ctgr_no, 
+				B.up_ctgr_no, 
+				B.leaf_ctgr_yn,
+				CONVERT(VARCHAR(255), CONVERT(VARCHAR(255), C.ctgr_no_path) + CONVERT(VARCHAR(255), B.ctgr_no) + '.') AS ctgr_no_path
+			FROM
+				dp_category B WITH(NOLOCK), ctgr_cte C
+			WHERE
+				B.up_ctgr_no = C.ctgr_no
+				--AND B.use_yn = 'Y'
+				--AND B.disp_yn = 'Y'
+		)
+		SELECT
+			COUNT(A.prdt_no)
+		FROM
+			ctgr_cte INNER_CATEGORY WITH(NOLOCK)
+			LEFT JOIN dp_category_product A WITH(NOLOCK) ON INNER_CATEGORY.ctgr_no = A.ctgr_no
+		WHERE
+			INNER_CATEGORY.leaf_ctgr_yn = 'Y'<!-- 카테고리 단말노드인 것만 조회 -->
+			AND CHARINDEX('.' + #{ctgrNo, jdbcType=VARCHAR} + '.', ctgr_no_path) > 0<!-- 카테고리연결관계간 카테고리 번호 묶음 -->
+			AND A.prdt_no IS NOT NULL<!-- 카테고리와 상품번호가 연결된 것만 조회 -->
+    </select>
+
+</mapper>

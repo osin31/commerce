@@ -1,0 +1,456 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.system.model.master.SyMenuAccessHistory">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			sy_menu_access_history  with (nolock)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectUrlAccessHistoryListCount" parameterType="pageable" resultType="int">
+	/*+ kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao.selectUrlAccessHistoryListCount [URL 접근이력 개수 조회] [최경호] @NoAccessHis */
+	SELECT <include refid="Paging.totalCount" />
+	    FROM SY_MENU_ACCESS_HISTORY A  with (nolock)
+	    INNER JOIN SY_ADMIN B  with (nolock)
+	    ON A.ADMIN_NO = B.ADMIN_NO
+<!-- 	  WHERE A.MENU_YN = 'Y' -->
+	    <if test="bean.adminNo != null and bean.adminNo != ''">
+	    AND A.ADMIN_NO = #{bean.adminNo, jdbcType=VARCHAR}
+	    </if>
+	    <if test="bean.accessUrl != null and bean.accessUrl != ''">
+	    AND A.ACCESS_URL = #{bean.accessUrl, jdbcType=VARCHAR}
+	    </if>
+	</select>
+
+	<select id="selectUrlAccessHistoryList" parameterType="pageable" resultType="kr.co.abcmart.bo.system.model.master.SyMenuAccessHistory">
+	/*+ kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao.selectUrlAccessHistoryList [URL 접근이력 개수 조회] [최경호] @NoAccessHis */
+	SELECT B.LOGIN_ID
+	     , A.ACCESS_URL
+	     , A.ACCESS_PARAMTR_TEXT
+	     , A.ACCESS_IP_TEXT
+	     , A.SUCCESS_YN
+	     , A.FAIL_RSN_TEXT
+	     , A.RGST_DTM
+	    FROM SY_MENU_ACCESS_HISTORY A  with (nolock)
+	    INNER JOIN SY_ADMIN B  with (nolock) ON A.ADMIN_NO = B.ADMIN_NO
+<!-- 	  WHERE A.MENU_YN = 'Y' -->
+	  	<if test="bean.adminNo != null and bean.adminNo != ''">
+	    AND A.ADMIN_NO = #{bean.adminNo, jdbcType=VARCHAR}
+	    </if>
+	    <if test="bean.accessUrl != null and bean.accessUrl != ''">
+	    AND A.ACCESS_URL = #{bean.accessUrl, jdbcType=VARCHAR}
+	    </if>
+	ORDER BY A.MENU_ACCESS_HIST DESC
+	<include refid="Paging.mssql" />
+	</select>
+
+	<select id="selectMenuAccessHistoryListCount" parameterType="pageable" resultType="int">
+	/*+ kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao.selectMenuAccessHistoryListCount [URL 접근이력 개수 조회] [최경호] @NoAccessHis */
+	WITH HISTORY AS (
+	                SELECT MENU_NO
+	                     , ACCESS_TYPE
+	                     , COUNT(*) AS CNT
+	                     , SUM(RSLT_COUNT) RESULTCNT
+	                     , MAX(RSLT_DESC_TEXT) AS NAME
+	                    FROM SY_MENU_ACCESS_HISTORY A with (nolock)
+	                  WHERE 1=1
+	                  	<if test="bean.adminNo != null and bean.adminNo != ''">
+	                    AND ADMIN_NO = #{bean.adminNo, jdbcType=VARCHAR}
+	                    </if>
+	                    AND RGST_DTM <![CDATA[>=]]> CONVERT(varchar, #{bean.fromDate}, 112) + ' ' + CONVERT(varchar, '00:00:00', 108)
+	                    AND RGST_DTM <![CDATA[<=]]> CONVERT(varchar, #{bean.toDate}, 112) + ' ' + CONVERT(varchar, '23:59:59', 108)
+	                    AND MENU_NO IN (SELECT MENU_NO FROM SY_MENU with (nolock) WHERE UP_MENU_NO = #{bean.menuNo})
+	                GROUP BY MENU_NO, ACCESS_TYPE
+	                )
+	SELECT <include refid="Paging.totalCount" />
+		FROM SY_MENU MENU
+		     LEFT OUTER JOIN HISTORY C01 with (nolock) ON C01.MENU_NO = MENU.MENU_NO AND C01.ACCESS_TYPE = 'C01'
+		     LEFT OUTER JOIN HISTORY C02 with (nolock) ON C02.MENU_NO = MENU.MENU_NO AND C02.ACCESS_TYPE = 'C02'
+		     LEFT OUTER JOIN HISTORY C03 with (nolock) ON C03.MENU_NO = MENU.MENU_NO AND C03.ACCESS_TYPE = 'C03'
+		     LEFT OUTER JOIN HISTORY R01 with (nolock) ON R01.MENU_NO = MENU.MENU_NO AND R01.ACCESS_TYPE = 'R01'
+		     LEFT OUTER JOIN HISTORY R02 with (nolock) ON R02.MENU_NO = MENU.MENU_NO AND R02.ACCESS_TYPE = 'R02'
+		     LEFT OUTER JOIN HISTORY R03 with (nolock) ON R03.MENU_NO = MENU.MENU_NO AND R03.ACCESS_TYPE = 'R03'
+		     LEFT OUTER JOIN HISTORY R04 with (nolock) ON R04.MENU_NO = MENU.MENU_NO AND R04.ACCESS_TYPE = 'R04'
+		     LEFT OUTER JOIN HISTORY R05 with (nolock) ON R05.MENU_NO = MENU.MENU_NO AND R05.ACCESS_TYPE = 'R05'
+		     LEFT OUTER JOIN HISTORY R06 with (nolock) ON R06.MENU_NO = MENU.MENU_NO AND R06.ACCESS_TYPE = 'R06'
+		     LEFT OUTER JOIN HISTORY R07 with (nolock) ON R07.MENU_NO = MENU.MENU_NO AND R07.ACCESS_TYPE = 'R07'
+		     LEFT OUTER JOIN HISTORY R08 with (nolock) ON R08.MENU_NO = MENU.MENU_NO AND R08.ACCESS_TYPE = 'R08'
+		     LEFT OUTER JOIN HISTORY R09 with (nolock) ON R09.MENU_NO = MENU.MENU_NO AND R09.ACCESS_TYPE = 'R09'
+		     LEFT OUTER JOIN HISTORY R10 with (nolock) ON R10.MENU_NO = MENU.MENU_NO AND R10.ACCESS_TYPE = 'R10'
+		     LEFT OUTER JOIN HISTORY R11 with (nolock) ON R11.MENU_NO = MENU.MENU_NO AND R11.ACCESS_TYPE = 'R11'
+		     LEFT OUTER JOIN HISTORY R12 with (nolock) ON R12.MENU_NO = MENU.MENU_NO AND R12.ACCESS_TYPE = 'R12'
+		     LEFT OUTER JOIN HISTORY U01 with (nolock) ON U01.MENU_NO = MENU.MENU_NO AND U01.ACCESS_TYPE = 'U01'
+		     LEFT OUTER JOIN HISTORY U02 with (nolock) ON U02.MENU_NO = MENU.MENU_NO AND U02.ACCESS_TYPE = 'U02'
+		     LEFT OUTER JOIN HISTORY U03 with (nolock) ON U03.MENU_NO = MENU.MENU_NO AND U03.ACCESS_TYPE = 'U03'
+		     LEFT OUTER JOIN HISTORY U04 with (nolock) ON U04.MENU_NO = MENU.MENU_NO AND U04.ACCESS_TYPE = 'U04'
+		     LEFT OUTER JOIN HISTORY U05 with (nolock) ON U05.MENU_NO = MENU.MENU_NO AND U05.ACCESS_TYPE = 'U05'
+		     LEFT OUTER JOIN HISTORY U06 with (nolock) ON U06.MENU_NO = MENU.MENU_NO AND U06.ACCESS_TYPE = 'U06'
+		     LEFT OUTER JOIN HISTORY U07 with (nolock) ON U07.MENU_NO = MENU.MENU_NO AND U07.ACCESS_TYPE = 'U07'
+		     LEFT OUTER JOIN HISTORY D01 with (nolock) ON D01.MENU_NO = MENU.MENU_NO AND D01.ACCESS_TYPE = 'D01'
+		     LEFT OUTER JOIN HISTORY D02 with (nolock) ON D02.MENU_NO = MENU.MENU_NO AND D02.ACCESS_TYPE = 'D02'
+		     LEFT OUTER JOIN HISTORY D03 with (nolock) ON D03.MENU_NO = MENU.MENU_NO AND D03.ACCESS_TYPE = 'D03'
+	  WHERE MENU.UP_MENU_NO = #{bean.menuNo}
+	    AND MENU.DISP_YN 	= 'Y'
+        AND MENU.USE_YN 	= 'Y'
+	</select>
+
+	<select id="selectMenuAccessHistoryList" parameterType="pageable" resultType="java.util.Map">
+	/*+ kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao.selectMenuAccessHistoryList [URL 접근이력 개수 조회] [최경호] @NoAccessHis */
+	WITH HISTORY AS (
+	                SELECT MENU_NO
+	                     , ACCESS_TYPE
+	                     , COUNT(*) AS CNT
+	                     , SUM(RSLT_COUNT) RESULTCNT
+	                     , MAX(RSLT_DESC_TEXT) AS NAME
+	                    FROM SY_MENU_ACCESS_HISTORY A with (nolock)
+	                  WHERE 1=1
+	                  	<if test="bean.adminNo != null and bean.adminNo != ''">
+	                    AND ADMIN_NO = #{bean.adminNo, jdbcType=VARCHAR}
+	                    </if>
+	                    AND RGST_DTM <![CDATA[>=]]> CONVERT(varchar, #{bean.fromDate}, 112) + ' ' + CONVERT(varchar, '00:00:00', 108)
+	                    AND RGST_DTM <![CDATA[<=]]> CONVERT(varchar, #{bean.toDate}, 112) + ' ' + CONVERT(varchar, '23:59:59', 108)
+	                    AND MENU_NO IN (SELECT MENU_NO FROM SY_MENU with (nolock) WHERE UP_MENU_NO = #{bean.menuNo})
+	                GROUP BY MENU_NO, ACCESS_TYPE
+	                )
+	SELECT MENU.MENU_NO menuNo
+	     , MENU.MENU_NAME menuName
+	     , MENU.MENU_URL menuUrl
+	     , ISNULL(C01.CNT, 0) AS c01Cnt
+	     , ISNULL(C01.RESULTCNT, 0) AS c01ResultCnt
+	     , ISNULL(C01.NAME, '') AS c01Name
+	     , ISNULL(C02.CNT, 0) AS c02Cnt
+	     , ISNULL(C02.RESULTCNT, 0) AS c02ResultCnt
+	     , ISNULL(C02.NAME, '') AS c02Name
+	     , ISNULL(C03.CNT, 0) AS c03Cnt
+	     , ISNULL(C03.RESULTCNT, 0) AS c03ResultCnt
+	     , ISNULL(C03.NAME, '') AS c03Name
+	     , ISNULL(R01.CNT, 0) AS r01Cnt
+	     , ISNULL(R01.RESULTCNT, 0) AS r01ResultCnt
+	     , ISNULL(R01.NAME, '') AS r01Name
+	     , ISNULL(R02.CNT, 0) AS r02Cnt
+	     , ISNULL(R02.RESULTCNT, 0) AS r02ResultCnt
+	     , ISNULL(R02.NAME, '') AS r02Name
+	     , ISNULL(R03.CNT, 0) AS r03Cnt
+	     , ISNULL(R03.RESULTCNT, 0) AS r03ResultCnt
+	     , ISNULL(R03.NAME, '') AS r03Name
+	     , ISNULL(R04.CNT, 0) AS r04Cnt
+	     , ISNULL(R04.RESULTCNT, 0) AS r04ResultCnt
+	     , ISNULL(R04.NAME, '') AS r04Name
+	     , ISNULL(R05.CNT, 0) AS r05Cnt
+	     , ISNULL(R05.RESULTCNT, 0) AS r05ResultCnt
+	     , ISNULL(R05.NAME, '') AS r05Name
+	     , ISNULL(R06.CNT, 0) AS r06Cnt
+	     , ISNULL(R06.RESULTCNT, 0) AS r06ResultCnt
+	     , ISNULL(R06.NAME, '') AS r06Name
+	     , ISNULL(R07.CNT, 0) AS r07Cnt
+	     , ISNULL(R07.RESULTCNT, 0) AS r07ResultCnt
+	     , ISNULL(R07.NAME, '') AS r07Name
+	     , ISNULL(R08.CNT, 0) AS r08Cnt
+	     , ISNULL(R08.RESULTCNT, 0) AS r08ResultCnt
+	     , ISNULL(R08.NAME, '') AS r08Name
+	     , ISNULL(R09.CNT, 0) AS r09Cnt
+	     , ISNULL(R09.RESULTCNT, 0) AS r09ResultCnt
+	     , ISNULL(R09.NAME, '') AS r09Name
+	     , ISNULL(R10.CNT, 0) AS r10Cnt
+	     , ISNULL(R10.RESULTCNT, 0) AS r10ResultCnt
+	     , ISNULL(R10.NAME, '') AS r10Name
+	     , ISNULL(R11.CNT, 0) AS r11Cnt
+	     , ISNULL(R11.RESULTCNT, 0) AS r11ResultCnt
+	     , ISNULL(R11.NAME, '') AS r11Name
+	     , ISNULL(R12.CNT, 0) AS r12Cnt
+	     , ISNULL(R12.RESULTCNT, 0) AS r12ResultCnt
+	     , ISNULL(R12.NAME, '') AS r12Name
+	     , ISNULL(U01.CNT, 0) AS u01Cnt
+	     , ISNULL(U01.RESULTCNT, 0) AS u01ResultCnt
+	     , ISNULL(U01.NAME, '') AS u01Name
+	     , ISNULL(U02.CNT, 0) AS u02Cnt
+	     , ISNULL(U02.RESULTCNT, 0) AS u02ResultCnt
+	     , ISNULL(U02.NAME, '') AS u02Name
+	     , ISNULL(U03.CNT, 0) AS u03Cnt
+	     , ISNULL(U03.RESULTCNT, 0) AS u03ResultCnt
+	     , ISNULL(U03.NAME, '') AS u03Name
+	     , ISNULL(U04.CNT, 0) AS u04Cnt
+	     , ISNULL(U04.RESULTCNT, 0) AS u04ResultCnt
+	     , ISNULL(U04.NAME, '') AS u04Name
+	     , ISNULL(U05.CNT, 0) AS u05Cnt
+	     , ISNULL(U05.RESULTCNT, 0) AS u05ResultCnt
+	     , ISNULL(U05.NAME, '') AS u05Name
+	     , ISNULL(U06.CNT, 0) AS u06Cnt
+	     , ISNULL(U06.RESULTCNT, 0) AS u06ResultCnt
+	     , ISNULL(U06.NAME, '') AS u06Name
+	     , ISNULL(U07.CNT, 0) AS u07Cnt
+	     , ISNULL(U07.RESULTCNT, 0) AS u07ResultCnt
+	     , ISNULL(U07.NAME, '') AS u07Name
+	     , ISNULL(D01.CNT, 0) AS d01Cnt
+	     , ISNULL(D01.RESULTCNT, 0) AS d01ResultCnt
+	     , ISNULL(D01.NAME, '') AS d01Name
+	     , ISNULL(D02.CNT, 0) AS d02Cnt
+	     , ISNULL(D02.RESULTCNT, 0) AS d02ResultCnt
+	     , ISNULL(D02.NAME, '') AS d02Name
+	     , ISNULL(D03.CNT, 0) AS d03Cnt
+	     , ISNULL(D03.RESULTCNT, 0) AS d03ResultCnt
+	     , ISNULL(D03.NAME, '') AS d03Name
+		FROM SY_MENU MENU with (nolock)
+		     LEFT OUTER JOIN HISTORY C01 with (nolock) ON C01.MENU_NO = MENU.MENU_NO AND C01.ACCESS_TYPE = 'C01'
+		     LEFT OUTER JOIN HISTORY C02 with (nolock) ON C02.MENU_NO = MENU.MENU_NO AND C02.ACCESS_TYPE = 'C02'
+		     LEFT OUTER JOIN HISTORY C03 with (nolock) ON C03.MENU_NO = MENU.MENU_NO AND C03.ACCESS_TYPE = 'C03'
+		     LEFT OUTER JOIN HISTORY R01 with (nolock) ON R01.MENU_NO = MENU.MENU_NO AND R01.ACCESS_TYPE = 'R01'
+		     LEFT OUTER JOIN HISTORY R02 with (nolock) ON R02.MENU_NO = MENU.MENU_NO AND R02.ACCESS_TYPE = 'R02'
+		     LEFT OUTER JOIN HISTORY R03 with (nolock) ON R03.MENU_NO = MENU.MENU_NO AND R03.ACCESS_TYPE = 'R03'
+		     LEFT OUTER JOIN HISTORY R04 with (nolock) ON R04.MENU_NO = MENU.MENU_NO AND R04.ACCESS_TYPE = 'R04'
+		     LEFT OUTER JOIN HISTORY R05 with (nolock) ON R05.MENU_NO = MENU.MENU_NO AND R05.ACCESS_TYPE = 'R05'
+		     LEFT OUTER JOIN HISTORY R06 with (nolock) ON R06.MENU_NO = MENU.MENU_NO AND R06.ACCESS_TYPE = 'R06'
+		     LEFT OUTER JOIN HISTORY R07 with (nolock) ON R07.MENU_NO = MENU.MENU_NO AND R07.ACCESS_TYPE = 'R07'
+		     LEFT OUTER JOIN HISTORY R08 with (nolock) ON R08.MENU_NO = MENU.MENU_NO AND R08.ACCESS_TYPE = 'R08'
+		     LEFT OUTER JOIN HISTORY R09 with (nolock) ON R09.MENU_NO = MENU.MENU_NO AND R09.ACCESS_TYPE = 'R09'
+		     LEFT OUTER JOIN HISTORY R10 with (nolock) ON R10.MENU_NO = MENU.MENU_NO AND R10.ACCESS_TYPE = 'R10'
+		     LEFT OUTER JOIN HISTORY R11 with (nolock) ON R11.MENU_NO = MENU.MENU_NO AND R11.ACCESS_TYPE = 'R11'
+		     LEFT OUTER JOIN HISTORY R12 with (nolock) ON R12.MENU_NO = MENU.MENU_NO AND R12.ACCESS_TYPE = 'R12'
+		     LEFT OUTER JOIN HISTORY U01 with (nolock) ON U01.MENU_NO = MENU.MENU_NO AND U01.ACCESS_TYPE = 'U01'
+		     LEFT OUTER JOIN HISTORY U02 with (nolock) ON U02.MENU_NO = MENU.MENU_NO AND U02.ACCESS_TYPE = 'U02'
+		     LEFT OUTER JOIN HISTORY U03 with (nolock) ON U03.MENU_NO = MENU.MENU_NO AND U03.ACCESS_TYPE = 'U03'
+		     LEFT OUTER JOIN HISTORY U04 with (nolock) ON U04.MENU_NO = MENU.MENU_NO AND U04.ACCESS_TYPE = 'U04'
+		     LEFT OUTER JOIN HISTORY U05 with (nolock) ON U05.MENU_NO = MENU.MENU_NO AND U05.ACCESS_TYPE = 'U05'
+		     LEFT OUTER JOIN HISTORY U06 with (nolock) ON U06.MENU_NO = MENU.MENU_NO AND U06.ACCESS_TYPE = 'U06'
+		     LEFT OUTER JOIN HISTORY U07 with (nolock) ON U07.MENU_NO = MENU.MENU_NO AND U07.ACCESS_TYPE = 'U07'
+		     LEFT OUTER JOIN HISTORY D01 with (nolock) ON D01.MENU_NO = MENU.MENU_NO AND D01.ACCESS_TYPE = 'D01'
+		     LEFT OUTER JOIN HISTORY D02 with (nolock) ON D02.MENU_NO = MENU.MENU_NO AND D02.ACCESS_TYPE = 'D02'
+		     LEFT OUTER JOIN HISTORY D03 with (nolock) ON D03.MENU_NO = MENU.MENU_NO AND D03.ACCESS_TYPE = 'D03'
+	  WHERE MENU.UP_MENU_NO = #{bean.menuNo}
+	    AND MENU.DISP_YN 	= 'Y'
+        AND MENU.USE_YN 	= 'Y'
+	ORDER BY MENU.MENU_NO
+	<include refid="Paging.mssql" />
+	</select>
+
+	<select id="selectLeafMenuCount" parameterType="pageable" resultType="int">
+	/*+ kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao.selectLeafMenuCount [선택한 메뉴의 하위 3뎁스 메뉴의 개수] [최경호] */
+	SELECT COUNT(1) AS LEFT_MENU_COUNT
+	    FROM SY_MENU B  with (nolock)
+	  WHERE B.DISP_YN = 'Y'
+        AND B.USE_YN  = 'Y'
+	    AND B.UP_MENU_NO IN (
+	                        SELECT A.MENU_NO
+	                            FROM SY_MENU A  with (nolock)
+	                        WHERE A.UP_MENU_NO = #{upMenuNo}
+	                          AND A.DISP_YN    = 'Y'
+        					  AND A.USE_YN 	   = 'Y'
+							)
+	</select>
+
+	<select id="selectMenu" parameterType="kr.co.abcmart.bo.system.model.master.SyMenu" resultType="kr.co.abcmart.bo.system.model.master.SyMenu">
+	/*+ kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao.selectLeafMenuCount [선택한 메뉴의 하위에 메뉴가 있는 데이터 셀렉트] [최경호] @NoAccessHis */
+	SELECT *
+	    FROM SY_MENU with (nolock)
+	  WHERE  UP_MENU_NO = #{upMenuNo, jdbcType=VARCHAR}
+	    AND DISP_YN 	= #{dispYn, jdbcType=CHAR}
+		AND USE_YN 		= #{useYn, jdbcType=CHAR}
+		<if test="level != 3">
+	    AND MENU_NO IN(SELECT UP_MENU_NO
+	                     FROM SY_MENU X with (nolock)
+	                    WHERE DISP_YN = #{dispYn, jdbcType=CHAR}
+	                	 AND USE_YN   = #{useYn, jdbcType=CHAR}
+	                  )
+		</if>
+	</select>
+
+	<select id="selectMenuDataList" parameterType="kr.co.abcmart.bo.system.model.master.SyMenu" resultType="kr.co.abcmart.bo.system.model.master.SyMenu">
+	/*+ kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao.selectMenuDataList [선택한 메뉴의 최상위부터 최하위 메뉴 정보를 조회한다.] [최경호] @NoAccessHis */
+	<!--
+		파라미터로 받은 MENU_NO를 기준으로 최상위의 메뉴정보~최하위 메뉴 정보까지 가져오는 쿼리
+		최소2뎁스~최대3뎁스
+		첫번째 SELECT는 차차상위 메뉴정보를 가져온다. [2뎁스에 화면이 걸리는 메뉴는 '메뉴관리' 메뉴를 리턴하고 이때는  NULL로 리턴]
+		두번째 SELECT는 차상위 메뉴정보를 가져온다.
+		세번째는 선택한 메뉴 정보[2,3 뎁스 메뉴정보]
+	-->
+	WITH MENUDATA AS (SELECT *
+	                    FROM SY_MENU X  with (nolock)
+	                  WHERE X.DISP_YN   = 'Y'
+	                   	AND X.USE_YN    = 'Y'
+	                    AND X.MENU_NO   = #{menuNo}
+	                )
+	SELECT DATA.*
+	    FROM(
+	        SELECT B.MENU_NO AS MENU_NO
+	             , B.UP_MENU_NO
+	             , B.MENU_NAME
+	             , B.MENU_LEVEL
+	             , B.MENU_GBN_TYPE
+	             , B.AUTH_APPLY_SYSTEM_TYPE
+	             , B.DISP_YN
+	             , B.USE_YN
+	            FROM SY_MENU A with (nolock)
+	               , SY_MENU B with (nolock)
+	          WHERE A.DISP_YN  = 'Y'
+	            AND A.USE_YN   = 'Y'
+	            AND B.MENU_NO != '10000'
+	            AND A.UP_MENU_NO = B.MENU_NO
+	            AND A.MENU_NO IN(SELECT UP_MENU_NO FROM MENUDATA with (nolock))
+	        UNION ALL
+	        SELECT C.MENU_NO AS MENU_NO, C.UP_MENU_NO, C.MENU_NAME, C.MENU_LEVEL, C.MENU_GBN_TYPE, C.AUTH_APPLY_SYSTEM_TYPE, C.DISP_YN, C.USE_YN FROM SY_MENU C with (nolock), MENUDATA X WHERE C.MENU_NO = X.UP_MENU_NO
+	        UNION ALL
+	        SELECT X.MENU_NO AS MENU_NO, X.UP_MENU_NO, X.MENU_NAME, X.MENU_LEVEL, X.MENU_GBN_TYPE, X.AUTH_APPLY_SYSTEM_TYPE, X.DISP_YN, X.USE_YN FROM MENUDATA X with (nolock)
+	        ) DATA
+	  WHERE DATA.MENU_NO IS NOT NULL
+	</select>
+
+	<select id="selectMenuAccessHistoryDetailCount" parameterType="pageable" resultType="int">
+	/*+ kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao.selectMenuAccessHistoryDetailCount [URL 접근이력 상세 데이터 개수 조회] [최경호] @NoAccessHis */
+	SELECT <include refid="Paging.totalCount" />
+	    FROM SY_MENU_ACCESS_HISTORY A  with (nolock)
+	         INNER JOIN SY_ADMIN B  with (nolock) ON A.ADMIN_NO = B.ADMIN_NO
+	         INNER JOIN SY_AUTHORITY C  with (nolock) ON A.AUTH_NO = C.AUTH_NO
+	  <where>
+	    <if test="bean.menuNo != null and bean.menuNo != ''">
+	    AND A.MENU_NO     = #{bean.menuNo, jdbcType=VARCHAR}
+	    </if>
+	    <if test="bean.accessType != null and bean.accessType != ''">
+	    AND A.ACCESS_TYPE = #{bean.accessType, jdbcType=VARCHAR}
+	    </if>
+	    <if test="bean.adminNo != null and bean.adminNo != ''">
+	    AND A.ADMIN_NO    = #{bean.adminNo, jdbcType=VARCHAR}
+	    </if>
+	    AND A.RGST_DTM    <![CDATA[>=]]> CONVERT(VARCHAR, #{bean.fromDate}, 112) + ' ' + CONVERT(VARCHAR, '00:00:00', 108)
+		AND A.RGST_DTM    <![CDATA[<=]]> CONVERT(VARCHAR, #{bean.toDate}, 112) + ' ' + CONVERT(VARCHAR, '23:59:59', 108)
+	  </where>
+	</select>
+
+	<select id="selectAdminAccessHistoryDetailCount" parameterType="pageable" resultType="int">
+	/*+ kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao.selectMenuAccessHistoryDetailCount [URL 접근이력 상세 데이터 개수 조회] [최경호] @NoAccessHis */
+	SELECT <include refid="Paging.totalCount" />
+	    FROM SY_MENU_ACCESS_HISTORY A
+	         INNER JOIN SY_ADMIN B ON A.ADMIN_NO = B.ADMIN_NO
+	         INNER JOIN SY_AUTHORITY C ON A.AUTH_NO = C.AUTH_NO
+	  <where>
+	    <if test="bean.adminNo != null and bean.adminNo != ''">
+	    AND A.ADMIN_NO    = #{bean.adminNo, jdbcType=VARCHAR}
+	    </if>
+	    <if test="bean.accessUrl != null and bean.accessUrl != ''">
+	    AND A.ACCESS_URL    = #{bean.accessUrl, jdbcType=VARCHAR}
+	    </if>
+	    AND A.RGST_DTM <![CDATA[>=]]> CONVERT(VARCHAR, #{bean.fromDate}, 112) + ' ' + CONVERT(VARCHAR, '00:00:00', 108) 
+		AND A.RGST_DTM <![CDATA[<=]]> CONVERT(VARCHAR, #{bean.toDate}, 112) + ' ' + CONVERT(VARCHAR, '23:59:59', 108)
+		AND A.RGST_DTM <![CDATA[>=]]> CONVERT(VARCHAR, '2019.08.29', 112) + ' ' + CONVERT(VARCHAR, '00:00:00', 108)
+	  </where>
+	</select>
+	
+	<select id="selectAdminAccessHistoryDetailPop" parameterType="pageable" resultType="kr.co.abcmart.bo.system.model.master.SyMenuAccessHistory">
+	/*+ kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao.selectAdminAccessHistoryDetailPop [URL 접근이력 상세 데이터 조회] [최경호] @NoAccessHis */
+	SELECT A.MENU_ACCESS_HIST
+	     , B.LOGIN_ID
+	     , C.AUTH_NAME
+	     , C.AUTH_NO
+	     , A.MENU_NO
+	     , A.ACCESS_URL
+	     , A.ACCESS_PARAMTR_TEXT
+	     , A.ACCESS_IP_TEXT
+	     , A.ACCESS_TYPE
+	     , A.SUCCESS_YN
+	     , A.FAIL_RSN_TEXT
+	     , A.SUCCESS_RSN_TEXT
+	     , A.RSLT_COUNT
+	     , A.RSLT_DESC_TEXT
+	     , A.RGST_DTM
+	     , A.ADMIN_NO
+	    FROM SY_MENU_ACCESS_HISTORY A
+	         INNER JOIN SY_ADMIN B ON A.ADMIN_NO = B.ADMIN_NO
+	         INNER JOIN SY_AUTHORITY C ON A.AUTH_NO = C.AUTH_NO
+	  <where>
+	    <if test="bean.adminNo != null and bean.adminNo != ''">
+	    AND A.ADMIN_NO    = #{bean.adminNo, jdbcType=VARCHAR}
+	    </if>
+	    <if test="bean.accessUrl != null and bean.accessUrl != ''">
+	    AND A.ACCESS_URL    = #{bean.accessUrl, jdbcType=VARCHAR}
+	    </if>
+	    AND A.RGST_DTM <![CDATA[>=]]> CONVERT(VARCHAR, #{bean.fromDate}, 112) + ' ' + CONVERT(VARCHAR, '00:00:00', 108) 
+		AND A.RGST_DTM <![CDATA[<=]]> CONVERT(VARCHAR, #{bean.toDate}, 112) + ' ' + CONVERT(VARCHAR, '23:59:59', 108)
+		AND A.RGST_DTM <![CDATA[>=]]> CONVERT(VARCHAR, '2019.08.29', 112) + ' ' + CONVERT(VARCHAR, '00:00:00', 108)
+	  </where>
+	ORDER BY A.MENU_ACCESS_HIST DESC
+	<include refid="Paging.mssql" />
+	</select>
+	
+<!-- 	<select id="selectAdminAccessHistoryListCount" parameterType="pageable" resultType="int"> -->
+<!-- 	/*+ kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao.selectAdminAccessHistoryListCount [관리자 접근이력 개수 조회] [최경호] */ -->
+	
+<!-- 	</select> -->
+	
+	<select id="selectAdminAccessHistoryList" parameterType="kr.co.abcmart.bo.system.model.master.SyMenuAccessHistory" resultType="java.util.Map">
+	/*+ kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao.selectAdminAccessHistoryList [관리자 접근이력 개수 조회] [최경호] @NoAccessHis */
+<!-- 	SELECT * -->
+<!--     	FROM( -->
+			SELECT *
+			  FROM (
+			        SELECT SUM(A.RSLT_COUNT) AS resultCnt
+			             , COUNT(A.ACCESS_URL) AS accessUrlCnt
+			             , A.ADMIN_NO AS adminNo
+			             , A.ACCESS_URL AS accessUrl
+			            FROM SY_MENU_ACCESS_HISTORY A with (nolock)
+		          WHERE (A.ACCESS_URL IS NOT NULL AND A.ACCESS_URL != '')
+		            AND ADMIN_NO IS NOT NULL
+		            AND A.RGST_DTM <![CDATA[>=]]> CONVERT(VARCHAR, #{fromDate}, 112) + ' ' + CONVERT(VARCHAR, '00:00:00', 108) 
+					AND A.RGST_DTM <![CDATA[<=]]> CONVERT(VARCHAR, #{toDate}, 112) + ' ' + CONVERT(VARCHAR, '23:59:59', 108)
+		            AND A.RGST_DTM <![CDATA[>=]]> CONVERT(VARCHAR, '2019.08.29', 112) + ' ' + CONVERT(VARCHAR, '00:00:00', 108)
+		        GROUP BY A.ADMIN_NO, A.ACCESS_URL
+		        ) V          
+			PIVOT(COUNT(adminNo) FOR adminNo IN 
+			<foreach collection="arrAdminNo" item="adminNo" open="(" separator="," close=")">
+				${adminNo}
+			</foreach>
+				) AS PVT
+<!-- 			)Y -->
+<!--   	  WHERE Y.RESULTCNT <![CDATA[>=]]> 10   -->
+	ORDER BY accessUrl
+	</select>
+	
+	<select id="selectMenuAccessHistoryDetailPop" parameterType="pageable" resultType="kr.co.abcmart.bo.system.model.master.SyMenuAccessHistory">
+	/*+ kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao.selectMenuAccessHistoryDetailPop [URL 접근이력 상세 데이터 조회] [최경호] @NoAccessHis */
+	SELECT A.MENU_ACCESS_HIST
+	     , B.LOGIN_ID
+	     , C.AUTH_NAME
+	     , C.AUTH_NO
+	     , A.MENU_NO
+	     , A.ACCESS_URL
+	     , A.ACCESS_PARAMTR_TEXT
+	     , A.ACCESS_IP_TEXT
+	     , A.ACCESS_TYPE
+	     , A.SUCCESS_YN
+	     , A.FAIL_RSN_TEXT
+	     , A.SUCCESS_RSN_TEXT
+	     , A.RSLT_COUNT
+	     , A.RSLT_DESC_TEXT
+	     , A.RGST_DTM
+	     , A.ADMIN_NO
+	    FROM SY_MENU_ACCESS_HISTORY A  with (nolock)
+	         INNER JOIN SY_ADMIN B  with (nolock) ON A.ADMIN_NO = B.ADMIN_NO
+	         INNER JOIN SY_AUTHORITY C  with (nolock) ON A.AUTH_NO = C.AUTH_NO
+	  <where>
+	    <if test="bean.menuNo != null and bean.menuNo != ''">
+	    AND A.MENU_NO     = #{bean.menuNo, jdbcType=VARCHAR}
+	    </if>
+	    <if test="bean.accessType != null and bean.accessType != ''">
+	    AND A.ACCESS_TYPE = #{bean.accessType, jdbcType=VARCHAR}
+	    </if>
+	    <if test="bean.adminNo != null and bean.adminNo != ''">
+	    AND A.ADMIN_NO    = #{bean.adminNo, jdbcType=VARCHAR}
+	    </if>
+	    AND A.RGST_DTM <![CDATA[>=]]> CONVERT(VARCHAR, #{bean.fromDate}, 112) + ' ' + CONVERT(VARCHAR, '00:00:00', 108)
+		AND A.RGST_DTM <![CDATA[<=]]> CONVERT(VARCHAR, #{bean.toDate}, 112) + ' ' + CONVERT(VARCHAR, '23:59:59', 108)
+	  </where>
+	ORDER BY A.MENU_ACCESS_HIST DESC
+	<include refid="Paging.mssql" />
+	</select>
+</mapper>

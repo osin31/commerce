@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.afterService.repository.master.OcAsPaymentDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.afterService.model.master.OcAsPayment">
+    
+     /*+ kr.co.abcmart.bo.afterService.repository.master.OcAsPaymentDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			OC_AS_PAYMENT WITH (NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    
+      <select id="selectDetailPayInfo" parameterType="kr.co.abcmart.bo.afterService.model.master.OcAsPayment" resultType="kr.co.abcmart.bo.afterService.model.master.OcAsPayment">
+    
+     /*+ kr.co.abcmart.bo.afterService.repository.master.OcAsPaymentDao.selectDetailPayInfo [조회 쿼리] [이상호] */  
+    
+		SELECT AS_ACCEPT_NO
+		     , AS_PYMNT_SEQ
+		     , PYMNT_DTM
+		     , DBO.FN_CODE_VALUE('DEVICE_CODE', DEVICE_CODE) as DEVICE_CODE_NAME 
+		     , DEVICE_CODE
+		     , MAIN_PYMNT_MEANS_YN
+		     , DBO.FN_CODE_VALUE('PYMNT_MEANS_CODE', PYMNT_MEANS_CODE) as PYMNT_MEANS_CODE_NAME
+		     , PYMNT_MEANS_CODE
+		     , DBO.FN_CODE_VALUE('PYMNT_VNDR_CODE', PYMNT_VNDR_CODE) as PYMNT_VNDR_CODE_NAME
+		     , PYMNT_VNDR_CODE
+		     , PYMNT_ORGAN_CODE_TEXT
+		     , PYMNT_ORGAN_NAME
+		     , PYMNT_ORGAN_NO_TEXT
+		     , INSTMT_TERM_COUNT
+		     , CARD_GBN_TYPE
+		     , CARD_TYPE
+		     , PYMNT_APRV_NO_TEXT
+		     , PYMNT_TODO_AMT
+		     , PYMNT_AMT
+		     , CARD_PART_CNCL_PSBLT_YN
+		     , CASH_RCPT_ISSUE_YN
+		     , ESCR_APPLY_YN
+		     , ESCR_APRV_NO_TEXT
+		     , BANK_CODE
+		     , DBO.FN_CODE_VALUE('BANK_CODE', BANK_CODE) as BANK_CODE_NAME
+		     , ACNT_NO_TEXT
+		     , ACNT_HLDR_NAME
+		     , VRTL_ACNT_ISSUE_DTM
+		     , VRTL_ACNT_EXPR_DTM
+		     , RSPNS_CODE_TEXT
+		     , RSPNS_MESG_TEXT
+		     , REPLACE(CONVERT(CHAR(19), PYMNT_CMLPT_DTM, 20),'-','.') AS PYMNT_CMLPT_DATE
+		     , REDEMP_RFND_OPETR_NO
+		     , REDEMP_RFND_OPETR_DTM
+		     , REDEMP_RFND_GBN_TYPE
+		     , MMNY_PROC_TRGT_YN
+		     , OCRNC_RSN_CODE
+		     , DBO.FN_CODE_VALUE('PYMNT_STAT_CODE', PYMNT_STAT_CODE) as PYMNT_STAT_CODE_NAME
+		     , PYMNT_STAT_CODE
+		     , PYMNT_LOG_INFO
+		     , MODER_NO
+		     , MOD_DTM 
+		FROM 
+			OC_AS_PAYMENT
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    
+     <select id="selectAfterServiceAmtListCount" parameterType="pageable" resultType="int">
+    
+   		 /*+ kr.co.abcmart.bo.afterService.repository.master.OcAsPaymentDao.selectAfterServiceAmtListCount [A/S 금액 목록 갯수 조회 쿼리] [이상호] */  
+		  SELECT <include refid="Paging.totalCount" />
+			  FROM OC_AS_ACCEPT A WITH (NOLOCK) 
+			  JOIN OC_AS_ACCEPT_PRODUCT B WITH (NOLOCK) 
+				  ON A.AS_ACCEPT_NO = B.AS_ACCEPT_NO
+			  JOIN DP_BRAND C WITH(NOLOCK)  
+			    ON B.BRAND_NO  = C.BRAND_NO
+			  JOIN MB_MEMBER D WITH (NOLOCK) 
+			    ON A.MEMBER_NO = D.MEMBER_NO
+			 WHERE A.AS_STAT_CODE IN('10008','10009','10010','10011')
+			   AND A.TOTAL_AS_AMT 		> 0
+			   AND A.ADD_DLVY_AMT 		> 0
+			   AND A.TOTAL_PYMNT_AMT 	> 0
+    	 	<if test='bean.siteNo != null and bean.siteNo != ""'> 
+				 AND A.SITE_NO = #{bean.siteNo}
+			</if>
+			<if test="bean.brandName != null and bean.brandName != ''">
+				 AND EXISTS (SELECT 1 
+							   FROM OC_AS_ACCEPT_PRODUCT Z WITH (NOLOCK)
+							  WHERE Z.AS_ACCEPT_NO = A.AS_ACCEPT_NO
+							    AND Z.BRAND_NO IN (SELECT BRAND_NO
+							    					 FROM DP_BRAND WITH (NOLOCK)
+							    				    WHERE BRAND_NAME    LIKE '%' + #{bean.brandName, jdbcType=VARCHAR} + '%'
+							    				   	   OR BRAND_EN_NAME LIKE '%' + #{bean.brandName, jdbcType=VARCHAR} + '%'	  
+							        )
+				 ) 
+			</if>
+			<if test='bean.buyerName != null and bean.buyerName != ""'> 
+				 AND A.BUYER_NAME like #{bean.buyerName} + '%'
+				 <if test="bean.hdphnBackNoText != null and bean.hdphnBackNoText != ''">
+	     		 AND RIGHT(REPLACE(A.BUYER_HDPHN_NO_TEXT, '-', ''), 4) = #{bean.hdphnBackNoText, jdbcType=VARCHAR}
+				 </if> 
+			</if>
+			<if test='bean.loginId != null and bean.loginId != ""'> 
+				 AND D.LOGIN_ID like #{bean.loginId} + '%'
+			</if>
+			<if test='bean.buyerHdphnNoText != null and bean.buyerHdphnNoText != ""'> 
+				 AND A.BUYER_HDPHN_NO_TEXT = #{bean.buyerHdphnNoText}
+			</if>
+			<if test='bean.orderNo != null and bean.orderNo != ""'> 
+				 AND A.ORDER_NO = #{bean.orderNo}
+			</if>
+			<if test="bean.asStatCode != '10009' and bean.asStatCode != null and bean.asStatCode != ''"> 
+				 AND A.AS_STAT_CODE = #{bean.asStatCode}
+			</if>
+			<if test="bean.asStatCode == '10009' "> 
+				 AND A.AS_STAT_CODE IN('10009','10010','10011','10012')
+			</if>
+			<if test="bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+           		 AND A.RGST_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+        	</if>
+    </select>
+    
+         <select id="selectAfterServiceAmtList" parameterType="pageable" resultType="kr.co.abcmart.bo.afterService.model.master.OcAsPayment">
+    
+   		/*+ kr.co.abcmart.bo.afterService.repository.master.OcAsPaymentDao.selectAfterServiceAmtList [A/S 금액 목록  조회 쿼리] [이상호] */  
+    
+    		SELECT  A.SITE_NO
+    		      , A.SITE_NO AS ORG_SITE_NO
+			      , A.AS_ACCEPT_NO
+			      , A.RGST_DTM
+			      , A.ORDER_NO
+			      , C.BRAND_NAME
+			      , B.PRDT_NAME
+			      , A.BUYER_NAME as rgsterName
+			      , D.LOGIN_ID   as rgsterId
+			      , A.ADD_DLVY_AMT
+			      , B.AS_AMT
+			      , A.TOTAL_PYMNT_AMT
+			      , CASE WHEN A.AS_STAT_CODE = '10008' 
+			             THEN '입금대기'
+			             WHEN A.AS_STAT_CODE IN ('10009','10010','10011','10012')
+			             THEN '입금완료'
+			             ELSE NULL
+			        END AS asStatCodeName
+			      , A.AS_STAT_CODE
+			      , A.AS_GBN_CODE
+			      , B.AS_ACCEPT_PRDT_SEQ
+			      , A.ADMIN_ACCEPT_YN
+			      , B.PRDT_NO
+			      , DBO.FN_CODE_VALUE('MEMBER_TYPE_CODE', D.MEMBER_TYPE_CODE) as memberTypeName
+			      , A.MEMBER_NO AS memberNo
+			  FROM OC_AS_ACCEPT A WITH (NOLOCK) 
+			  JOIN OC_AS_ACCEPT_PRODUCT B WITH (NOLOCK) 
+				  ON A.AS_ACCEPT_NO = B.AS_ACCEPT_NO
+			  JOIN DP_BRAND C WITH(NOLOCK)  
+			    ON B.BRAND_NO  = C.BRAND_NO
+			  JOIN MB_MEMBER D WITH (NOLOCK) 
+			    ON A.MEMBER_NO = D.MEMBER_NO
+			 WHERE A.AS_STAT_CODE IN('10008','10009','10010','10011')
+			   AND A.TOTAL_AS_AMT 		> 0
+			   AND A.ADD_DLVY_AMT 		> 0
+			   AND A.TOTAL_PYMNT_AMT 	> 0
+			<if test='bean.siteNo != null and bean.siteNo != ""'> 
+				 AND A.SITE_NO = #{bean.siteNo}
+			</if>
+			<if test="bean.brandName != null and bean.brandName != ''">
+				 AND EXISTS (SELECT 1 
+							   FROM OC_AS_ACCEPT_PRODUCT Z WITH (NOLOCK)
+							  WHERE Z.AS_ACCEPT_NO = A.AS_ACCEPT_NO
+							    AND Z.BRAND_NO IN (SELECT BRAND_NO
+							    					 FROM DP_BRAND WITH (NOLOCK)
+							    				    WHERE BRAND_NAME    LIKE '%' + #{bean.brandName, jdbcType=VARCHAR} + '%'
+							    				   	   OR BRAND_EN_NAME LIKE '%' + #{bean.brandName, jdbcType=VARCHAR} + '%'	  
+							        )
+				 ) 
+			</if>
+			<if test='bean.buyerName != null and bean.buyerName != ""'> 
+				 AND A.BUYER_NAME like #{bean.buyerName} + '%'
+			</if>
+			<if test='bean.loginId != null and bean.loginId != ""'> 
+				 AND D.LOGIN_ID like #{bean.loginId} + '%'
+			</if>
+			<if test='bean.buyerHdphnNoText != null and bean.buyerHdphnNoText != ""'> 
+				 AND A.BUYER_HDPHN_NO_TEXT = #{bean.buyerHdphnNoText}
+			</if>
+			<if test='bean.orderNo != null and bean.orderNo != ""'> 
+				 AND A.ORDER_NO = #{bean.orderNo}
+			</if>
+			<if test="bean.asStatCode != '10009' and bean.asStatCode != null and bean.asStatCode != ''"> 
+				 AND A.AS_STAT_CODE = #{bean.asStatCode}
+			</if>
+			<if test="bean.asStatCode == '10009' "> 
+				 AND A.AS_STAT_CODE IN('10009','10010','10011','10012')
+			</if>
+			<if test="bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+           		 AND A.RGST_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+        	</if>
+	 		<choose>
+				<when test="sortColumn != null">
+					ORDER BY
+					<if test="sortColumn == 'addDlvyAmt'.toString()">
+						A.ADD_DLVY_AMT
+					</if>
+					<if test="sortColumn == 'asAmt'.toString()">
+						B.AS_AMT
+					</if>
+					<if test="sortColumn == 'totalPymntAmt'.toString()">
+						A.TOTAL_PYMNT_AMT
+					</if>
+					<if test="sortType == 'DESC'.toString()">
+						DESC
+					</if>
+				</when>
+				<otherwise>
+					ORDER BY A.AS_ACCEPT_NO DESC
+				</otherwise>
+			</choose>
+        	<include refid="Paging.mssql" />
+    </select>
+
+	 <select id="selectOcAfterServiceAmountForAllExcelList" parameterType="kr.co.abcmart.bo.afterService.model.master.OcAsPayment" resultType="kr.co.abcmart.bo.afterService.vo.OcAfterServiceAmountExcelVo">
+    
+    	/*+ kr.co.abcmart.bo.afterService.repository.master.OcAsAcceptDao.selectOcAfterServiceAmountForAllExcelList [A/S 금액 관리  조회 쿼리] [이상호] */  
+    	     SELECT ( SELECT SITE_NAME FROM SY_SITE WITH (NOLOCK) WHERE SITE_NO = A.SITE_NO ) AS SITE_NAME
+			      , A.AS_ACCEPT_NO
+			      , REPLACE(CONVERT(CHAR(19), A.RGST_DTM, 20),'-','.') AS RGST_DTM
+			      , A.ORDER_NO
+                  , B.PRDT_NO
+                  , B.STYLE_INFO
+			      , C.BRAND_NAME AS BRAND_NAME
+			      , B.PRDT_NAME
+			      , B.OPTN_NAME
+			      , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY, B.ORDER_AMT ),1),'.00','')			AS STR_ORDER_AMT
+                  , DBO.FN_CODE_VALUE('AS_PROC_TYPE_CODE', B.AS_PROC_TYPE_CODE)+' > '+DBO.FN_CODE_VALUE('AS_PROC_TYPE_DTL_CODE', B.AS_PROC_TYPE_DTL_CODE)+' / '+ B.AS_PROC_CONT_TEXT as asProcess
+ 				  , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY, A.ADD_DLVY_AMT ),1),'.00','')		AS STR_ADD_DLVY_AMT
+			      , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY, B.AS_AMT ),1),'.00','')			AS STR_AS_AMT
+			      , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY, A.TOTAL_PYMNT_AMT ),1),'.00','')	AS STR_TOTAL_PYMNT_AMT
+			      , CASE WHEN A.AS_STAT_CODE = '10008' 
+		               THEN '입금대기'
+		               WHEN A.AS_STAT_CODE IN ('10009','10010','10011','10012')
+		               THEN '입금완료'
+		               ELSE NULL
+		          END AS asStatCodeName
+			  FROM OC_AS_ACCEPT A WITH (NOLOCK) 
+			  JOIN OC_AS_ACCEPT_PRODUCT B WITH (NOLOCK) 
+				  ON A.AS_ACCEPT_NO = B.AS_ACCEPT_NO
+			  JOIN DP_BRAND C WITH(NOLOCK)  
+			    ON B.BRAND_NO  = C.BRAND_NO
+			  JOIN MB_MEMBER D WITH (NOLOCK) 
+			    ON A.MEMBER_NO = D.MEMBER_NO
+			 WHERE A.AS_STAT_CODE IN('10008','10009','10010','10011')
+			   AND A.TOTAL_AS_AMT 		> 0
+			   AND A.ADD_DLVY_AMT 		> 0
+			   AND A.TOTAL_PYMNT_AMT 	> 0
+			<if test='siteNo != null and siteNo != ""'> 
+				 AND A.SITE_NO = #{siteNo}
+			</if>
+			<if test="brandName != null and brandName != ''">
+				 AND EXISTS (SELECT 1 
+							   FROM OC_AS_ACCEPT_PRODUCT Z WITH (NOLOCK)
+							  WHERE Z.AS_ACCEPT_NO = A.AS_ACCEPT_NO
+							    AND Z.BRAND_NO IN (SELECT BRAND_NO
+							    					 FROM DP_BRAND WITH (NOLOCK)
+							    				    WHERE BRAND_NAME    LIKE '%' + #{brandName, jdbcType=VARCHAR} + '%'
+							    				   	   OR BRAND_EN_NAME LIKE '%' + #{brandName, jdbcType=VARCHAR} + '%'	  
+							        )
+				 ) 
+			</if>
+			<if test='buyerName != null and buyerName != ""'> 
+				 AND A.BUYER_NAME = #{buyerName}
+			</if>
+			<if test='loginId != null and loginId != ""'> 
+				 AND D.LOGIN_ID = #{loginId}
+			</if>
+			<if test='buyerHdphnNoText != null and buyerHdphnNoText != ""'> 
+				 AND A.BUYER_HDPHN_NO_TEXT = #{buyerHdphnNoText}
+			</if>
+			<if test='orderNo != null and orderNo != ""'> 
+				 AND A.ORDER_NO = #{orderNo}
+			</if>
+			<if test="asStatCode != '10009' and asStatCode != null and asStatCode != ''"> 
+				 AND A.AS_STAT_CODE = #{asStatCode}
+			</if>
+			<if test="asStatCode == '10009' "> 
+				 AND A.AS_STAT_CODE IN('10009','10010','10011','10012')
+			</if>
+			<if test="fromDate != null and fromDate != '' and toDate != null and toDate !=''">
+           		 AND A.RGST_DTM BETWEEN CONVERT(DATE, #{fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{toDate}))
+        	</if>
+		 	<choose>
+				<when test="sortColumn != null">
+					ORDER BY
+					<if test="sortColumn == 'addDlvyAmt'.toString()">
+						A.ADD_DLVY_AMT
+					</if>
+					<if test="sortColumn == 'asAmt'.toString()">
+						B.AS_AMT
+					</if>
+					<if test="sortColumn == 'totalPymntAmt'.toString()">
+						A.TOTAL_PYMNT_AMT
+					</if>
+					<if test="sortType == 'desc'">
+						DESC
+					</if>
+				</when>
+				<otherwise>
+					ORDER BY A.AS_ACCEPT_NO DESC
+				</otherwise>
+			</choose>
+    </select>
+    
+     <select id="selectOcAfterServiceAmountForExcelList" parameterType="kr.co.abcmart.bo.afterService.vo.OcAfterServiceAmountExcelVo" resultType="kr.co.abcmart.bo.afterService.vo.OcAfterServiceAmountExcelVo">
+    
+    /*+ kr.co.abcmart.bo.afterService.repository.master.OcAsAcceptDao.selectOcAfterServiceAmountForExcelList [A/S 금액관리  선택 엑셀 목록 조회 쿼리] [이상호] */  
+    	     SELECT ( SELECT SITE_NAME FROM SY_SITE WITH (NOLOCK) WHERE SITE_NO = A.SITE_NO ) AS SITE_NAME
+			      , A.AS_ACCEPT_NO
+			      , REPLACE(CONVERT(CHAR(19), A.RGST_DTM, 20),'-','.') AS RGST_DTM
+			      , A.ORDER_NO
+                  , B.PRDT_NO
+                  , B.STYLE_INFO
+			      , C.BRAND_NAME AS BRAND_NAME
+			      , B.PRDT_NAME
+			      , B.OPTN_NAME
+                  , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY, B.ORDER_AMT ),1),'.00','')			AS STR_ORDER_AMT
+                  , DBO.FN_CODE_VALUE('AS_PROC_TYPE_CODE', B.AS_PROC_TYPE_CODE)+' > '+DBO.FN_CODE_VALUE('AS_PROC_TYPE_DTL_CODE', B.AS_PROC_TYPE_DTL_CODE)+' / '+ B.AS_PROC_CONT_TEXT as asProcess
+ 				  , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY, A.ADD_DLVY_AMT ),1),'.00','')		AS STR_ADD_DLVY_AMT
+			      , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY, B.AS_AMT ),1),'.00','')			AS STR_AS_AMT
+			      , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY, A.TOTAL_PYMNT_AMT ),1),'.00','')	AS STR_TOTAL_PYMNT_AMT
+			      , CASE WHEN A.AS_STAT_CODE = '10008' 
+		               THEN '입금대기'
+		               WHEN A.AS_STAT_CODE IN ('10009','10010','10011','10012')
+		               THEN '입금완료'
+		               ELSE NULL
+		          END AS asStatCodeName
+			  FROM OC_AS_ACCEPT A WITH (NOLOCK) 
+			  JOIN OC_AS_ACCEPT_PRODUCT B WITH (NOLOCK) 
+				  ON A.AS_ACCEPT_NO = B.AS_ACCEPT_NO
+			  JOIN DP_BRAND C WITH(NOLOCK)  
+			    ON B.BRAND_NO  = C.BRAND_NO
+			  JOIN MB_MEMBER D WITH (NOLOCK) 
+			    ON A.MEMBER_NO = D.MEMBER_NO
+			 WHERE A.AS_STAT_CODE IN('10008','10009','10010','10011')
+			   AND A.TOTAL_AS_AMT 		> 0
+			   AND A.ADD_DLVY_AMT 		> 0
+			   AND A.TOTAL_PYMNT_AMT 	> 0
+			<if test="asNos.length > 0">
+			   AND A.AS_ACCEPT_NO IN 
+			   <foreach item="item" index="index" collection="asNos" open="(" close=")" separator="," >
+					#{item.asAcceptNo}
+			   </foreach>
+			</if>
+			ORDER BY A.AS_ACCEPT_NO DESC
+	</select>
+	
+	<update id="updateOcAsPaymentAmtCancel" parameterType="kr.co.abcmart.bo.afterService.model.master.OcAsPayment">
+    
+     /*+kr.co.abcmart.bo.afterService.model.master.OcAsPaymentDao.updateOcAsPaymentAmtCancel [결제 취소 ] [Generator] */
+    
+	UPDATE OC_AS_PAYMENT
+		<set> 
+			<if test="rspnsCodeText != null"> 
+				rspns_code_text = #{rspnsCodeText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rspnsMesgText != null"> 
+				rspns_mesg_text = #{rspnsMesgText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="redempRfndOpetrNo != null"> 
+				redemp_rfnd_opetr_no = #{redempRfndOpetrNo, jdbcType=VARCHAR}, 
+			</if> 
+			redemp_rfnd_opetr_dtm = GETDATE(), 
+			<if test="redempRfndGbnType != null"> 
+				 redemp_rfnd_gbn_type = #{redempRfndGbnType, jdbcType=CHAR},
+			</if> 
+			<if test="pymntStatCode != null"> 
+				 pymnt_stat_code = #{pymntStatCode, jdbcType=VARCHAR},
+			</if> 
+			<if test="pymntLogInfo != null"> 
+				 pymnt_log_info = #{pymntLogInfo, jdbcType=VARCHAR},
+			</if> 
+		moder_no = #{moderNo, jdbcType=VARCHAR},  
+		mod_dtm = GETDATE()  
+		</set> 
+		WHERE 
+			 AS_ACCEPT_NO = #{asAcceptNo, jdbcType=VARCHAR} 
+    </update>
+    
+    <select id="selectAsPymntDetailInfoBackend" parameterType="kr.co.abcmart.bo.afterService.model.master.OcAsPayment" resultType="kr.co.abcmart.bo.afterService.model.master.OcAsPayment">
+    
+    /*+ kr.co.abcmart.bo.afterService.repository.master.OcAsPaymentDao.selectAsPymntDetailInfoBackend [조회 쿼리] [이강수] */  
+
+	      SELECT DEVICE_CODE
+		       , DBO.FN_CODE_VALUE('DEVICE_CODE',DEVICE_CODE) AS DEVICE_CODE_NAME
+		       , MAIN_PYMNT_MEANS_YN
+		       , PYMNT_MEANS_CODE
+		       , DBO.FN_CODE_VALUE('PYMNT_MEANS_CODE',PYMNT_MEANS_CODE) AS PYMNT_MEANS_CODE_NAME
+		       , PYMNT_VNDR_CODE
+		       , DBO.FN_CODE_VALUE('PYMNT_VNDR_CODE',PYMNT_VNDR_CODE) AS PYMNT_VNDR_CODE_NAME
+		       , PYMNT_ORGAN_CODE_TEXT
+		       , PYMNT_ORGAN_NAME
+		       , PYMNT_ORGAN_NO_TEXT
+		       , INSTMT_TERM_COUNT
+		       , CARD_GBN_TYPE
+		       , CARD_TYPE
+		       , PYMNT_APRV_NO_TEXT
+		       , PYMNT_TODO_AMT
+		       , PYMNT_AMT
+		       , CARD_PART_CNCL_PSBLT_YN
+		       , CASH_RCPT_ISSUE_YN
+		       , RSPNS_CODE_TEXT
+		       , RSPNS_MESG_TEXT
+		       , PYMNT_CMLPT_DTM AS DB_PYMNT_CMLPT_DATE
+		       , REPLACE(CONVERT(CHAR(19), PYMNT_CMLPT_DTM, 20),'-','.') AS PYMNT_CMLPT_DATE
+		       , REDEMP_RFND_OPETR_NO
+		       , REDEMP_RFND_OPETR_DTM
+		       , REDEMP_RFND_GBN_TYPE
+		       , MMNY_PROC_TRGT_YN
+		       , OCRNC_RSN_CODE
+		       , DBO.FN_CODE_VALUE('OCRNC_RSN_CODE',OCRNC_RSN_CODE) AS OCRNC_RSN_CODE_NAME
+		       , PYMNT_STAT_CODE
+		       , DBO.FN_CODE_VALUE('PYMNT_STAT_CODE',PYMNT_STAT_CODE) AS PYMNT_STAT_CODE_NAME
+		       , MODER_NO
+		       , MOD_DTM 
+	  	    FROM OC_AS_PAYMENT WITH (NOLOCK)
+	 	   WHERE AS_ACCEPT_NO = #{asAcceptNo, jdbcType=VARCHAR}
+		     AND AS_PYMNT_SEQ = #{asPymntSeq, jdbcType=TINYINT}		
+    
+    </select>
+    
+</mapper>

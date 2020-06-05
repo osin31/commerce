@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.display.repository.master.DpWebzineProductDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.display.model.master.DpWebzineProduct">
+
+     /*+ kr.co.abcmart.bo.display.repository.master.DpWebzineProductDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			DP_WEBZINE_PRODUCT
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectDpWebzineProductList" parameterType="kr.co.abcmart.bo.display.model.master.DpWebzineProduct" resultType="kr.co.abcmart.bo.display.model.master.DpWebzineProduct">
+     /*+ kr.co.abcmart.bo.display.repository.master.DpWebzineProductDao.selectDpWebzineProductList [웹진연관상품조회] [박민우] */
+
+		SELECT
+			 A.WBZN_SEQ,
+			 A.PRDT_NO,
+			 A.SORT_SEQ,
+			 B.PRDT_NAME,
+			 B.SITE_NO,
+			 B.CHNNL_NO,
+			 B.VNDR_PRDT_NO_TEXT,
+			 B.SELL_STAT_CODE,
+			 B.DISP_YN,
+			 DBO.FN_CODE_VALUE('SELL_STAT_CODE', B.SELL_STAT_CODE) AS sellStatCodeName,
+			 C.CTGR_NAME,
+			 D.IMAGE_URL,
+			 D.ALTRN_TEXT
+		FROM
+			dp_webzine_product A WITH(NOLOCK)
+		INNER JOIN PD_PRODUCT B WITH(NOLOCK) ON A.PRDT_NO = B.PRDT_NO
+		INNER JOIN DP_CATEGORY C WITH(NOLOCK) ON B.STDR_CTGR_NO = C.CTGR_NO
+		INNER JOIN PD_PRODUCT_RELATION_FILE D ON D.PRDT_NO = B.PRDT_NO AND D.PRDT_RLTN_FILE_SEQ = '1'
+		<where>
+			<if test="wbznSeq != null">
+				 wbzn_seq = #{wbznSeq, jdbcType=INTEGER}
+			</if>
+			<if test="prdtNo != null">
+				 AND prdt_no = #{prdtNo, jdbcType=VARCHAR}
+			</if>
+			<if test="sortSeq != null">
+				 AND sort_seq = #{sortSeq, jdbcType=INTEGER}
+			</if>
+		</where>
+    </select>
+
+    <delete id="deleteDpWebzineProduct" parameterType="kr.co.abcmart.bo.display.model.master.DpWebzineProduct">
+     /*+ kr.co.abcmart.bo.display.repository.master.DpWebzineProductDao.deleteDpWebzineProduct [웹진연관상품 삭제] [박민우] */
+
+		DELETE FROM DP_WEBZINE_PRODUCT
+		WHERE
+			 wbzn_seq = #{wbznSeq, jdbcType=INTEGER}
+			 <if test="prdtNo != null">
+			 AND prdt_no = #{prdtNo, jdbcType=VARCHAR}
+			 </if>
+    </delete>
+
+</mapper>

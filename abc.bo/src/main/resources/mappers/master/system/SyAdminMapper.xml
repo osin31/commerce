@@ -1,0 +1,489 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyAdminDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.system.model.master.SyAdmin" resultType="kr.co.abcmart.bo.system.model.master.SyAdmin">
+		SELECT
+			 <include refid="select-columns" />
+		FROM
+			sy_admin with (nolock)
+		WHERE
+			 admin_no = #{adminNo, jdbcType=VARCHAR}
+    </select>
+
+    <resultMap id="selectAdminAndAuthorityByLoginId-resultMap" type="kr.co.abcmart.bo.system.model.master.SyAdmin">
+    	<result column="admin_no" 				property="adminNo"				jdbcType="VARCHAR"/>
+    	<result column="login_id" 				property="loginId"				jdbcType="VARCHAR"/>
+    	<result column="admin_name" 			property="adminName"			jdbcType="VARCHAR"/>
+    	<result column="pswd_text" 				property="pswdText"				jdbcType="VARCHAR"/>
+    	<result column="pswd_salt_text" 		property="pswdSaltText"			jdbcType="VARCHAR"/>
+    	<result column="vndr_no" 				property="vndrNo"				jdbcType="VARCHAR"/>
+    	<result column="vndr_mngr_no"			property="vndrMngrNo"			jdbcType="NUMERIC"/>
+    	<result column="store_no"				property="storeNo"				jdbcType="NUMERIC"/>
+    	<result column="tel_no_text"			property="telNoText"			jdbcType="VARCHAR"/>
+    	<result column="hdphn_no_text"			property="hdphnNoText"			jdbcType="VARCHAR"/>
+    	<result column="email_addr_text"		property="emailAddrText"		jdbcType="VARCHAR"/>
+    	<result column="member_info_mgmt_yn"	property="memberInfoMgmtYn"		jdbcType="VARCHAR"/>
+    	<result column="batch_error_alert_yn"	property="batchErrorAlertYn"	jdbcType="VARCHAR"/>
+    	<result column="last_login_dtm"			property="lastLoginDtm"			jdbcType="TIMESTAMP"/>
+    	<result column="login_fail_count"		property="loginFailCount"		jdbcType="NUMERIC"/>
+    	<result column="pswd_chng_dtm"			property="pswdChngDtm"			jdbcType="TIMESTAMP"/>
+    	<result column="use_yn"					property="useYn"				jdbcType="VARCHAR"/>
+    	<result column="pswd_init_yn"			property="pswdInitYn"			jdbcType="CHAR"/>
+    	<result column="pswd_dscord_yn"			property="pswdDscordYn"			jdbcType="CHAR"/>
+    	<result column="long_unused_yn"			property="longUnusedYn"			jdbcType="CHAR"/>
+    	<result column="ctlg_app_uid_text"		property="ctlgAppUidText"		jdbcType="VARCHAR"/>
+    	<result column="session_id"				property="sessionId"			jdbcType="VARCHAR"/>
+    	<result column="rgster_no"				property="rgsterNo"				jdbcType="VARCHAR"/>
+    	<result column="rgst_dtm"				property="rgstDtm"				jdbcType="TIMESTAMP"/>
+    	<collection
+    		property="adminAuthorities"
+    		column="admin_no"
+    		ofType="kr.co.abcmart.bo.system.model.master.SyAdminAuthority"
+    		select="kr.co.abcmart.bo.system.repository.master.SyAdminAuthorityDao.getAdminAuthorities"
+    	/>
+    </resultMap>
+
+	<!--
+		LoginId로 admin 사용자 계정 및 권한 정보 조회.
+ 	-->
+    <select id="selectAdminAndAuthorityByLoginId" parameterType="kr.co.abcmart.bo.system.model.master.SyAdmin" resultMap="selectAdminAndAuthorityByLoginId-resultMap">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAdminDao.selectAdminAndAuthorityByLoginId [LoginId로 admin 사용자 계정 및 권한 정보 조회] */
+		SELECT
+			 <include refid="select-columns" />
+		FROM
+			sy_admin with (nolock)
+		WHERE
+			 login_id = #{loginId, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectAdminListCount" parameterType="pageable" resultType="int">
+		SELECT <include refid="Paging.totalCount" />
+	      FROM SY_ADMIN A with (nolock)
+	      JOIN SY_ADMIN_AUTHORITY B with (nolock)
+	        ON A.ADMIN_NO = B.ADMIN_NO
+	      JOIN SY_AUTHORITY C with (nolock)
+	        ON B.AUTH_NO = C.AUTH_NO
+	    <trim prefix="WHERE" prefixOverrides="AND|OR">
+	   	<if test="bean.authApplySystemType != null and bean.authApplySystemType != ''">
+	   		AND C.AUTH_APPLY_SYSTEM_TYPE = #{bean.authApplySystemType, jdbcType=VARCHAR}
+	   	</if>
+	   	<if test="bean.memberInfoMgmtYn != null and bean.memberInfoMgmtYn != ''">
+	   		AND A.MEMBER_INFO_MGMT_YN = #{bean.memberInfoMgmtYn, jdbcType=VARCHAR}
+	   	</if>
+	   	<if test="bean.useYn != null and bean.useYn != ''">
+	   		AND A.USE_YN = #{bean.useYn, jdbcType=VARCHAR}
+	   	</if>
+	   	<choose>
+	   		<when test="bean.authNo != null and bean.authNo != ''">
+	   			AND B.AUTH_NO = #{bean.authNo, jdbcType=VARCHAR}
+	   		</when>
+	   		<otherwise>
+	   			AND B.AUTH_NO != 'ROLE_20003'
+	   		</otherwise>
+	   	</choose>
+	   	<if test="bean.loginId != null and bean.loginId != ''">
+	   		AND A.LOGIN_ID LIKE CONCAT(#{bean.loginId, jdbcType=VARCHAR}, '%')
+	   	</if>
+	   	<if test="bean.adminName != null and bean.adminName != ''">
+	   		AND A.ADMIN_NAME LIKE CONCAT(#{bean.adminName, jdbcType=VARCHAR}, '%')
+	   	</if>
+	   	<if test="bean.searchKey != null and bean.searchKey != '' and bean.searchValue != null and bean.searchValue != ''">
+		   	<choose>
+		   		<when test="bean.searchKey == 'loginId'">
+		   	AND A.LOGIN_ID LIKE CONCAT(#{bean.searchValue, jdbcType=VARCHAR}, '%')
+		   		</when>
+		   		<when test="bean.searchKey == 'adminName'">
+		   	AND A.ADMIN_NAME LIKE CONCAT(#{bean.searchValue, jdbcType=VARCHAR}, '%')
+		   		</when>
+		   		<when test="bean.searchKey == 'emailAddrText'">
+		   	AND A.EMAIL_ADDR_TEXT LIKE CONCAT(#{bean.searchValue, jdbcType=VARCHAR}, '%')
+		   		</when>
+		   		<when test="bean.searchKey == 'hdphnNoText'">
+		   	AND A.HDPHN_NO_TEXT LIKE CONCAT(#{bean.searchValue, jdbcType=VARCHAR}, '%')
+		   		</when>
+		   		<when test="bean.searchKey == 'storeName'">
+		   	AND 1 = 1
+		   		</when>
+		   	</choose>
+	   	</if>
+	   	<if test="bean.adminNos != null">
+	   		AND A.ADMIN_NO IN
+	   		<foreach collection="bean.adminNos" item="adminNo" open="(" close=")" separator=",">
+	   			#{adminNo}
+	   		</foreach>
+	   	</if>
+	   	</trim>
+	   	<!-- <if test="bean.siteNos != null and bean.siteNos.length > 0">
+	   		AND EXISTS (
+	   						SELECT 1
+	   						  FROM SY_ADMIN_MANAGEMENT_SITE Z
+	   						 WHERE Z.ADMIN_NO = A.ADMIN_NO
+	   						   AND Z.SITE_NO IN
+	   		<foreach collection="bean.siteNos" item="siteNo" open="(" close=")" separator=",">
+	   			#{siteNo}
+	   		</foreach>
+	   				   )
+	   	</if>
+	   	<if test="bean.siteNo != null and bean.siteNo != ''">
+	   		AND EXISTS (
+	   						SELECT 1
+	   						  FROM SY_ADMIN_MANAGEMENT_SITE Z
+	   						 WHERE Z.ADMIN_NO = A.ADMIN_NO
+	   						   AND Z.SITE_NO = #{bean.siteNo}
+	   				   )
+	   	</if> -->
+	</select>
+
+	<select id="selectAdminList" parameterType="pageable" resultType="kr.co.abcmart.bo.system.model.master.SyAdmin">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAdminDao.selectAdminList [관리자 목록 조회][이동엽] */
+		SELECT A.ADMIN_NO
+		     , CASE WHEN C.AUTH_APPLY_SYSTEM_TYPE = 'B'
+                    THEN 'BO'
+                    ELSE 'PO'
+                END AS AUTH_APPLY_SYSTEM_TYPE
+	         , C.AUTH_NAME
+	         , A.LOGIN_ID
+	         , A.ADMIN_NAME
+	         , A.EMAIL_ADDR_TEXT
+	         , A.HDPHN_NO_TEXT
+	         , A.MEMBER_INFO_MGMT_YN
+	         , A.USE_YN
+	         , D.LOGIN_ID AS RGST_LOGIN_ID
+             , D.ADMIN_NAME AS RGST_ADMIN_NAME
+	         , A.RGST_DTM
+	         <if test="bean.authNo != null and bean.authNo != ''">
+	         , (SELECT STORE_NAME FROM CM_STORE WHERE STORE_NO = A.STORE_NO) AS STORE_NAME
+	         </if>
+	         <!-- , STUFF(
+                    (
+                        SELECT CONCAT(',', Y.SITE_NAME)
+                          FROM SY_ADMIN_MANAGEMENT_SITE X
+                             , SY_SITE Y
+                         WHERE X.SITE_NO = Y.SITE_NO
+                           AND Y.USE_YN  = 'Y'
+                           AND X.ADMIN_NO = A.ADMIN_NO
+                           FOR XML PATH('')
+                     )
+                  , 1, 1, ''
+	           ) AS SITE_NAME -->
+	      FROM SY_ADMIN A with (nolock)
+	      JOIN SY_ADMIN_AUTHORITY B with (nolock)
+	        ON A.ADMIN_NO = B.ADMIN_NO
+	      JOIN SY_AUTHORITY C with (nolock)
+	        ON B.AUTH_NO = C.AUTH_NO
+	      JOIN SY_ADMIN D with (nolock)
+            ON A.RGSTER_NO = D.ADMIN_NO
+	    <trim prefix="WHERE" prefixOverrides="AND|OR">
+	   	<if test="bean.authApplySystemType != null and bean.authApplySystemType != ''">
+	   		AND C.AUTH_APPLY_SYSTEM_TYPE = #{bean.authApplySystemType, jdbcType=VARCHAR}
+	   	</if>
+	   	<if test="bean.memberInfoMgmtYn != null and bean.memberInfoMgmtYn != ''">
+	   		AND A.MEMBER_INFO_MGMT_YN = #{bean.memberInfoMgmtYn, jdbcType=VARCHAR}
+	   	</if>
+	   	<if test="bean.useYn != null and bean.useYn != ''">
+	   		AND A.USE_YN = #{bean.useYn, jdbcType=VARCHAR}
+	   	</if>
+	   	<choose>
+	   		<when test="bean.authNo != null and bean.authNo != ''">
+	   			AND B.AUTH_NO = #{bean.authNo, jdbcType=VARCHAR}
+	   		</when>
+	   		<otherwise>
+	   			AND B.AUTH_NO != 'ROLE_20003'
+	   		</otherwise>
+	   	</choose>
+	   	<if test="bean.loginId != null and bean.loginId != ''">
+	   		AND A.LOGIN_ID LIKE CONCAT(#{bean.loginId, jdbcType=VARCHAR}, '%')
+	   	</if>
+	   	<if test="bean.adminName != null and bean.adminName != ''">
+	   		AND A.ADMIN_NAME LIKE CONCAT(#{bean.adminName, jdbcType=VARCHAR}, '%')
+	   	</if>
+	   	<if test="bean.searchKey != null and bean.searchKey != '' and bean.searchValue != null and bean.searchValue != ''">
+		   	<choose>
+		   		<when test="bean.searchKey == 'loginId'">
+		   	AND A.LOGIN_ID LIKE CONCAT(#{bean.searchValue, jdbcType=VARCHAR}, '%')
+		   		</when>
+		   		<when test="bean.searchKey == 'adminName'">
+		   	AND A.ADMIN_NAME LIKE CONCAT(#{bean.searchValue, jdbcType=VARCHAR}, '%')
+		   		</when>
+		   		<when test="bean.searchKey == 'emailAddrText'">
+		   	AND A.EMAIL_ADDR_TEXT LIKE CONCAT(#{bean.searchValue, jdbcType=VARCHAR}, '%')
+		   		</when>
+		   		<when test="bean.searchKey == 'hdphnNoText'">
+		   	AND A.HDPHN_NO_TEXT LIKE CONCAT(#{bean.searchValue, jdbcType=VARCHAR}, '%')
+		   		</when>
+		   		<when test="bean.searchKey == 'storeName'">
+		   	AND 1 = 1
+		   		</when>
+		   	</choose>
+	   	</if>
+	   	<if test="bean.adminNos != null">
+	   		AND A.ADMIN_NO IN
+	   		<foreach collection="bean.adminNos" item="adminNo" open="(" close=")" separator=",">
+	   			#{adminNo}
+	   		</foreach>
+	   	</if>
+	   	<!-- <if test="bean.siteNos != null and bean.siteNos.length > 0">
+	   		AND EXISTS (
+	   						SELECT 1
+	   						  FROM SY_ADMIN_MANAGEMENT_SITE Z
+	   						 WHERE Z.ADMIN_NO = A.ADMIN_NO
+	   						   AND Z.SITE_NO IN
+	   		<foreach collection="bean.siteNos" item="siteNo" open="(" close=")" separator=",">
+	   			#{siteNo}
+	   		</foreach>
+	   				   )
+	   	</if>
+	   	<if test="bean.siteNo != null and bean.siteNo != ''">
+	   		AND EXISTS (
+	   						SELECT 1
+	   						  FROM SY_ADMIN_MANAGEMENT_SITE Z
+	   						 WHERE Z.ADMIN_NO = A.ADMIN_NO
+	   						   AND Z.SITE_NO = #{bean.siteNo}
+	   				   )
+	   	</if> -->
+	   	</trim>
+		<choose>
+		 <when test="sortColumn != null">
+		 	ORDER BY
+		 	<if test="sortColumn == 'rgstDtm'.toString()">
+		 		A.RGST_DTM
+		 	</if>
+		 	<if test="sortType == 'DESC'.toString()">
+		 		DESC
+		 	</if>
+		 </when>
+		 <when test="bean.searchType == 'STATS'.toString()">
+		 	ORDER BY A.LOGIN_ID
+		 </when>
+		 <otherwise>
+		 	ORDER BY A.RGST_DTM DESC
+		 </otherwise>
+		</choose>
+		<include refid="Paging.mssql" />
+	</select>
+
+	<select id="selectCheckLoginId" parameterType="kr.co.abcmart.bo.system.model.master.SyAdmin" resultType="int">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAdminDao.selectCheckLoginId [관리자 중복 조회][이동엽] */
+		SELECT COUNT(*)
+          FROM SY_ADMIN with (nolock)
+         WHERE LOGIN_ID = #{loginId, jdbcType=VARCHAR}
+	</select>
+
+	<insert id="insertAdmin" parameterType="kr.co.abcmart.bo.system.model.master.SyAdmin">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAdminDao.insertAdmin [관리자 등록][이동엽] */
+
+		<selectKey resultType="String" keyProperty="adminNo" order="BEFORE">
+			SELECT CONCAT('SY', NEXT VALUE FOR SEQ_SY_ADMIN_ADMIN_NO)
+		</selectKey>
+
+		INSERT INTO SY_ADMIN (
+			   ADMIN_NO
+			 , LOGIN_ID
+			 , ADMIN_NAME
+			 , PSWD_TEXT
+			 , PSWD_SALT_TEXT
+			 , VNDR_NO
+			 , VNDR_MNGR_NO
+			 , STORE_NO
+			 , TEL_NO_TEXT
+			 , HDPHN_NO_TEXT
+			 , EMAIL_ADDR_TEXT
+			 , MEMBER_INFO_MGMT_YN
+			 , BATCH_ERROR_ALERT_YN
+			 , LAST_LOGIN_DTM
+			 , LOGIN_FAIL_COUNT
+			 , PSWD_INIT_YN
+			 , PSWD_CHNG_DTM
+			 , USE_YN
+			 , CTLG_APP_UID_TEXT
+			 , SESSION_ID
+			 , RGSTER_NO
+			 , RGST_DTM
+			 , MODER_NO
+			 , MOD_DTM
+		) VALUES (
+			   #{adminNo, jdbcType=VARCHAR}
+			 , #{loginId, jdbcType=VARCHAR}
+			 , #{adminName, jdbcType=VARCHAR}
+			 , #{pswdText, jdbcType=VARCHAR}
+			 , #{pswdSaltText, jdbcType=VARCHAR}
+			 , #{vndrNo, jdbcType=VARCHAR}
+			 , #{vndrMngrNo, jdbcType=TINYINT}
+			 , #{storeNo, jdbcType=VARCHAR}
+			 , #{telNoText, jdbcType=VARCHAR}
+			 , #{hdphnNoText, jdbcType=VARCHAR}
+			 , #{emailAddrText, jdbcType=VARCHAR}
+			 , #{memberInfoMgmtYn, jdbcType=CHAR}
+			 <choose>
+				<when test="batchErrorAlertYn == 'Y'.toString()">
+					, #{batchErrorAlertYn, jdbcType=CHAR}
+				</when>
+				<otherwise>
+					, 'N'
+				</otherwise>
+			</choose>
+			 , #{lastLoginDtm, jdbcType=TIMESTAMP}
+			 , 0
+			 , 'F'
+			 , GETDATE()
+			 , #{useYn, jdbcType=CHAR}
+			 , #{ctlgAppUidText, jdbcType=VARCHAR}
+			 , #{sessionId, jdbcType=VARCHAR}
+			 , #{rgsterNo, jdbcType=VARCHAR}
+			 , GETDATE()
+			 , #{moderNo, jdbcType=VARCHAR}
+			 , GETDATE()
+		)
+
+	</insert>
+
+	<select id="selectAdminDetailInfo" parameterType="String" resultType="kr.co.abcmart.bo.system.model.master.SyAdmin">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAdminDao.selectAdminDetailInfo [관리자 기본정보 조회][이동엽] */
+		SELECT A.ADMIN_NO
+             , B.AUTH_NO
+             , C.AUTH_NAME
+             , CASE WHEN C.AUTH_APPLY_SYSTEM_TYPE = 'B'
+                    THEN 'BO'
+                    ELSE 'PO'
+                END AS AUTH_APPLY_SYSTEM_TYPE
+             , A.LOGIN_ID
+             , A.PSWD_TEXT
+             , A.PSWD_SALT_TEXT
+             , A.ADMIN_NAME
+             , ISNULL(A.PSWD_INIT_YN, 'N') AS PSWD_INIT_YN
+             , A.PSWD_CHNG_DTM
+             , A.EMAIL_ADDR_TEXT
+             , REPLACE(A.HDPHN_NO_TEXT, '-', '') AS HDPHN_NO_TEXT
+             , REPLACE(A.TEL_NO_TEXT, '-', '') AS TEL_NO_TEXT
+             , A.STORE_NO
+             , (SELECT STORE_NAME FROM CM_STORE with (nolock) WHERE STORE_NO = A.STORE_NO) AS STORE_NAME
+             , A.BATCH_ERROR_ALERT_YN
+             , A.MEMBER_INFO_MGMT_YN
+             , A.LONG_UNUSED_YN
+             , A.PSWD_DSCORD_YN
+             , A.USE_YN
+      	     , D.LOGIN_ID AS RGST_LOGIN_ID
+             , D.ADMIN_NAME AS RGST_ADMIN_NAME
+             , A.RGST_DTM
+      	     , E.LOGIN_ID AS MOD_LOGIN_ID
+             , E.ADMIN_NAME AS MOD_ADMIN_NAME
+             , A.MOD_DTM
+             , A.RGSTER_NO
+             , A.MODER_NO
+          FROM SY_ADMIN A with (nolock)
+          JOIN SY_ADMIN_AUTHORITY B with (nolock)
+            ON A.ADMIN_NO = B.ADMIN_NO
+          JOIN SY_AUTHORITY C with (nolock)
+            ON B.AUTH_NO = C.AUTH_NO
+          JOIN SY_ADMIN D with (nolock)
+            ON A.RGSTER_NO = D.ADMIN_NO
+          JOIN SY_ADMIN E with (nolock)
+            ON A.MODER_NO = E.ADMIN_NO
+         WHERE A.ADMIN_NO = #{adminNo, jdbcType=VARCHAR}
+	</select>
+
+	<update id="updateAdmin" parameterType="kr.co.abcmart.bo.system.model.master.SyAdmin">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAdminDao.updateAdmin [관리자 기본정보 수정][이동엽] */
+		UPDATE SY_ADMIN
+		<trim prefix="SET" prefixOverrides=",">
+			<if test="adminName != null">
+				, ADMIN_NAME = #{adminName, jdbcType=VARCHAR}
+			</if>
+			<if test="pswdText != null">
+				, PSWD_TEXT = #{pswdText, jdbcType=VARCHAR}
+			</if>
+			<if test="pswdSaltText != null">
+				, PSWD_SALT_TEXT = #{pswdSaltText, jdbcType=VARCHAR}
+			</if>
+			<if test="hdphnNoText != null">
+				, HDPHN_NO_TEXT = #{hdphnNoText, jdbcType=VARCHAR}
+			</if>
+			<if test="storeNo != null">
+				, STORE_NO = #{storeNo, jdbcType=VARCHAR}
+			</if>
+			<if test="telNoText != null">
+				, TEL_NO_TEXT = #{telNoText, jdbcType=VARCHAR}
+			</if>
+			<if test="emailAddrText != null">
+				, EMAIL_ADDR_TEXT = #{emailAddrText, jdbcType=VARCHAR}
+			</if>
+			<if test="memberInfoMgmtYn != null">
+				, MEMBER_INFO_MGMT_YN = #{memberInfoMgmtYn, jdbcType=CHAR}
+			</if>
+			<if test="batchErrorAlertYn != null">
+				, BATCH_ERROR_ALERT_YN = #{batchErrorAlertYn, jdbcType=CHAR}
+			</if>
+			<if test="pswdDscordYn != null">
+				, PSWD_DSCORD_YN = #{pswdDscordYn, jdbcType=CHAR}
+			</if>
+			<if test="longUnusedYn != null">
+				, LONG_UNUSED_YN = #{longUnusedYn, jdbcType=CHAR}
+			</if>
+			<if test="pswdChangeYn != null">
+				, PSWD_CHNG_DTM = GETDATE()
+			</if>
+			<if test="useYn != null">
+				, USE_YN = #{useYn, jdbcType=CHAR}
+			</if>
+			<if test="pswdInitYn != null">
+				, PSWD_INIT_YN = #{pswdInitYn, jdbcType=CHAR}
+			</if>
+			<if test="lastLoginDtm != null">
+				, LAST_LOGIN_DTM = #{lastLoginDtm, jdbcType=TIMESTAMP}
+			</if>
+			<if test="lastLoginIpText != null">
+				, LAST_LOGIN_IP_TEXT = #{lastLoginIpText, jdbcType=VARCHAR}
+			</if>
+			<choose>
+				<when test="loginFailIncrease == 'Y'.toString()">
+					, LOGIN_FAIL_COUNT = (SELECT ISNULL(MAX(LOGIN_FAIL_COUNT), 0) + 1
+											FROM SY_ADMIN
+										   WHERE ADMIN_NO = #{adminNo, jdbcType=VARCHAR})
+				</when>
+				<when test="loginFailInit == 'Y'.toString()">
+					, LOGIN_FAIL_COUNT = 0
+				</when>
+			</choose>
+				, MODER_NO = #{moderNo}
+				, MOD_DTM  = GETDATE()
+		</trim>
+			WHERE ADMIN_NO = #{adminNo}
+	</update>
+
+	<select id="getSuperAdminNoList" resultType="kr.co.abcmart.bo.system.model.master.SyAdmin">
+	/*+ kr.co.abcmart.bo.system.repository.master.SyAdminDao.getSuperAdminNoList [SUPER 관리자 정보][유성민] */
+		SELECT A.ADMIN_NO
+			 , A.ADMIN_NAME
+			 , A.HDPHN_NO_TEXT
+		  FROM SY_ADMIN A with (nolock)
+			 , SY_ADMIN_AUTHORITY B with (nolock)
+		 WHERE A.ADMIN_NO = B.ADMIN_NO
+		   AND B.AUTH_NO = 'ROLE_20000'
+		   AND A.USE_YN = 'Y'
+	</select>
+
+	<select id="selectVndrNoInfo" parameterType="kr.co.abcmart.bo.system.model.master.SyAdmin" resultType="kr.co.abcmart.bo.system.model.master.SyAdmin">
+	/*+ kr.co.abcmart.bo.system.repository.master.SyAdminDao.selectVndrNoInfo [입점사 담당자 정보] [LSH] */
+	SELECT S.ADMIN_NAME, S.EMAIL_ADDR_TEXT, S.RANK_SEQ
+	  FROM (
+		SELECT A.ADMIN_NAME , A.EMAIL_ADDR_TEXT
+		     , RANK( )OVER( PARTITION BY A.VNDR_NO ORDER BY  A.VNDR_MNGR_NO  ASC ) AS RANK_SEQ
+		  FROM SY_ADMIN A WITH (NOLOCK)
+		  JOIN DBO.VD_VENDOR_MANAGER B WITH (NOLOCK)
+		    ON A.VNDR_NO = B.VNDR_NO
+		   AND A.VNDR_MNGR_NO = B.VNDR_MNGR_NO
+		 WHERE  A.VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+		   AND A.USE_YN = 'Y'
+		   AND B.DEL_YN = 'N'
+		)S
+	 WHERE RANK_SEQ = 1
+	</select>
+
+</mapper>

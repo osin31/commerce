@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	menu_access_hist, admin_no, auth_no, menu_no, menu_yn, access_url, access_paramtr_text, access_ip_text, access_type, success_yn, fail_rsn_text, success_rsn_text, rslt_count, rslt_desc_text, rgst_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	menu_access_hist = #{menuAccessHist, jdbcType=BIGINT}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.system.model.master.SyMenuAccessHistory" resultType="kr.co.abcmart.bo.system.model.master.SyMenuAccessHistory">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			sy_menu_access_history
+		<where> 
+			<if test="menuAccessHist != null"> 
+				 menu_access_hist = #{menuAccessHist, jdbcType=BIGINT}
+			</if> 
+			<if test="adminNo != null"> 
+				 AND admin_no = #{adminNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="authNo != null"> 
+				 AND auth_no = #{authNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="menuNo != null"> 
+				 AND menu_no = #{menuNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="menuYn != null"> 
+				 AND menu_yn = #{menuYn, jdbcType=CHAR}
+			</if> 
+			<if test="accessUrl != null"> 
+				 AND access_url = #{accessUrl, jdbcType=VARCHAR}
+			</if> 
+			<if test="accessParamtrText != null"> 
+				 AND access_paramtr_text = #{accessParamtrText, jdbcType=VARCHAR}
+			</if> 
+			<if test="accessIpText != null"> 
+				 AND access_ip_text = #{accessIpText, jdbcType=VARCHAR}
+			</if> 
+			<if test="accessType != null"> 
+				 AND access_type = #{accessType, jdbcType=CHAR}
+			</if> 
+			<if test="successYn != null"> 
+				 AND success_yn = #{successYn, jdbcType=CHAR}
+			</if> 
+			<if test="failRsnText != null"> 
+				 AND fail_rsn_text = #{failRsnText, jdbcType=VARCHAR}
+			</if> 
+			<if test="successRsnText != null"> 
+				 AND success_rsn_text = #{successRsnText, jdbcType=VARCHAR}
+			</if> 
+			<if test="rsltCount != null"> 
+				 AND rslt_count = #{rsltCount, jdbcType=INTEGER}
+			</if> 
+			<if test="rsltDescText != null"> 
+				 AND rslt_desc_text = #{rsltDescText, jdbcType=VARCHAR}
+			</if> 
+			<if test="rgstDtm != null"> 
+				 AND rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+	<insert id="insert" useGeneratedKeys="true" keyProperty="menuAccessHist">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO sy_menu_access_history
+			 ( admin_no, auth_no, menu_no, menu_yn, access_url, access_paramtr_text, access_ip_text, access_type, success_yn, fail_rsn_text, success_rsn_text, rslt_count, rslt_desc_text, rgst_dtm ) 
+
+		VALUES 
+			 ( #{adminNo, jdbcType=VARCHAR}, #{authNo, jdbcType=VARCHAR}, #{menuNo, jdbcType=VARCHAR}, #{menuYn, jdbcType=CHAR}, #{accessUrl, jdbcType=VARCHAR}, #{accessParamtrText, jdbcType=VARCHAR}, #{accessIpText, jdbcType=VARCHAR}, #{accessType, jdbcType=CHAR}, #{successYn, jdbcType=CHAR}, #{failRsnText, jdbcType=VARCHAR}, #{successRsnText, jdbcType=VARCHAR}, #{rsltCount, jdbcType=INTEGER}, #{rsltDescText, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.system.model.master.SyMenuAccessHistory">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE sy_menu_access_history
+		<set> 
+			<if test="menuAccessHist != null"> 
+				menu_access_hist = #{menuAccessHist, jdbcType=BIGINT}, 
+			</if> 
+			<if test="adminNo != null"> 
+				admin_no = #{adminNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="authNo != null"> 
+				auth_no = #{authNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="menuNo != null"> 
+				menu_no = #{menuNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="menuYn != null"> 
+				menu_yn = #{menuYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="accessUrl != null"> 
+				access_url = #{accessUrl, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="accessParamtrText != null"> 
+				access_paramtr_text = #{accessParamtrText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="accessIpText != null"> 
+				access_ip_text = #{accessIpText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="accessType != null"> 
+				access_type = #{accessType, jdbcType=CHAR}, 
+			</if> 
+			<if test="successYn != null"> 
+				success_yn = #{successYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="failRsnText != null"> 
+				fail_rsn_text = #{failRsnText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="successRsnText != null"> 
+				success_rsn_text = #{successRsnText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rsltCount != null"> 
+				rslt_count = #{rsltCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="rsltDescText != null"> 
+				rslt_desc_text = #{rsltDescText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 menu_access_hist = #{menuAccessHist, jdbcType=BIGINT}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.system.model.master.SyMenuAccessHistory">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyMenuAccessHistoryDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM sy_menu_access_history
+		WHERE 
+			 menu_access_hist = #{menuAccessHist, jdbcType=BIGINT}  
+    </delete>
+</mapper>

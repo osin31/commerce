@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyMenuDao">
+
+	<!--
+		※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+		기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+	-->
+	<select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.system.model.master.SyMenu" resultType="kr.co.abcmart.bo.system.model.master.SyMenu">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyMenuDao.selectByPrimaryKey [메뉴테이블 기본조회] [유성민]*/
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			sy_menu with (nolock)
+		WHERE
+			 menu_no = #{menuNo, jdbcType=VARCHAR}
+	</select>
+
+	<select id="selectMenuListCount" parameterType="kr.co.abcmart.bo.system.model.master.SyMenu" resultType="int">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyMenuDao.selectMenuListCount [메뉴목록 카운트] [유성민]*/
+		SELECT COUNT(*)
+		  FROM SY_MENU with (nolock)
+	</select>
+
+	<select id="selectMenuList" parameterType="kr.co.abcmart.bo.system.model.master.SyMenu" resultType="kr.co.abcmart.bo.system.model.master.SyMenu">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyMenuDao.selectMenuList [메뉴 목록] [유성민]*/
+		WITH MENU_CTE
+		AS (
+			SELECT MENU_NO
+				 , UP_MENU_NO
+				 , MENU_NAME
+				 , MENU_GBN_TYPE
+				 , ALL_PATH_MENU_NO
+				 , ALL_PATH_MENU_NAME
+				 , MENU_URL
+				 , RSRC_URL
+				 , RSRC_TYPE
+				 , SORT_SEQ
+				 , CONVERT(VARCHAR(255), RIGHT('000' + CONVERT(VARCHAR(3), SORT_SEQ), 3)) DEPTH_SORT
+				 , MENU_LEVEL
+				 , RGSTER_NO
+				 , RGST_DTM
+				 , MODER_NO
+				 , MOD_DTM
+				 , USE_YN
+				 , DISP_YN
+				 , AUTH_APPLY_SYSTEM_TYPE
+			  FROM SY_MENU with (nolock)
+			 WHERE ISNULL(UP_MENU_NO, '') = ''
+		 UNION ALL
+			SELECT A.MENU_NO
+				 , A.UP_MENU_NO
+				 , A.MENU_NAME
+				 , A.MENU_GBN_TYPE
+				 , A.ALL_PATH_MENU_NO
+				 , A.ALL_PATH_MENU_NAME
+				 , A.MENU_URL
+				 , A.RSRC_URL
+				 , A.RSRC_TYPE
+				 , A.SORT_SEQ
+				 , CONVERT(VARCHAR(255), B.DEPTH_SORT + ' > ' + RIGHT('000' + CONVERT(VARCHAR(3), A.SORT_SEQ), 3) + A.MENU_NO) DEPTH_SORT
+				 , A.MENU_LEVEL
+				 , A.RGSTER_NO
+				 , A.RGST_DTM
+				 , A.MODER_NO
+				 , A.MOD_DTM
+				 , A.USE_YN
+				 , A.DISP_YN
+				 , A.AUTH_APPLY_SYSTEM_TYPE
+			  FROM SY_MENU A with (nolock)
+			 INNER JOIN MENU_CTE B
+				ON A.UP_MENU_NO = B.MENU_NO
+			 WHERE (CASE WHEN A.MENU_NO = '10000'
+						 THEN #{authApplySystemType}
+						 ELSE A.AUTH_APPLY_SYSTEM_TYPE
+					END) = #{authApplySystemType}
+		 )
+		 SELECT A.MENU_NO
+			  , A.UP_MENU_NO
+			  , A.MENU_GBN_TYPE
+			  , A.MENU_NAME
+			  , A.DEPTH_SORT
+			  , A.ALL_PATH_MENU_NO
+			  , A.ALL_PATH_MENU_NAME
+			  , A.MENU_URL
+			  , A.RSRC_URL
+			  , A.RSRC_TYPE
+			  , A.SORT_SEQ
+			  , A.MENU_LEVEL as "level"
+			  , A.USE_YN
+			  , A.DISP_YN
+			  , B.LOGIN_ID AS RGSTER_ID
+			  , B.ADMIN_NAME AS RGSTER_NAME
+			  , A.RGSTER_NO
+			  , CONVERT(VARCHAR, A.RGST_DTM, 120) AS RGST_DTM
+			  , C.LOGIN_ID AS MODER_ID
+			  , C.ADMIN_NAME AS MODER_NAME
+			  , A.MODER_NO
+			  , CONVERT(VARCHAR, A.MOD_DTM, 120) AS MOD_DTM
+			  , (SELECT (CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END)
+				   FROM MENU_CTE Z
+				  WHERE Z.UP_MENU_NO = A.MENU_NO ) AS HAVE_CHILD
+			  , A.AUTH_APPLY_SYSTEM_TYPE
+		   FROM MENU_CTE A
+		LEFT OUTER JOIN SY_ADMIN B with (nolock)
+			ON B.ADMIN_NO = A.RGSTER_NO
+		LEFT OUTER JOIN SY_ADMIN C with (nolock)
+			ON C.ADMIN_NO = A.MODER_NO
+		  ORDER BY A.DEPTH_SORT
+	</select>
+
+	<insert id="insertMenu" parameterType="kr.co.abcmart.bo.system.model.master.SyMenu">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyMenuDao.insertMenu [메뉴 등록] [유성민]*/
+		<selectKey resultType="String" keyProperty="menuNo" order="BEFORE">
+			SELECT MAX(MENU_NO)+1 FROM SY_MENU
+		</selectKey>
+		INSERT INTO SY_MENU (
+			  MENU_NO
+			, UP_MENU_NO
+			, MENU_GBN_TYPE
+			, MENU_NAME
+			, MENU_URL
+			, RSRC_URL
+			, MENU_LEVEL
+			, ALL_PATH_MENU_NO
+			, ALL_PATH_MENU_NAME
+			, AUTH_APPLY_SYSTEM_TYPE
+			, SORT_SEQ
+			, USE_YN
+			, DISP_YN
+			, RGSTER_NO
+			, RGST_DTM
+			, MODER_NO
+			, MOD_DTM
+		)
+		VALUES (
+			  #{menuNo, jdbcType=VARCHAR}
+			, #{upMenuNo, jdbcType=VARCHAR}
+			, #{menuGbnType, jdbcType=VARCHAR}
+			, #{menuName, jdbcType=VARCHAR}
+			, #{menuUrl, jdbcType=VARCHAR}
+			, #{rsrcUrl, jdbcType=VARCHAR}
+			, #{menuLevel, jdbcType=INTEGER} + 1
+			, CONCAT(#{allPathMenuNo, jdbcType=VARCHAR}, '^', #{menuNo, jdbcType=VARCHAR})
+			, CONCAT(REPLACE(#{allPathMenuName, jdbcType=VARCHAR}, <![CDATA['&gt;']]>, '>'), ' > ', #{menuName, jdbcType=VARCHAR})
+			, #{authApplySystemType, jdbcType=VARCHAR}
+			, #{sortSeq, jdbcType=INTEGER}
+			, #{useYn, jdbcType=VARCHAR}
+			, #{dispYn, jdbcType=VARCHAR}
+			, #{rgsterNo, jdbcType=VARCHAR}
+			, GETDATE()
+			, #{moderNo, jdbcType=VARCHAR}
+			, GETDATE()
+		)
+	</insert>
+
+	<update id="updateMenu" parameterType="kr.co.abcmart.bo.system.model.master.SyMenu">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyMenuDao.updateMenu [메뉴 수정] [유성민]*/
+		UPDATE SY_MENU
+		<trim prefix="SET" prefixOverrides=",">
+			<if test="menuName != null">
+				, MENU_NAME = #{menuName, jdbcType=VARCHAR}
+			</if>
+			<if test="menuUrl != null">
+				, MENU_URL = #{menuUrl, jdbcType=VARCHAR}
+			</if>
+			<if test="rsrcUrl != null">
+				, RSRC_URL = #{rsrcUrl, jdbcType=VARCHAR}
+			</if>
+			<if test="useYn != null">
+				, USE_YN = #{useYn, jdbcType=VARCHAR}
+			</if>
+			<if test="dispYn != null">
+				, DISP_YN = #{dispYn, jdbcType=VARCHAR}
+			</if>
+				, SORT_SEQ = #{sortSeq, jdbcType=INTEGER}
+				, MODER_NO = #{moderNo, jdbcType=VARCHAR}
+				, MOD_DTM =  GETDATE()
+		</trim>
+		WHERE MENU_NO = #{menuNo, jdbcType=VARCHAR}
+	</update>
+</mapper>

@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyEmployeeDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	emp_seq, compny_name, dvsn_name, postn_name, emp_name, emp_no_text, hdphn_no_text, email_addr_text, join_compny_ymd, crtfc_fail_count, crtfc_fail_yn, cert_fail_admin_no, crtfc_fail_dtm, crtfc_dtm, resign_yn, resign_ymd, resign_opetr_no, resign_proc_dtm, insd_mgmt_info_text, rgster_no, rgst_dtm, moder_no, mod_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	emp_seq = #{empSeq, jdbcType=INTEGER}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.system.model.master.SyEmployee" resultType="kr.co.abcmart.bo.system.model.master.SyEmployee">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyEmployeeDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			sy_employee WITH (NOLOCK)
+
+		<where> 
+			<if test="empSeq != null"> 
+				 emp_seq = #{empSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="compnyName != null"> 
+				 AND compny_name = #{compnyName, jdbcType=VARCHAR}
+			</if> 
+			<if test="dvsnName != null"> 
+				 AND dvsn_name = #{dvsnName, jdbcType=VARCHAR}
+			</if> 
+			<if test="postnName != null"> 
+				 AND postn_name = #{postnName, jdbcType=VARCHAR}
+			</if> 
+			<if test="empName != null"> 
+				 AND emp_name = #{empName, jdbcType=VARCHAR}
+			</if> 
+			<if test="empNoText != null"> 
+				 AND emp_no_text = #{empNoText, jdbcType=VARCHAR}
+			</if> 
+			<if test="hdphnNoText != null"> 
+				 AND hdphn_no_text = #{hdphnNoText, jdbcType=VARCHAR}
+			</if> 
+			<if test="emailAddrText != null"> 
+				 AND email_addr_text = #{emailAddrText, jdbcType=VARCHAR}
+			</if> 
+			<if test="joinCompnyYmd != null"> 
+				 AND join_compny_ymd = #{joinCompnyYmd, jdbcType=DATE}
+			</if> 
+			<if test="crtfcFailCount != null"> 
+				 AND crtfc_fail_count = #{crtfcFailCount, jdbcType=TINYINT}
+			</if> 
+			<if test="crtfcFailYn != null"> 
+				 AND crtfc_fail_yn = #{crtfcFailYn, jdbcType=CHAR}
+			</if> 
+			<if test="certFailAdminNo != null"> 
+				 AND cert_fail_admin_no = #{certFailAdminNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="crtfcFailDtm != null"> 
+				 AND crtfc_fail_dtm = #{crtfcFailDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="crtfcDtm != null"> 
+				 AND crtfc_dtm = #{crtfcDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="resignYn != null"> 
+				 AND resign_yn = #{resignYn, jdbcType=CHAR}
+			</if> 
+			<if test="resignYmd != null"> 
+				 AND resign_ymd = #{resignYmd, jdbcType=DATE}
+			</if> 
+			<if test="resignOpetrNo != null"> 
+				 AND resign_opetr_no = #{resignOpetrNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="resignProcDtm != null"> 
+				 AND resign_proc_dtm = #{resignProcDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="insdMgmtInfoText != null"> 
+				 AND insd_mgmt_info_text = #{insdMgmtInfoText, jdbcType=VARCHAR}
+			</if> 
+			<if test="rgsterNo != null"> 
+				 AND rgster_no = #{rgsterNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="rgstDtm != null"> 
+				 AND rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="moderNo != null"> 
+				 AND moder_no = #{moderNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="modDtm != null"> 
+				 AND mod_dtm = #{modDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+	<insert id="insert" useGeneratedKeys="true" keyProperty="empSeq">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SyEmployeeDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO sy_employee
+			 ( compny_name, dvsn_name, postn_name, emp_name, emp_no_text, hdphn_no_text, email_addr_text, join_compny_ymd, crtfc_fail_count, crtfc_fail_yn, cert_fail_admin_no, crtfc_fail_dtm, crtfc_dtm, resign_yn, resign_ymd, resign_opetr_no, resign_proc_dtm, insd_mgmt_info_text, rgster_no, rgst_dtm, moder_no, mod_dtm ) 
+
+		VALUES 
+			 ( #{compnyName, jdbcType=VARCHAR}, #{dvsnName, jdbcType=VARCHAR}, #{postnName, jdbcType=VARCHAR}, #{empName, jdbcType=VARCHAR}, #{empNoText, jdbcType=VARCHAR}, #{hdphnNoText, jdbcType=VARCHAR}, #{emailAddrText, jdbcType=VARCHAR}, <choose><when test="joinCompnyYmd != null">#{joinCompnyYmd, jdbcType=DATE}</when><otherwise>getdate()</otherwise></choose>, #{crtfcFailCount, jdbcType=TINYINT}, #{crtfcFailYn, jdbcType=CHAR}, #{certFailAdminNo, jdbcType=VARCHAR}, <choose><when test="crtfcFailDtm != null">#{crtfcFailDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, <choose><when test="crtfcDtm != null">#{crtfcDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{resignYn, jdbcType=CHAR}, <choose><when test="resignYmd != null">#{resignYmd, jdbcType=DATE}</when><otherwise>getdate()</otherwise></choose>, #{resignOpetrNo, jdbcType=VARCHAR}, <choose><when test="resignProcDtm != null">#{resignProcDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{insdMgmtInfoText, jdbcType=VARCHAR}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.system.model.master.SyEmployee">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyEmployeeDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE sy_employee
+		<set> 
+			<if test="empSeq != null"> 
+				emp_seq = #{empSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="compnyName != null"> 
+				compny_name = #{compnyName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="dvsnName != null"> 
+				dvsn_name = #{dvsnName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="postnName != null"> 
+				postn_name = #{postnName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="empName != null"> 
+				emp_name = #{empName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="empNoText != null"> 
+				emp_no_text = #{empNoText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="hdphnNoText != null"> 
+				hdphn_no_text = #{hdphnNoText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="emailAddrText != null"> 
+				email_addr_text = #{emailAddrText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="joinCompnyYmd != null"> 
+				join_compny_ymd = #{joinCompnyYmd, jdbcType=DATE}, 
+			</if> 
+			<if test="crtfcFailCount != null"> 
+				crtfc_fail_count = #{crtfcFailCount, jdbcType=TINYINT}, 
+			</if> 
+			<if test="crtfcFailYn != null"> 
+				crtfc_fail_yn = #{crtfcFailYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="certFailAdminNo != null"> 
+				cert_fail_admin_no = #{certFailAdminNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="crtfcFailDtm != null"> 
+				crtfc_fail_dtm = #{crtfcFailDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="crtfcDtm != null"> 
+				crtfc_dtm = #{crtfcDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="resignYn != null"> 
+				resign_yn = #{resignYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="resignYmd != null"> 
+				resign_ymd = #{resignYmd, jdbcType=DATE}, 
+			</if> 
+			<if test="resignOpetrNo != null"> 
+				resign_opetr_no = #{resignOpetrNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="resignProcDtm != null"> 
+				resign_proc_dtm = #{resignProcDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="insdMgmtInfoText != null"> 
+				insd_mgmt_info_text = #{insdMgmtInfoText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgsterNo != null"> 
+				rgster_no = #{rgsterNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 emp_seq = #{empSeq, jdbcType=INTEGER}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.system.model.master.SyEmployee">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyEmployeeDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM sy_employee
+		WHERE 
+			 emp_seq = #{empSeq, jdbcType=INTEGER}  
+    </delete>
+</mapper>

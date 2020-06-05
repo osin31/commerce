@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SySchedulerHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	seq, sched_id, site_id, trigger_group, trigger_name, message, sched_start_dtime, sched_end_dtime, reg_dtime
+    </sql>
+    
+    <sql id="pk-columns">
+    	seq = #{seq, jdbcType=INTEGER}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.system.model.master.SySchedulerHistory" resultType="kr.co.abcmart.bo.system.model.master.SySchedulerHistory">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SySchedulerHistoryDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			sy_scheduler_history WITH (NOLOCK)
+
+		<where> 
+			<if test="seq != null"> 
+				 seq = #{seq, jdbcType=INTEGER}
+			</if> 
+			<if test="schedId != null"> 
+				 AND sched_id = #{schedId, jdbcType=VARCHAR}
+			</if> 
+			<if test="siteId != null"> 
+				 AND site_id = #{siteId, jdbcType=VARCHAR}
+			</if> 
+			<if test="triggerGroup != null"> 
+				 AND trigger_group = #{triggerGroup, jdbcType=VARCHAR}
+			</if> 
+			<if test="triggerName != null"> 
+				 AND trigger_name = #{triggerName, jdbcType=VARCHAR}
+			</if> 
+			<if test="message != null"> 
+				 AND message = #{message, jdbcType=VARCHAR}
+			</if> 
+			<if test="schedStartDtime != null"> 
+				 AND sched_start_dtime = #{schedStartDtime, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="schedEndDtime != null"> 
+				 AND sched_end_dtime = #{schedEndDtime, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="regDtime != null"> 
+				 AND reg_dtime = #{regDtime, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <insert id="insert" parameterType="kr.co.abcmart.bo.system.model.master.SySchedulerHistory">	
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SySchedulerHistoryDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO sy_scheduler_history
+			 ( seq, sched_id, site_id, trigger_group, trigger_name, message, sched_start_dtime, sched_end_dtime, reg_dtime ) 
+
+		VALUES 
+			 ( #{seq, jdbcType=INTEGER}, #{schedId, jdbcType=VARCHAR}, #{siteId, jdbcType=VARCHAR}, #{triggerGroup, jdbcType=VARCHAR}, #{triggerName, jdbcType=VARCHAR}, #{message, jdbcType=VARCHAR}, <choose><when test="schedStartDtime != null">#{schedStartDtime, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, <choose><when test="schedEndDtime != null">#{schedEndDtime, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, <choose><when test="regDtime != null">#{regDtime, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.system.model.master.SySchedulerHistory">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SySchedulerHistoryDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE sy_scheduler_history
+		<set> 
+			<if test="seq != null"> 
+				seq = #{seq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="schedId != null"> 
+				sched_id = #{schedId, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="siteId != null"> 
+				site_id = #{siteId, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="triggerGroup != null"> 
+				trigger_group = #{triggerGroup, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="triggerName != null"> 
+				trigger_name = #{triggerName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="message != null"> 
+				message = #{message, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="schedStartDtime != null"> 
+				sched_start_dtime = #{schedStartDtime, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="schedEndDtime != null"> 
+				sched_end_dtime = #{schedEndDtime, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="regDtime != null"> 
+				reg_dtime = #{regDtime, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 seq = #{seq, jdbcType=INTEGER}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.system.model.master.SySchedulerHistory">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SySchedulerHistoryDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM sy_scheduler_history
+		WHERE 
+			 seq = #{seq, jdbcType=INTEGER}  
+    </delete>
+</mapper>

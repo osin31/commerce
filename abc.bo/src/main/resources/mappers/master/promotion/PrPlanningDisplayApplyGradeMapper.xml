@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayApplyGradeDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayApplyGrade">
+    
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayApplyGradeDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			PR_PLANNING_DISPLAY_APPLY_GRADE
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectPrPlanningDisplayApplyGradeListByPlndpNo" parameterType="String" resultType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayApplyGrade">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayApplyGradeDao.selectPrPlanningDisplayApplyGradeListByPlndpNo [기획전 적용 등급 리스트 조회] [이가영] */
+    	
+    	SELECT
+    		plndp_no, plndp_trgt_grade_seq, member_type_code, mbshp_grade_code
+    	FROM
+    		PR_PLANNING_DISPLAY_APPLY_GRADE with (nolock)
+    	WHERE
+    		plndp_no = #{plndpNo, jdbcType=VARCHAR}
+    </select>
+    
+    <insert id="insertPrPlanningDisplayApplyGrade" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayApplyGrade">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayApplyGradeDao.insertPrPlanningDisplayApplyGrade [기획전 적용 등급 등록] [이가영] */
+    
+    	<selectKey resultType="Short" keyProperty="plndpTrgtGradeSeq" order="BEFORE">
+			SELECT ISNULL(MAX(PLNDP_TRGT_GRADE_SEQ)+1, 1) FROM PR_PLANNING_DISPLAY_APPLY_GRADE WHERE PLNDP_NO = #{plndpNo, jdbcType=VARCHAR}
+		</selectKey>
+    
+    	INSERT INTO PR_PLANNING_DISPLAY_APPLY_GRADE (
+    		plndp_no,
+    		plndp_trgt_grade_seq,
+    		member_type_code,
+    		mbshp_grade_code
+    	) VALUES (
+    		#{plndpNo, jdbcType=VARCHAR},
+    		#{plndpTrgtGradeSeq, jdbcType=TINYINT},
+    		#{memberTypeCode, jdbcType=VARCHAR},
+    		ISNULL(#{mbshpGradeCode, jdbcType=VARCHAR}, '10000')
+    	)
+    </insert>
+    
+    <delete id="deletePrPlanningDisplayApplyGradeByPlndpNo" parameterType="String">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayApplyGradeDao.deletePrPlanningDisplayApplyGradeByPlndpNo [기획전 적용 등급 삭제] [이가영] */
+    
+    	DELETE FROM
+    		PR_PLANNING_DISPLAY_APPLY_GRADE
+    	WHERE
+    		plndp_no = #{plndpNo, jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

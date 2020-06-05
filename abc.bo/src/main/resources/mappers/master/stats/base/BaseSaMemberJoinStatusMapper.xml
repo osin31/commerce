@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.stats.repository.master.SaMemberJoinStatusDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	join_day, status_gbn_type, device_code, dotw_name, status_field1_count, status_field2_count, status_field3_count, status_field4_count, status_field5_count, status_field6_count, status_field7_count, status_field8_count, status_field9_count, status_field10_count, status_field11_count, status_field12_count, status_field13_count, status_field14_count, status_field15_count, status_field16_count, onln_total_member_count, mbshp_total_member_count, cnvrt_total_member_count, rgst_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	device_code = #{deviceCode, jdbcType=VARCHAR} AND join_day = #{joinDay, jdbcType=DATE} AND status_gbn_type = #{statusGbnType, jdbcType=CHAR}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.stats.model.master.SaMemberJoinStatus" resultType="kr.co.abcmart.bo.stats.model.master.SaMemberJoinStatus">
+    
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaMemberJoinStatusDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			sa_member_join_status
+		<where> 
+			<if test="joinDay != null"> 
+				 join_day = #{joinDay, jdbcType=DATE}
+			</if> 
+			<if test="statusGbnType != null"> 
+				 AND status_gbn_type = #{statusGbnType, jdbcType=CHAR}
+			</if> 
+			<if test="deviceCode != null"> 
+				 AND device_code = #{deviceCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="dotwName != null"> 
+				 AND dotw_name = #{dotwName, jdbcType=VARCHAR}
+			</if> 
+			<if test="statusField1Count != null"> 
+				 AND status_field1_count = #{statusField1Count, jdbcType=INTEGER}
+			</if> 
+			<if test="statusField2Count != null"> 
+				 AND status_field2_count = #{statusField2Count, jdbcType=INTEGER}
+			</if> 
+			<if test="statusField3Count != null"> 
+				 AND status_field3_count = #{statusField3Count, jdbcType=INTEGER}
+			</if> 
+			<if test="statusField4Count != null"> 
+				 AND status_field4_count = #{statusField4Count, jdbcType=INTEGER}
+			</if> 
+			<if test="statusField5Count != null"> 
+				 AND status_field5_count = #{statusField5Count, jdbcType=INTEGER}
+			</if> 
+			<if test="statusField6Count != null"> 
+				 AND status_field6_count = #{statusField6Count, jdbcType=INTEGER}
+			</if> 
+			<if test="statusField7Count != null"> 
+				 AND status_field7_count = #{statusField7Count, jdbcType=INTEGER}
+			</if> 
+			<if test="statusField8Count != null"> 
+				 AND status_field8_count = #{statusField8Count, jdbcType=INTEGER}
+			</if> 
+			<if test="statusField9Count != null"> 
+				 AND status_field9_count = #{statusField9Count, jdbcType=INTEGER}
+			</if> 
+			<if test="statusField10Count != null"> 
+				 AND status_field10_count = #{statusField10Count, jdbcType=INTEGER}
+			</if> 
+			<if test="statusField11Count != null"> 
+				 AND status_field11_count = #{statusField11Count, jdbcType=INTEGER}
+			</if> 
+			<if test="statusField12Count != null"> 
+				 AND status_field12_count = #{statusField12Count, jdbcType=INTEGER}
+			</if> 
+			<if test="statusField13Count != null"> 
+				 AND status_field13_count = #{statusField13Count, jdbcType=INTEGER}
+			</if> 
+			<if test="statusField14Count != null"> 
+				 AND status_field14_count = #{statusField14Count, jdbcType=INTEGER}
+			</if> 
+			<if test="statusField15Count != null"> 
+				 AND status_field15_count = #{statusField15Count, jdbcType=INTEGER}
+			</if> 
+			<if test="statusField16Count != null"> 
+				 AND status_field16_count = #{statusField16Count, jdbcType=INTEGER}
+			</if> 
+			<if test="onlnTotalMemberCount != null"> 
+				 AND onln_total_member_count = #{onlnTotalMemberCount, jdbcType=INTEGER}
+			</if> 
+			<if test="mbshpTotalMemberCount != null"> 
+				 AND mbshp_total_member_count = #{mbshpTotalMemberCount, jdbcType=INTEGER}
+			</if> 
+			<if test="cnvrtTotalMemberCount != null"> 
+				 AND cnvrt_total_member_count = #{cnvrtTotalMemberCount, jdbcType=INTEGER}
+			</if> 
+			<if test="rgstDtm != null"> 
+				 AND rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <insert id="insert" parameterType="kr.co.abcmart.bo.stats.model.master.SaMemberJoinStatus">	
+
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaMemberJoinStatusDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO sa_member_join_status
+			 ( join_day, status_gbn_type, device_code, dotw_name, status_field1_count, status_field2_count, status_field3_count, status_field4_count, status_field5_count, status_field6_count, status_field7_count, status_field8_count, status_field9_count, status_field10_count, status_field11_count, status_field12_count, status_field13_count, status_field14_count, status_field15_count, status_field16_count, onln_total_member_count, mbshp_total_member_count, cnvrt_total_member_count, rgst_dtm ) 
+
+		VALUES 
+			 ( <choose><when test="joinDay != null">#{joinDay, jdbcType=DATE}</when><otherwise>getdate()</otherwise></choose>, #{statusGbnType, jdbcType=CHAR}, #{deviceCode, jdbcType=VARCHAR}, #{dotwName, jdbcType=VARCHAR}, #{statusField1Count, jdbcType=INTEGER}, #{statusField2Count, jdbcType=INTEGER}, #{statusField3Count, jdbcType=INTEGER}, #{statusField4Count, jdbcType=INTEGER}, #{statusField5Count, jdbcType=INTEGER}, #{statusField6Count, jdbcType=INTEGER}, #{statusField7Count, jdbcType=INTEGER}, #{statusField8Count, jdbcType=INTEGER}, #{statusField9Count, jdbcType=INTEGER}, #{statusField10Count, jdbcType=INTEGER}, #{statusField11Count, jdbcType=INTEGER}, #{statusField12Count, jdbcType=INTEGER}, #{statusField13Count, jdbcType=INTEGER}, #{statusField14Count, jdbcType=INTEGER}, #{statusField15Count, jdbcType=INTEGER}, #{statusField16Count, jdbcType=INTEGER}, #{onlnTotalMemberCount, jdbcType=INTEGER}, #{mbshpTotalMemberCount, jdbcType=INTEGER}, #{cnvrtTotalMemberCount, jdbcType=INTEGER}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.stats.model.master.SaMemberJoinStatus">
+    
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaMemberJoinStatusDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE sa_member_join_status
+		<set> 
+			<if test="joinDay != null"> 
+				join_day = #{joinDay, jdbcType=DATE}, 
+			</if> 
+			<if test="statusGbnType != null"> 
+				status_gbn_type = #{statusGbnType, jdbcType=CHAR}, 
+			</if> 
+			<if test="deviceCode != null"> 
+				device_code = #{deviceCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="dotwName != null"> 
+				dotw_name = #{dotwName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="statusField1Count != null"> 
+				status_field1_count = #{statusField1Count, jdbcType=INTEGER}, 
+			</if> 
+			<if test="statusField2Count != null"> 
+				status_field2_count = #{statusField2Count, jdbcType=INTEGER}, 
+			</if> 
+			<if test="statusField3Count != null"> 
+				status_field3_count = #{statusField3Count, jdbcType=INTEGER}, 
+			</if> 
+			<if test="statusField4Count != null"> 
+				status_field4_count = #{statusField4Count, jdbcType=INTEGER}, 
+			</if> 
+			<if test="statusField5Count != null"> 
+				status_field5_count = #{statusField5Count, jdbcType=INTEGER}, 
+			</if> 
+			<if test="statusField6Count != null"> 
+				status_field6_count = #{statusField6Count, jdbcType=INTEGER}, 
+			</if> 
+			<if test="statusField7Count != null"> 
+				status_field7_count = #{statusField7Count, jdbcType=INTEGER}, 
+			</if> 
+			<if test="statusField8Count != null"> 
+				status_field8_count = #{statusField8Count, jdbcType=INTEGER}, 
+			</if> 
+			<if test="statusField9Count != null"> 
+				status_field9_count = #{statusField9Count, jdbcType=INTEGER}, 
+			</if> 
+			<if test="statusField10Count != null"> 
+				status_field10_count = #{statusField10Count, jdbcType=INTEGER}, 
+			</if> 
+			<if test="statusField11Count != null"> 
+				status_field11_count = #{statusField11Count, jdbcType=INTEGER}, 
+			</if> 
+			<if test="statusField12Count != null"> 
+				status_field12_count = #{statusField12Count, jdbcType=INTEGER}, 
+			</if> 
+			<if test="statusField13Count != null"> 
+				status_field13_count = #{statusField13Count, jdbcType=INTEGER}, 
+			</if> 
+			<if test="statusField14Count != null"> 
+				status_field14_count = #{statusField14Count, jdbcType=INTEGER}, 
+			</if> 
+			<if test="statusField15Count != null"> 
+				status_field15_count = #{statusField15Count, jdbcType=INTEGER}, 
+			</if> 
+			<if test="statusField16Count != null"> 
+				status_field16_count = #{statusField16Count, jdbcType=INTEGER}, 
+			</if> 
+			<if test="onlnTotalMemberCount != null"> 
+				onln_total_member_count = #{onlnTotalMemberCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="mbshpTotalMemberCount != null"> 
+				mbshp_total_member_count = #{mbshpTotalMemberCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="cnvrtTotalMemberCount != null"> 
+				cnvrt_total_member_count = #{cnvrtTotalMemberCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 device_code = #{deviceCode, jdbcType=VARCHAR} AND join_day = #{joinDay, jdbcType=DATE} AND status_gbn_type = #{statusGbnType, jdbcType=CHAR}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.stats.model.master.SaMemberJoinStatus">
+    
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaMemberJoinStatusDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM sa_member_join_status
+		WHERE 
+			 device_code = #{deviceCode, jdbcType=VARCHAR} AND join_day = #{joinDay, jdbcType=DATE} AND status_gbn_type = #{statusGbnType, jdbcType=CHAR}  
+    </delete>
+</mapper>

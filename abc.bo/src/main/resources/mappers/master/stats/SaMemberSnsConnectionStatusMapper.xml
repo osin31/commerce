@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.stats.repository.master.SaMemberSnsConnectionStatusDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.stats.model.master.SaMemberSnsConnectionStatus">
+    
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaMemberSnsConnectionStatusDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			sa_member_sns_connection_status
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectSnsConnectListCount" parameterType="kr.co.abcmart.bo.stats.model.master.SaMemberJoinStatus" resultType="int">
+	/*+ kr.co.abcmart.bo.stats.repository.master.SaMemberSnsConnectionStatusDao.selectSnsConnectListCount [SNS 계정 연결 현황 데이터 개수 조회] [최경호] */
+			SELECT <include refid="Paging.totalCount" />
+				FROM(
+					SELECT <if test="bean.periodType == 'day'">
+					       CONCAT(A.TOTAL_DAY, '(', A.DOTW_NAME, ')') AS DATE_INFO
+					       </if>
+						   <if test="bean.periodType == 'month'">
+					       CONVERT(VARCHAR(6), A.TOTAL_DAY , 112) AS DATE_INFO
+					       </if>
+					       <if test="bean.periodType == 'year'">
+					       CONVERT(VARCHAR(4), A.TOTAL_DAY , 112) AS DATE_INFO
+					       </if>
+					     , SUM(A.TOTAL_MEMBER_COUNT) AS TOTAL_MEMBER_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10000' THEN TOTAL_MEMBER_COUNT ELSE 0 END) AS NAVER_TOTAL_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10000' THEN MAN_MEMBER_COUNT ELSE 0 END) AS NAVER_MAN_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10000' THEN WOMAN_MEMBER_COUNT ELSE 0 END) AS NAVER_WOMAN_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10000' THEN ETC_MEMBER_COUNT ELSE 0 END) AS NAVER_ETC_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10001' THEN TOTAL_MEMBER_COUNT ELSE 0 END) AS FACEBOOK_TOTAL_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10001' THEN MAN_MEMBER_COUNT ELSE 0 END) AS FACEBOOK_MAN_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10001' THEN WOMAN_MEMBER_COUNT ELSE 0 END) AS FACEBOOK_WOMAN_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10001' THEN ETC_MEMBER_COUNT ELSE 0 END) AS FACEBOOK_ETC_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10002' THEN TOTAL_MEMBER_COUNT ELSE 0 END) AS KKO_TOTAL_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10002' THEN MAN_MEMBER_COUNT ELSE 0 END) AS KKO_MAN_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10002' THEN WOMAN_MEMBER_COUNT ELSE 0 END) AS KKO_WOMAN_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10002' THEN ETC_MEMBER_COUNT ELSE 0 END) AS KKO_ETC_COUNT
+					    FROM SA_MEMBER_SNS_CONNECTION_STATUS A
+					  <where>
+					  	<if test='bean.memberTypeCode != null and bean.memberTypeCode != "" and bean.memberTypeCode != "All"'>
+			            AND A.MEMBER_TYPE_CODE = #{bean.memberTypeCode}
+				        </if>
+					  	<if test="bean.periodType == 'day'">
+			         	 AND A.TOTAL_DAY BETWEEN CONVERT(DATE, CONCAT(#{bean.fromDate}, ' 00:00:00')) AND CONVERT(DATE, CONCAT(#{bean.toDate}, ' 23:59:59'))
+					     GROUP BY A.TOTAL_DAY, A.DOTW_NAME
+			         	</if>
+			         	<if test="bean.periodType == 'month'">
+			         	 AND CONVERT(VARCHAR(6), A.TOTAL_DAY , 112) BETWEEN #{bean.periodMonthStart} AND #{bean.periodMonthEnd}
+					     GROUP BY CONVERT(VARCHAR(6), A.TOTAL_DAY , 112) -- 월별
+			         	</if>
+			         	<if test="bean.periodType == 'year'">
+			         	 AND CONVERT(VARCHAR(4), A.TOTAL_DAY , 112) BETWEEN #{bean.periodYearStart} AND #{bean.periodYearEnd}
+					     GROUP BY CONVERT(VARCHAR(4), A.TOTAL_DAY , 112) -- 년별
+			         	</if>
+			          </where>	
+				)X
+    </select>
+    <select id="selectSnsConnectList" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaMemberSnsConnectionStatus">
+	/*+ kr.co.abcmart.bo.stats.repository.master.SaMemberSnsConnectionStatusDao.selectSnsConnectList [SNS 계정 연결 현황 데이터 조회] [최경호] */
+	SELECT *
+	    FROM(
+	    	<if test='page.pageNum == 1'>
+			SELECT '합계' AS DATE_INFO
+			     , SUM(A.TOTAL_MEMBER_COUNT) AS TOTAL_MEMBER_COUNT
+			     , SUM(CASE WHEN SNS_GBN_CODE = '10000' THEN TOTAL_MEMBER_COUNT ELSE 0 END) AS NAVER_TOTAL_COUNT
+			     , SUM(CASE WHEN SNS_GBN_CODE = '10000' THEN MAN_MEMBER_COUNT ELSE 0 END) AS NAVER_MAN_COUNT
+			     , SUM(CASE WHEN SNS_GBN_CODE = '10000' THEN WOMAN_MEMBER_COUNT ELSE 0 END) AS NAVER_WOMAN_COUNT
+			     , SUM(CASE WHEN SNS_GBN_CODE = '10000' THEN ETC_MEMBER_COUNT ELSE 0 END) AS NAVER_ETC_COUNT
+			     , SUM(CASE WHEN SNS_GBN_CODE = '10001' THEN TOTAL_MEMBER_COUNT ELSE 0 END) AS FACEBOOK_TOTAL_COUNT
+			     , SUM(CASE WHEN SNS_GBN_CODE = '10001' THEN MAN_MEMBER_COUNT ELSE 0 END) AS FACEBOOK_MAN_COUNT
+			     , SUM(CASE WHEN SNS_GBN_CODE = '10001' THEN WOMAN_MEMBER_COUNT ELSE 0 END) AS FACEBOOK_WOMAN_COUNT
+			     , SUM(CASE WHEN SNS_GBN_CODE = '10001' THEN ETC_MEMBER_COUNT ELSE 0 END) AS FACEBOOK_ETC_COUNT
+			     , SUM(CASE WHEN SNS_GBN_CODE = '10002' THEN TOTAL_MEMBER_COUNT ELSE 0 END) AS KKO_TOTAL_COUNT
+			     , SUM(CASE WHEN SNS_GBN_CODE = '10002' THEN MAN_MEMBER_COUNT ELSE 0 END) AS KKO_MAN_COUNT
+			     , SUM(CASE WHEN SNS_GBN_CODE = '10002' THEN WOMAN_MEMBER_COUNT ELSE 0 END) AS KKO_WOMAN_COUNT
+			     , SUM(CASE WHEN SNS_GBN_CODE = '10002' THEN ETC_MEMBER_COUNT ELSE 0 END) AS KKO_ETC_COUNT
+			    FROM SA_MEMBER_SNS_CONNECTION_STATUS A with(nolock)
+			  <where>
+			    <if test='bean.memberTypeCode != null and bean.memberTypeCode != "" and bean.memberTypeCode != "All"'>
+	             AND A.MEMBER_TYPE_CODE = #{bean.memberTypeCode}
+		        </if>
+			    <if test="bean.periodType == 'day'">
+	         	 AND A.TOTAL_DAY BETWEEN CONVERT(DATE, CONCAT(#{bean.fromDate}, ' 00:00:00')) AND CONVERT(DATE, CONCAT(#{bean.toDate}, ' 23:59:59'))
+	         	</if>
+	         	<if test="bean.periodType == 'month'">
+	         	 AND CONVERT(VARCHAR(6), A.TOTAL_DAY , 112) BETWEEN #{bean.periodMonthStart} AND #{bean.periodMonthEnd}
+	         	</if>
+	         	<if test="bean.periodType == 'year'">
+	         	 AND CONVERT(VARCHAR(4), A.TOTAL_DAY , 112) BETWEEN #{bean.periodYearStart} AND #{bean.periodYearEnd}
+	         	</if>
+	           </where>	
+			UNION ALL
+			</if>
+			SELECT *
+				FROM(
+					SELECT <if test="bean.periodType == 'day'">
+					       CONCAT(A.TOTAL_DAY, '(', A.DOTW_NAME, ')') AS DATE_INFO
+					       </if>
+						   <if test="bean.periodType == 'month'">
+					       CONVERT(VARCHAR(6), A.TOTAL_DAY , 112) AS DATE_INFO
+					       </if>
+					       <if test="bean.periodType == 'year'">
+					       CONVERT(VARCHAR(4), A.TOTAL_DAY , 112) AS DATE_INFO
+					       </if>
+					     , SUM(A.TOTAL_MEMBER_COUNT) AS TOTAL_MEMBER_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10000' THEN TOTAL_MEMBER_COUNT ELSE 0 END) AS NAVER_TOTAL_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10000' THEN MAN_MEMBER_COUNT ELSE 0 END) AS NAVER_MAN_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10000' THEN WOMAN_MEMBER_COUNT ELSE 0 END) AS NAVER_WOMAN_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10000' THEN ETC_MEMBER_COUNT ELSE 0 END) AS NAVER_ETC_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10001' THEN TOTAL_MEMBER_COUNT ELSE 0 END) AS FACEBOOK_TOTAL_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10001' THEN MAN_MEMBER_COUNT ELSE 0 END) AS FACEBOOK_MAN_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10001' THEN WOMAN_MEMBER_COUNT ELSE 0 END) AS FACEBOOK_WOMAN_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10001' THEN ETC_MEMBER_COUNT ELSE 0 END) AS FACEBOOK_ETC_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10002' THEN TOTAL_MEMBER_COUNT ELSE 0 END) AS KKO_TOTAL_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10002' THEN MAN_MEMBER_COUNT ELSE 0 END) AS KKO_MAN_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10002' THEN WOMAN_MEMBER_COUNT ELSE 0 END) AS KKO_WOMAN_COUNT
+					     , SUM(CASE WHEN SNS_GBN_CODE = '10002' THEN ETC_MEMBER_COUNT ELSE 0 END) AS KKO_ETC_COUNT
+					    FROM SA_MEMBER_SNS_CONNECTION_STATUS A with(nolock)
+					  <where>
+					  	<if test='bean.memberTypeCode != null and bean.memberTypeCode != "" and bean.memberTypeCode != "All"'>
+			            AND A.MEMBER_TYPE_CODE = #{bean.memberTypeCode}
+				        </if>
+					  	<if test="bean.periodType == 'day'">
+			         	 AND A.TOTAL_DAY BETWEEN CONVERT(DATE, CONCAT(#{bean.fromDate}, ' 00:00:00')) AND CONVERT(DATE, CONCAT(#{bean.toDate}, ' 23:59:59'))
+					     GROUP BY A.TOTAL_DAY, A.DOTW_NAME
+					     	<if test="usePage">
+		                    ORDER BY TOTAL_DAY DESC
+		                    </if>
+			         	</if>
+			         	<if test="bean.periodType == 'month'">
+			         	 AND CONVERT(VARCHAR(6), A.TOTAL_DAY , 112) BETWEEN #{bean.periodMonthStart} AND #{bean.periodMonthEnd}
+					     GROUP BY CONVERT(VARCHAR(6), A.TOTAL_DAY , 112) -- 월별
+					     	<if test="usePage">
+		                    ORDER BY CONVERT(VARCHAR(6), A.TOTAL_DAY , 112) DESC
+		                    </if>
+			         	</if>
+			         	<if test="bean.periodType == 'year'">
+			         	 AND CONVERT(VARCHAR(4), A.TOTAL_DAY , 112) BETWEEN #{bean.periodYearStart} AND #{bean.periodYearEnd}
+					     GROUP BY CONVERT(VARCHAR(4), A.TOTAL_DAY , 112) -- 년별
+					     	<if test="usePage">
+		                    ORDER BY CONVERT(VARCHAR(4), A.TOTAL_DAY , 112) DESC
+		                    </if>
+			         	</if>
+			          </where>	
+					    <include refid="Paging.mssql" />
+					    )X
+			        )Y
+			--ORDER BY(CASE Y.DATE_INFO WHEN '합계' THEN NULL ELSE Y.DATE_INFO END )ASC
+    </select>
+    
+    <select id="selectYesterdaySnsTotal" resultType="kr.co.abcmart.bo.stats.model.master.SaMemberSnsConnectionStatus">
+	/*+ kr.co.abcmart.bo.stats.repository.master.SaMemberSnsConnectionStatusDao.selectYesterdaySnsTotal [전일기준 SNS 계정 연결 현황 데이터] [최경호] */
+	SELECT SUM(CASE WHEN ME.SNS_GBN_CODE = '10000' AND MB.MEMBER_TYPE_CODE= '10000' THEN 1 ELSE 0 END) AS NAVER_ONLINE_CNT
+	     , SUM(CASE WHEN ME.SNS_GBN_CODE = '10001' AND MB.MEMBER_TYPE_CODE= '10000' THEN 1 ELSE 0 END) AS FACEBOOK_ONLINE_CNT
+	     , SUM(CASE WHEN ME.SNS_GBN_CODE = '10002' AND MB.MEMBER_TYPE_CODE= '10000' THEN 1 ELSE 0 END) AS KKO_ONLINE_CNT
+	     , SUM(CASE WHEN ME.SNS_GBN_CODE = '10000' AND MB.MEMBER_TYPE_CODE= '10001' THEN 1 ELSE 0 END) AS NAVER_MEMBERSHIP_CNT
+	     , SUM(CASE WHEN ME.SNS_GBN_CODE = '10001' AND MB.MEMBER_TYPE_CODE= '10001' THEN 1 ELSE 0 END) AS FACEBOOK_MEMBERSHIP_CNT
+	     , SUM(CASE WHEN ME.SNS_GBN_CODE = '10002' AND MB.MEMBER_TYPE_CODE= '10001' THEN 1 ELSE 0 END) AS KKO_MEMBERSHIP_CNT
+	  FROM MB_MEMBER_EASY_LOGIN ME WITH(NOLOCK) INNER JOIN MB_MEMBER MB WITH(NOLOCK) ON ME.MEMBER_NO = MB.MEMBER_NO
+	 WHERE ME.RGST_DTM <![CDATA[<=]]> CONVERT(DATE, DATEADD(DAY, -1, GETDATE()))
+	   AND MB.LEAVE_YN = 'N'
+	</select>
+
+</mapper>

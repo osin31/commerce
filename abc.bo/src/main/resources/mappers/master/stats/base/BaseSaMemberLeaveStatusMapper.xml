@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.stats.repository.master.SaMemberLeaveStatusDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	total_day, member_type_code, leave_rsn_code, dotw_name, leave_count, rgst_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	leave_rsn_code = #{leaveRsnCode, jdbcType=VARCHAR} AND member_type_code = #{memberTypeCode, jdbcType=VARCHAR} AND total_day = #{totalDay, jdbcType=DATE}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.stats.model.master.SaMemberLeaveStatus" resultType="kr.co.abcmart.bo.stats.model.master.SaMemberLeaveStatus">
+    
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaMemberLeaveStatusDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			sa_member_leave_status
+		<where> 
+			<if test="totalDay != null"> 
+				 total_day = #{totalDay, jdbcType=DATE}
+			</if> 
+			<if test="memberTypeCode != null"> 
+				 AND member_type_code = #{memberTypeCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="leaveRsnCode != null"> 
+				 AND leave_rsn_code = #{leaveRsnCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="dotwName != null"> 
+				 AND dotw_name = #{dotwName, jdbcType=VARCHAR}
+			</if> 
+			<if test="leaveCount != null"> 
+				 AND leave_count = #{leaveCount, jdbcType=INTEGER}
+			</if> 
+			<if test="rgstDtm != null"> 
+				 AND rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <insert id="insert" parameterType="kr.co.abcmart.bo.stats.model.master.SaMemberLeaveStatus">	
+
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaMemberLeaveStatusDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO sa_member_leave_status
+			 ( total_day, member_type_code, leave_rsn_code, dotw_name, leave_count, rgst_dtm ) 
+
+		VALUES 
+			 ( <choose><when test="totalDay != null">#{totalDay, jdbcType=DATE}</when><otherwise>getdate()</otherwise></choose>, #{memberTypeCode, jdbcType=VARCHAR}, #{leaveRsnCode, jdbcType=VARCHAR}, #{dotwName, jdbcType=VARCHAR}, #{leaveCount, jdbcType=INTEGER}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.stats.model.master.SaMemberLeaveStatus">
+    
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaMemberLeaveStatusDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE sa_member_leave_status
+		<set> 
+			<if test="totalDay != null"> 
+				total_day = #{totalDay, jdbcType=DATE}, 
+			</if> 
+			<if test="memberTypeCode != null"> 
+				member_type_code = #{memberTypeCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="leaveRsnCode != null"> 
+				leave_rsn_code = #{leaveRsnCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="dotwName != null"> 
+				dotw_name = #{dotwName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="leaveCount != null"> 
+				leave_count = #{leaveCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 leave_rsn_code = #{leaveRsnCode, jdbcType=VARCHAR} AND member_type_code = #{memberTypeCode, jdbcType=VARCHAR} AND total_day = #{totalDay, jdbcType=DATE}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.stats.model.master.SaMemberLeaveStatus">
+    
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaMemberLeaveStatusDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM sa_member_leave_status
+		WHERE 
+			 leave_rsn_code = #{leaveRsnCode, jdbcType=VARCHAR} AND member_type_code = #{memberTypeCode, jdbcType=VARCHAR} AND total_day = #{totalDay, jdbcType=DATE}  
+    </delete>
+</mapper>

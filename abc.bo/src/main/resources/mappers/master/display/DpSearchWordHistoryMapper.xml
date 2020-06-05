@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.display.repository.master.DpSearchWordHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.display.model.master.DpSearchWordHistory">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpSearchWordHistoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			DP_SEARCH_WORD_HISTORY
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectDpSearchWordHistoryListCount" parameterType="kr.co.abcmart.bo.display.model.master.DpSearchWordHistory" resultType="int">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpSearchWordHistoryDao.selectDpSearchWordHistoryListCount [검색어 이력 목록 카운트 조회] [이가영] */
+    
+    	SELECT
+    		<include refid="Paging.totalCount" />
+    	FROM
+    		DP_SEARCH_WORD_HISTORY A WITH(NOLOCK)
+    	<where> 
+			<if test="bean.srchWordHistSeq != null"> 
+				 A.srch_word_hist_seq = #{bean.srchWordHistSeq, jdbcType=BIGINT}
+			</if>
+			<if test="bean.siteNo != null">
+				 AND A.site_no = #{bean.siteNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWordGbnType != null">
+				 AND A.srch_word_gbn_type = #{bean.srchWordGbnType, jdbcType=CHAR}
+			</if> 
+			<if test="bean.applyDtm != null"> 
+				 AND A.apply_dtm = #{bean.applyDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="bean.srchWord1Text != null"> 
+				 AND A.srch_word1_text = #{bean.srchWord1Text, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWord2Text != null"> 
+				 AND A.srch_word2_text = #{bean.srchWord2Text, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWord3Text != null"> 
+				 AND A.srch_word3_text = #{bean.srchWord3Text, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWord4Text != null"> 
+				 AND A.srch_word4_text = #{bean.srchWord4Text, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWord5Text != null"> 
+				 AND A.srch_word5_text = #{bean.srchWord5Text, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWord6Text != null"> 
+				 AND A.srch_word6_text = #{bean.srchWord6Text, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWord7Text != null"> 
+				 AND A.srch_word7_text = #{bean.srchWord7Text, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWord8Text != null"> 
+				 AND A.srch_word8_text = #{bean.srchWord8Text, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWord9Text != null"> 
+				 AND A.srch_word9_text = #{bean.srchWord9Text, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWord10Text != null"> 
+				 AND A.srch_word10_text = #{bean.srchWord10Text, jdbcType=VARCHAR}
+			</if> 
+		</where>
+    </select>
+    
+    <select id="selectDpSearchWordHistoryList" parameterType="kr.co.abcmart.bo.display.model.master.DpSearchWordHistory" resultType="kr.co.abcmart.bo.display.model.master.DpSearchWordHistory">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpSearchWordHistoryDao.selectDpSearchWordHistoryList [검색어 이력 목록 조회] [이가영] */
+    
+    	SELECT
+    		A.srch_word_hist_seq,
+    		A.site_no,
+    		A.srch_word_gbn_type,
+    		A.apply_dtm,
+    		A.srch_word1_text,
+    		A.srch_word2_text,
+    		A.srch_word3_text,
+    		A.srch_word4_text,
+    		A.srch_word5_text,
+    		A.srch_word6_text,
+    		A.srch_word7_text,
+    		A.srch_word8_text,
+    		A.srch_word9_text,
+    		A.srch_word10_text
+    	FROM
+    		DP_SEARCH_WORD_HISTORY A WITH(NOLOCK)
+    	<where> 
+			<if test="bean.srchWordHistSeq != null"> 
+				 A.srch_word_hist_seq = #{bean.srchWordHistSeq, jdbcType=BIGINT}
+			</if>
+			<if test="bean.siteNo != null">
+				 AND A.site_no = #{bean.siteNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWordGbnType != null">
+				 AND A.srch_word_gbn_type = #{bean.srchWordGbnType, jdbcType=CHAR}
+			</if> 
+			<if test="bean.applyDtm != null"> 
+				 AND A.apply_dtm = #{bean.applyDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="bean.srchWord1Text != null"> 
+				 AND A.srch_word1_text = #{bean.srchWord1Text, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWord2Text != null"> 
+				 AND A.srch_word2_text = #{bean.srchWord2Text, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWord3Text != null"> 
+				 AND A.srch_word3_text = #{bean.srchWord3Text, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWord4Text != null"> 
+				 AND A.srch_word4_text = #{bean.srchWord4Text, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWord5Text != null"> 
+				 AND A.srch_word5_text = #{bean.srchWord5Text, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWord6Text != null"> 
+				 AND A.srch_word6_text = #{bean.srchWord6Text, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWord7Text != null"> 
+				 AND A.srch_word7_text = #{bean.srchWord7Text, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWord8Text != null"> 
+				 AND A.srch_word8_text = #{bean.srchWord8Text, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWord9Text != null"> 
+				 AND A.srch_word9_text = #{bean.srchWord9Text, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWord10Text != null"> 
+				 AND A.srch_word10_text = #{bean.srchWord10Text, jdbcType=VARCHAR}
+			</if> 
+		</where>
+		<choose>
+			 <when test="sortColumn != null">
+			 	ORDER BY
+			 	<if test="sortColumn == 'applyDtm'.toString()">
+			 		apply_dtm
+			 	</if>
+			 	<if test="sortType == 'DESC'.toString()">
+			 		DESC
+			 	</if>
+			 </when>
+			 <otherwise>
+			 	ORDER BY apply_dtm DESC
+			 </otherwise>
+		</choose>		
+		<include refid="Paging.mssql" />
+    </select>
+    
+    <insert id="insertDpSearchWordHistory" parameterType="kr.co.abcmart.bo.display.model.master.DpSearchWord" useGeneratedKeys="true" keyProperty="srchWordHistSeq">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpSearchWordHistoryDao.insertDpSearchWordHistory [검색어 이력 추가] [이가영] */
+    
+    	INSERT INTO
+    		DP_SEARCH_WORD_HISTORY
+		SELECT * FROM
+		(
+			SELECT
+				TOP 10
+				site_no,
+				srch_word_gbn_type,
+				getdate() apply_dtm,
+				<if test='srchWordGbnType == "S"'>
+					'srch_word'+CONVERT(VARCHAR, ROW_NUMBER() OVER(ORDER BY rgst_dtm desc))+'_text' row_no,
+				</if>
+				<if test='srchWordGbnType != "S"'>
+					'srch_word'+CONVERT(VARCHAR, row_number() over(order by sort_seq)) + '_text' row_no,
+				</if>
+				srch_word_text
+			FROM
+				dp_search_word
+			WHERE
+				site_no = #{siteNo, jdbcType=VARCHAR}
+				and srch_word_gbn_type = #{srchWordGbnType, jdbcType=CHAR}
+			ORDER BY sort_seq, rgst_dtm DESC
+		) MAIN
+		PIVOT
+		(
+			MIN(srch_word_text) FOR
+			row_no IN (
+				[srch_word1_text], [srch_word2_text], [srch_word3_text], [srch_word4_text], [srch_word5_text],
+				[srch_word6_text], [srch_word7_text], [srch_word8_text], [srch_word9_text], [srch_word10_text]
+			)
+		) PV;
+    </insert>
+
+</mapper>

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.display.repository.master.DpHashtagDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.display.model.master.DpHashtag">
+
+     /*+ kr.co.abcmart.bo.display.repository.master.DpHashtagDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			DP_HASHTAG
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+
+    <sql id="hashTagSearchWhere">
+    	<trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test="bean.siteNo != null and bean.siteNo != ''">
+    	   AND SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+    	   	</if>
+			<if test="bean.useYn != null and bean.useYn != ''">
+		   AND USE_YN = #{bean.useYn, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.hshtgName != null and bean.hshtgName != ''">
+		   AND HSHTG_NAME LIKE CONCAT(#{bean.hshtgName, jdbcType=VARCHAR}, '%')
+			</if>
+			<if test="bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate != ''">
+				<choose>
+					<when test="bean.searchDateKey == 'dispStartYmd'">
+		   AND DISP_START_YMD BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 00:00:00'))
+					</when>
+					<when test="bean.searchDateKey == ''">
+		   AND DISP_END_YMD   BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 00:00:00'))
+					</when>
+				</choose>
+
+			</if>
+    	</trim>
+    </sql>
+
+    <select id="selectHashTagListCount" parameterType="pageable" resultType="int">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpHashtagDao.selectHashTagListCount [해쉬태그 검색 조회결과 개수] [김진성] */
+    	SELECT <include refid="Paging.totalCount" />
+    	  FROM DP_HASHTAG WITH(NOLOCK)
+		<include refid="hashTagSearchWhere" />
+    </select>
+
+    <select id="selectHashTagList" parameterType="kr.co.abcmart.bo.display.vo.HashTagSearchVO" resultType="kr.co.abcmart.bo.display.model.master.DpHashtag">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpHashtagDao.selectHashTagListCount [해쉬태그 검색 조회결과] [김진성] */
+		SELECT A.HSHTG_SEQ, A.HSHTG_NAME, A.SITE_NO, A.USE_YN, A.DISP_START_YMD
+		     , A.DISP_END_YMD, B.ADMIN_NAME AS MODER_NAME, B.LOGIN_ID AS ADMIN_ID, B.MOD_DTM, C.SITE_NAME
+		     , (SELECT COUNT(1) FROM DP_HASHTAG_PRODUCT Z WITH(NOLOCK) WHERE Z.HSHTG_SEQ = A.HSHTG_SEQ) AS PRDT_CNT
+		  FROM (
+		        SELECT HSHTG_SEQ, HSHTG_NAME, SITE_NO, USE_YN, DISP_START_YMD
+		             , DISP_END_YMD, MODER_NO, MOD_DTM
+		          FROM DP_HASHTAG WITH(NOLOCK)
+		<include refid="hashTagSearchWhere" />
+		         ORDER BY HSHTG_SEQ DESC
+		<include refid="Paging.mssql" />
+		       ) A
+		     , SY_ADMIN B WITH(NOLOCK)
+		     , SY_SITE C WITH(NOLOCK)
+		 WHERE A.MODER_NO = B.ADMIN_NO
+		   AND A.SITE_NO = C.SITE_NO
+    </select>
+
+    <insert id="insertHashTag" parameterType="kr.co.abcmart.bo.display.model.master.DpHashtag">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpHashtagDao.insertHashTag [해쉬태그 정보 저장] [김진성] */
+    	INSERT INTO DP_HASHTAG
+    	(
+			  HSHTG_NAME
+			, SITE_NO
+			, USE_YN
+			, DISP_START_YMD
+			, DISP_END_YMD
+			, RGSTER_NO, RGST_DTM
+			, MODER_NO
+			, MOD_DTM
+    	)
+    	VALUES
+    	(
+			  #{hshtgName, jdbcType=VARCHAR}
+			, #{siteNo, jdbcType=VARCHAR}
+			, #{useYn, jdbcType=CHAR}
+			, <choose><when test="dispStartYmd != null">#{dispStartYmd, jdbcType=DATE}</when><otherwise>CONVERT(DATE, '20190101')</otherwise></choose>
+			, <choose><when test="dispEndYmd != null">#{dispEndYmd, jdbcType=DATE}</when><otherwise>CONVERT(DATE, '21001231')</otherwise></choose>
+			, #{rgsterNo, jdbcType=VARCHAR}
+			, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>
+			, #{moderNo, jdbcType=VARCHAR}
+			, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>
+    	)
+		<selectKey keyProperty="hshtgSeq" resultType="Integer" order="AFTER">
+			SELECT IDENT_CURRENT('DP_HASHTAG') AS hshtgSeq
+		</selectKey>
+    </insert>
+
+    <update id="updateHashTag" parameterType="kr.co.abcmart.bo.display.model.master.DpHashtag">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpHashtagDao.insertHashTag [해쉬태그 정보 수정] [김진성] */
+		UPDATE DP_HASHTAG
+		<set>
+			<if test="hshtgName != null">
+				HSHTG_NAME = #{hshtgName, jdbcType=VARCHAR},
+			</if>
+			<if test="siteNo != null">
+				SITE_NO = #{siteNo, jdbcType=VARCHAR},
+			</if>
+			<if test="useYn != null">
+				USE_YN = #{useYn, jdbcType=CHAR},
+			</if>
+			<if test="dispStartYmd != null">
+				DISP_START_YMD = #{dispStartYmd, jdbcType=DATE},
+			</if>
+			<if test="dispEndYmd != null">
+				DISP_END_YMD = #{dispEndYmd, jdbcType=DATE},
+			</if>
+			<if test="moderNo != null">
+				MODER_NO = #{moderNo, jdbcType=VARCHAR},
+			</if>
+			<if test="modDtm != null">
+				MOD_DTM = #{modDtm, jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		WHERE HSHTG_SEQ = #{hshtgSeq, jdbcType=INTEGER}
+    </update>
+</mapper>

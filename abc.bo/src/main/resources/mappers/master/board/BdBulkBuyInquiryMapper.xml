@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.board.repository.master.BdBulkBuyInquiryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.board.model.master.BdBulkBuyInquiry">
+    
+     /*+ kr.co.abcmart.bo.board.repository.master.BdBulkBuyInquiryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			bd_bulk_buy_inquiry WITH (NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+	<!-- 검색 조건 -->
+	<sql id="searchKey">
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test="(bean.fromDate != null and bean.fromDate != '') and (bean.toDate != null and bean.toDate != '')">
+				AND A.INQRY_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+			</if>
+			<if test="bean.searchKey != null and bean.searchKey != '' and bean.searchValue != null and bean.searchValue != ''">
+				<choose>
+					<when test="bean.searchKey == 'inqryTitleText'">
+				AND A.INQRY_TITLE_TEXT LIKE CONCAT('%', #{bean.searchValue, jdbcType=VARCHAR}, '%')
+					</when>
+					<when test="bean.searchKey == 'loginId'">
+				AND EXISTS (
+							SELECT 1
+							  FROM MB_MEMBER Z WITH (NOLOCK)
+							 WHERE A.MEMBER_NO = Z.MEMBER_NO
+							   AND Z.LOGIN_ID = #{bean.searchValue, jdbcType=VARCHAR}
+						  )
+					</when>
+					<when test="bean.searchKey == 'memberName'">
+				AND EXISTS (
+							SELECT 1
+							  FROM MB_MEMBER Z WITH (NOLOCK)
+							 WHERE A.MEMBER_NO = Z.MEMBER_NO
+							   AND Z.MEMBER_NAME = #{bean.searchValue, jdbcType=VARCHAR}
+							   <if test="bean.hdphnBackNoText != null and bean.hdphnBackNoText != ''">
+					     	   AND RIGHT(REPLACE(Z.HDPHN_NO_TEXT, '-', ''), 4) = #{bean.hdphnBackNoText, jdbcType=VARCHAR}
+						       </if>
+							)
+					</when>
+				</choose>
+			</if>
+			<if test="bean.siteNo != null and bean.siteNo !=''">
+				AND A.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+			</if>
+		</trim>
+	</sql>
+	
+	<select id="selectBulkBuyistCount" parameterType="pageable" resultType="int">
+    /*+ kr.co.abcmart.bo.board.repository.master.BdBulkBuyInquiryDao.selectBdMemberCounselListCount [단체주문 문의 그리드 조회결과 갯수] [신인철] */  
+		SELECT <include refid="Paging.totalCount" />
+		  FROM BD_BULK_BUY_INQUIRY A WITH (NOLOCK)
+		<include refid="searchKey" />
+    </select>
+    
+	<select id="selectBulkBuylList" parameterType="kr.co.abcmart.bo.board.model.master.BdBulkBuyInquiry" resultType="kr.co.abcmart.bo.board.model.master.BdBulkBuyInquiry">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselDao.selectBulkBuylList [단체주문 문의 결과 그리드] [신인철] */
+		SELECT A.BLK_BUY_INQRY_SEQ
+			 , A.SITE_NO
+			 , A.INQRY_DTM
+ 			 , A.MEMBER_NO
+			 , A.INQRY_TITLE_TEXT
+			 , A.INQRY_CONT_TEXT
+			 , A.INDVDL_INFO_COLCT_AGREE_YN
+			 , CASE WHEN M.LOGIN_ID IS NOT NULL THEN M.LOGIN_ID END AS MEMBER_ID 
+			 , CASE WHEN M.MEMBER_NAME IS NOT NULL THEN M.MEMBER_NAME END AS MEMBER_NAME
+			 , W.SITE_NAME
+		  FROM BD_BULK_BUY_INQUIRY A WITH (NOLOCK)
+		  LEFT OUTER JOIN MB_MEMBER M WITH (NOLOCK) ON A.MEMBER_NO = M.MEMBER_NO
+		  JOIN SY_SITE W WITH (NOLOCK) ON A.SITE_NO = W.SITE_NO
+		<include refid="searchKey" />
+		<choose> 
+			<when test="sortColumn != null">
+ 		 ORDER BY
+				<if test="sortColumn == 'inqryTitleText'.toString()">
+			   A.INQRY_TITLE_TEXT
+				</if>
+				<if test="sortColumn == 'inqryDtm'.toString()">
+			   A.INQRY_DTM
+				</if>
+				<if test="sortType == 'DESC'.toString()">
+			   DESC
+				</if>
+			</when>
+			<otherwise>
+		 ORDER BY A.INQRY_DTM DESC
+			</otherwise>
+		</choose>
+		<include refid="Paging.mssql" />
+	</select>
+	
+	<select id="selectBulkBuyDetail" parameterType="kr.co.abcmart.bo.board.model.master.BdBulkBuyInquiry" resultType="kr.co.abcmart.bo.board.model.master.BdBulkBuyInquiry">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselDao.selectBulkBuyDetail [단체주문 문의 상세보기] [신인철] */
+		SELECT A.BLK_BUY_INQRY_SEQ
+			 , A.SITE_NO
+			 , A.INQRY_DTM
+ 			 , A.MEMBER_NO
+			 , A.INQRY_CONT_TEXT
+			 , A.INQRY_TITLE_TEXT
+			 , A.INDVDL_INFO_COLCT_AGREE_YN
+			 , W.SITE_NAME
+		  FROM BD_BULK_BUY_INQUIRY A WITH (NOLOCK)
+		  JOIN SY_SITE W WITH (NOLOCK) ON A.SITE_NO = W.SITE_NO
+		 WHERE A.BLK_BUY_INQRY_SEQ = #{blkBuyInqrySeq, jdbcType=INTEGER}
+	</select>
+	
+	<select id="selectBulkBuyGroupCount" resultType="kr.co.abcmart.bo.board.model.master.BdBulkBuyInquiry">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselDao.selectBulkBuyGroupCount [BO 단체주문 그룹별 대시보드 최근 1달 건수 조회] [고웅환] */
+		SELECT COUNT(1) AS TOTAL_CNT
+			 , B.SITE_NO AS SITE_NO
+		  FROM BD_BULK_BUY_INQUIRY A WITH (NOLOCK)
+	RIGHT JOIN SY_SITE B WITH (NOLOCK) ON A.SITE_NO = B.SITE_NO
+		 WHERE A.INQRY_DTM
+	   BETWEEN CONVERT(DATETIME, CONCAT(
+					CONVERT(CHAR(10), DATEADD(MM, -1, GETDATE()), 102), ' 00:00:00'))
+		   AND CONVERT(DATETIME, CONCAT(
+					CONVERT(CHAR(10), GETDATE(), 102), ' 23:59:59'))
+	  GROUP BY B.SITE_NO
+	</select>
+	
+</mapper>

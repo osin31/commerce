@@ -1,0 +1,135 @@
+@import 'scss_header';
+
+.selectize-control.search-dropdown, .search-dropdown.ui-sel {
+	min-width: 200px;
+}
+
+.selectize-control.search-dropdown {
+	display: inline-block;
+
+	+ .btn-func {
+		margin-left: 10px;
+	}
+
+	.selectize-input {
+		position: relative;
+		height: 23px;
+		border: 1px solid #ddd;
+		padding: 0 6px 1px 22px;
+		background-color: #fff;
+		font-size: $defaultFontSize;
+		color: #111;
+		letter-spacing: -0.3px;
+		vertical-align: top;
+		border-radius: 0;
+		box-shadow: none;
+		-webkit-box-shadow: none;
+
+		&:before {
+			content: '';
+			position: absolute;
+			display: inline-block;
+			width: 12px;
+			height: 12px;
+			margin-top: -6px;
+			background: {
+				color: transparent;
+				image: url(../../images/plugin/selectize/ico_search_dropdown_magnify.png);
+				repeat: no-repeat;
+				position: 0 0;
+			}
+			left: 6px;
+			top: 50%;
+		}
+
+		&:after {
+			width: 10px;
+			height: 6px;
+			border: none;
+			background: {
+				image: url(../../images/plugin/selectize/ico_search_dropdown_arrow.png);
+				position: 0 0;
+				repeat: no-repeat;
+			}
+			right: 5px;
+		}
+
+		&.dropdown-active {
+			border-color: #111;
+			color: #111;
+			outline: 0;
+
+			&:before {
+				background-position: -12px 0;
+			}
+
+			&:after {
+				background-position: 0 -6px;
+			}
+		}
+
+		&.disabled {
+			border-color: #ddd;
+			background-color: #f8f8f8;
+			color: #bbb;
+			opacity: 1;
+
+			&:before {
+				background-position: -24px 0;
+			}
+
+			&:after {
+				background-position: 0 -12px;
+			}
+		}
+
+		.item, input {
+			font-size: $defaultFontSize;
+			height: 21px;
+			line-height: 21px !important;
+			vertical-align: top;
+		}
+	}
+
+	.selectize-dropdown {
+		margin-top: 0;
+		border-top: 1px solid;
+		border-color: #111;
+		-webkit-transform: translateY(2px);
+		-moz-transform: translateY(2px);
+		-ms-transform: translateY(2px);
+		-o-transform: translateY(2px);
+		transform: translateY(2px);
+
+		.selectize-dropdown-content {
+			padding: 4px 0;
+
+			.option {
+				color: #666;
+				font-size: $defaultFontSize;
+				padding: 0 10px;
+				line-height: 23px;
+
+				&:hover {
+					cursor: pointer;
+				}
+
+				&.selected, &.active {
+					color: #111;
+				}
+
+				&.selected {
+					font-weight: 700;
+				}
+
+				&.active {
+					background: #f8f8f8;
+				}
+
+				.highlight {
+					background: none;
+				}
+			}
+		}
+	}
+}

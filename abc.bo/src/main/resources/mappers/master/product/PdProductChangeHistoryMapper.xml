@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.PdProductChangeHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+
+	<sql id="select-columns-alias-a">
+		A.prdt_no, A.chng_hist_seq, A.chng_field, A.chng_field_name, A.chng_before_field_value, A.chng_after_field_value, A.rgster_no, A.rgst_dtm
+	</sql>
+
+	<sql id="select-columns-admin-info">
+		, Z.login_id AS rgster_id
+		, Z.admin_name AS rgster_name
+	</sql>
+
+	<sql id="from-tables-sy-admin">
+		LEFT OUTER JOIN sy_admin Z WITH(NOLOCK) ON A.rgster_no = Z.admin_no
+	</sql>
+
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.product.model.master.PdProductChangeHistory">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductChangeHistoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			pd_product_change_history WITH(NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <insert id="insertWithSelectKey" parameterType="kr.co.abcmart.bo.product.model.master.PdProductChangeHistory">
+    	<selectKey resultType="java.lang.Integer" keyProperty="chngHistSeq" order="BEFORE">
+    		SELECT
+    			ISNULL(MAX(chng_hist_seq) + 1, 1)
+    		FROM
+    			pd_product_change_history WITH(NOLOCK)
+    		WHERE
+    			prdt_no = #{prdtNo, jdbcType=VARCHAR}
+    	</selectKey>
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductChangeHistoryDao.insertWithSelectKey [상품변경이력 등록 쿼리] [김세훈] */
+		INSERT INTO pd_product_change_history
+			 ( prdt_no, chng_hist_seq, chng_field, chng_field_name, chng_before_field_value, chng_after_field_value, rgster_no, rgst_dtm )
+		VALUES
+			 ( #{prdtNo, jdbcType=VARCHAR}, #{chngHistSeq, jdbcType=INTEGER}, #{chngField, jdbcType=VARCHAR}, #{chngFieldName, jdbcType=VARCHAR}, #{chngBeforeFieldValue, jdbcType=VARCHAR}, #{chngAfterFieldValue, jdbcType=VARCHAR}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )
+    </insert>
+
+    <select id="selectByPrdtNo" parameterType="pageable" resultType="kr.co.abcmart.bo.product.model.master.PdProductChangeHistory">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductChangeHistoryDao.selectByPrdtNo [상품 변경 이력 조회 쿼리] [김세훈] */
+		<!-- 부가적인 정보를 조회함에 있어 외부조인을 사용함 -->
+		SELECT
+			<include refid="select-columns-alias-a" />
+			<include refid="select-columns-admin-info" />
+		FROM
+			pd_product_change_history A WITH(NOLOCK)
+			<include refid="from-tables-sy-admin" />
+		WHERE
+			A.prdt_no = #{bean.prdtNo, jdbcType=VARCHAR}
+		ORDER BY
+			A.chng_hist_seq DESC
+		<include refid="Paging.mssql" />
+    </select>
+
+    <select id="selectByPrdtNoTotalCount" parameterType="pageable" resultType="java.lang.Integer">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductChangeHistoryDao.selectByPrdtNoTotalCount [상품 변경 이력 총 갯수 조회 쿼리] [김세훈] */
+		SELECT
+			<include refid="Paging.totalCount" />
+		FROM
+			pd_product_change_history WITH(NOLOCK)
+		WHERE
+			prdt_no = #{bean.prdtNo, jdbcType=VARCHAR}
+    </select>
+
+	<delete id="deleteByPrdtNo" parameterType="java.lang.String">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductChangeHistoryDao.deleteByPrdtNo [상품번호로 상품변경이력 삭제 쿼리] [황성준] */
+		DELETE
+			FROM pd_product_change_history
+		WHERE
+			 prdt_no = #{prdtNo, jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.member.repository.master.MbMemberLoginHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.member.model.master.MbMemberLoginHistory">
+    
+     /*+ kr.co.abcmart.bo.member.repository.master.MbMemberLoginHistoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			mb_member_login_history with (nolock)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectLoginHistoryListCount" parameterType="pageable" resultType="Integer">
+     	/*+ kr.co.abcmart.bo.member.repository.master.MbMemberLoginHistoryDao.selectLoginHistoryListCount [페이지 카운트 쿼리] [김영현] */
+		SELECT 
+			<include refid="Paging.totalCount" />
+		FROM 
+			mb_member_login_history a with (nolock)
+		WHERE 
+			member_no = #{bean.memberNo, jdbcType=VARCHAR}
+		<if test='bean.deviceCodeAll != "Y"
+			and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.deviceCode)'>
+			AND device_code in
+			<foreach item="item" index="index" collection="bean.deviceCode" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test='bean.memberType != null and bean.memberType != ""'>
+			<choose>
+				<when test="bean.memberType == '01'">
+					AND emp_yn = 'N'
+				</when>
+				<otherwise>
+					AND emp_yn = 'Y'
+				</otherwise>
+			</choose>
+		</if>
+		<!-- <if test='bean.memberTypeCodeAll != "Y"'>
+			<choose>
+				<when test='@kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.memberTypeCode)
+					and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.empYn)
+					and bean.empYn == "Y"'>
+					AND (member_type_code in
+					<foreach item="item" index="index" collection="bean.memberTypeCode" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+					OR emp_yn = 'Y')
+				</when>
+				<when test='@kr.co.abcmart.common.util.UtilsText@isBlank(bean.memberTypeCode)
+					and bean.empYn == "Y"'>
+					AND emp_yn = 'Y'
+				</when>
+			</choose>
+		</if> -->
+		<if test='@kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.cnnctrStatCode)'>
+			AND cnnctr_stat_code = #{bean.cnnctrStatCode, jdbcType=VARCHAR}
+		</if>
+		<if test='bean.fromDate != null and bean.toDate != null'>
+			<![CDATA[
+			AND (cnnctr_dtm >= #{bean.fromDate} AND cnnctr_dtm < #{bean.toDate})
+			]]>
+		</if>
+    </select>
+    
+    <select id="selectLoginHistoryList" parameterType="pageable" resultType="kr.co.abcmart.bo.member.model.master.MbMemberLoginHistory">
+     	/*+ kr.co.abcmart.bo.member.repository.master.MbMemberLoginHistoryDao.selectLoginHistoryList [페이지 조회 쿼리] [김영현] */
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			mb_member_login_history a with (nolock)
+		WHERE 
+			member_no = #{bean.memberNo, jdbcType=VARCHAR}
+		<if test='bean.deviceCodeAll != "Y"
+			and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.deviceCode)'>
+			AND device_code in
+			<foreach item="item" index="index" collection="bean.deviceCode" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test='bean.memberType != null and bean.memberType != null'>
+			<choose>
+				<when test="bean.memberType == '01'">
+					AND emp_yn = 'N'
+				</when>
+				<otherwise>
+					AND emp_yn = 'Y'
+				</otherwise>
+			</choose>
+		</if>
+		<!-- <if test='bean.memberTypeCodeAll != "Y"'>
+			<choose>
+				<when test='@kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.memberTypeCode)
+					and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.empYn)
+					and bean.empYn == "Y"'>
+					AND (member_type_code in
+					<foreach item="item" index="index" collection="bean.memberTypeCode" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+					OR emp_yn = 'Y')
+				</when>
+				<when test='@kr.co.abcmart.common.util.UtilsText@isBlank(bean.memberTypeCode)
+					and bean.empYn == "Y"'>
+					AND emp_yn = 'Y'
+				</when>
+			</choose>
+		</if> -->
+		<if test='@kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.cnnctrStatCode)'>
+			AND cnnctr_stat_code = #{bean.cnnctrStatCode, jdbcType=VARCHAR}
+		</if>
+		<if test='bean.fromDate != null and bean.toDate != null'>
+			<![CDATA[
+			AND (cnnctr_dtm >= #{bean.fromDate} AND cnnctr_dtm < #{bean.toDate})
+			]]>
+		</if>
+		<choose>
+			 <when test="sortColumn != null">
+			 	ORDER BY
+			 	<if test="sortColumn == 'cnnctrDtm'.toString()">
+			 		cnnctr_dtm
+			 	</if>
+			 	<if test="sortType == 'DESC'.toString()">
+			 		DESC
+			 	</if>
+			 </when>
+			 <otherwise>
+			 	ORDER BY cnnctr_dtm DESC
+			 </otherwise>
+		</choose>
+		<include refid="Paging.mssql" /> 
+    </select>
+
+</mapper>

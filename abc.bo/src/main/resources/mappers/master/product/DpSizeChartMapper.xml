@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.DpSizeChartDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.product.model.master.DpSizeChart">
+     /*+ kr.co.abcmart.bo.product.repository.master.DpSizeChartDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			DP_SIZE_CHART WITH(NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectDpSizeChartList" parameterType="pageable" resultType="kr.co.abcmart.bo.product.model.master.DpSizeChart">
+    /*+ kr.co.abcmart.bo.product.repository.master.DpSizeChartDao.selectDpSizeChartList [사이즈조견표 리스트 조회 쿼리] [이지훈] */  
+    	
+    	SELECT
+    		A.SIZE_CHART_SEQ
+			,A.SIZE_CHART_NAME
+			,A.STD_CTGR_NO
+			,A.THEME_TYPE
+			,A.BRAND_ASSIGN_YN
+			,A.BRAND_NO
+			,A.IMAGE_NAME
+			,A.IMAGE_PATH_TEXT
+			,A.IMAGE_URL
+			,A.USE_YN
+			,A.RGSTER_NO
+			,A.RGST_DTM
+			,A.MODER_NO
+			,A.MOD_DTM
+    		,C.ADMIN_NAME AS RGSTER_NAME
+			,C.LOGIN_ID AS RGSTER_ID
+    	    ,D.ADMIN_NAME AS MODER_NAME
+			,D.LOGIN_ID AS MODER_ID
+			,B.BRAND_NAME AS BRAND_NAME
+			,A.ALTRN_TEXT
+			,(SELECT SC.STD_CTGR_NAME FROM SY_STANDARD_CATEGORY SC WITH(NOLOCK) WHERE SC.STD_CTGR_NO = A.STD_CTGR_NO) AS STD_CTGR_NAME
+    	FROM 
+			DP_SIZE_CHART A WITH(NOLOCK)
+			LEFT OUTER JOIN DP_BRAND B WITH(NOLOCK) ON A.BRAND_NO = B.BRAND_NO
+			LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON A.RGSTER_NO = C.ADMIN_NO
+			LEFT OUTER JOIN SY_ADMIN D WITH(NOLOCK) ON A.MODER_NO = D.ADMIN_NO
+		<include refid="whereSql" />
+		ORDER BY A.RGST_DTM DESC 
+		<include refid="Paging.mssql" />
+    </select>
+    
+    <select id="selectDpSizeChartCount" parameterType="pageable" resultType="int">
+    	SELECT
+    		<include refid="Paging.totalCount" /> 
+    	FROM
+    		DP_SIZE_CHART A WITH(NOLOCK)
+    		LEFT OUTER JOIN DP_BRAND B WITH(NOLOCK) ON A.BRAND_NO = B.BRAND_NO
+    	<include refid="whereSql" />
+    </select>
+    
+    <select id="selectDpSizeChart" parameterType="kr.co.abcmart.bo.product.model.master.DpSizeChart" resultType="kr.co.abcmart.bo.product.model.master.DpSizeChart">
+    /*+ kr.co.abcmart.bo.product.repository.master.DpSizeChartDao.selectDpSizeChart [사이즈조견표 상세 조회 쿼리] [이지훈] */  
+    	
+    	SELECT
+    		A.SIZE_CHART_SEQ
+			,A.SIZE_CHART_NAME
+			,A.STD_CTGR_NO
+			,A.THEME_TYPE
+			,A.BRAND_ASSIGN_YN
+			,A.BRAND_NO
+			,A.IMAGE_NAME
+			,A.IMAGE_PATH_TEXT
+			,A.IMAGE_URL
+			,A.USE_YN
+			,A.RGSTER_NO
+			,A.RGST_DTM
+			,A.MODER_NO
+			,A.MOD_DTM
+			,(SELECT DB.BRAND_NAME FROM DP_BRAND DB WITH(NOLOCK) WHERE DB.BRAND_NO = A.BRAND_NO) AS BRAND_NAME
+			,A.ALTRN_TEXT
+    	FROM 
+			DP_SIZE_CHART A WITH(NOLOCK)
+		WHERE 
+			A.SIZE_CHART_SEQ = #{sizeChartSeq, jdbcType=VARCHAR}
+    </select>
+    
+    <select id="selectDpSizeChartForProduct" parameterType="kr.co.abcmart.bo.product.model.master.DpSizeChart" resultType="kr.co.abcmart.bo.product.model.master.DpSizeChart">
+		/*+ kr.co.abcmart.bo.product.repository.master.DpSizeChartDao.selectDpSizeChartForProduct [상품에 관련된 사이즈조견표 조회 쿼리] [김세훈] */
+		SELECT<!-- 공용 사이즈가이드 조회 -->
+    		A.size_chart_seq,
+			A.size_chart_name,
+			A.std_ctgr_no,
+			A.theme_type,
+			A.brand_assign_yn,
+			A.brand_no,
+			A.image_name,
+			A.image_path_text,
+			A.image_url,
+			A.altrn_text,
+			A.use_yn,
+			A.rgster_no,
+			A.rgst_dtm,
+			A.moder_no,
+			A.mod_dtm
+    	FROM 
+			dp_size_chart A WITH(NOLOCK)
+			<if test="vndrNo != null and vndrNo != ''">
+				LEFT OUTER JOIN vd_vendor_brand C WITH(NOLOCK) ON A.brand_no = C.brand_no
+			</if>
+		<where>
+			<if test='stdCtgrNo != null and stdCtgrNo != ""'> 
+				AND A.std_ctgr_no = #{stdCtgrNo, jdbcType=VARCHAR}
+			</if>
+			<if test='themeType != null and themeType != ""'> 
+				 AND A.theme_type = #{themeType, jdbcType=CHAR}
+			</if>
+			<if test='useYn != null and useYn != ""'> 
+				AND A.use_yn = #{useYn, jdbcType=VARCHAR}
+			</if>
+			<if test="vndrNo != null and vndrNo != ''">
+				AND C.vndr_no = #{vndrNo, jdbcType=VARCHAR}
+			</if>
+			AND A.brand_assign_yn = 'N'<!-- 브랜드지정여부가 공통인 경우 -->
+		</where>
+		<if test="brandNo != null and brandNo != ''">
+			UNION ALL
+	    	SELECT<!-- 브랜드연계 사이즈가이드 조회 -->
+	    		A.size_chart_seq,
+				A.size_chart_name,
+				A.std_ctgr_no,
+				A.theme_type,
+				A.brand_assign_yn,
+				A.brand_no,
+				A.image_name,
+				A.image_path_text,
+				A.image_url,
+				A.altrn_text,
+				A.use_yn,
+				A.rgster_no,
+				A.rgst_dtm,
+				A.moder_no,
+				A.mod_dtm
+	    	FROM 
+				dp_size_chart A WITH(NOLOCK)
+				INNER JOIN DP_BRAND B WITH(NOLOCK) ON A.BRAND_NO = B.BRAND_NO AND B.use_yn = 'Y'
+				<if test="vndrNo != null and vndrNo != ''">
+					LEFT OUTER JOIN vd_vendor_brand C WITH(NOLOCK) ON A.brand_no = C.brand_no
+				</if>
+			<where>
+				<if test='stdCtgrNo != null and stdCtgrNo != ""'> 
+					AND A.std_ctgr_no = #{stdCtgrNo, jdbcType=VARCHAR}
+				</if>
+				<if test='themeType != null and themeType != ""'> 
+					 AND A.theme_type = #{themeType, jdbcType=CHAR}
+				</if>
+				<if test='useYn != null and useYn != ""'> 
+					AND A.use_yn = #{useYn, jdbcType=VARCHAR}
+				</if>
+				<if test="vndrNo != null and vndrNo != ''">
+					AND C.vndr_no = #{vndrNo, jdbcType=VARCHAR}
+				</if>
+				AND A.brand_assign_yn = 'Y'<!-- 브랜드지정여부가 공통인 경우 -->
+				AND B.brand_no = #{brandNo, jdbcType=VARCHAR}
+			</where>
+		</if>
+		ORDER BY A.RGST_DTM DESC  
+    </select>
+    
+    <update id="updateDpSizeChart" parameterType="kr.co.abcmart.bo.display.model.master.DpWebzine">
+    /*+ kr.co.abcmart.bo.product.repository.master.DpSizeChartDao.updateDpSizeChart [사이즈조견표 수정 쿼리] [이지훈] */  
+    	UPDATE DP_SIZE_CHART
+		<set> 
+			<if test="sizeChartName != null"> 
+				size_chart_name = #{sizeChartName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="stdCtgrNo != null"> 
+				std_ctgr_no = #{stdCtgrNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="themeType != null"> 
+				theme_type = #{themeType, jdbcType=CHAR}, 
+			</if> 
+			<if test="brandAssignYn != null"> 
+				brand_assign_yn = #{brandAssignYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="brandNo != null"> 
+				brand_no = #{brandNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="imageName != null"> 
+				image_name = #{imageName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="imagePathText != null"> 
+				image_path_text = #{imagePathText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="imageUrl != null"> 
+				image_url = #{imageUrl, jdbcType=VARCHAR}, 
+			</if>
+			<if test="altrnText != null"> 
+				altrn_text = #{altrnText, jdbcType=VARCHAR}, 
+			</if>  
+			<if test="useYn != null"> 
+				use_yn = #{useYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="rgsterNo != null"> 
+				rgster_no = #{rgsterNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 size_chart_seq = #{sizeChartSeq, jdbcType=INTEGER}   
+    </update>
+    
+    <sql id="whereSql">
+   		<where> 
+   			<if test='bean.sizeChartSeq != null and bean.sizeChartSeq != ""'> 
+				 A.size_chart_seq = #{bean.sizeChartSeq, jdbcType=INTEGER}
+			</if>
+			<if test='bean.sizeChartName != null and bean.sizeChartName != ""'> 
+				 AND A.size_chart_name like '%' + #{bean.sizeChartName, jdbcType=VARCHAR} + '%'
+			</if> 
+			<if test='bean.themeType != null and bean.themeType != ""'> 
+				 AND A.theme_type = #{bean.themeType, jdbcType=CHAR}
+			</if> 
+			<if test='bean.stdCtgrNo != null and bean.stdCtgrNo != ""'> 
+				 AND A.std_ctgr_no = #{bean.stdCtgrNo, jdbcType=VARCHAR}
+			</if> 
+			<if test='bean.brandAssignYn != null and bean.brandAssignYn != ""'> 
+				 AND A.brand_assign_yn = #{bean.brandAssignYn, jdbcType=CHAR}
+			</if> 
+			<if test='bean.brandNo != null and bean.brandNo !=""'> 
+				 AND A.brand_no = #{bean.brandNo, jdbcType=VARCHAR}
+			</if> 
+			<if test='bean.brandName != null and bean.brandName !=""'> 
+				 AND B.brand_name like '%' + #{bean.brandName, jdbcType=VARCHAR} + '%'
+			</if> 
+			<if test='bean.useYn != null and bean.useYn != ""'> 
+				 AND A.use_yn = #{bean.useYn, jdbcType=CHAR}
+			</if>
+		</where>  
+	</sql>
+</mapper>

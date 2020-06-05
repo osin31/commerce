@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SySiteDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <resultMap id="siteResult" type="kr.co.abcmart.bo.system.model.master.SySite">
+	    <id property="siteNo" column="site_no"/>
+	    <result property="siteName" column="site_name"/>
+	    <result property="freeDlvyStdrAmt" column="free_dlvy_stdr_amt"/>
+	    <result property="dlvyAmt" column="dlvy_amt"/>
+	    <result property="asDlvyAmt" column="as_dlvy_amt"/>
+	    <result property="exchngDlvyAmt" column="exchng_dlvy_amt"/>
+	    <result property="freeDlvyRtnAmt" column="free_dlvy_rtn_amt"/>
+	    <result property="paidDlvyRtnAmt" column="paid_dlvy_rtn_amt"/>
+	    <result property="rgstDtm" column="rgst_dtm"/>
+	    <result property="modDtm" column="mod_dtm"/>
+	    <association property="rgster" resultMap="rgsterResultMap"/>
+	    <association property="moder" resultMap="moderResultMap"/>
+	    <collection property="applySnsList" ofType="kr.co.abcmart.bo.system.model.master.SySiteApplySns" resultMap="siteApplySnsResult" columnPrefix="sns_"/>
+	</resultMap>
+
+    <resultMap id="rgsterResultMap" type="kr.co.abcmart.bo.system.model.master.SyAdmin">
+    	<id property="adminNo" column="rgster_no"/>
+     	<result property="loginId" column="rgster_login_id"/>
+     	<result property="adminName" column="rgster_name"/>
+    </resultMap>
+
+    <resultMap id="moderResultMap" type="kr.co.abcmart.bo.system.model.master.SyAdmin">
+     	<id property="adminNo" column="moder_no"/>
+     	<result property="loginId" column="moder_login_id"/>
+     	<result property="adminName" column="moder_name"/>
+    </resultMap>
+
+    <resultMap id="siteApplySnsResult" type="kr.co.abcmart.bo.system.model.master.SySiteApplySns">
+    	<id property="siteNo" column="site_no"/>
+    	<id property="snsChnnlCode" column="sns_chnnl_code"/>
+     	<result property="useYn" column="use_yn"/>
+    </resultMap>
+
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.system.model.master.SySite" resultType="kr.co.abcmart.bo.system.model.master.SySite">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			sy_site a with (nolock)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectSite" parameterType="String" resultType="kr.co.abcmart.bo.system.model.master.SySite">
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteDao.selectSiteListWithAdmin [사이트 조회] [김영현] */
+		SELECT
+			site_no
+			, site_name
+			, free_dlvy_stdr_amt
+			, dlvy_amt, as_dlvy_amt
+			, exchng_dlvy_amt
+			, free_dlvy_rtn_amt
+			, paid_dlvy_rtn_amt
+		FROM
+			sy_site a with (nolock)
+		WHERE
+			site_no = #{value, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectSiteListWithAdmin" resultMap="siteResult">
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteDao.selectSiteListWithAdmin [사이트 전체 조회] [김영현] */
+		SELECT
+			a.site_no
+			, a.site_name
+			, a.free_dlvy_stdr_amt
+			, a.dlvy_amt
+			, a.as_dlvy_amt
+			, a.exchng_dlvy_amt
+			, a.free_dlvy_rtn_amt
+			, a.paid_dlvy_rtn_amt
+			, a.rgster_no
+			, a.rgst_dtm
+			, a.moder_no
+			, a.mod_dtm
+			, b.admin_no as rgster_no
+			, b.login_id as rgster_login_id
+			, b.admin_name as rgster_name
+			, c.admin_no as moder_no
+			, c.login_id as moder_login_id
+			, c.admin_name as moder_name
+			, sas.site_no as sns_site_no
+			, sas.sns_chnnl_code as sns_sns_chnnl_code
+			, sas.use_yn as sns_use_yn
+		FROM
+			sy_site a with (nolock)
+		LEFT JOIN
+			sy_site_apply_sns sas with (nolock)
+		ON
+			a.site_no = sas.site_no
+		LEFT JOIN
+			sy_admin b with (nolock)
+		ON	a.rgster_no = b.admin_no
+		LEFT JOIN
+			sy_admin c with (nolock)
+		ON	a.moder_no = c.admin_no
+    </select>
+
+    <select id="selectSiteList" resultType="kr.co.abcmart.bo.system.model.master.SySite">
+     	/*+ kr.co.abcmart.bo.system.repository.master.SySiteDao.selectSiteList [사이트 전체 조회] [김영현] */
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			sy_site a with (nolock)
+    </select>
+
+    <select id="selectMaxSiteNo" resultType="Integer">
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteDao.selectMaxSiteNo [max site_no] [김영현] */
+		SELECT
+			MAX(site_no)
+		FROM
+			sy_site a with (nolock)
+    </select>
+
+    <insert id="insertSite" parameterType="kr.co.abcmart.bo.system.model.master.SySite">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteDao.insertSite [기본 insert 쿼리] [김영현] */
+
+		INSERT INTO sy_site (
+			site_no
+			, site_name
+			, free_dlvy_stdr_amt
+			, dlvy_amt, as_dlvy_amt
+			, exchng_dlvy_amt
+			, free_dlvy_rtn_amt
+			, paid_dlvy_rtn_amt
+			, rgster_no
+			, rgst_dtm
+			, moder_no
+			, mod_dtm
+		) VALUES (
+			#{siteNo, jdbcType=VARCHAR}
+			, #{siteName, jdbcType=VARCHAR}
+			, #{freeDlvyStdrAmt, jdbcType=NUMERIC}
+			, #{dlvyAmt, jdbcType=NUMERIC}
+			, #{asDlvyAmt, jdbcType=NUMERIC}
+			, #{exchngDlvyAmt, jdbcType=NUMERIC}
+			, #{freeDlvyRtnAmt, jdbcType=NUMERIC}
+			, #{paidDlvyRtnAmt, jdbcType=NUMERIC}
+			, #{rgsterNo, jdbcType=VARCHAR}
+			, getdate()
+			, #{moderNo, jdbcType=VARCHAR}
+			, getdate() )
+    </insert>
+
+    <update id="updateSite" parameterType="kr.co.abcmart.bo.system.model.master.SySite">
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteDao.updateSite [기본 update 쿼리] [김영현] */
+		UPDATE sy_site
+		<set>
+			<if test="siteName != null">
+				site_name = #{siteName, jdbcType=VARCHAR},
+			</if>
+			<if test="freeDlvyStdrAmt != null">
+				free_dlvy_stdr_amt = #{freeDlvyStdrAmt, jdbcType=NUMERIC},
+			</if>
+			<if test="dlvyAmt != null">
+				dlvy_amt = #{dlvyAmt, jdbcType=NUMERIC},
+			</if>
+			<if test="asDlvyAmt != null">
+				as_dlvy_amt = #{asDlvyAmt, jdbcType=NUMERIC},
+			</if>
+			<if test="exchngDlvyAmt != null">
+				exchng_dlvy_amt = #{exchngDlvyAmt, jdbcType=NUMERIC},
+			</if>
+			<if test="freeDlvyRtnAmt != null">
+				free_dlvy_rtn_amt = #{freeDlvyRtnAmt, jdbcType=NUMERIC},
+			</if>
+			<if test="paidDlvyRtnAmt != null">
+				paid_dlvy_rtn_amt = #{paidDlvyRtnAmt, jdbcType=NUMERIC},
+			</if>
+			moder_no = #{moderNo, jdbcType=VARCHAR},
+			mod_dtm = getdate()
+		</set>
+		WHERE
+			 site_no = #{siteNo, jdbcType=VARCHAR}
+    </update>
+
+</mapper>

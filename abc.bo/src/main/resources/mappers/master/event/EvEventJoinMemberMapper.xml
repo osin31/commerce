@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.event.repository.master.EvEventJoinMemberDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.event.model.master.EvEventJoinMember">
+
+     /*+ kr.co.abcmart.bo.event.repository.master.EvEventJoinMemberDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			EV_EVENT_JOIN_MEMBER
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectEvEventJoinMemberList" parameterType="Pageable" resultType="kr.co.abcmart.bo.event.vo.EvEventJoinResultVO">
+    /*+ kr.co.abcmart.bo.event.repository.master.EvEventJoinMemberDao.selectEvEventJoinMemberList [이벤트 참여(일반형) 조회 쿼리] [이지훈] */
+    	SELECT
+			EEJM.EV_EVENT_JOIN_MEMBER_SEQ
+			,EEJM.EVENT_NO
+			,EEJM.MEMBER_NO
+			,EEJM.PRDT_NO
+			,EEJM.ADD_INFO1
+			,EEJM.ADD_INFO2
+			,EEJM.ADD_INFO3
+			,EEJM.ADD_INFO4
+			,EEJM.ADD_INFO5
+			,EEJM.JOIN_DTM
+			,EEJM.WIN_YN
+    	    ,DBO.FN_CODE_VALUE('DEVICE_CODE', EEJM.DEVICE_CODE) AS DEVICE_CODE_NAME
+    	    ,STUFF((SELECT CONCAT(',', SSC.CHNNL_NAME) FROM EV_EVENT_TARGET_CHANNEL EETC JOIN SY_SITE_CHNNL SSC ON EETC.CHNNL_NO = SSC.CHNNL_NO AND SSC.USE_YN = 'Y' WHERE EETC.EVENT_NO = EE.EVENT_NO FOR XML PATH('')), 1, 1, '') AS CHNNL_NAME
+    	    ,STUFF((SELECT CONCAT(',', PC.CPN_NAME) FROM PR_COUPON PC WITH(NOLOCK) WHERE EEJM.ADD_INFO4 = PC.CPN_NO FOR XML PATH('')), 1, 1, '') AS CPN_NAME
+    	    ,DBO.FN_CODE_VALUE('MEMBER_TYPE_CODE', MM.MEMBER_TYPE_CODE) AS MEMBER_TYPE_CODE_NAME
+    	    ,MM.LOGIN_ID
+    	    ,(SELECT PRDT_NAME FROM PD_PRODUCT PP WITH(NOLOCK) WHERE PP.PRDT_NO = EEJM.PRDT_NO) AS PRDT_NAME
+    	    ,CASE
+    	    	WHEN EEJM.ADD_INFO4 != 'O' THEN (SELECT STORE_NAME FROM CM_STORE CS WITH(NOLOCK) WHERE CS.STORE_NO = EEJM.ADD_INFO4)
+    	    	ELSE '온라인'
+    	     END AS STORE_NAME
+    	    ,(SELECT OPTN_NAME FROM PD_PRODUCT_OPTION PPO WITH(NOLOCK) WHERE PPO.PRDT_NO = EEJM.PRDT_NO AND PPO.PRDT_OPTN_NO = EEJM.ADD_INFO5) AS OPTN_NAME
+    	    ,EE.EVENT_TYPE_CODE
+			,EE.EVENT_NAME
+			,DBO.FN_CODE_VALUE('EVENT_TYPE_CODE', EE.EVENT_TYPE_CODE) AS EVENT_TYPE_CODE_NAME
+			,(SELECT COUNT(*)
+				FROM EV_EVENT_RESULT_BENEFIT_MEMBER EERBM WITH(NOLOCK)
+			   WHERE EEJM.EVENT_NO = EERBM.EVENT_NO
+			     AND EEJM.EV_EVENT_JOIN_MEMBER_SEQ = EERBM.EV_EVENT_JOIN_MEMBER_SEQ
+			   ) AS WIN_COUNT
+		FROM
+			EV_EVENT_JOIN_MEMBER EEJM WITH(NOLOCK)
+		INNER JOIN EV_EVENT EE WITH(NOLOCK)
+					ON EEJM.EVENT_NO = EE.EVENT_NO
+		INNER JOIN MB_MEMBER MM WITH(NOLOCK)
+					ON EEJM.MEMBER_NO = MM.MEMBER_NO
+		<include refid="whereSql" />
+		ORDER BY EE.RGST_DTM DESC
+		<include refid="Paging.mssql" />
+    </select>
+
+    <select id="selectEvEventJoinMemberCount" parameterType="Pageable" resultType="int">
+   		SELECT
+    		<include refid="Paging.totalCount" />
+    	FROM
+    		EV_EVENT_JOIN_MEMBER EEJM WITH(NOLOCK)
+    	INNER JOIN EV_EVENT EE WITH(NOLOCK)
+					ON EEJM.EVENT_NO = EE.EVENT_NO
+		INNER JOIN MB_MEMBER MM WITH(NOLOCK)
+					ON EEJM.MEMBER_NO = MM.MEMBER_NO
+    	<include refid="whereSql" />
+    </select>
+
+    <select id="selectEvEventJoinMemberCountByEventNo" parameterType="String" resultType="int">
+      /*+ kr.co.abcmart.bo.event.repository.master.EvEventJoinMemberDao.selectEvEventJoinMemberCountByEventNo [이벤트 참여 카운트 조회 쿼리] [이지훈] */
+   		SELECT
+    		COUNT(*)
+    	FROM
+    		EV_EVENT_JOIN_MEMBER WITH(NOLOCK)
+    	WHERE EVENT_NO = #{eventNo, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectEventJoinMemberSeq" parameterType="Map" resultType="Long">
+    /*+ kr.co.abcmart.bo.event.repository.master.EvEventJoinMemberDao.selectEventJoinMemberSeq [이벤트 참여 seq 조회 쿼리] [이지훈] */
+    	SELECT
+    		 ISNULL(MIN(EEJM.EV_EVENT_JOIN_MEMBER_SEQ), 0)
+    	FROM
+    		EV_EVENT_JOIN_MEMBER EEJM WITH(NOLOCK)
+    	WHERE EEJM.EVENT_NO = #{eventNo, jdbcType=VARCHAR}
+    		AND EEJM.MEMBER_NO = #{memberNo, jdbcType=VARCHAR}
+    </select>
+
+     <select id="selectMemberNoByLoginId" parameterType="Map" resultType="String">
+    	/*+ kr.co.abcmart.bo.event.repository.master.EvEventJoinMemberDao.selectMemberNoByLoginId [로그인 아이디에 의한 응모자 회원번호 조회] [이지훈] */
+		SELECT
+    		TOP(1) MM.MEMBER_NO
+    	FROM
+    		EV_EVENT_JOIN_MEMBER EEJM WITH(NOLOCK)
+		INNER JOIN MB_MEMBER MM WITH(NOLOCK)
+					ON EEJM.MEMBER_NO = MM.MEMBER_NO
+		 		   AND MM.LOGIN_ID = #{loginId, jdbcType=VARCHAR}
+		WHERE EEJM.EVENT_NO = #{eventNo, jdbcType=VARCHAR}
+		ORDER BY EEJM.JOIN_DTM ASC
+    </select>
+
+     <select id="selectEventJoinMemberCount" parameterType="kr.co.abcmart.bo.event.model.master.EvEventJoinMember" resultType="int">
+    /*+ kr.co.abcmart.bo.event.repository.master.EvEventJoinMemberDao.selectEventJoinMemberCount [이벤트 회원 참여 수 쿼리] [이지훈] */
+		SELECT COUNT(*)
+	      FROM
+	         (
+	          SELECT EE.EVENT_NO
+	               , EE.EVENT_NAME
+	               , CASE WHEN EE.EVENT_TYPE_CODE = '10001' THEN (SELECT TOP(1) TARGET.RGST_DTM FROM EV_EVENT_ANSWER TARGET WHERE TARGET.MEMBER_NO = #{memberNo, jdbcType=VARCHAR} AND TARGET.EVENT_NO = EE.EVENT_NO ORDER BY TARGET.RGST_DTM DESC)
+	                    	WHEN EE.EVENT_TYPE_CODE = '10002' THEN (SELECT TOP(1) TARGET.ATEND_DTM FROM EV_EVENT_ATTENDANCE_CHECK_MEMBER TARGET WHERE TARGET.MEMBER_NO = #{memberNo, jdbcType=VARCHAR} AND TARGET.EVENT_NO = EE.EVENT_NO ORDER BY TARGET.ATEND_DTM DESC)
+	              	    	WHEN EE.EVENT_TYPE_CODE = '10004' THEN (SELECT TOP(1) TARGET.JOIN_DTM FROM EV_EVENT_ROULETTE_JOIN_MEMBER TARGET WHERE TARGET.MEMBER_NO = #{memberNo, jdbcType=VARCHAR} AND TARGET.EVENT_NO = EE.EVENT_NO ORDER BY TARGET.JOIN_DTM DESC)
+	              	    	ELSE (SELECT TOP(1) TARGET.JOIN_DTM FROM EV_EVENT_JOIN_MEMBER TARGET WHERE TARGET.MEMBER_NO = #{memberNo, jdbcType=VARCHAR} AND TARGET.EVENT_NO = EE.EVENT_NO ORDER BY TARGET.JOIN_DTM DESC)
+	              	  END AS EVENT_JOIN_DTM
+	               , CASE WHEN EE.EVENT_TYPE_CODE = '10001' THEN (SELECT TOP(1) 'N' FROM EV_EVENT_ANSWER TARGET WHERE TARGET.MEMBER_NO = #{memberNo, jdbcType=VARCHAR} AND TARGET.EVENT_NO = EE.EVENT_NO ORDER BY TARGET.RGST_DTM DESC)
+	                    	WHEN EE.EVENT_TYPE_CODE = '10002' THEN (SELECT TOP(1) 'N' FROM EV_EVENT_ATTENDANCE_CHECK_MEMBER TARGET WHERE TARGET.MEMBER_NO = #{memberNo, jdbcType=VARCHAR} AND TARGET.EVENT_NO = EE.EVENT_NO ORDER BY TARGET.ATEND_DTM DESC)
+	              	    	WHEN EE.EVENT_TYPE_CODE = '10004' THEN (SELECT TOP(1) 'N' FROM EV_EVENT_ROULETTE_JOIN_MEMBER TARGET WHERE TARGET.MEMBER_NO = #{memberNo, jdbcType=VARCHAR} AND TARGET.EVENT_NO = EE.EVENT_NO ORDER BY TARGET.JOIN_DTM DESC)
+	              	    	ELSE (SELECT TOP(1) TARGET.WIN_YN FROM EV_EVENT_JOIN_MEMBER TARGET WHERE TARGET.MEMBER_NO = #{memberNo, jdbcType=VARCHAR} AND TARGET.EVENT_NO = EE.EVENT_NO ORDER BY TARGET.JOIN_DTM DESC)
+	              	  END AS WIN_YN
+	          	FROM EV_EVENT EE WITH(NOLOCK)
+	          	JOIN (SELECT EVENT_NO AS EVENT_NO FROM EV_EVENT_ANSWER WITH(NOLOCK)  WHERE MEMBER_NO = #{memberNo, jdbcType=VARCHAR} GROUP BY EVENT_NO
+	              		UNION ALL
+	              		SELECT EVENT_NO AS EVENT_NO FROM EV_EVENT_ATTENDANCE_CHECK_MEMBER WITH(NOLOCK) WHERE MEMBER_NO = #{memberNo, jdbcType=VARCHAR} GROUP BY EVENT_NO
+	              		UNION ALL
+	              		SELECT EVENT_NO AS EVENT_NO FROM EV_EVENT_ROULETTE_JOIN_MEMBER WITH(NOLOCK)  WHERE MEMBER_NO = #{memberNo, jdbcType=VARCHAR} GROUP BY EVENT_NO
+	              		UNION ALL
+	              		SELECT EVENT_NO AS EVENT_NO FROM EV_EVENT_JOIN_MEMBER WITH(NOLOCK) WHERE MEMBER_NO = #{memberNo, jdbcType=VARCHAR} GROUP BY EVENT_NO) EH
+	          	  ON EE.EVENT_NO = EH.EVENT_NO
+	         ) EVENT_T
+	     WHERE EVENT_T.EVENT_JOIN_DTM <![CDATA[<=]]> GETDATE() AND EVENT_T.EVENT_JOIN_DTM >= DATEADD(MONTH, -2, GETDATE())
+	     <if test='winYn != null and winYn != "" '>
+			AND EVENT_T.WIN_YN = #{winYn, jdbcType=VARCHAR}
+		 </if>
+    </select>
+
+    <select id="selectEvEventResultMemberList" parameterType="Pageable" resultType="kr.co.abcmart.bo.event.vo.EvEventJoinResultVO">
+    /*+ kr.co.abcmart.bo.event.repository.master.EvEventJoinMemberDao.selectEvEventResultMemberList [이벤트 참여(일반형) 조회 쿼리] [이지훈] [2020.02.27 김진성 수정] */
+		SELECT EVENT_INFO.*
+		     , DBO.FN_GET_IDXDATA_LIKE_SPLIT(EVENT_INFO.ORDER_INFO, 1, '^') AS ORDER_NO
+		     , DBO.FN_GET_IDXDATA_LIKE_SPLIT(EVENT_INFO.ORDER_INFO, 2, '^') AS ORDER_PRDT_STAT_CODE_NAME
+		  FROM (
+		                SELECT EVENT_INFO.*
+		                     , (
+		                            SELECT TOP 1
+		                                   CONCAT(OO.ORDER_NO, '^', DBO.FN_CODE_VALUE('DLVY_STAT_CODE', OODH.DLVY_STAT_CODE))
+		                              FROM OC_ORDER OO WITH(NOLOCK)
+		                              JOIN OC_ORDER_PRODUCT OOP WITH(NOLOCK)
+		                                ON OO.ORDER_NO = OOP.ORDER_NO
+		                               AND EVENT_INFO.PRDT_NO = OOP.PRDT_NO
+		                               AND EVENT_INFO.ADD_INFO5 = OOP.PRDT_OPTN_NO
+		                               AND OOP.EVENT_NO = EVENT_INFO.EVENT_NO
+		                              JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH(NOLOCK)
+		                                ON OOP.ORDER_NO = OODH.ORDER_NO
+		                               AND OOP.ORDER_PRDT_SEQ = OODH.ORDER_PRDT_SEQ
+		                               AND OODH.DLVY_DSCNTC_YN = 'N'
+		                               AND OODH.MISS_PROC_YN = 'N'
+		                               AND OODH.IMPSBLT_PROC_YN = 'N'
+		                             WHERE EVENT_INFO.MEMBER_NO = OO.MEMBER_NO
+		                               AND OO.ORDER_STAT_CODE != '10000'
+		                             ORDER BY OODH.ORDER_DLVY_HIST_SEQ DESC
+		                       ) AS ORDER_INFO
+		                  FROM (
+		                           SELECT EEJM.EV_EVENT_JOIN_MEMBER_SEQ
+		                                , EEJM.EVENT_NO
+		                                , EEJM.MEMBER_NO
+		                                , EEJM.PRDT_NO
+		                                , CASE WHEN EEJM.PRDT_NO IS NULL THEN MM.MEMBER_NAME ELSE EEJM.ADD_INFO1 END AS ADD_INFO1
+		                                , EEJM.ADD_INFO2
+		                                , EEJM.ADD_INFO3
+		                                , EEJM.ADD_INFO4
+		                                , EEJM.ADD_INFO5
+		                                , EEJM.JOIN_DTM
+		                                , EEJM.WIN_YN
+		                                , STUFF((SELECT CONCAT(',',DBO.FN_CODE_VALUE('DEVICE_CODE', EETD.DEVICE_CODE)) FROM EV_EVENT_TARGET_DEVICE EETD WITH(NOLOCK) WHERE EE.EVENT_NO = EETD.EVENT_NO FOR XML PATH('')), 1, 1, '') AS DEVICE_CODE_NAME
+		                                , STUFF((SELECT CONCAT(',', SSC.CHNNL_NAME) FROM EV_EVENT_TARGET_CHANNEL EETC JOIN SY_SITE_CHNNL SSC ON EETC.CHNNL_NO = SSC.CHNNL_NO AND SSC.USE_YN = 'Y' WHERE EETC.EVENT_NO = EE.EVENT_NO FOR XML PATH('')), 1, 1, '') AS CHNNL_NAME
+		                                , STUFF((SELECT CONCAT(',', PC.CPN_NAME) FROM PR_COUPON PC WITH(NOLOCK) WHERE EEJM.ADD_INFO4 = PC.CPN_NO FOR XML PATH('')), 1, 1, '') AS CPN_NAME
+		                                , DBO.FN_CODE_VALUE('MEMBER_TYPE_CODE', MM.MEMBER_TYPE_CODE) AS MEMBER_TYPE_CODE_NAME
+		                                , MM.LOGIN_ID
+		                                , (SELECT PRDT_NAME FROM PD_PRODUCT PP WITH(NOLOCK) WHERE PP.PRDT_NO = EEJM.PRDT_NO) AS PRDT_NAME
+		                                , CASE WHEN EEJM.ADD_INFO4 != 'O' THEN (SELECT STORE_NAME FROM CM_STORE CS WITH(NOLOCK) WHERE CS.STORE_NO = EEJM.ADD_INFO4) ELSE '온라인' END AS STORE_NAME
+		                                , (SELECT OPTN_NAME FROM PD_PRODUCT_OPTION PPO WITH(NOLOCK) WHERE PPO.PRDT_NO = EEJM.PRDT_NO AND PPO.PRDT_OPTN_NO = EEJM.ADD_INFO5) AS OPTN_NAME
+		                                , EE.EVENT_TYPE_CODE
+		                                , EE.EVENT_NAME
+		                                , DBO.FN_CODE_VALUE('EVENT_TYPE_CODE', EE.EVENT_TYPE_CODE) AS EVENT_TYPE_CODE_NAME
+		                             FROM EV_EVENT_JOIN_MEMBER EEJM WITH(NOLOCK)
+		                             JOIN EV_EVENT EE WITH(NOLOCK)
+		                               ON EEJM.EVENT_NO = EE.EVENT_NO
+		                             JOIN MB_MEMBER MM WITH(NOLOCK)
+		                               ON EEJM.MEMBER_NO = MM.MEMBER_NO
+		                             JOIN EV_EVENT_RESULT_BENEFIT_MEMBER EERBM WITH(NOLOCK)
+		                               ON EERBM.EVENT_NO = EEJM.EVENT_NO
+		                              AND EERBM.EV_EVENT_JOIN_MEMBER_SEQ = EEJM.EV_EVENT_JOIN_MEMBER_SEQ
+		                              AND EERBM.MEMBER_NO = MM.MEMBER_NO
+				            <include refid="whereSql" />
+		                            ORDER BY EEJM.JOIN_DTM
+				            <include refid="Paging.mssql" />
+		                    ) EVENT_INFO
+		       ) EVENT_INFO
+    </select>
+
+    <select id="selectEvEventResultMemberCount" parameterType="Pageable" resultType="int">
+   		SELECT
+    		<include refid="Paging.totalCount" />
+    	FROM
+    		EV_EVENT_JOIN_MEMBER EEJM WITH(NOLOCK)
+    	INNER JOIN EV_EVENT EE WITH(NOLOCK)
+					ON EEJM.EVENT_NO = EE.EVENT_NO
+		INNER JOIN MB_MEMBER MM WITH(NOLOCK)
+					ON EEJM.MEMBER_NO = MM.MEMBER_NO
+		INNER JOIN EV_EVENT_RESULT_BENEFIT_MEMBER EERBM WITH(NOLOCK)
+					ON EERBM.EVENT_NO = EEJM.EVENT_NO
+				  AND EERBM.EV_EVENT_JOIN_MEMBER_SEQ = EEJM.EV_EVENT_JOIN_MEMBER_SEQ
+				  AND EERBM.MEMBER_NO = MM.MEMBER_NO
+    	<include refid="whereSql" />
+    </select>
+
+    <update id="updateEvEventJoinMember" parameterType="kr.co.abcmart.bo.event.model.master.EvEventJoinMember">
+    /*+ kr.co.abcmart.bo.event.repository.master.EvEventJoinMemberDao.updateEvEventJoinMember [이벤트 참여(일반형) 수정 쿼리] [이지훈] */
+    UPDATE EV_EVENT_JOIN_MEMBER
+		<set>
+			<if test="memberNo != null">
+				member_no = #{memberNo, jdbcType=VARCHAR},
+			</if>
+			<if test="prdtNo != null">
+				prdt_no = #{prdtNo, jdbcType=VARCHAR},
+			</if>
+			<if test="addInfo1 != null">
+				add_info1 = #{addInfo1, jdbcType=VARCHAR},
+			</if>
+			<if test="addInfo2 != null">
+				add_info2 = #{addInfo2, jdbcType=VARCHAR},
+			</if>
+			<if test="addInfo3 != null">
+				add_info3 = #{addInfo3, jdbcType=VARCHAR},
+			</if>
+			<if test="addInfo4 != null">
+				add_info4 = #{addInfo4, jdbcType=VARCHAR},
+			</if>
+			<if test="addInfo5 != null">
+				add_info5 = #{addInfo5, jdbcType=VARCHAR},
+			</if>
+			<if test="joinDtm != null">
+				join_dtm = #{joinDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="winYn != null">
+				win_yn = #{winYn, jdbcType=CHAR},
+			</if>
+		</set>
+		WHERE ev_event_join_member_seq = #{evEventJoinMemberSeq, jdbcType=BIGINT}
+		  AND event_no = #{eventNo, jdbcType=VARCHAR}
+    </update>
+
+    <update id="updateWinYnByEventNo" parameterType="kr.co.abcmart.bo.event.model.master.EvEventJoinMember">
+    /*+ kr.co.abcmart.bo.event.repository.master.EvEventJoinMemberDao.updateWinYnByEventNo [이벤트 참여(일반형) 수정 쿼리] [이지훈] */
+    UPDATE EV_EVENT_JOIN_MEMBER
+	   SET WIN_YN = #{winYn, jdbcType=CHAR}
+	 WHERE EVENT_NO = #{eventNo, jdbcType=BIGINT}
+    </update>
+
+    <sql id="whereSql">
+    	<where>
+    		<if test='bean.eventNo != null and bean.eventNo != ""'>
+				AND EEJM.EVENT_NO = #{bean.eventNo, jdbcType=VARCHAR}
+			</if>
+    		<if test='bean.loginId != null and bean.loginId != ""'>
+				AND MM.LOGIN_ID = #{bean.loginId, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.deviceCodes != null and bean.deviceCodes.length > 0'>
+				AND EEJM.DEVICE_CODE IN
+				<foreach collection="bean.deviceCodes" item="deviceCode" open="(" close=")" separator=",">
+					#{deviceCode}
+				</foreach>
+			</if>
+    		<if test='bean.memberTypeCodes != null and bean.memberTypeCodes != "" '>
+    			AND MM.MEMBER_TYPE_CODE IN
+				<foreach collection="bean.memberTypeCodes" item="memberTypeCode" open="(" close=")" separator=",">
+					#{memberTypeCode}
+				</foreach>
+    		</if>
+    		<if test='bean.dateType != null and bean.dateType != ""'>
+				<if test='bean.startYmd != null and bean.startYmd != ""'>
+					AND CONVERT(DATETIME, EEJM.JOIN_DTM) >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})
+				</if>
+
+				<if test='bean.endYmd != null and bean.endYmd != ""'>
+					AND CONVERT(DATETIME, CONCAT(#{bean.endYmd, jdbcType=VARCHAR}, ' 23:59:59')) >= CONVERT(DATETIME, EEJM.JOIN_DTM)
+				</if>
+			</if>
+			<if test='bean.winYn != null and bean.winYn != ""'>
+				AND EEJM.WIN_YN = #{bean.winYn, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.eventJoinMemberSeq != null and bean.eventJoinMemberSeq != ""'>
+				AND EEJM.EV_EVENT_JOIN_MEMBER_SEQ = #{bean.eventJoinMemberSeq, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.keywordType != null and bean.keywordType != ""'>
+				<choose>
+					<when test='bean.keywordType == "eventNo"'>
+						AND EE.EVENT_NO LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+					</when>
+					<when test='bean.keywordType == "eventName"'>
+						AND EE.EVENT_NAME LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+					</when>
+					<otherwise>
+						AND EE.INSD_MGMT_INFO_TEXT LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+					</otherwise>
+				</choose>
+			</if>
+			<if test='bean.eventRsltBenefitSeq != null and bean.eventRsltBenefitSeq != ""'>
+				AND EERBM.EVENT_RSLT_BENEFIT_SEQ = #{bean.eventRsltBenefitSeq, jdbcType=VARCHAR}
+			</if>
+    	</where>
+    </sql>
+
+</mapper>

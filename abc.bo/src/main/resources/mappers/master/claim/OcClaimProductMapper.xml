@@ -1,0 +1,1427 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.claim.repository.master.OcClaimProductDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct">
+    
+     /*+ kr.co.abcmart.bo.claim.repository.master.OcClaimProductDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			OC_CLAIM_PRODUCT WITH (NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+
+	<select id="selectClaimProductList" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct">
+	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimProductDao.selectClaimProductList [클레임 상품 목록 조회 쿼리] [KTH] */
+		SELECT A.CLM_NO
+			 , A.CLM_PRDT_SEQ
+			 , A.UP_CLM_PRDT_SEQ
+			 , A.ORG_ORDER_NO
+			 , A.ORDER_NO
+			 , A.ORDER_PRDT_SEQ
+			 , A.UP_ORDER_PRDT_SEQ
+			 , A.PRDT_NO
+			 , A.PRDT_OPTN_NO
+			 , A.PRDT_NAME
+			 , A.ENG_PRDT_NAME
+			 , A.OPTN_NAME
+			 , A.PRDT_TYPE_CODE
+			 , A.STYLE_INFO
+			 , A.PRDT_COLOR_CODE
+			 , A.VNDR_NO
+			 , A.VNDR_NAME
+			 , A.VNDR_PRDT_NO_TEXT
+			 , A.BRAND_NO
+			 , A.CHNNL_NO
+			 , A.STD_CTGR_NO
+			 , A.CTGR_NO
+			 , A.EVENT_NO
+			 , A.PLNDP_NO
+			 , A.MMNY_PRDT_YN
+			 , A.EMP_DSCNT_YN
+			 , A.ORDER_MNFCT_YN
+			 , A.DPRC_EXCEPT_YN
+			 , A.FREE_DLVY_YN
+			 , A.ORDER_QTY
+			 , A.PRDT_NORMAL_AMT
+			 , A.PRDT_SELL_AMT
+			 , A.OPTN_ADD_AMT
+			 , A.SELL_AMT
+			 , A.EMP_DSCNT_RATE
+			 , A.EMP_AMT
+			 , A.TOTAL_DSCNT_AMT
+			 , A.CPN_DSCNT_AMT
+			 , A.ORDER_AMT
+			 , A.VNDR_CMSN_RATE
+			 , A.CLM_RSN_CODE
+			 , A.CLM_ETC_RSN_TEXT
+			 , A.CLM_QTY
+			 , A.CSTMR_ALERT_CONT_TEXT
+			 , A.CLM_PROC_TYPE_CODE
+			 , A.CLM_PROC_CONT_TEXT
+			 , A.LOGIS_VNDR_CODE
+			 , A.WAYBIL_NO_TEXT
+			 , A.CLM_IMPSBLT_RSN_CODE
+			 , A.CLM_IMPSBLT_CONT_TEXT
+			 , A.CLM_PRDT_STAT_CODE
+			 , A.CLM_CRT_ORDER_NO
+			 , A.RECPT_YN
+			 , A.RGSTER_NO
+			 , A.RGST_DTM
+			 , A.MODER_NO
+			 , A.MOD_DTM
+			 , DBO.FN_CODE_VALUE('CLM_PRDT_STAT_CODE', A.CLM_PRDT_STAT_CODE) AS CLM_PRDT_STAT_CODE_NAME
+			 , B.ORDER_NO
+			 , B.ORDER_PRDT_SEQ
+			 , B.INSD_MGMT_INFO_TEXT
+			 , B.ORDER_PRDT_STAT_CODE
+		     , C.ORDER_PRDT_SEQ AS ORDER_GIFT_PRDT_SEQ
+		     , C.PRDT_NAME AS GIFT_PRDT_NAME
+		     , DBO.FN_CODE_VALUE( 'STOCK_GBN_CODE' , D.STOCK_GBN_CODE ) AS STOCK_GBN_CODE_NAME
+		     , DBO.FN_CODE_VALUE( 'DLVY_STAT_CODE' , D.DLVY_STAT_CODE ) AS DLVY_STAT_CODE_NAME
+		     , DBO.FN_CODE_VALUE( 'LOGIS_VNDR_CODE' , D.LOGIS_VNDR_CODE ) AS LOGIS_VNDR_CODE_NAME
+		     , D.STOCK_GBN_CODE
+		     , D.DLVY_ID_TEXT
+		     , D.WAYBIL_NO_TEXT AS DELIVERY_WAYBIL_NO_TEXT
+		     , D.DLVY_STAT_CODE
+		     , E.CLM_GBN_CODE
+		     , ( SELECT STORE_NAME
+			       FROM CM_STORE WITH(NOLOCK)
+				  WHERE STORE_NO = D.STORE_NO ) AS STORE_NAME
+			 --------- S : 상품관련파일 --------------------
+			 , PRF.FILE_TYPE
+			 , PRF.IMAGE_NAME
+			 , PRF.IMAGE_PATH_TEXT
+			 , PRF.IMAGE_URL
+			 , PRF.ALTRN_TEXT
+			 --------- E : 상품관련파일 --------------------	
+			 , F.CLM_PRDT_SEQ 					AS CHANGE_CLM_PRDT_SEQ -- 재배송상품 클레임상품순번
+			 , F.PRDT_OPTN_NO 					AS CHANGE_PRDT_OPTN_NO -- 재배송상품 옵션번호
+			 , F.OPTN_NAME 						AS CHANGE_OPTN_NAME -- 재배송상품 옵션명
+			 , F.LOGIS_VNDR_CODE 				AS CHANGE_LOGIS_VNDR_CODE -- 재배송상품 택배사코드
+			 , F.LOGIS_VNDR_CODE_NAME 			AS CHANGE_LOGIS_VNDR_CODE_NAME -- 재배송상품 택배사코드명
+			 , F.LOGIS_VNDR_CODE_ADD_INFO 		AS CHANGE_LOGIS_VNDR_CODE_ADD_INFO -- 재배송상품 택배사코드 addInfo
+			 , F.WAYBIL_NO_TEXT 				AS CHANGE_WAYBIL_NO_TEXT -- 재배송상품 운송장번호
+			 , ISNULL(F.DLVY_DSCNTC_YN, 'N') 	AS CHANGE_DLVY_DSCNTC_YN -- 재배송상품 배송중단여부
+			 , F.DLVY_DSCNTC_RSN_CODE 			AS CHANGE_DLVY_DSCNTC_RSN_CODE -- 2020.04.24 : 재배송상품 배송중단사유코드 추가
+			 , F.DLVY_STAT_CODE_NAME 			AS CHANGE_DLVY_STAT_CODE_NAME -- 재배송상품 배송상태
+			 , F.CLM_PRDT_STAT_CODE 			AS CHANGE_CLM_PRDT_STAT_CODE -- 재배송상품 상태코드
+			 , (SELECT DLVY_TYPE_CODE FROM OC_ORDER WITH (NOLOCK) WHERE ORDER_NO = A.ORG_ORDER_NO) AS DLVY_TYPE_CODE
+		  FROM OC_CLAIM_PRODUCT A WITH (NOLOCK)
+		  JOIN OC_ORDER_PRODUCT B WITH (NOLOCK)
+		    ON A.ORDER_NO = B.ORDER_NO
+		   AND A.ORDER_PRDT_SEQ = B.ORDER_PRDT_SEQ
+		  LEFT OUTER JOIN (
+				 SELECT ORDER_NO
+					  , UP_ORDER_PRDT_SEQ
+					  , ORDER_PRDT_SEQ
+					  , PRDT_NO
+					  , PRDT_OPTN_NO
+					  , PRDT_NAME
+					  , ENG_PRDT_NAME
+					  , OPTN_NAME
+					  , PRDT_TYPE_CODE
+					  , STYLE_INFO
+					  , PRDT_COLOR_CODE
+				   FROM OC_ORDER_PRODUCT WITH (NOLOCK) 
+				  WHERE PRDT_TYPE_CODE = #{prdtTypeCodeGift, jdbcType=VARCHAR}
+			   ) C --사은품(본상품에 컬럼으로 추가)
+			ON B.ORDER_NO = C.ORDER_NO
+		   AND B.ORDER_PRDT_SEQ = C.UP_ORDER_PRDT_SEQ 
+		  LEFT OUTER JOIN (
+				SELECT ORDER_NO
+					 , ORDER_PRDT_SEQ
+					 , ORDER_DLVY_HIST_SEQ
+					 , STOCK_GBN_CODE
+					 , DLVY_ID_TEXT
+					 , LOGIS_VNDR_CODE
+					 , WAYBIL_NO_TEXT
+					 , DLVY_PROC_DTM
+					 , DLVY_STAT_CODE
+					 , STORE_NO
+					 , RANK( )OVER( PARTITION BY ORDER_NO, ORDER_PRDT_SEQ ORDER BY  ORDER_DLVY_HIST_SEQ  DESC ) AS RANK_SEQ 
+				  FROM OC_ORDER_DELIVERY_HISTORY WITH (NOLOCK)
+				 WHERE CLM_NO IS NULL
+			   ) D -- 주문기준 배송정보
+		    ON A.ORG_ORDER_NO = D.ORDER_NO
+		   AND B.ORDER_PRDT_SEQ = D.ORDER_PRDT_SEQ
+		   AND D.RANK_SEQ = 1
+		  JOIN OC_CLAIM E WITH (NOLOCK)
+		    ON A.CLM_NO = E.CLM_NO
+		  LEFT OUTER JOIN PD_PRODUCT_RELATION_FILE PRF WITH (NOLOCK)
+		    ON A.PRDT_NO = PRF.PRDT_NO
+		   AND PRF.PRDT_RLTN_FILE_SEQ = #{prdtRltnFileSeq, jdbcType=INTEGER}
+		  LEFT OUTER JOIN ( -- 재배송상품 정보
+					SELECT OCP.CLM_NO
+						 , OCP.CLM_PRDT_SEQ
+						 , OCP.UP_CLM_PRDT_SEQ
+					     , OCP.PRDT_OPTN_NO
+						 , OCP.OPTN_NAME
+						 , OCP.CLM_PRDT_STAT_CODE
+						 , OCP.LOGIS_VNDR_CODE
+						 , DBO.FN_CODE_VALUE('LOGIS_VNDR_CODE', OCP.LOGIS_VNDR_CODE) AS LOGIS_VNDR_CODE_NAME
+						 , DBO.FN_CODE_ADDINFO('LOGIS_VNDR_CODE', OCP.LOGIS_VNDR_CODE, 1) AS LOGIS_VNDR_CODE_ADD_INFO
+						 , OCP.WAYBIL_NO_TEXT
+						 , ODH.DLVY_DSCNTC_YN
+						 , ODH.DLVY_DSCNTC_RSN_CODE -- 2020.04.24 : 배송중단사유코드 추가
+						 , ODH.DLVY_STAT_CODE
+						 , DBO.FN_CODE_VALUE('DLVY_STAT_CODE', ODH.DLVY_STAT_CODE) AS DLVY_STAT_CODE_NAME
+						 , RANK( )OVER( PARTITION BY ODH.CLM_NO, ODH.CLM_PRDT_SEQ ORDER BY ODH.ORDER_DLVY_HIST_SEQ DESC ) AS RANK_SEQ
+						 -- 2020.04.24 : 교환재배송상품을 주문상세에서 중단 후 재배송 계속하는 경우를 고려하여 추가
+					  FROM OC_CLAIM_PRODUCT OCP WITH (NOLOCK)
+					  LEFT OUTER JOIN OC_ORDER_DELIVERY_HISTORY ODH WITH (NOLOCK)
+					    ON OCP.CLM_NO = ODH.CLM_NO
+					   AND OCP.CLM_PRDT_SEQ = ODH.CLM_PRDT_SEQ
+			   ) F
+			ON A.CLM_NO			= F.CLM_NO
+		   AND A.CLM_PRDT_SEQ	= F.UP_CLM_PRDT_SEQ
+		   AND F.RANK_SEQ 		= 1 -- 2020.04.24 : 교환재배송상품을 주문상세에서 중단 후 재배송 계속하는 경우를 고려하여 추가
+		<where>
+			<if test="includeDlvyPrdtYn == 'N'.toString()">
+				AND (A.UP_CLM_PRDT_SEQ IS NULL OR A.UP_CLM_PRDT_SEQ = '')
+			</if>
+			<if test="orgOrderNo != null"> 
+				AND A.ORG_ORDER_NO = #{orgOrderNo, jdbcType=VARCHAR}
+			</if>
+			<if test="clmNo != null"> 
+				AND A.CLM_NO = #{clmNo, jdbcType=VARCHAR}
+			</if>
+			<if test="clmPrdtSeq != null"> 
+				AND A.CLM_PRDT_SEQ = #{clmPrdtSeq, jdbcType=INTEGER}
+			</if>
+			<if test='prdtTypeCodeList != null'>
+			 	AND A.PRDT_TYPE_CODE NOT IN				-- 사은품, 배송비 제외
+				 <foreach item="item" index="index" collection="prdtTypeCodeList" open="(" close=")" separator="," >
+				 	 #{item}
+				 </foreach>
+			</if>
+		</where>
+	</select>
+	
+	<update id="updateClaimProduct" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct">
+	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimProductDao.updateClaimProduct [클레임 상품정보 업데이트] [KTH] */
+		UPDATE OC_CLAIM_PRODUCT
+		   SET moder_no = #{moderNo, jdbcType=VARCHAR}
+			 , mod_dtm = GETDATE()
+			<if test="clmRsnCode != null"> 
+			 , clm_rsn_code = #{clmRsnCode, jdbcType=VARCHAR}
+			</if>
+			<if test="clmEtcRsnText != null"> 
+			 , clm_etc_rsn_text = #{clmEtcRsnText, jdbcType=VARCHAR}
+			</if>
+			<if test="cstmrAlertContText != null"> 
+			 , cstmr_alert_cont_text = #{cstmrAlertContText, jdbcType=VARCHAR}
+			</if>
+			<if test="clmProcTypeCode != null"> 
+			 , clm_proc_type_code = #{clmProcTypeCode, jdbcType=VARCHAR}
+			</if>
+			<if test="clmProcContText != null"> 
+			 , clm_proc_cont_text = #{clmProcContText, jdbcType=VARCHAR}
+			</if>
+			<if test="recptYn != null"> 
+			 , RECPT_YN = #{recptYn, jdbcType=CHAR}
+			</if>
+			<if test="logisVndrCode != null"> 
+			 , LOGIS_VNDR_CODE = #{logisVndrCode, jdbcType=VARCHAR}
+			</if>
+			<if test="waybilNoText != null"> 
+			 , WAYBIL_NO_TEXT = #{waybilNoText, jdbcType=VARCHAR}
+			</if>
+		 WHERE clm_no = #{clmNo, jdbcType=VARCHAR}
+		   AND clm_prdt_seq = #{clmPrdtSeq, jdbcType=INTEGER}   
+	</update>
+	
+	<select id="selectOcClaimProductForAllExcelList" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct" resultType="kr.co.abcmart.bo.claim.vo.OcClaimProductExcelVo">
+	
+	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimProductDao.selectOcClaimProductForAllExcelList [클레임 목록 모든 엑셀 조회] [이강수] */
+	
+		SELECT (SELECT SITE_NAME FROM SY_SITE WITH (NOLOCK) WHERE SITE_NO = B.SITE_NO) AS SITE_NAME
+			 , DBO.FN_CODE_VALUE('CLM_GBN_CODE', B.CLM_GBN_CODE) AS CLM_GBN_CODE_NAME
+			 , B.CLM_NO
+			 , DBO.FN_CODE_VALUE('CLM_RSN_CODE', A.CLM_RSN_CODE) AS CLM_RSN_CODE_NAME
+			 , B.ORG_ORDER_NO
+			 , D.DLVY_ID_TEXT
+			 , A.PRDT_NO
+			 , A.PRDT_NAME
+			 , (SELECT BRAND_EN_NAME
+				  FROM DP_BRAND WITH (NOLOCK)
+				 WHERE BRAND_NO = C.BRAND_NO) AS BRAND_NAME
+			 , A.STYLE_INFO
+			 , A.OPTN_NAME
+			 , ISNULL((SELECT STORE_NAME
+						 FROM OC_ORDER WITH (NOLOCK)
+					    WHERE ORDER_NO = A.ORDER_NO), '') AS STORE_NAME
+			 , A.VNDR_PRDT_NO_TEXT
+			 , A.VNDR_NAME
+			 , A.VNDR_NO
+			 , D.STOCK_GBN_CODE
+			 , DBO.FN_CODE_VALUE('STOCK_GBN_CODE', D.STOCK_GBN_CODE) AS STOCK_GBN_CODE_NAME
+			 , CASE WHEN B.ADD_DLVY_AMT_PYMNT_TYPE = 'P'
+			        THEN '선 결제'
+					WHEN B.ADD_DLVY_AMT_PYMNT_TYPE = 'S'
+					THEN '환불금액차감'
+					WHEN B.ADD_DLVY_AMT_PYMNT_TYPE = 'C'
+					THEN '무료배송쿠폰'
+					WHEN B.ADD_DLVY_AMT_PYMNT_TYPE = 'F'
+					THEN '배송비 무료'
+					END AS ADD_DLVY_AMT_PYMNT_TEXT
+			 , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY,
+						   ( SELECT PYMNT_AMT
+							   FROM OC_CLAIM_PAYMENT WITH (NOLOCK)
+							  WHERE CLM_NO = B.CLM_NO
+								AND REDEMP_RFND_GBN_TYPE	= 'E'
+								AND MMNY_PROC_TRGT_YN		= 'N'
+								AND HIST_GBN_TYPE			= 'P'
+								AND OCRNC_RSN_CODE			= '10003' ) 	
+			   ),1),'.00','')									AS DLVY_PYMNT_AMT -- 교환/반품 배송비	
+ 			 , CASE WHEN B.TOTAL_RFND_AMT = 0 THEN ''
+					ELSE REPLACE(CONVERT(VARCHAR, CONVERT( MONEY, B.TOTAL_RFND_AMT ),1),'.00','')
+					END AS REFUND_AMT	  -- 클레임 환불 금액
+			 , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY,
+						   ( SELECT SUM(PYMNT_AMT)
+							   FROM OC_CLAIM_PAYMENT WITH (NOLOCK)
+							  WHERE CLM_NO = B.CLM_NO
+								AND REDEMP_RFND_GBN_TYPE	= 'E'
+								AND MMNY_PROC_TRGT_YN		= 'Y'
+								AND HIST_GBN_TYPE			= 'P' )
+			   ),1),'.00','')									AS REDEMP_AMT	 -- 취소/교환/반품 클레임 환수정보(추가결제금액)	
+			 , CASE WHEN B.UN_PROC_YN = 'Y'
+					THEN '미처리'
+					WHEN B.UN_PROC_YN = 'N'
+					THEN '처리'
+					END AS UN_PROC_YN_TEXT
+			 , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY,
+						   ( SELECT PYMNT_AMT
+							   FROM OC_ORDER WITH (NOLOCK)
+							  WHERE ORDER_NO = B.ORDER_NO ) 				
+			   ),1),'.00','')									AS PYMNT_AMT 	-- 결제금액
+			 , REPLACE(CONVERT(CHAR(19), A.RGST_DTM, 20),'-','.')	AS RGST_DTM
+			 , DBO.FN_CODE_VALUE('CLM_PRDT_STAT_CODE', A.CLM_PRDT_STAT_CODE) AS CLM_PRDT_STAT_CODE_NAME
+			 , REPLACE(CONVERT(CHAR(19), A.MOD_DTM, 20),'-','.')	AS MOD_DTM
+		  FROM OC_CLAIM_PRODUCT A WITH (NOLOCK)
+		  JOIN OC_CLAIM 		B WITH (NOLOCK)  ON A.CLM_NO    = B.CLM_NO
+		  JOIN PD_PRODUCT		C WITH (NOLOCK)  ON A.PRDT_NO	= C.PRDT_NO
+		  JOIN MB_MEMBER 		E WITH (NOLOCK)  ON B.MEMBER_NO = E.MEMBER_NO
+		  LEFT OUTER JOIN (
+				SELECT ORDER_NO
+					 , ORDER_PRDT_SEQ
+					 , ORDER_DLVY_HIST_SEQ
+					 , STOCK_GBN_CODE
+					 , DLVY_ID_TEXT
+					 , LOGIS_VNDR_CODE
+					 , WAYBIL_NO_TEXT
+					 , DLVY_PROC_DTM
+					 , DLVY_STAT_CODE
+					 , RANK( )OVER( PARTITION BY ORDER_NO, ORDER_PRDT_SEQ ORDER BY  ORDER_DLVY_HIST_SEQ  DESC ) AS RANK_SEQ 
+				  FROM OC_ORDER_DELIVERY_HISTORY WITH (NOLOCK)
+				 WHERE CLM_NO IS NULL
+			   ) D -- 주문기준 배송정보
+		    ON A.ORDER_NO = D.ORDER_NO
+		   AND A.ORDER_PRDT_SEQ = D.ORDER_PRDT_SEQ
+		   AND D.RANK_SEQ = 1
+    	 <trim prefix="WHERE" prefixOverrides="AND|OR">
+    	 		 AND ISNULL(A.UP_CLM_PRDT_SEQ, '') = ''
+    	 	<if test='oflnAcceptYn != null and oflnAcceptYn != ""'> 
+				 AND B.OFLN_ACCEPT_YN = #{oflnAcceptYn, jdbcType=CHAR}
+			</if>
+    	 	<if test='siteNo != null and siteNo != ""'> 
+				 AND B.SITE_NO = #{siteNo, jdbcType=VARCHAR}
+			</if>
+			<if test='deviceCode != null and deviceCode != ""'> 
+				 AND B.DEVICE_CODE = #{deviceCode, jdbcType=VARCHAR}
+			</if>
+       		<if test="stockGbnCodeList != null">
+       			<if test="stockGbnCodeList.length > 0">
+			    	 AND EXISTS ( SELECT 1 
+							   	    FROM OC_ORDER_DELIVERY_HISTORY Z WITH (NOLOCK)
+							       WHERE Z.ORDER_NO = B.ORDER_NO
+							    	 AND Z.STOCK_GBN_CODE IN  
+					 <foreach collection="stockGbnCodeList" item="item" open="(" close=")" separator=",">
+						 #{item.stockGbnCode, jdbcType=VARCHAR}
+					 </foreach>
+					 )
+				 </if>
+		 	</if>
+		 	<if test="vndrNo != null and vndrNo != '' ">
+				AND EXISTS (SELECT 1 
+							  FROM OC_CLAIM_PRODUCT Z WITH (NOLOCK)
+							 WHERE Z.CLM_NO  = B.CLM_NO
+							   AND Z.VNDR_NO = #{vndrNo, jdbcType=VARCHAR}  
+				)
+			</if>
+			<if test='clmNo != null and clmNo != ""'> 
+				 AND B.CLM_NO = #{clmNo, jdbcType=VARCHAR}
+			</if>
+			<if test='orgOrderNo != null and orgOrderNo != ""'> 
+				 AND B.ORG_ORDER_NO = #{orgOrderNo, jdbcType=VARCHAR}
+			</if>
+			<if test='searchBuyerName != null and searchBuyerName != ""'> 
+				 AND B.BUYER_NAME = #{searchBuyerName, jdbcType=VARCHAR}
+			</if>
+			<if test='searchRcvrName != null and searchRcvrName != ""'> 
+				 AND B.RCVR_NAME = #{searchRcvrName, jdbcType=VARCHAR}
+			</if>
+			<if test='searchBuyerHdphnNoText != null and searchBuyerHdphnNoText != ""'> 
+				 AND B.BUYER_HDPHN_NO_TEXT = #{searchBuyerHdphnNoText, jdbcType=VARCHAR}
+			</if>
+			<if test='searchLoginId != null and searchLoginId != ""'> 
+				 AND E.LOGIN_ID = #{searchLoginId, jdbcType=VARCHAR}
+			</if>
+			<if test='(prdtNo != null and prdtNo != "") or (prdtName != null and prdtName != "") or (styleInfo != null and styleInfo != "") or (vndrPrdtNoText != null and vndrPrdtNoText != "")'>
+				 AND EXISTS ( SELECT 1
+					   			FROM OC_CLAIM_PRODUCT Z WITH (NOLOCK)
+					  		   WHERE Z.CLM_NO = B.CLM_NO
+				 <choose>
+				 	 <when test='prdtNo != null and prdtNo != ""'> 
+				 	 	 AND Z.PRDT_NO = #{prdtNo, jdbcType=VARCHAR}
+				 	 </when>
+				 	 <when test='prdtName != null and prdtName != ""'> 
+				 		 AND Z.PRDT_NAME = #{prdtName, jdbcType=VARCHAR}
+					 </when>
+					 <when test='styleInfo != null and styleInfo != ""'> 
+					 	 AND Z.STYLE_INFO = #{styleInfo, jdbcType=VARCHAR}
+					 </when>
+					 <when test='vndrPrdtNoText != null and vndrPrdtNoText != ""'>
+					 	 AND Z.VNDR_PRDT_NO_TEXT = #{vndrPrdtNoText, jdbcType=VARCHAR}
+					 </when>
+				 </choose>
+				 )
+			</if>
+			<if test="brandNo != null and brandNo != ''">
+				 AND EXISTS (SELECT 1 
+							  FROM OC_CLAIM_PRODUCT Z WITH (NOLOCK)
+							 WHERE Z.CLM_NO   = B.CLM_NO
+							   AND Z.BRAND_NO = #{brandNo, jdbcType=VARCHAR}
+				 ) 
+			</if>
+			<if test="dateGbnType == 'O' and fromDate != null and fromDate != '' and toDate != null and toDate !='' and unProcYn == null">
+           		 AND B.ORG_ORDER_DTM BETWEEN CONVERT(DATE, #{fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{toDate}))
+        	</if>
+			<if test="dateGbnType == 'C' and fromDate != null and fromDate != '' and toDate != null and toDate !='' and unProcYn == null">
+           		 AND B.RGST_DTM BETWEEN CONVERT(DATE, #{fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{toDate}))
+        	</if>
+       		<if test="pymntMeansCodeList != null">
+       			<if test="pymntMeansCodeList.length > 0">
+			    	 AND EXISTS ( SELECT 1 
+							   	    FROM OC_ORDER_PAYMENT Z WITH (NOLOCK)
+							       WHERE Z.ORDER_NO = B.ORG_ORDER_NO
+								<if test="(chkPaymentESCR != null and chkPaymentESCR != '') and (chkPaymentNoESCR == null or chkPaymentNoESCR == '')">
+							    	 AND Z.ESCR_APPLY_YN = 'Y'
+							    </if>
+							    <if test="(chkPaymentESCR == null or chkPaymentESCR == '') and (chkPaymentNoESCR != null and chkPaymentNoESCR != '')">
+									 AND Z.ESCR_APPLY_YN = 'N'
+								</if>
+								     AND (
+							     			Z.PYMNT_MEANS_CHNG_PSBLT_YN = 'N'
+							     	 	 OR (
+							     	 	 		Z.PYMNT_MEANS_CHNG_PSBLT_YN = 'Y'
+							     	 	 	AND Z.PYMNT_STAT_CODE = #{pymntStatCodePaymentFinish} -- '10001'
+							     	 	 )
+							     	 )
+							    	 AND Z.PYMNT_MEANS_CODE IN  
+					 <foreach collection="pymntMeansCodeList" item="item" open="(" close=")" separator=",">
+						 #{item.pymntMeansCode, jdbcType=VARCHAR}
+					 </foreach>
+					 )
+				</if>
+		 	</if>
+			<if test="clmStatCodeList != null">
+				<if test="clmStatCodeList.length > 0">
+					 AND B.CLM_STAT_CODE IN 
+					 <foreach item="item" index="index" collection="clmStatCodeList" open="(" separator="," close=")">
+						 #{item.clmStatCode, jdbcType=VARCHAR}
+					 </foreach>
+				</if>
+			</if>
+			<if test='unProcYn != null and unProcYn != ""'> 
+				 AND B.UN_PROC_YN = #{unProcYn, jdbcType=CHAR}
+			</if>
+    	 </trim>
+		<choose>
+			<when test="sortColumn != null">
+				ORDER BY
+				<if test="sortColumn == 'rgstDtm'">
+					A.RGST_DTM
+				</if>
+				<if test="sortColumn == 'modDtm'">
+					A.MOD_DTM
+				</if>
+				<if test="sortColumn == 'totalRfndAmt'">
+					B.TOTAL_RFND_AMT
+				</if>
+				<if test="sortColumn == 'addDlvyAmt'">
+					B.ADD_DLVY_AMT
+				</if>
+				<if test="sortType == 'desc'">
+					DESC, A.CLM_PRDT_SEQ
+				</if>
+			</when>
+			<otherwise>
+				ORDER BY A.CLM_NO DESC, A.CLM_PRDT_SEQ
+			</otherwise>
+		</choose>
+    	 
+	</select>
+	
+	<select id="selectOcClaimProductForExcelList" parameterType="kr.co.abcmart.bo.claim.vo.OcClaimProductExcelVo" resultType="kr.co.abcmart.bo.claim.vo.OcClaimProductExcelVo">
+	
+	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimProductDao.selectOcClaimForExcelList [클레임 목록 선택 엑셀 조회] [이강수] */
+	
+		SELECT (SELECT SITE_NAME FROM SY_SITE WITH (NOLOCK) WHERE SITE_NO = B.SITE_NO) AS SITE_NAME
+			 , DBO.FN_CODE_VALUE('CLM_GBN_CODE', B.CLM_GBN_CODE) AS CLM_GBN_CODE_NAME
+			 , B.CLM_NO
+			 , DBO.FN_CODE_VALUE('CLM_RSN_CODE', A.CLM_RSN_CODE) AS CLM_RSN_CODE_NAME
+			 , B.ORG_ORDER_NO
+			 , D.DLVY_ID_TEXT
+			 , A.PRDT_NO
+			 , A.PRDT_NAME
+			 , (SELECT BRAND_EN_NAME
+				  FROM DP_BRAND WITH (NOLOCK)
+				 WHERE BRAND_NO = C.BRAND_NO) AS BRAND_NAME
+			 , A.STYLE_INFO
+			 , A.OPTN_NAME
+			 , A.VNDR_PRDT_NO_TEXT
+			 , A.VNDR_NAME
+			 , A.VNDR_NO
+			 , D.STOCK_GBN_CODE
+			 , DBO.FN_CODE_VALUE('STOCK_GBN_CODE', D.STOCK_GBN_CODE) AS STOCK_GBN_CODE_NAME
+ 			 , ISNULL((SELECT STORE_NAME
+						 FROM OC_ORDER WITH (NOLOCK)
+					    WHERE ORDER_NO = A.ORDER_NO), '') AS STORE_NAME
+			 , CASE WHEN B.ADD_DLVY_AMT_PYMNT_TYPE = 'P'
+			        THEN '선 결제'
+					WHEN B.ADD_DLVY_AMT_PYMNT_TYPE = 'S'
+					THEN '환불금액차감'
+					WHEN B.ADD_DLVY_AMT_PYMNT_TYPE = 'C'
+					THEN '무료배송쿠폰'
+					WHEN B.ADD_DLVY_AMT_PYMNT_TYPE = 'F'
+					THEN '배송비 무료'
+					END AS ADD_DLVY_AMT_PYMNT_TEXT
+			 , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY,
+						   ( SELECT PYMNT_AMT
+							   FROM OC_CLAIM_PAYMENT WITH (NOLOCK)
+							  WHERE CLM_NO = B.CLM_NO
+								AND REDEMP_RFND_GBN_TYPE	= 'E'
+								AND MMNY_PROC_TRGT_YN		= 'N'
+								AND HIST_GBN_TYPE			= 'P'
+								AND OCRNC_RSN_CODE			= '10003' ) 	
+			   ),1),'.00','')									AS DLVY_PYMNT_AMT -- 교환/반품 배송비	
+ 			 , CASE WHEN B.TOTAL_RFND_AMT = 0 THEN ''
+					ELSE REPLACE(CONVERT(VARCHAR, CONVERT( MONEY, B.TOTAL_RFND_AMT ),1),'.00','')
+					END AS REFUND_AMT	  -- 클레임 환불 금액
+			 , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY,
+						   ( SELECT SUM(PYMNT_AMT)
+							   FROM OC_CLAIM_PAYMENT WITH (NOLOCK)
+							  WHERE CLM_NO = B.CLM_NO
+								AND REDEMP_RFND_GBN_TYPE	= 'E'
+								AND MMNY_PROC_TRGT_YN		= 'Y'
+								AND HIST_GBN_TYPE			= 'P' )
+			   ),1),'.00','')									AS REDEMP_AMT	 -- 취소/교환/반품 클레임 환수정보(추가결제금액)	
+			 , CASE WHEN B.UN_PROC_YN = 'Y'
+					THEN '미처리'
+					WHEN B.UN_PROC_YN = 'N'
+					THEN '처리'
+					END AS UN_PROC_YN_TEXT
+			 , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY,
+						   ( SELECT PYMNT_AMT
+							   FROM OC_ORDER WITH (NOLOCK)
+							  WHERE ORDER_NO = B.ORDER_NO ) 				
+			   ),1),'.00','')									AS PYMNT_AMT 	-- 결제금액		
+			 , REPLACE(CONVERT(CHAR(19), A.RGST_DTM, 20),'-','.')	AS RGST_DTM
+			 , DBO.FN_CODE_VALUE('CLM_PRDT_STAT_CODE', A.CLM_PRDT_STAT_CODE) AS CLM_PRDT_STAT_CODE_NAME
+			 , REPLACE(CONVERT(CHAR(19), A.MOD_DTM, 20),'-','.')	AS MOD_DTM
+		  FROM OC_CLAIM_PRODUCT A WITH (NOLOCK)
+		  JOIN OC_CLAIM 		B WITH (NOLOCK)  ON A.CLM_NO    = B.CLM_NO
+		  JOIN PD_PRODUCT		C WITH (NOLOCK)  ON A.PRDT_NO	= C.PRDT_NO
+		  JOIN MB_MEMBER 		E WITH (NOLOCK)  ON B.MEMBER_NO = E.MEMBER_NO
+		  LEFT OUTER JOIN (
+				SELECT ORDER_NO
+					 , ORDER_PRDT_SEQ
+					 , ORDER_DLVY_HIST_SEQ
+					 , STOCK_GBN_CODE
+					 , DLVY_ID_TEXT
+					 , LOGIS_VNDR_CODE
+					 , WAYBIL_NO_TEXT
+					 , DLVY_PROC_DTM
+					 , DLVY_STAT_CODE
+					 , RANK( )OVER( PARTITION BY ORDER_NO, ORDER_PRDT_SEQ ORDER BY  ORDER_DLVY_HIST_SEQ  DESC ) AS RANK_SEQ 
+				  FROM OC_ORDER_DELIVERY_HISTORY WITH (NOLOCK)
+				 WHERE CLM_NO IS NULL
+			   ) D -- 주문기준 배송정보
+		    ON A.ORDER_NO = D.ORDER_NO
+		   AND A.ORDER_PRDT_SEQ = D.ORDER_PRDT_SEQ
+		   AND D.RANK_SEQ = 1
+		 WHERE B.CLM_NO IN 
+		   <foreach item="item" index="index" collection="clmNos" open="(" close=")" separator="," >
+				#{item, jdbcType=VARCHAR}
+		   </foreach>
+		   AND ISNULL(A.UP_CLM_PRDT_SEQ, '') = ''
+    	 ORDER BY A.CLM_NO DESC, A.CLM_PRDT_SEQ
+    	 
+	</select>
+	
+	<select id="selectClaimProductListForOrder" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct">
+		/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimProductDao.selectOrderClaimArr [ 주문 기준 클레임 접수 상품 조회 ]  */
+		SELECT A.CLM_NO
+			 , A.CLM_PRDT_SEQ
+			 , A.UP_CLM_PRDT_SEQ
+			 , A.ORDER_NO
+			 , A.ORDER_PRDT_SEQ
+			 , A.UP_ORDER_PRDT_SEQ
+			 , A.PRDT_NO
+			 , A.PRDT_OPTN_NO
+			 , A.PRDT_NAME
+			 , A.CLM_RSN_CODE
+			 , A.CLM_ETC_RSN_TEXT
+			 , A.CLM_QTY
+			 , A.CSTMR_ALERT_CONT_TEXT
+			 , A.CLM_PROC_TYPE_CODE
+			 , A.CLM_PROC_CONT_TEXT
+			 , A.LOGIS_VNDR_CODE
+			 , A.WAYBIL_NO_TEXT
+			 , A.CLM_IMPSBLT_RSN_CODE
+			 , A.CLM_IMPSBLT_CONT_TEXT
+			 , A.CLM_PRDT_STAT_CODE
+			 , A.RECPT_YN
+			 , B.CLM_GBN_CODE
+		  FROM OC_CLAIM_PRODUCT A WITH (NOLOCK)
+		  JOIN OC_CLAIM B WITH (NOLOCK)
+		    ON A.CLM_NO = B.CLM_NO
+		<where>
+			ISNULL( A.UP_CLM_PRDT_SEQ, '' ) = ''  -- 교환 (행이 아닌 회수상품 기준 열로 붙여서 가져옴)
+			<choose>
+				<when test="orderNos != null and orderNos !='' and orderNos.length > 0 ">
+					AND A.ORDER_NO IN
+					<foreach item="item" index="index" collection="orderNos" open="(" separator="," close=")">
+						#{item, jdbcType=VARCHAR}
+					</foreach>
+				</when>
+				<otherwise>
+					
+					<if test="orderNo != null and orderNo != ''"> 
+						AND A.ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+					</if>
+					<if test="orgOrderNo != null and orgOrderNo != ''"> 
+						AND A.ORG_ORDER_NO = #{orgOrderNo, jdbcType=VARCHAR}
+					</if>
+				</otherwise>
+			</choose>
+		</where>
+	</select>	
+	
+	<insert id="insertClaimProduct" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct">
+		/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimProductDao.insertClaimProduct [클레임 상품 저장] [KTH] */
+		<selectKey resultType="int" keyProperty="clmPrdtSeq" order="BEFORE">
+			SELECT ISNULL(MAX(CLM_PRDT_SEQ), 0) + 1
+			  FROM OC_CLAIM_PRODUCT WITH (NOLOCK)
+			 WHERE CLM_NO = #{clmNo, jdbcType=VARCHAR}
+		</selectKey>
+		INSERT INTO OC_CLAIM_PRODUCT
+			 (
+			   CLM_NO
+			 , CLM_PRDT_SEQ
+			<if test="upClmPrdtSeq != null and upClmPrdtSeq != ''">
+			 , UP_CLM_PRDT_SEQ
+			</if>
+			 , ORG_ORDER_NO
+			 , ORDER_NO
+			 , ORDER_PRDT_SEQ
+			 , UP_ORDER_PRDT_SEQ
+			 , PRDT_NO
+			 , PRDT_OPTN_NO
+			 , OPTN_NAME
+			 , ENG_PRDT_NAME
+			 , PRDT_NAME
+			 , PRDT_TYPE_CODE
+			 , STYLE_INFO
+			 , PRDT_COLOR_CODE
+			 , VNDR_NO
+			 , VNDR_NAME
+			 , VNDR_PRDT_NO_TEXT
+			 , BRAND_NO
+			 , CHNNL_NO
+			 , STD_CTGR_NO
+			 , CTGR_NO
+			 , EVENT_NO
+			 , PLNDP_NO
+			 , MMNY_PRDT_YN
+			 , EMP_DSCNT_YN
+			 , ORDER_MNFCT_YN
+			 , DPRC_EXCEPT_YN
+			 , FREE_DLVY_YN
+			 , ORDER_QTY
+			 , PRDT_NORMAL_AMT
+			 , PRDT_SELL_AMT
+			 , OPTN_ADD_AMT
+			 , SELL_AMT
+			 , EMP_DSCNT_RATE
+			 , EMP_AMT
+			 , TOTAL_DSCNT_AMT
+			 , CPN_DSCNT_AMT
+			 , ORDER_AMT
+			 , VNDR_CMSN_RATE
+			 , CLM_RSN_CODE
+			 , CLM_ETC_RSN_TEXT
+			 , CLM_QTY
+			 , CSTMR_ALERT_CONT_TEXT
+			<if test="clmProcTypeCode != null and clmProcTypeCode != ''"> 
+			 , CLM_PROC_TYPE_CODE
+			</if>
+			<if test="clmProcContText != null and clmProcContText != ''"> 
+			 , CLM_PROC_CONT_TEXT
+			</if>
+			 , LOGIS_VNDR_CODE
+			 , WAYBIL_NO_TEXT
+			 , CLM_IMPSBLT_RSN_CODE
+			 , CLM_IMPSBLT_CONT_TEXT
+			 , CLM_PRDT_STAT_CODE
+			 , CLM_CRT_ORDER_NO
+			 , RECPT_YN
+			 , RGSTER_NO
+			 , RGST_DTM
+			 , MODER_NO
+			 , MOD_DTM
+			 )
+		SELECT
+			   #{clmNo, jdbcType=VARCHAR}
+			 , #{clmPrdtSeq, jdbcType=INTEGER}
+			<if test="upClmPrdtSeq != null and upClmPrdtSeq != ''">
+			 , #{upClmPrdtSeq, jdbcType=INTEGER}
+			</if>
+			 , (
+				SELECT ORG_ORDER_NO
+				  FROM OC_ORDER WITH (NOLOCK)
+				 WHERE ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+			   )
+			 , ORDER_NO
+			 , ORDER_PRDT_SEQ
+			 , UP_ORDER_PRDT_SEQ
+			 , PRDT_NO
+			<choose>
+				<when test="changePrdtOptnNo != null and changePrdtOptnNo != ''">
+			 , #{changePrdtOptnNo, jdbcType=VARCHAR}
+			 , #{changeOptnName, jdbcType=VARCHAR}
+				</when>
+				<otherwise>
+			 , PRDT_OPTN_NO
+			 , OPTN_NAME
+				</otherwise>
+			</choose>
+			 , ENG_PRDT_NAME
+			 , PRDT_NAME
+			 , PRDT_TYPE_CODE
+			 , STYLE_INFO
+			 , PRDT_COLOR_CODE
+			 , VNDR_NO
+			 , VNDR_NAME
+			 , VNDR_PRDT_NO_TEXT
+			 , BRAND_NO
+			 , CHNNL_NO
+			 , STD_CTGR_NO
+			 , CTGR_NO
+			 , EVENT_NO
+			 , PLNDP_NO
+			 , MMNY_PRDT_YN
+			 , EMP_DSCNT_YN
+			 , ORDER_MNFCT_YN
+			 , DPRC_EXCEPT_YN
+			 , FREE_DLVY_YN
+			 , ORDER_QTY
+			 , PRDT_NORMAL_AMT
+			 , PRDT_SELL_AMT
+			 , OPTN_ADD_AMT
+			 , SELL_AMT
+			 , EMP_DSCNT_RATE
+			 , EMP_AMT
+			 , TOTAL_DSCNT_AMT
+			 , CPN_DSCNT_AMT
+			 , ORDER_AMT
+			 , VNDR_CMSN_RATE
+			 , #{clmRsnCode, jdbcType=VARCHAR}			-- 클레임사유코드
+			 , #{clmEtcRsnText, jdbcType=VARCHAR}		-- 클레임기타사유
+			 , 1										-- 클레임수량
+			 , #{cstmrAlertContText, jdbcType=VARCHAR}	-- 고객알림내용
+			<if test="clmProcTypeCode != null and clmProcTypeCode != ''"> 
+			 , #{clmProcTypeCode, jdbcType=VARCHAR}		-- 클레임처리유형코드
+			</if>
+			<if test="clmProcContText != null and clmProcContText != ''"> 
+			 , #{clmProcContText, jdbcType=VARCHAR}		-- 클레임처리내용
+			</if>
+			 , NULL										-- 택배사코드
+			 , NULL										-- 송장번호
+			 , NULL										-- 클레임불가사유코드
+			 , NULL										-- 클레임불가내용
+			 , #{clmPrdtStatCode, jdbcType=VARCHAR}		-- 클레임상품상태코드
+			 , NULL
+			 , 'N'										-- 수령여부
+			 , #{rgsterNo, jdbcType=VARCHAR}
+			 , GETDATE()
+			 , #{moderNo, jdbcType=VARCHAR}
+			 , GETDATE()
+		  FROM OC_ORDER_PRODUCT A WITH (NOLOCK)
+		 WHERE A.ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+		   AND A.ORDER_PRDT_SEQ = #{orderPrdtSeq, jdbcType=INTEGER}
+	</insert>
+	
+	<update id="updateClaimProductImpossible" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct">
+		/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimProductDao.updateClaimProductImpossible [ 클레임 불가 처리에 따른 업데이트 ] [ 이강수 ] */
+		UPDATE OC_CLAIM_PRODUCT
+		   SET CLM_IMPSBLT_RSN_CODE = #{clmImpsbltRsnCode, jdbcType=VARCHAR}
+			<if test='clmImpsbltContText != null'>
+		     , CLM_IMPSBLT_CONT_TEXT = #{clmImpsbltContText, jdbcType=VARCHAR}
+		    </if>
+			 , LOGIS_VNDR_CODE = #{logisVndrCode, jdbcType=VARCHAR}
+			 , WAYBIL_NO_TEXT = #{waybilNoText, jdbcType=VARCHAR}
+			 , CLM_PRDT_STAT_CODE = #{clmPrdtStatCode, jdbcType=VARCHAR}
+			 , MODER_NO = #{moderNo, jdbcType=VARCHAR}
+			 , MOD_DTM = GETDATE()
+		 WHERE CLM_NO = #{clmNo, jdbcType=VARCHAR}
+		   AND CLM_PRDT_SEQ = #{clmPrdtSeq, jdbcType=INTEGER};
+	</update>
+	
+	<select id="selectClaimProductDetail" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct">
+		/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimProductDao.selectClaimProductDetail [ 클레임상품 상세 조회 ] [ 이강수 ] */
+		SELECT A.CLM_NO
+			 , A.CLM_PRDT_SEQ
+			 , A.UP_CLM_PRDT_SEQ
+			 , A.ORG_ORDER_NO
+			 , A.ORDER_NO
+			 , A.ORDER_PRDT_SEQ
+			 , A.UP_ORDER_PRDT_SEQ
+			 , A.PRDT_NO
+			 , A.PRDT_OPTN_NO
+			 , A.PRDT_NAME
+			 , A.ENG_PRDT_NAME
+			 , A.OPTN_NAME
+			 , A.PRDT_TYPE_CODE
+			 , A.STYLE_INFO
+			 , A.PRDT_COLOR_CODE
+			 , A.VNDR_NO
+			 , A.VNDR_NAME
+			 , A.VNDR_PRDT_NO_TEXT
+			 , A.BRAND_NO
+			 , A.CHNNL_NO
+			 , A.STD_CTGR_NO
+			 , A.CTGR_NO
+			 , A.EVENT_NO
+			 , A.PLNDP_NO
+			 , A.MMNY_PRDT_YN
+			 , A.EMP_DSCNT_YN
+			 , A.ORDER_MNFCT_YN
+			 , A.DPRC_EXCEPT_YN
+			 , A.FREE_DLVY_YN
+			 , A.ORDER_QTY
+			 , A.PRDT_NORMAL_AMT
+			 , A.PRDT_SELL_AMT
+			 , A.OPTN_ADD_AMT
+			 , A.SELL_AMT
+			 , A.EMP_DSCNT_RATE
+			 , A.EMP_AMT
+			 , A.TOTAL_DSCNT_AMT
+			 , A.CPN_DSCNT_AMT
+			 , A.ORDER_AMT
+			 , A.VNDR_CMSN_RATE
+			 , A.CLM_RSN_CODE
+			 , A.CLM_ETC_RSN_TEXT
+			 , A.CLM_QTY
+			 , A.CSTMR_ALERT_CONT_TEXT
+			 , A.CLM_PROC_TYPE_CODE
+			 , A.CLM_PROC_CONT_TEXT
+			 , A.LOGIS_VNDR_CODE
+			 , A.WAYBIL_NO_TEXT
+			 , A.CLM_IMPSBLT_RSN_CODE
+			 , A.CLM_IMPSBLT_CONT_TEXT
+			 , A.CLM_PRDT_STAT_CODE
+			 , A.CLM_CRT_ORDER_NO
+			 , A.RECPT_YN
+			 , A.RGSTER_NO
+			 , A.RGST_DTM
+			 , A.MODER_NO
+			 , A.MOD_DTM
+			 , DBO.FN_CODE_VALUE('CLM_IMPSBLT_RSN_CODE', A.CLM_IMPSBLT_RSN_CODE) AS CLM_IMPSBLT_RSN_TEXT
+			 , DBO.FN_CODE_VALUE('LOGIS_VNDR_CODE', A.LOGIS_VNDR_CODE) AS LOGIS_VNDR_CODE_NAME
+			 , B.PRDT_RLTN_FILE_SEQ
+			 , B.IMAGE_URL
+			 , B.ALTRN_TEXT
+			 , C.CLM_GBN_CODE
+			 , C.SITE_NO
+			 , (SELECT BRAND_NAME
+				  FROM DP_BRAND WITH (NOLOCK)
+			     WHERE BRAND_NO = A.BRAND_NO) AS BRAND_NAME
+		  FROM OC_CLAIM_PRODUCT A WITH (NOLOCK)
+		  LEFT OUTER JOIN PD_PRODUCT_RELATION_FILE B WITH (NOLOCK)
+			ON A.PRDT_NO = B.PRDT_NO
+		   AND B.PRDT_RLTN_FILE_SEQ = #{prdtRltnFileSeq, jdbcType=INTEGER}
+		  JOIN OC_CLAIM C WITH (NOLOCK)
+			ON A.CLM_NO = C.CLM_NO
+		 WHERE A.CLM_NO	= #{clmNo, jdbcType=VARCHAR}
+		   AND A.CLM_PRDT_SEQ = #{clmPrdtSeq, jdbcType=INTEGER};
+	</select>
+
+	<update id="updateClaimProductStatCode" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct">
+	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimProductDao.updateClaimProductStatCode [클레임상품 상태코드 업데이트] [KTH] */
+		UPDATE OC_CLAIM_PRODUCT
+		   SET MODER_NO 			= #{moderNo, jdbcType=VARCHAR}
+			 , MOD_DTM 				= GETDATE()
+			 , CLM_PRDT_STAT_CODE 	= #{clmPrdtStatCode, jdbcType=VARCHAR}
+		 WHERE CLM_NO 				= #{clmNo, jdbcType=VARCHAR}
+		<if test="clmPrdtSeq != null and clmPrdtSeq != ''"> 
+		   AND CLM_PRDT_SEQ 		= #{clmPrdtSeq, jdbcType=INTEGER}
+		</if>
+		<if test="clmPrdtStatCodeCondition != null and clmPrdtStatCodeCondition != ''"> 
+		   AND CLM_PRDT_STAT_CODE 	= #{clmPrdtStatCodeCondition, jdbcType=VARCHAR} -- 클레임상품상태코드 조건
+		</if>
+	</update>
+	
+	<update id="updateClmChangeOptn" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct">
+	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimProductDao.updateClmChangeOptn [교환대상 상품 수정] [KTH] */
+		UPDATE OC_CLAIM_PRODUCT
+		<set>
+				MOD_DTM 			= GETDATE()
+			  , MODER_NO 			= #{moderNo, jdbcType=VARCHAR}
+			  , CLM_RSN_CODE 		= #{clmRsnCode, jdbcType=VARCHAR}
+			  , CLM_ETC_RSN_TEXT	= #{clmEtcRsnText, jdbcType=VARCHAR}
+			  , PRDT_OPTN_NO		= #{prdtOptnNo, jdbcType=VARCHAR}
+			  , OPTN_NAME			= #{optnName, jdbcType=VARCHAR}
+		</set>
+		 WHERE CLM_NO 			= #{clmNo, jdbcType=VARCHAR} 
+		   AND UP_CLM_PRDT_SEQ 	= #{clmPrdtSeq, jdbcType=INTEGER}
+	</update>
+	
+	
+	<select id="selectMultiBuyPromoInfoList" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct" resultType="kr.co.abcmart.bo.promotion.model.master.PrPromotionMultiBuyDiscount">
+		/*+ kr.co.abcmart.bo.order.repository.master.OcClaimProductDao.selectMultiBuyPromoInfoList [클레임상품에 적용된 다족구매 프로모션 정보 조회] [KTH] */  
+		SELECT A.PROMO_NO
+			 , A.MULTI_BUY_DSCNT_SEQ
+			 , A.BUY_QTY
+			 , A.DSCNT_RATE
+		  FROM PR_PROMOTION_MULTI_BUY_DISCOUNT A WITH (NOLOCK)
+		 WHERE PROMO_NO = (
+				SELECT TOP(1) D.PROMO_NO
+				  FROM OC_ORDER A WITH (NOLOCK)
+				  JOIN OC_ORDER_PRODUCT B WITH (NOLOCK)
+				    ON A.ORDER_NO = B.ORDER_NO
+				  JOIN OC_CLAIM_PRODUCT C WITH (NOLOCK)
+				    ON B.ORDER_NO = C.ORDER_NO
+				   AND B.ORDER_PRDT_SEQ = C.ORDER_PRDT_SEQ
+				  JOIN OC_ORDER_PRODUCT_APPLY_PROMOTION D WITH (NOLOCK)
+				    ON B.ORDER_NO = D.ORDER_NO
+				   AND B.ORDER_PRDT_SEQ = D.ORDER_PRDT_SEQ
+				 WHERE A.ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+				   AND C.CLM_NO = #{clmNo, jdbcType=VARCHAR}
+				   AND D.PROMO_TYPE_CODE = #{promoTypeCode, jdbcType=VARCHAR}
+			   )
+    </select>
+    
+    <select id="selectOrderMultiBuyPromoCheckList" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct" resultType="kr.co.abcmart.bo.claim.vo.OcClaimPromoVO">
+		/*+ kr.co.abcmart.bo.order.repository.master.OcClaimProductDao.selectOrderMultiBuyPromoCheckList [원 주문에 걸린 다족구매 프로모션 현황 조회(현재 클레임 포함)] [KTH] */  
+		SELECT B.ORDER_NO
+			 , B.ORDER_PRDT_SEQ
+			 , A.ORG_ORDER_NO
+			 , B.PRDT_NORMAL_AMT
+			 , B.PRDT_SELL_AMT
+			 , B.OPTN_ADD_AMT
+			 , B.SELL_AMT
+			 , B.TOTAL_DSCNT_AMT
+			 , B.CPN_DSCNT_AMT
+			 , B.ORDER_AMT
+			 , B.MMNY_PRDT_YN
+			 , B.VNDR_NO
+			 , C.CLM_NO AS NOW_CLM_NO
+			 , C.CLM_PRDT_SEQ AS NOW_CLM_PRDT_SEQ
+			 , D.DSCNT_TYPE
+			 , D.DSCNT_VALUE
+			 , D.DSCNT_AMT
+			 , D.PROMO_NO
+			 , D.APPLY_PROMO_SEQ
+			 , D.CHNG_DSCNT_VALUE
+			 , D.CHNG_DSCNT_AMT
+			 , D.CLM_NO
+			 , E.CLM_NO AS CANCELED_CLM_NO
+		  FROM OC_ORDER A WITH (NOLOCK)
+		  JOIN OC_ORDER_PRODUCT B WITH (NOLOCK)
+		    ON A.ORDER_NO = B.ORDER_NO
+		  LEFT OUTER JOIN OC_CLAIM_PRODUCT C WITH (NOLOCK)
+		    ON B.ORDER_NO = C.ORDER_NO
+		   AND B.ORDER_PRDT_SEQ = C.ORDER_PRDT_SEQ
+		  JOIN OC_ORDER_PRODUCT_APPLY_PROMOTION D WITH (NOLOCK)
+		    ON B.ORDER_NO = D.ORDER_NO
+		   AND B.ORDER_PRDT_SEQ = D.ORDER_PRDT_SEQ
+		  LEFT OUTER JOIN (
+				SELECT ORDER_NO
+				     , ORG_ORDER_NO
+				     , ORDER_PRDT_SEQ
+					 , CLM_NO
+					 , CLM_PRDT_SEQ
+				  FROM OC_CLAIM_PRODUCT WITH (NOLOCK)
+				 WHERE CLM_PRDT_STAT_CODE IN 
+			 <foreach item="item" index="index" collection="clmPrdtStatCodes" open="(" close=")" separator="," >
+			 	 #{item}
+			 </foreach>
+		       ) E
+		    ON B.ORDER_NO = E.ORG_ORDER_NO
+		   AND B.ORDER_PRDT_SEQ = E.ORDER_PRDT_SEQ
+		 WHERE A.ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+		   AND D.PROMO_TYPE_CODE = #{promoTypeCode, jdbcType=VARCHAR}
+    </select>
+    
+    <select id="selectClaimProductListBackend" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaim" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct">
+    	/*+ kr.co.abcmart.bo.order.repository.master.OcClaimProductDao.selectClaimProductListBackend [클레임 상품 목록 조회 - backend] [이강수] */ 
+    	
+		  SELECT A.CLM_NO
+			   , A.CLM_PRDT_SEQ
+			   , A.ORG_ORDER_NO
+			   , A.ORDER_NO
+			   , A.ORDER_PRDT_SEQ
+			   , A.UP_ORDER_PRDT_SEQ
+			   , A.PRDT_NO
+			   , A.PRDT_OPTN_NO
+			   , A.PRDT_TYPE_CODE
+			   , A.VNDR_NO
+			   , A.CHNNL_NO
+			   , A.CTGR_NO
+			   , A.VNDR_PRDT_NO_TEXT
+			   , A.MMNY_PRDT_YN
+			   , A.PRDT_NAME
+			   , DBO.FN_CODE_VALUE('PRDT_COLOR_CODE', A.PRDT_COLOR_CODE)		AS PRDT_COLOR_CODE_NAME
+			   , A.OPTN_NAME
+			   , A.ORDER_AMT
+			   , A.PRDT_NORMAL_AMT
+			   , A.SELL_AMT
+			   , A.OPTN_ADD_AMT
+			   , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY, A.ORDER_AMT ),1),'.00','') AS STR_ORDER_AMT
+			   , A.VNDR_NAME
+			   , A.CLM_RSN_CODE
+			   , DBO.FN_CODE_VALUE('CLM_RSN_CODE', A.CLM_RSN_CODE)				AS CLM_RSN_CODE_NAME
+			   , A.CLM_ETC_RSN_TEXT
+			   , A.CLM_PRDT_STAT_CODE
+			   , DBO.FN_CODE_VALUE('CLM_PRDT_STAT_CODE', A.CLM_PRDT_STAT_CODE)			AS CLM_PRDT_STAT_CODE_NAME
+			   , ( SELECT ADD_INFO2 
+			         FROM SY_CODE_DETAIL WITH (NOLOCK)
+					WHERE CODE_FIELD  = 'CLM_PRDT_STAT_CODE'
+					  AND CODE_DTL_NO = A.CLM_PRDT_STAT_CODE ) 					AS CLM_PRDT_STAT_CODE_ADD_INFO2
+			   , (SELECT PRDT_NAME
+					FROM OC_CLAIM_PRODUCT WITH (NOLOCK)
+				   WHERE CLM_NO				= A.CLM_NO
+				     AND UP_ORDER_PRDT_SEQ	= A.ORDER_PRDT_SEQ )				AS GIFT_NAME -- 사은품 명
+			   , A.CLM_PROC_TYPE_CODE
+			   , A.CLM_PROC_CONT_TEXT
+			   , DBO.FN_CODE_VALUE('CLM_PROC_TYPE_CODE', A.CLM_PROC_TYPE_CODE)	AS CLM_PROC_TYPE_CODE_NAME
+			   , A.CSTMR_ALERT_CONT_TEXT	-- 고객알림내용
+			   , CASE
+			     WHEN MMNY_PRDT_YN = 'Y'
+			     THEN (
+			     		SELECT ISNULL(SUM(ORDER_AMT), 0)
+			     		  FROM OC_CLAIM_PRODUCT
+			     		 WHERE CLM_NO = #{clmNo, jdbcType=VARCHAR}
+			     		   AND MMNY_PRDT_YN = 'Y'
+			     		   AND PRDT_TYPE_CODE = #{prdtTypeCode, jdbcType=VARCHAR}
+			          )
+			     ELSE (
+			     		SELECT ISNULL(SUM(ORDER_AMT), 0)
+			     		  FROM OC_CLAIM_PRODUCT
+			     		 WHERE CLM_NO = #{clmNo, jdbcType=VARCHAR}
+			     		   AND VNDR_NO = A.VNDR_NO
+			     		   AND PRDT_TYPE_CODE = #{prdtTypeCode, jdbcType=VARCHAR}
+			          )
+			     END AS REFUND_DLVY_AMT
+			   , CASE
+			     WHEN A.MMNY_PRDT_YN = 'Y'
+				 THEN ISNULL((
+						SELECT ORDER_AMT
+						  FROM OC_ORDER_PRODUCT WITH (NOLOCK)
+						 WHERE MMNY_PRDT_YN = 'Y'
+						   AND ORDER_NO = A.ORDER_NO
+						   AND PRDT_TYPE_CODE = #{prdtTypeCode, jdbcType=VARCHAR}
+					  ), 0)
+			     ELSE ISNULL((
+						SELECT ORDER_AMT
+						  FROM OC_ORDER_PRODUCT WITH (NOLOCK)
+						 WHERE VNDR_NO = A.VNDR_NO
+						   AND ORDER_NO = A.ORDER_NO
+						   AND PRDT_TYPE_CODE = #{prdtTypeCode, jdbcType=VARCHAR}
+					  ), 0)
+				 END AS VNDR_ORDER_DLVY_AMT
+			   , B.CLM_DTM
+			   , B.SITE_NO
+	   		   , (SELECT BRAND_NAME
+				  	FROM DP_BRAND WITH (NOLOCK)
+			       WHERE BRAND_NO = A.BRAND_NO) AS BRAND_NAME
+			   , E.PRDT_OPTN_NO 				AS CHANGE_PRDT_OPTN_NO -- 재배송상품 옵션번호
+			   , E.OPTN_NAME 					AS CHANGE_OPTN_NAME -- 재배송상품 옵션명
+			   , E.LOGIS_VNDR_CODE 				AS CHANGE_LOGIS_VNDR_CODE -- 재배송상품 택배사코드
+			   , E.LOGIS_VNDR_CODE_NAME 		AS CHANGE_LOGIS_VNDR_CODE_NAME -- 재배송상품 택배사코드명
+			   , E.LOGIS_VNDR_CODE_ADD_INFO 	AS CHANGE_LOGIS_VNDR_CODE_ADD_INFO -- 재배송상품 택배사코드 addInfo FN_CODE_ADDINFO
+			   , E.WAYBIL_NO_TEXT 				AS CHANGE_WAYBIL_NO_TEXT -- 재배송상품 운송장번호
+			   , E.DLVY_STAT_CODE_NAME 			AS CHANGE_DLVY_STAT_CODE_NAME -- 재배송상품 배송상태
+			   , E.CLM_PRDT_STAT_CODE 			AS CHANGE_CLM_PRDT_STAT_CODE -- 재배송상품 상태코드
+			   ----------- S : 교환/반품 배송 관련 칼럼 ------------------------------------------------
+			   , DBO.FN_CODE_VALUE('LOGIS_VNDR_CODE', A.LOGIS_VNDR_CODE)		AS LOGIS_VNDR_CODE_NAME
+			   , A.WAYBIL_NO_TEXT
+			   , DBO.FN_CODE_VALUE('DLVY_STAT_CODE', (SELECT DLVY_STAT_CODE
+														FROM OC_ORDER_DELIVERY_HISTORY WITH (NOLOCK)
+													   WHERE CLM_NO			= A.CLM_NO
+														 AND CLM_PRDT_SEQ	= A.CLM_PRDT_SEQ))	AS DLVY_STAT_CODE_NAME
+			   ----------- E : 교환/반품 배송 관련 칼럼 ------------------------------------------------
+			   --------- S : 상품관련파일 --------------------
+			   , D.IMAGE_PATH_TEXT
+			   , D.IMAGE_URL
+			   , D.ALTRN_TEXT
+			   --------- E : 상품관련파일 --------------------		
+		    FROM OC_CLAIM_PRODUCT						A WITH (NOLOCK)
+			JOIN OC_CLAIM								B WITH (NOLOCK) ON A.CLM_NO		= B.CLM_NO
+			LEFT OUTER JOIN PD_PRODUCT_RELATION_FILE    D WITH (NOLOCK)
+			  ON A.PRDT_NO = D.PRDT_NO
+		     AND D.PRDT_RLTN_FILE_SEQ = #{prdtRltnFileSeq, jdbcType=INTEGER}
+			LEFT OUTER JOIN ( -- 재배송상품 정보
+					SELECT OCP.CLM_NO
+						 , OCP.CLM_PRDT_SEQ
+						 , OCP.UP_CLM_PRDT_SEQ
+					     , OCP.PRDT_OPTN_NO
+						 , OCP.OPTN_NAME
+						 , OCP.CLM_PRDT_STAT_CODE
+						 , OCP.LOGIS_VNDR_CODE
+						 , DBO.FN_CODE_VALUE('LOGIS_VNDR_CODE', OCP.LOGIS_VNDR_CODE) AS LOGIS_VNDR_CODE_NAME  
+						 , DBO.FN_CODE_ADDINFO('LOGIS_VNDR_CODE', OCP.LOGIS_VNDR_CODE, 1) AS LOGIS_VNDR_CODE_ADD_INFO
+						 , OCP.WAYBIL_NO_TEXT
+						 , DBO.FN_CODE_VALUE('DLVY_STAT_CODE', (SELECT DLVY_STAT_CODE
+																  FROM OC_ORDER_DELIVERY_HISTORY WITH (NOLOCK)
+															     WHERE CLM_NO		= OCP.CLM_NO
+																   AND CLM_PRDT_SEQ	= OCP.CLM_PRDT_SEQ
+																   AND ORDER_DLVY_HIST_SEQ = (
+																				 SELECT MAX(Z.ORDER_DLVY_HIST_SEQ)
+																				   FROM OC_ORDER_DELIVERY_HISTORY Z
+																				  WHERE Z.CLM_NO		= OCP.CLM_NO
+																					AND Z.CLM_PRDT_SEQ	= OCP.CLM_PRDT_SEQ
+																							  )
+																)
+											)	AS DLVY_STAT_CODE_NAME
+					  FROM OC_CLAIM_PRODUCT OCP WITH (NOLOCK)
+			     ) E
+			  ON A.CLM_NO		= E.CLM_NO
+			 AND A.CLM_PRDT_SEQ	= E.UP_CLM_PRDT_SEQ
+		   WHERE B.CLM_NO = #{clmNo, jdbcType=VARCHAR}
+		     AND ISNULL( A.UP_CLM_PRDT_SEQ, '' ) = '' 	-- 교환배송 상품 제외(행이 아닌 회수상품 기준 열로 붙여서 가져옴)
+		<if test='prdtTypeCodeList != null'>
+			 AND A.PRDT_TYPE_CODE NOT IN				-- 사은품, 배송비 제외
+			 <foreach item="item" index="index" collection="prdtTypeCodeList" open="(" close=")" separator="," >
+			 	 #{item}
+			 </foreach>
+		</if>
+    	ORDER BY A.CLM_PRDT_SEQ
+    	
+    </select>
+    
+    <select id="selectOrgClaimProductList" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct">
+	/*+ kr.co.abcmart.bo.order.repository.master.OcClaimProductDao.selectOrgClaimProductList [원 주문 클레임 상품 목록 조회 쿼리] [KTH] */
+		SELECT A.CLM_NO
+			 , A.CLM_PRDT_SEQ
+			 , A.UP_CLM_PRDT_SEQ
+			 , A.ORG_ORDER_NO
+			 , A.ORDER_NO
+			 , A.ORDER_PRDT_SEQ
+			 , A.UP_ORDER_PRDT_SEQ
+			 , A.PRDT_NO
+			 , A.PRDT_OPTN_NO
+			 , A.PRDT_NAME
+			 , A.ENG_PRDT_NAME
+			 , A.OPTN_NAME
+			 , A.PRDT_TYPE_CODE
+			 , A.STYLE_INFO
+			 , A.PRDT_COLOR_CODE
+			 , A.VNDR_NO
+			 , A.VNDR_NAME
+			 , A.VNDR_PRDT_NO_TEXT
+			 , A.BRAND_NO
+			 , A.CHNNL_NO
+			 , A.STD_CTGR_NO
+			 , A.CTGR_NO
+			 , A.EVENT_NO
+			 , A.PLNDP_NO
+			 , A.MMNY_PRDT_YN
+			 , A.EMP_DSCNT_YN
+			 , A.ORDER_MNFCT_YN
+			 , A.DPRC_EXCEPT_YN
+			 , A.FREE_DLVY_YN
+			 , A.ORDER_QTY
+			 , A.PRDT_NORMAL_AMT
+			 , A.PRDT_SELL_AMT
+			 , A.OPTN_ADD_AMT
+			 , A.SELL_AMT
+			 , A.EMP_DSCNT_RATE
+			 , A.EMP_AMT
+			 , A.TOTAL_DSCNT_AMT
+			 , A.CPN_DSCNT_AMT
+			 , A.ORDER_AMT
+			 , A.VNDR_CMSN_RATE
+			 , A.CLM_RSN_CODE
+			 , ( SELECT ADD_INFO2 
+		           FROM SY_CODE_DETAIL WITH (NOLOCK)
+				  WHERE CODE_FIELD  = 'CLM_RSN_CODE'
+				    AND CODE_DTL_NO = A.CLM_RSN_CODE ) 	AS CLM_RSN_CODE_ADD_INFO2
+			 , A.CLM_ETC_RSN_TEXT
+			 , A.CLM_QTY
+			 , A.CSTMR_ALERT_CONT_TEXT
+			 , A.CLM_PROC_TYPE_CODE
+			 , A.CLM_PROC_CONT_TEXT
+			 , A.LOGIS_VNDR_CODE
+			 , A.WAYBIL_NO_TEXT
+			 , A.CLM_IMPSBLT_RSN_CODE
+			 , A.CLM_IMPSBLT_CONT_TEXT
+			 , A.CLM_PRDT_STAT_CODE
+			 , A.CLM_CRT_ORDER_NO
+			 , A.RECPT_YN
+			 , A.RGSTER_NO
+			 , A.RGST_DTM
+			 , A.MODER_NO
+			 , A.MOD_DTM
+			 , DBO.FN_CODE_VALUE('CLM_PRDT_STAT_CODE', A.CLM_PRDT_STAT_CODE) AS CLM_PRDT_STAT_CODE_NAME
+			 , B.BUY_POINT_SAVE_RATE
+		     , C.ORDER_PRDT_SEQ AS ORDER_GIFT_PRDT_SEQ
+		     , C.PRDT_NAME AS GIFT_PRDT_NAME
+		     , D.STOCK_GBN_CODE
+		     , D.WAYBIL_NO_TEXT AS DELIVERY_WAYBIL_NO_TEXT
+		     , DBO.FN_CODE_VALUE( 'STOCK_GBN_CODE' , D.STOCK_GBN_CODE ) AS STOCK_GBN_CODE_NAME
+		     , DBO.FN_CODE_VALUE( 'DLVY_STAT_CODE' , D.DLVY_STAT_CODE ) AS DLVY_STAT_CODE_NAME
+		     , DBO.FN_CODE_VALUE( 'LOGIS_VNDR_CODE' , D.LOGIS_VNDR_CODE ) AS LOGIS_VNDR_CODE_NAME
+		     , E.CLM_GBN_CODE
+			 , F.CLM_PRDT_SEQ AS CHANGE_CLM_PRDT_SEQ -- 재배송상품 클레임상품순번
+			 , F.PRDT_OPTN_NO AS CHANGE_PRDT_OPTN_NO -- 재배송상품 옵션번호
+			 , F.OPTN_NAME AS CHANGE_OPTN_NAME -- 재배송상품 옵션명
+			 , F.LOGIS_VNDR_CODE AS CHANGE_LOGIS_VNDR_CODE -- 재배송상품 택배사코드
+			 , F.LOGIS_VNDR_CODE_NAME AS CHANGE_LOGIS_VNDR_CODE_NAME -- 재배송상품 택배사코드명
+			 , F.WAYBIL_NO_TEXT AS CHANGE_WAYBIL_NO_TEXT -- 재배송상품 운송장번호
+			 , F.DLVY_DSCNTC_YN AS CHANGE_DLVY_DSCNTC_YN -- 재배송상품 배송중단여부
+			 , F.DLVY_STAT_CODE_NAME AS CHANGE_DLVY_STAT_CODE_NAME -- 재배송상품 배송상태
+			 , F.CLM_PRDT_STAT_CODE AS CHANGE_CLM_PRDT_STAT_CODE -- 재배송상품 상태코드
+			 , (SELECT DLVY_TYPE_CODE FROM OC_ORDER WITH (NOLOCK) WHERE ORDER_NO = A.ORG_ORDER_NO) AS DLVY_TYPE_CODE
+			 , G.FREE_DLVY_STDR_AMT
+			 , G.DLVY_AMT AS STDR_DLVY_AMT
+		  FROM OC_CLAIM_PRODUCT A WITH (NOLOCK)
+		  JOIN OC_ORDER_PRODUCT B WITH (NOLOCK)
+		    ON A.ORDER_NO = B.ORDER_NO
+		   AND A.ORDER_PRDT_SEQ = B.ORDER_PRDT_SEQ
+		  LEFT OUTER JOIN (
+				 SELECT ORDER_NO
+					  , UP_ORDER_PRDT_SEQ
+					  , ORDER_PRDT_SEQ
+					  , PRDT_NO
+					  , PRDT_OPTN_NO
+					  , PRDT_NAME
+					  , ENG_PRDT_NAME
+					  , OPTN_NAME
+					  , PRDT_TYPE_CODE
+					  , STYLE_INFO
+					  , PRDT_COLOR_CODE
+				   FROM OC_ORDER_PRODUCT WITH (NOLOCK) 
+				  WHERE PRDT_TYPE_CODE = #{prdtTypeCodeGift, jdbcType=VARCHAR}
+			   ) C --사은품(본상품에 컬럼으로 추가)
+			ON B.ORDER_NO = C.ORDER_NO
+		   AND B.ORDER_PRDT_SEQ = C.UP_ORDER_PRDT_SEQ 
+		  LEFT OUTER JOIN (
+				SELECT ORDER_NO
+					 , ORDER_PRDT_SEQ
+					 , ORDER_DLVY_HIST_SEQ
+					 , STOCK_GBN_CODE
+					 , DLVY_ID_TEXT
+					 , LOGIS_VNDR_CODE
+					 , WAYBIL_NO_TEXT
+					 , DLVY_PROC_DTM
+					 , DLVY_STAT_CODE
+					 , RANK( )OVER( PARTITION BY ORDER_NO, ORDER_PRDT_SEQ ORDER BY  ORDER_DLVY_HIST_SEQ  DESC ) AS RANK_SEQ 
+				  FROM OC_ORDER_DELIVERY_HISTORY WITH (NOLOCK)
+				 WHERE CLM_NO IS NULL
+			   ) D -- 주문기준 배송정보
+		    ON B.ORDER_NO = D.ORDER_NO
+		   AND B.ORDER_PRDT_SEQ = D.ORDER_PRDT_SEQ
+		   AND D.RANK_SEQ = 1
+		  JOIN OC_CLAIM E
+		    ON A.CLM_NO = E.CLM_NO
+		  LEFT OUTER JOIN ( -- 재배송상품 정보
+					SELECT OCP.CLM_NO
+						 , OCP.CLM_PRDT_SEQ
+						 , OCP.UP_CLM_PRDT_SEQ
+					     , OCP.PRDT_OPTN_NO
+						 , OCP.OPTN_NAME
+						 , OCP.CLM_PRDT_STAT_CODE
+						 , OCP.LOGIS_VNDR_CODE
+						 , DBO.FN_CODE_VALUE('LOGIS_VNDR_CODE', OCP.LOGIS_VNDR_CODE) AS LOGIS_VNDR_CODE_NAME
+						 , OCP.WAYBIL_NO_TEXT
+						 , ODH.DLVY_DSCNTC_YN
+						 , DBO.FN_CODE_VALUE('DLVY_STAT_CODE', ODH.DLVY_STAT_CODE) AS DLVY_STAT_CODE_NAME
+						 , RANK( )OVER( PARTITION BY ODH.CLM_NO, ODH.CLM_PRDT_SEQ ORDER BY ODH.ORDER_DLVY_HIST_SEQ DESC ) AS RANK_SEQ
+						 -- 2020.04.24 : 교환재배송상품을 주문상세에서 중단 후 재배송 계속하는 경우를 고려하여 추가					  
+					  FROM OC_CLAIM_PRODUCT OCP WITH (NOLOCK)
+					  LEFT OUTER JOIN OC_ORDER_DELIVERY_HISTORY ODH WITH (NOLOCK)
+					    ON OCP.CLM_NO = ODH.CLM_NO
+					   AND OCP.CLM_PRDT_SEQ = ODH.CLM_PRDT_SEQ
+			   ) F
+            ON A.CLM_NO			= F.CLM_NO
+		   AND A.CLM_PRDT_SEQ	= F.UP_CLM_PRDT_SEQ
+		   AND F.RANK_SEQ 		= 1 -- 2020.04.24 : 교환재배송상품을 주문상세에서 중단 후 재배송 계속하는 경우를 고려하여 추가
+		  LEFT OUTER JOIN VD_VENDOR G
+		    ON A.VNDR_NO = G.VNDR_NO
+		<where>
+		   AND (A.UP_CLM_PRDT_SEQ IS NULL OR A.UP_CLM_PRDT_SEQ = '')
+			<if test="orgOrderNo != null"> 
+				AND A.ORG_ORDER_NO = #{orgOrderNo, jdbcType=VARCHAR}
+			</if>
+			<if test="clmNo != null"> 
+				AND A.CLM_NO = #{clmNo, jdbcType=VARCHAR}
+			</if>
+			<if test="clmPrdtSeq != null"> 
+				AND A.CLM_PRDT_SEQ = #{clmPrdtSeq, jdbcType=INTEGER}
+			</if>
+		</where>
+	</select>
+	
+	<select id="selectClmPrdtRsnCodeGroup" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct">
+	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimProductDao.selectClmPrdtRsnCodeGroup [클레임 상품 사유코드 그룹목록 조회 쿼리] [이강수] */
+		
+		SELECT CLM_RSN_CODE
+		  FROM OC_CLAIM_PRODUCT WITH (NOLOCK) 
+		 WHERE CLM_NO = #{clmNo, jdbcType=VARCHAR}
+		   AND (UP_CLM_PRDT_SEQ IS NULL OR UP_CLM_PRDT_SEQ = '')
+		   AND PRDT_TYPE_CODE NOT IN ( #{prdtTypeCodeGift, jdbcType=TINYINT}, #{prdtTypeCodeDelivery, jdbcType=TINYINT} )
+	  GROUP BY CLM_RSN_CODE
+	
+	</select>
+	
+	<select id="selectCancelPrdtAmtCancelDlvyAmt" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaim" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct">
+	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimProductDao.selectCancelPrdtAmtCancelDlvyAmt [취소 상품 금액과 취소 배송 금액을 조회] [KTH] */
+
+		 SELECT ISNULL(SUM(A.PRDT), 0) AS CANCEL_PRDT_AMT
+		      , ISNULL(SUM(A.DLVY), 0) AS CANCEL_DLVY_AMT
+		   FROM (
+				SELECT CASE
+		               WHEN A.PRDT_TYPE_CODE &lt;&gt; #{prdtTypeCodeDelivery, jdbcType=VARCHAR}
+		               THEN ISNULL(A.ORDER_AMT, 0)
+		               ELSE 0
+		               END 'PRDT'
+		             , CASE
+		               WHEN A.PRDT_TYPE_CODE = #{prdtTypeCodeDelivery, jdbcType=VARCHAR}
+		               THEN ISNULL(A.ORDER_AMT, 0)
+		               ELSE 0
+		               END 'DLVY'
+				  FROM OC_CLAIM_PRODUCT A WITH (NOLOCK)
+				  JOIN OC_CLAIM			B WITH (NOLOCK)
+					ON A.CLM_NO	= B.CLM_NO
+				 WHERE B.ORG_ORDER_NO = #{orgOrderNo, jdbcType=VARCHAR}
+				<if test='clmGbnCodes != null'>
+				   AND B.CLM_GBN_CODE IN -- 취소, 반품
+				 	<foreach item="item" index="index" collection="clmGbnCodes" open="(" close=")" separator="," >
+						#{item}
+					</foreach>
+				</if>
+				<if test='clmStatCodes != null'>
+				   AND B.CLM_STAT_CODE IN -- 취소:환불접수, 취소:취소완료, 반품:환불접수, 반품:반품완료
+				    <foreach item="item" index="index" collection="clmStatCodes" open="(" close=")" separator="," >
+						#{item}
+					</foreach> 
+				</if>
+      	   ) A
+
+	</select>
+	
+	<update id="updateClmCrtOrderNo" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct">
+	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimProductDao.updateClmCrtOrderNo [클레임생성 리오더 주문번호 업데이트] [KTH] */
+		UPDATE OC_CLAIM_PRODUCT
+		   SET
+				MOD_DTM = GETDATE()
+			  , MODER_NO = #{moderNo, jdbcType=VARCHAR}
+			  , CLM_CRT_ORDER_NO = #{clmCrtOrderNo, jdbcType=VARCHAR}
+		 WHERE CLM_NO = #{clmNo, jdbcType=VARCHAR}
+		<if test='clmPrdtSeq != null'>
+		   AND CLM_PRDT_SEQ = #{clmPrdtSeq, jdbcType=INTEGER}
+		</if>
+		<if test='upClmPrdtSeq != null'>
+		   AND UP_CLM_PRDT_SEQ = #{upClmPrdtSeq, jdbcType=INTEGER}
+		</if>
+	</update>
+	
+	<update id="updateInterfaceOrderCancel" parameterType="java.lang.String">
+	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimProductDao.updateInterfaceOrderCancel [IF_ORDER 주문취소 상태 값 변경] [KTH] */
+		UPDATE IF_ORDER
+		   SET ORDSTATUS = 'P1105'
+		 WHERE ORDNO = #{value}
+		   AND ORDSTATUS = 'P1101'
+	</update>
+	
+	<select id="selectClmPrdtListByOrgOrderNo" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct">
+	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimProductDao.selectClmPrdtListByOrgOrderNo [원주문번호에 걸리는 모든 클레임 상품을 클레임상품 테이블에서만 조회] [이강수] */
+	
+		SELECT CLM_NO
+		     , CLM_PRDT_SEQ
+			 , ORDER_NO
+			 , ORDER_PRDT_SEQ
+			 , CLM_PRDT_STAT_CODE
+		  FROM OC_CLAIM_PRODUCT WITH(NOLOCK)
+		 WHERE ORG_ORDER_NO = #{orgOrderNo, jdbcType=VARCHAR}
+		   AND ISNULL(UP_CLM_PRDT_SEQ, '') = ''
+	
+	</select>
+	
+	<parameterMap id="paramMap" type="hashMap">
+		<parameter property="dlvyIdText" javaType="java.lang.String" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="errorCode" javaType="java.lang.String" jdbcType="VARCHAR" mode="OUT" />
+		<parameter property="errorMessage" javaType="java.lang.String" jdbcType="VARCHAR" mode="OUT" />
+	</parameterMap>
+	
+	<select id="callProcedureForOrderCancel" statementType="CALLABLE" parameterMap="paramMap">
+	  		{ call dbo.PR_ORDER_CANCEL (?, ?, ?) }
+	</select>
+	
+	<parameterMap id="orderParamMap" type="hashMap">
+		<parameter property="dlvyIdText" javaType="java.lang.String" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="errorCode" javaType="java.lang.String" jdbcType="VARCHAR" mode="OUT" />
+		<parameter property="errorMessage" javaType="java.lang.String" jdbcType="VARCHAR" mode="OUT" />
+	</parameterMap>
+	
+	<select id="callProcedureForOrderReturn" statementType="CALLABLE" parameterMap="orderParamMap">
+	  		{ call dbo.PR_ORDER_RETURN (?, ?, ?) }
+	</select>
+	
+	
+	<parameterMap id="orderHoldParamMap" type="hashMap">
+		<parameter property="dlvyIdText" javaType="java.lang.String" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="errorCode" javaType="java.lang.String" jdbcType="VARCHAR" mode="OUT" />
+		<parameter property="errorMessage" javaType="java.lang.String" jdbcType="VARCHAR" mode="OUT" />
+	</parameterMap>
+	
+	<select id="callProcedureForOrderHold" statementType="CALLABLE" parameterMap="orderHoldParamMap">
+	  		{ call dbo.PR_ORDER_HOLD (?, ?, ?) }
+	</select>
+
+	<select id="selectClaimProductListByClmNo" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct">
+	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimProductDao.selectClaimProductListByClmNo [클레임번호로 클레임 상품 목록 조회 쿼리  (교환재배송상품 포함)] [이강수] */
+
+		SELECT <include refid="select-columns" />
+		  FROM OC_CLAIM_PRODUCT WITH(NOLOCK)
+		 WHERE CLM_NO = #{clmNo, jdbcType=VARCHAR}
+
+	</select>
+	
+	<select id="selectClmExchangeProduct" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimProduct">
+	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimProductDao.selectClmExchangeProduct [주문정보로 교환재배송 상품 조회 쿼리] [이강수] */
+
+		SELECT <include refid="select-columns" />
+		  FROM OC_CLAIM_PRODUCT WITH(NOLOCK)
+		 WHERE ORDER_NO       = #{orderNo, jdbcType=VARCHAR}
+		   AND ORDER_PRDT_SEQ = #{orderPrdtSeq, jdbcType=INTEGER}
+		   AND UP_CLM_PRDT_SEQ IS NOT NULL
+		   AND CLM_PRDT_STAT_CODE NOT IN (
+		   			'10007','10008','10017','10019','10020','10027'
+		   	   ) -- 교환접수취소/교환접수철회/교환불가/반품접수취소/반품접수철회/반품불가 제외 
+
+	</select>	
+	
+</mapper>

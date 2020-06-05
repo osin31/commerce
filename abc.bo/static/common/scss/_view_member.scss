@@ -1,0 +1,345 @@
+@import 'scss_header';
+
+.user-info-wrap {
+	@include clearfix;
+	font-size: 0;
+
+	.user-info {
+		float: left;
+
+		span {
+			font-size: $defaultFontSize;
+			font-weight: 700;
+		}
+
+		.user-blacklist {
+			color: #fff;
+			padding: 0 2px;
+			background: $pointColorRed;
+		}
+
+		.user-grade, .user-id, .user-name, .user-membership {
+			margin-left: 4px;
+		}
+
+		.user-login-info {
+			margin-top: 8px;
+
+			.user-login-info-list {
+				@include clearfix;
+
+				li {
+					float: left;
+					position: relative;
+					font-size: $defaultFontSize;
+
+					+ li {
+						margin-left: 5px;
+						padding-left: 6px;
+
+						&:before {
+							content: '';
+							position: absolute;
+							display: inline-block;
+							width: 1px;
+							height: 8px;
+							background: #aaa;
+							left: 0;
+							top: 2px;
+						}
+					}
+
+					&.dormancy-info {
+						color: $pointColorRed;
+					}
+				}
+			}
+		}
+	}
+
+	.user-info-util {
+		float: right;
+		font-size: 0;
+		text-align: right;
+
+		.divide {
+			position: relative;
+			display: inline-block;
+			margin-left: 8px;
+			padding-left: 9px;
+
+			&:before {
+				content: '';
+				position: absolute;
+				display: inline-block;
+				width: 1px;
+				height: 16px;
+				background: #aaa;
+				left: 0;
+				top: 8px;
+			}
+		}
+	}
+
+	+ .tab-wrap {
+		margin-top: 20px;
+	}
+
+	+ .content-header {
+		margin-top: 27px;
+	}
+}
+
+// S: 회원정보 탭
+.col-wrap.user-info-default .col {
+	&:nth-of-type(1) {
+		width: calc(65% - 9px);
+	}
+
+	&:last-child {
+		width: calc(35% - 9px);
+	}
+}
+
+// E: 회원정보 탭
+
+// S : 주문상세 팝업 > 관리자메모 height:100%
+.msg-full-content {
+	height: calc(100vh - 393px);
+
+	.msg-list-wrap {
+		max-height: calc(100% - 153px);
+	}
+
+	&.tab-size-fix {
+		height: 100%;
+
+		.msg-list-wrap {
+			max-height: calc(100% - 106px);
+		}
+	}
+
+	&.only-msg {
+		height: calc(100vh - 295px);
+
+		.msg-list-wrap {
+			max-height: calc(100% - 30px - 16px);
+		}
+	}
+}
+
+// E : 주문상세 팝업 > 관리자메모 height:100%
+
+
+.manager-msg-wrap {
+	@include clearfix;
+
+	.msg-box, .btn-save {
+		float: left;
+	}
+
+	.msg-box {
+		width: calc(100% - 64px);
+	}
+
+	textarea {
+		min-height: 60px;
+		height: 60px;
+	}
+
+	.btn-save {
+		min-width: 60px;
+		width: 40px;
+		height: 60px;
+		margin-left: 4px;
+		vertical-align: top;
+	}
+
+	+ .sort-radio-wrap {
+		margin-top: 16px;
+	}
+}
+
+.sort-radio-wrap {
+	padding-bottom: 6px;
+	border-bottom: 1px solid #ddd;
+
+	.sort-radio-list {
+		@include clearfix;
+
+		li {
+			position: relative;
+			float: left;
+
+			input[type=radio] {
+				position: absolute;
+				width: 1px;
+				height: 1px;
+				padding: 0;
+				margin: -1px;
+				overflow: hidden;
+				clip: rect(0, 0, 0, 0);
+				border: 0;
+
+				&:checked + label {
+					.opt-name {
+						color: $pointColorRed;
+					}
+				}
+			}
+
+			label {
+				color: #888;
+				font-size: $defaultFontSize;
+				font-weight: 700;
+				line-height: 24px;
+				cursor: pointer;
+			}
+
+			+ li {
+				margin-left: 10px;
+				padding-left: 11px;
+
+				&:before {
+					content: '';
+					position: absolute;
+					display: inline-block;
+					width: 1px;
+					height: 8px;
+					background: #ddd;
+					left: 0;
+					top: 50%;
+					margin-top: -4px;
+				}
+			}
+		}
+	}
+
+	+ .msg-list-wrap {
+		//margin-top: 20px;
+	}
+}
+
+.msg-list-wrap {
+	overflow-y: auto;
+	max-height: 96px;
+	margin-top: 16px;
+
+	.msg-list {
+		li {
+			+ li {
+				margin-top: 8px;
+				padding-top: 9px;
+				border-top: 1px solid #ddd;
+			}
+		}
+
+		.msg-list-info {
+			display: block;
+			@include clearfix;
+
+			.user-info {
+				font-size: 0;
+
+				span {
+					display: inline-block;
+					font-size: $defaultFontSize;
+					font-weight: 700;
+				}
+
+				a {
+					display: inline-block;
+
+					span {
+						text-decoration: underline;
+					}
+				}
+
+				.memo-type {
+					position: relative;
+					margin-right: 8px;
+					padding-right: 8px;
+
+					&:after {
+						content: '';
+						position: absolute;
+						display: inline-block;
+						width: 1px;
+						height: 8px;
+						background: #ddd;
+						margin-top: -4px;
+						right: 0;
+						top: 50%;
+					}
+				}
+			}
+
+			.regist-date-wrap {
+				float: right;
+				font-size: 0;
+
+				span {
+					font-size: $defaultFontSize;
+					line-height: 13px;
+				}
+
+				.btn-msg-list-del {
+					display: inline-block;
+					width: 13px;
+					height: 13px;
+					padding-top: 1px;
+					margin-left: 7px;
+					vertical-align: top;
+				}
+
+			}
+		}
+
+		.msg-desc {
+			margin-top: 8px;
+			line-height: 1.5;
+		}
+	}
+
+	+ .tbl-desc-wrap {
+		margin-top: 10px;
+	}
+}
+
+.refund-account-box {
+	font-size: 0;
+
+	.ui-sel {
+		width: auto;
+	}
+
+	.ui-input {
+		margin-left: 4px;
+	}
+
+	.account-number {
+		width: 130px;
+	}
+
+	.account-holder {
+		width: 80px;
+	}
+
+	.refund-input {
+		.btn-sm {
+			margin-left: 4px;
+		}
+	}
+
+	// @media screen and (max-width: 1350px) {
+	// 	.refund-input {
+	// 		display: block;
+	// 		width: 100%;
+	// 		margin-top: 6px;
+	//
+	// 		.account-number {
+	// 			margin-left: 0;
+	// 		}
+	// 	}
+	// }
+}

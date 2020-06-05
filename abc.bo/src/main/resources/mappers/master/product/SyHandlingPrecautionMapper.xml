@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.SyHandlingPrecautionDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.product.model.master.SyHandlingPrecaution">
+    
+     /*+ kr.co.abcmart.bo.product.repository.master.SyHandlingPrecautionDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			SY_HANDLING_PRECAUTION WITH(NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectSyHandlingPrecautionById" parameterType="String" resultType="kr.co.abcmart.bo.product.model.master.SyHandlingPrecaution">
+    /*+ kr.co.abcmart.bo.product.repository.master.SyHandlingPrecautionDao.selectSyHandlingPrecautionById [취급주의사항 리스트 조회] [이가영] */
+    
+    	SELECT
+			H.handl_precau_seq,
+			H.std_ctgr_no,
+			H.title_text,
+			H.cont_text,
+			H.rgster_no,
+			H.rgst_dtm,
+			H.moder_no,
+			H.mod_dtm
+		FROM
+			SY_HANDLING_PRECAUTION H WITH(NOLOCK)
+		WHERE
+			H.std_ctgr_no = #{stdCtgrNo, jdbcType=VARCHAR}
+		ORDER BY H.rgst_dtm
+    </select>
+    
+    <insert id="insertSyHandlingPrecaution" parameterType="kr.co.abcmart.bo.product.model.master.SyHandlingPrecaution">
+    /*+ kr.co.abcmart.bo.product.repository.master.SyHandlingPrecautionDao.insertSyHandlingPrecaution [취급주의사항 등록] [이가영] */
+    
+    	INSERT INTO SY_HANDLING_PRECAUTION (
+			std_ctgr_no,
+			title_text,
+			cont_text,
+			rgster_no,
+			rgst_dtm,
+			moder_no,
+			mod_dtm
+		) VALUES (
+			#{stdCtgrNo, jdbcType=VARCHAR},
+			#{titleText, jdbcType=VARCHAR},
+			#{contText, jdbcType=VARCHAR},
+			#{rgsterNo, jdbcType=VARCHAR},
+			getdate(),
+			#{moderNo, jdbcType=VARCHAR},
+			getdate()
+		)
+    </insert>
+    
+    <update id="updateSyHandlingPrecaution" parameterType="kr.co.abcmart.bo.product.model.master.SyHandlingPrecaution">
+    /*+ kr.co.abcmart.bo.product.repository.master.SyHandlingPrecautionDao.updateSyHandlingPrecaution [취급주의사항 수정] [이가영] */
+    	UPDATE SY_HANDLING_PRECAUTION
+    	<set>
+			<if test="titleText != null">
+				title_text = #{titleText, jdbcType=VARCHAR}, 
+			</if>
+			<if test="contText != null">
+				cont_text = #{contText, jdbcType=VARCHAR}, 
+			</if>
+			<if test="moderNo != null">
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if>
+			mod_dtm = getdate()
+		</set>
+		WHERE
+			handl_precau_seq = #{handlPrecauSeq, jdbcType=INTEGER}
+    </update>
+    
+    <delete id="deleteSyHandlingPrecaution" parameterType="kr.co.abcmart.bo.product.model.master.SyStandardCategory">
+    /*+ kr.co.abcmart.bo.product.repository.master.SyHandlingPrecautionDao.deleteSyHandlingPrecaution [취급주의사항 삭제] [이가영] */
+    
+    	DELETE FROM SY_HANDLING_PRECAUTION
+    	WHERE handl_precau_seq in 
+    	<foreach collection="removeSeqs" item="removeSeq" open="(" close=")" separator=",">
+			#{removeSeq}
+		</foreach>
+    </delete>
+
+</mapper>

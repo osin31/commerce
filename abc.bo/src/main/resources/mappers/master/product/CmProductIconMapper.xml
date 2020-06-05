@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.CmProductIconDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.product.model.master.CmProductIcon">
+
+     /*+ kr.co.abcmart.bo.product.repository.master.CmProductIconDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			CM_PRODUCT_ICON WITH(NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectIconCount" parameterType="pageable" resultType="Integer">
+    	/*+ kr.co.abcmart.bo.product.repository.master.CmProductIconDao.selectIconCount [아이콘 카운트 조회] [이가영] */
+
+		SELECT
+			<include refid="Paging.totalCount" />
+		FROM
+			CM_PRODUCT_ICON CPI with (nolock)
+		JOIN
+			SY_SITE SS ON SS.SITE_NO = CPI.SITE_NO
+    </select>
+
+    <select id="selectIconList" parameterType="pageable" resultType="kr.co.abcmart.bo.product.model.master.CmProductIcon">
+    	/*+ kr.co.abcmart.bo.product.repository.master.CmProductIconDao.selectIconList [아이콘 리스트 조회] [이가영] */
+
+		SELECT
+			CPI.PRDT_ICON_SEQ
+			, CPI.SITE_NO
+			, CPI.DISP_ICON_NAME
+			, CPI.ICON_NAME
+			, CPI.ICON_PATH_TEXT
+			, CPI.ICON_URL
+			, CPI.ALTRN_TEXT
+			, CPI.APPLY_PRIOR
+			, CPI.AUTO_APPLY_YN
+			, CPI.INSD_MGMT_INFO_TEXT
+			, CPI.USE_YN
+			, CPI.RGSTER_NO
+			, CPI.RGST_DTM
+			, CPI.MODER_NO
+			, CPI.MOD_DTM
+			, SS.SITE_NO
+			, SS.SITE_NAME
+			, B.ADMIN_NAME AS RGSTER_NAME
+			, B.LOGIN_ID AS RGSTER_ID
+			, C.ADMIN_NAME AS MODER_NAME
+			, C.LOGIN_ID AS MODER_ID
+			, (SELECT COUNT(PRDT_ICON_SEQ) FROM PD_PRODUCT_ICON WITH(NOLOCK) WHERE PRDT_ICON_SEQ = CPI.PRDT_ICON_SEQ) PRDT_COUNT
+		FROM
+			CM_PRODUCT_ICON CPI with (nolock)
+		JOIN SY_SITE SS WITH(NOLOCK) ON SS.SITE_NO = CPI.SITE_NO
+		LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON CPI.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON CPI.MODER_NO = C.ADMIN_NO
+		ORDER BY
+			CPI.AUTO_APPLY_YN DESC, CPI.APPLY_PRIOR
+		<include refid="Paging.mssql" />
+    </select>
+
+    <select id="selectUseIconList" parameterType="kr.co.abcmart.bo.product.model.master.CmProductIcon" resultType="kr.co.abcmart.bo.product.model.master.CmProductIcon">
+    	/*+ kr.co.abcmart.bo.product.repository.master.CmProductIconDao.selectIconList [사용 중인 아이콘 리스트 조회] [이가영] */
+
+		SELECT
+			CPI.PRDT_ICON_SEQ
+			, CPI.SITE_NO
+			, CPI.DISP_ICON_NAME
+			, CPI.ICON_NAME
+			, CPI.ICON_PATH_TEXT
+			, CPI.ICON_URL
+			, CPI.ALTRN_TEXT
+			, CPI.APPLY_PRIOR
+			, CPI.AUTO_APPLY_YN
+			, CPI.INSD_MGMT_INFO_TEXT
+			, CPI.USE_YN
+			, CPI.RGSTER_NO
+			, CPI.RGST_DTM
+			, CPI.MODER_NO
+			, CPI.MOD_DTM
+			, SS.SITE_NO
+			, SS.SITE_NAME
+		FROM
+			CM_PRODUCT_ICON CPI with (nolock)
+		JOIN
+			SY_SITE SS with (nolock) ON SS.SITE_NO = CPI.SITE_NO
+		<where>
+			AND CPI.USE_YN = 'Y'
+			<if test='autoApplyYn != null and autoApplyYn != ""'>
+				AND CPI.AUTO_APPLY_YN = #{autoApplyYn, jdbcType=VARCHAR}
+			</if>
+			<if test='siteNo != null and siteNo != ""'>
+				AND CPI.SITE_NO = #{siteNo, jdbcType=VARCHAR}
+			</if>
+		</where>
+		ORDER BY
+			CPI.RGST_DTM
+    </select>
+
+    <insert id="insertIcon" parameterType="kr.co.abcmart.bo.product.model.master.CmProductIcon">
+    	/*+ kr.co.abcmart.bo.product.repository.master.CmProductIconDao.insertIcon [아이콘 등록] [이가영] */
+
+		INSERT INTO CM_PRODUCT_ICON (
+			SITE_NO,
+			DISP_ICON_NAME,
+			ICON_NAME,
+			ICON_PATH_TEXT,
+			ICON_URL,
+			ALTRN_TEXT,
+			APPLY_PRIOR,
+			AUTO_APPLY_YN,
+			INSD_MGMT_INFO_TEXT,
+			USE_YN,
+			RGSTER_NO,
+			RGST_DTM,
+			MODER_NO,
+			MOD_DTM
+		)
+		VALUES (
+			#{siteNo, jdbcType=VARCHAR},
+			#{dispIconName, jdbcType=VARCHAR},
+			#{iconName, jdbcType=VARCHAR},
+			#{iconPathText, jdbcType=VARCHAR},
+			#{iconUrl, jdbcType=VARCHAR},
+			#{iconName, jdbcType=VARCHAR},
+			#{applyPrior, jdbcType=VARCHAR},
+			'N',
+			#{insdMgmtInfoText, jdbcType=VARCHAR},
+			#{useYn, jdbcType=CHAR},
+			#{rgsterNo, jdbcType=VARCHAR},
+			GETDATE(),
+			#{moderNo, jdbcType=VARCHAR},
+			GETDATE()
+		)
+    </insert>
+
+    <update id="updateIcon" parameterType="kr.co.abcmart.bo.product.model.master.CmProductIcon">
+    	/*+ kr.co.abcmart.bo.product.repository.master.CmProductIconDao.updateIcon [아이콘 수정] [이가영] */
+
+		UPDATE CM_PRODUCT_ICON
+		<set>
+			<if test="siteNo != null">
+				site_no = #{siteNo, jdbcType=VARCHAR},
+			</if>
+			<if test="dispIconName != null">
+				disp_icon_name = #{dispIconName, jdbcType=VARCHAR},
+				altrn_text = #{dispIconName, jdbcType=VARCHAR},
+			</if>
+			<if test="iconName != null">
+				icon_name = #{iconName, jdbcType=VARCHAR},
+			</if>
+			<if test="iconPathText != null">
+				icon_path_text = #{iconPathText, jdbcType=VARCHAR},
+			</if>
+			<if test="iconUrl != null">
+				icon_url = #{iconUrl, jdbcType=VARCHAR},
+			</if>
+			<if test="applyPrior != null">
+				apply_prior = #{applyPrior, jdbcType=TINYINT},
+			</if>
+			<if test="autoApplyYn != null">
+				auto_apply_yn = #{autoApplyYn, jdbcType=CHAR},
+			</if>
+			<if test="insdMgmtInfoText != null">
+				insd_mgmt_info_text = #{insdMgmtInfoText, jdbcType=VARCHAR},
+			</if>
+			<if test="useYn != null">
+				use_yn = #{useYn, jdbcType=CHAR},
+			</if>
+			<if test="rgsterNo != null">
+				rgster_no = #{rgsterNo, jdbcType=VARCHAR},
+			</if>
+			<if test="rgstDtm != null">
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="moderNo != null">
+				moder_no = #{moderNo, jdbcType=VARCHAR},
+			</if>
+			<if test="modDtm != null">
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		WHERE
+			 prdt_icon_seq = #{prdtIconSeq, jdbcType=INTEGER}
+    </update>
+
+</mapper>

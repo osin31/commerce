@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SySiteApplySnsDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.system.model.master.SySiteApplySns">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteApplySnsDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			sy_site_apply_sns with (nolock)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <delete id="deleteBySiteNo" parameterType="String">
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteApplySnsDao.deleteBySiteNo [사이트번호로 sns공유 삭제 쿼리] [김영현] */
+		DELETE
+		FROM 
+			sy_site_apply_sns
+		WHERE 
+			site_no = #{value, jdbcType=VARCHAR}
+    </delete>
+    
+    <insert id="insertApplySns" parameterType="kr.co.abcmart.bo.system.model.master.SySiteApplySns">
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteApplySnsDao.insertApplySns [기본 insert 쿼리] [김영현] */
+		INSERT INTO sy_site_apply_sns (
+			site_no, sns_chnnl_code, use_yn, rgster_no, rgst_dtm, moder_no, mod_dtm
+		) VALUES (
+			#{siteNo, jdbcType=VARCHAR}
+			, #{snsChnnlCode, jdbcType=VARCHAR}
+			, #{useYn, jdbcType=CHAR}
+			, #{rgsterNo, jdbcType=VARCHAR}
+			, getdate()
+			, #{moderNo, jdbcType=VARCHAR}
+			, getdate()
+		)
+    </insert>
+
+</mapper>

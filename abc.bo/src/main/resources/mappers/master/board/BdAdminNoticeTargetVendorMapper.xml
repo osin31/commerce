@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.board.repository.master.BdAdminNoticeTargetVendorDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.board.model.master.BdAdminNoticeTargetVendor" resultType="kr.co.abcmart.bo.board.model.master.BdAdminNoticeTargetVendor">
+
+     /*+ kr.co.abcmart.bo.board.repository.master.BdAdminNoticeTargetVendorDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			bd_admin_notice_target_vendor WITH (NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectBdAdminNoticeTargetVendorList" parameterType="kr.co.abcmart.bo.board.model.master.BdAdminNoticeTargetVendor" resultType="kr.co.abcmart.bo.board.model.master.BdAdminNoticeTargetVendor">
+    /*+ kr.co.abcmart.bo.board.repository.master.BdAdminNoticeTargetVendorDao.selectBdAdminNoticeTargetVendorList [공지 대상 업체 정보를 조회한다.] [김진성] */
+    	SELECT B.VNDR_NO
+    	     , B.VNDR_NAME
+    	  FROM BD_ADMIN_NOTICE_TARGET_VENDOR A WITH (NOLOCK)
+    	  JOIN VD_VENDOR B ON A.VNDR_NO = B.VNDR_NO
+    	 WHERE A.ADMIN_NOTC_SEQ = #{adminNotcSeq, jdbcType=INTEGER}
+
+    </select>
+
+    <delete id="deleteBdAdminNoticeTargetVendorByAdminNotcSeq" parameterType="kr.co.abcmart.bo.board.model.master.BdAdminNotice">
+    /*+ kr.co.abcmart.bo.board.repository.master.BdAdminNoticeTargetVendorDao.selectBdAdminNoticeTargetVendorList [adminNotcSeq 번호에 등록된 업체 정보를 모두 삭제한다.] [김진성] */
+    	DELETE BD_ADMIN_NOTICE_TARGET_VENDOR
+    	 WHERE ADMIN_NOTC_SEQ = #{adminNotcSeq, jdbcType=INTEGER}
+    </delete>
+
+</mapper>

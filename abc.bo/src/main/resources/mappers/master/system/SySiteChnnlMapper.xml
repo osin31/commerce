@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SySiteChnnlDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <resultMap id="channelResult" type="kr.co.abcmart.bo.system.model.master.SySiteChnnl">
+	    <id property="chnnlNo" column="chnnl_no"/>
+	    <result property="siteNo" column="site_no"/>
+	    <result property="chnnlName" column="chnnl_name"/>
+	    <result property="sortSeq" column="sort_seq"/>
+	    <result property="sellPsbltYn" column="sell_psblt_yn"/>
+	    <result property="vndrUseYn" column="vndr_use_yn"/>
+	    <result property="useYn" column="use_yn"/>
+	    <result property="vndrNo" column="vndr_no"/>
+	    <result property="insdMgmtInfoText" column="insd_mgmt_info_text"/>
+	    <result property="rgstDtm" column="rgst_dtm"/>
+	    <result property="modDtm" column="mod_dtm"/>
+	    <association property="rgster" resultMap="rgsterResultMap"/>
+	    <association property="moder" resultMap="moderResultMap"/>
+	</resultMap>
+
+    <resultMap id="rgsterResultMap" type="kr.co.abcmart.bo.system.model.master.SyAdmin">
+    	<id property="adminNo" column="rgster_no"/>
+     	<result property="loginId" column="rgster_login_id"/>
+     	<result property="adminName" column="rgster_name"/>
+    </resultMap>
+
+    <resultMap id="moderResultMap" type="kr.co.abcmart.bo.system.model.master.SyAdmin">
+     	<id property="adminNo" column="moder_no"/>
+     	<result property="loginId" column="moder_login_id"/>
+     	<result property="adminName" column="moder_name"/>
+    </resultMap>
+
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.system.model.master.SySiteChnnl" resultType="kr.co.abcmart.bo.system.model.master.SySiteChnnl">
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteChnnlDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			sy_site_chnnl a with (nolock)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectChannelForPaging" parameterType="pageable" resultMap="channelResult">
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteChnnlDao.selectChannelForPaging [site_no로 채널리스트 조회] [김영현] */
+     	SELECT
+     		a.chnnl_no
+     		, a.site_no
+     		, a.chnnl_name
+     		, a.sort_seq
+     		, a.sell_psblt_yn
+     		, a.vndr_use_yn
+     		, a.use_yn
+     		, a.vndr_no
+     		, a.insd_mgmt_info_text
+     		, a.rgster_no
+     		, a.rgst_dtm
+     		, a.moder_no
+     		, a.mod_dtm
+     		, b.admin_no as rgster_no
+			, b.login_id as rgster_login_id
+			, b.admin_name as rgster_name
+			, c.admin_no as moder_no
+			, c.login_id as moder_login_id
+			, c.admin_name as moder_name
+     	FROM (
+     		SELECT
+				<include refid="select-columns" />
+			FROM
+				sy_site_chnnl a with (nolock)
+			WHERE
+				site_no = #{bean.siteNo, jdbcType=VARCHAR}
+			<choose>
+				<when test="sortColumn != null">
+					ORDER BY
+					<if test="sortColumn == 'modDtm'">
+			 			a.mod_dtm
+			 		</if>
+			 		<if test="sortColumn == 'rgstDtm'">
+			 			a.rgst_dtm
+			 		</if>
+					<if test="sortType == 'DESC'.toString()">
+				 		DESC
+					</if>
+				</when>
+				<otherwise>
+					ORDER BY sort_seq
+				</otherwise>
+			</choose>
+			<include refid="Paging.mssql" />
+     	) a
+     	LEFT JOIN
+			sy_admin b with (nolock)
+		ON	a.rgster_no = b.admin_no
+		LEFT JOIN
+			sy_admin c with (nolock)
+		ON	a.moder_no = c.admin_no
+    </select>
+
+    <select id="selectChannelForPagingCount" parameterType="pageable" resultType="Integer">
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteChnnlDao.selectChannelForPagingCount [site_no로 채널리스트 조회 count] [김영현] */
+		SELECT
+			<include refid="Paging.totalCount" />
+		FROM
+			sy_site_chnnl a with (nolock)
+		WHERE
+			site_no = #{bean.siteNo, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectUseChannelList" resultType="kr.co.abcmart.bo.system.model.master.SySiteChnnl">
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteChnnlDao.selectUseChannelList [사용중인 채널리스트 조회] [김영현] */
+     	SELECT
+     		<include refid="select-columns" />
+     	FROM
+			sy_site_chnnl a with (nolock)
+		WHERE
+			use_yn = 'Y'
+		ORDER BY
+			site_no, sort_seq
+    </select>
+
+    <select id="selectMaxChannelNo" resultType="Integer">
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteDao.selectMaxChannelNo [max chnnl_no] [김영현] */
+		SELECT
+			MAX(chnnl_no)
+		FROM
+			sy_site_chnnl a with (nolock)
+    </select>
+
+    <update id="updateChannel" parameterType="kr.co.abcmart.bo.system.model.master.SySiteChnnl">
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteChnnlDao.updateChannel [채널 수정 쿼리] [김영현] */
+		UPDATE sy_site_chnnl
+		<set>
+			<if test="chnnlName != null">
+				chnnl_name = #{chnnlName, jdbcType=VARCHAR},
+			</if>
+			<if test="sortSeq != null">
+				sort_seq = #{sortSeq, jdbcType=INTEGER},
+			</if>
+			<if test="sellPsbltYn != null">
+				sell_psblt_yn = #{sellPsbltYn, jdbcType=CHAR},
+			</if>
+			<if test="vndrUseYn != null">
+				vndr_use_yn = #{vndrUseYn, jdbcType=CHAR},
+			</if>
+			<if test="useYn != null">
+				use_yn = #{useYn, jdbcType=CHAR},
+			</if>
+			<if test="vndrNo != null">
+				vndr_no = #{vndrNo, jdbcType=CHAR},
+			</if>
+			<if test="chnnlPrdtGbnNo != null">
+				chnnl_prdt_gbn_no = #{chnnlPrdtGbnNo, jdbcType=VARCHAR},
+			</if>
+			<if test="srchRelmExpsrYn != null">
+				srch_relm_expsr_yn = #{srchRelmExpsrYn, jdbcType=CHAR},
+			</if>
+			insd_mgmt_info_text = #{insdMgmtInfoText, jdbcType=VARCHAR},
+			<if test="moderNo != null">
+				moder_no = #{moderNo, jdbcType=VARCHAR},
+			</if>
+			mod_dtm = getdate()
+		</set>
+		WHERE
+			 chnnl_no = #{chnnlNo, jdbcType=VARCHAR}
+    </update>
+
+    <insert id="insertChannel" parameterType="kr.co.abcmart.bo.system.model.master.SySiteChnnl">
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteChnnlDao.insertChannel [채널 입력 쿼리] [김영현] */
+		INSERT INTO sy_site_chnnl (
+			chnnl_no
+			, site_no
+			, chnnl_name
+			, sort_seq
+			, sell_psblt_yn
+			, vndr_use_yn
+			, use_yn
+			, vndr_no
+			, chnnl_prdt_gbn_no
+			, srch_relm_expsr_yn
+			, insd_mgmt_info_text
+			, rgster_no
+			, rgst_dtm
+			, moder_no
+			, mod_dtm
+		) VALUES (
+			#{chnnlNo, jdbcType=VARCHAR}
+			, #{siteNo, jdbcType=VARCHAR}
+			, #{chnnlName, jdbcType=VARCHAR}
+			, #{sortSeq, jdbcType=INTEGER}
+			, #{sellPsbltYn, jdbcType=CHAR}
+			, #{vndrUseYn, jdbcType=CHAR}
+			, #{useYn, jdbcType=CHAR}
+			, #{vndrNo, jdbcType=CHAR}
+			, #{chnnlPrdtGbnNo, jdbcType=CHAR}
+			, #{srchRelmExpsrYn, jdbcType=CHAR}
+			, #{insdMgmtInfoText, jdbcType=VARCHAR}
+			, #{rgsterNo, jdbcType=VARCHAR}
+			, getdate()
+			, #{moderNo, jdbcType=VARCHAR}
+			, getdate()
+		)
+    </insert>
+
+    <select id="selectChannelList" parameterType="map" resultType="kr.co.abcmart.bo.system.model.master.SySiteChnnl">
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteChnnlDao.selectChannelList [사이트별 채널리스트 조회] [김영현] */
+     	SELECT
+     		<include refid="select-columns" />
+     	FROM
+			sy_site_chnnl a with (nolock)
+		WHERE
+			site_no = #{siteNo, jdbcType=VARCHAR}
+		<if test="isUse">
+		AND
+			use_yn = 'Y'
+		ORDER BY
+			sort_seq
+		</if>
+    </select>
+
+    <select id="selectVendorUseChannelList" resultType="kr.co.abcmart.bo.system.model.master.SySiteChnnl">
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteChnnlDao.selectVendorUseChannelList [입점사 사용가능한 채널리스트 조회] [김영현] */
+     	SELECT
+     		<include refid="select-columns" />
+     	FROM
+			sy_site_chnnl a with (nolock)
+		WHERE
+			use_yn = 'Y'
+		AND
+			vndr_use_yn = 'Y'
+		ORDER BY
+			sort_seq
+    </select>
+    
+    <select id="selectSiteNo" parameterType="String" resultType="String">
+    /*+ kr.co.abcmart.bo.system.repository.master.SySiteChnnlDao.selectSiteNo [채널에 따른 사이트 조회] [이동엽] */
+    	SELECT 
+    		site_no
+    	FROM
+    		sy_site_chnnl a with (nolock)
+    	WHERE
+    		use_yn = 'Y'
+    	AND
+    		chnnl_no = #{chnnlNo, jdbcType=VARCHAR}
+    </select>
+    
+    <select id="selectChnnlDetailInfo" parameterType="kr.co.abcmart.bo.system.model.master.SySiteChnnl" resultType="kr.co.abcmart.bo.system.model.master.SySiteChnnl">
+    /*+ kr.co.abcmart.bo.system.repository.master.SySiteChnnlDao.selectChnnlDetailInfo [채널 상세조회] [이동엽] */
+    	SELECT 
+    		<include refid="select-columns" />
+    	FROM
+			sy_site_chnnl a with (nolock)
+		WHERE
+			site_no = #{siteNo}
+		AND
+			chnnl_no = #{chnnlNo}
+    </select>
+    
+    <select id="selectSearchDisplayChannel" resultType="kr.co.abcmart.bo.system.model.master.SySiteChnnl">
+    /*+ kr.co.abcmart.bo.system.repository.master.SySiteChnnlDao.selectSearchDisplayChannel [검색영역 전시 가능 채널 목록 조회] [이동엽] */
+    	SELECT
+    		<include refid="select-columns" />
+    	FROM
+    		sy_site_chnnl a with (nolock)
+    	WHERE
+    		use_yn = 'Y'
+    	AND
+    		srch_relm_expsr_yn = 'Y'
+    	AND
+    		site_no = #{siteNo, jdbcType=VARCHAR}
+    </select>
+    
+    <select id="selectChannelProdNo" parameterType="String" resultType="Integer">
+        /*+ kr.co.abcmart.bo.system.repository.master.SySiteChnnlDao.selectChannelProdNo [채널 상품구분번호 중복체크] [이동엽] */
+    	SELECT 
+    		count(*)
+		  FROM 
+			sy_site_chnnl
+		 WHERE
+			chnnl_prdt_gbn_no = #{chnnlPrdtGbnNo}
+    </select>
+
+</mapper>

@@ -1,0 +1,956 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.member.repository.master.MbMemberDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.member.model.master.MbMember">
+
+     /*+ kr.co.abcmart.bo.member.repository.master.MbMemberDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			mb_member with (nolock)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectMemberListCount" parameterType="pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.member.repository.master.MbMemberDao.selectMemberListCount [회원목록 카운터 조회] [이동엽] */
+    	SELECT <include refid="Paging.totalCount" />
+          FROM MB_MEMBER A WITH (NOLOCK)
+         WHERE A.LEAVE_YN = 'N'
+           AND A.MEMBER_TYPE_CODE != '10002'
+	     	<!-- <if test="bean.mbshpGradeCodes != null and  bean.mbshpGradeCodes !='' and bean.mbshpGradeCodes.length > 0">
+				AND A.MBSHP_GRADE_CODE IN
+				<foreach item="item" index="index" collection="bean.mbshpGradeCodes" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if> -->
+	     	<choose>
+	     		<when test="bean.otsVipYn != null and bean.blackListYn != null and bean.resellerDoubtYn != null">
+		     		AND (
+		     			 A.OTS_VIP_YN = #{bean.otsVipYn}
+		     			 OR A.BLACK_LIST_YN = #{bean.blackListYn}
+		     			 OR A.RESELLER_DOUBT_YN = #{bean.resellerDoubtYn}
+		     			)
+		     	</when>
+		     	<when test="bean.otsVipYn != null and bean.blackListYn != null">
+		     		AND (
+		     			 A.OTS_VIP_YN = #{bean.otsVipYn}
+		     			 OR A.BLACK_LIST_YN = #{bean.blackListYn}
+		     			)
+		     	</when>
+		     	<when test="bean.otsVipYn != null and bean.resellerDoubtYn != null">
+		     		AND (
+		     			 A.OTS_VIP_YN = #{bean.otsVipYn}
+		     			 OR A.RESELLER_DOUBT_YN = #{bean.resellerDoubtYn}
+		     			)
+		     	</when>
+		     	<when test="bean.blackListYn != null and bean.resellerDoubtYn != null">
+		     		AND (
+		     			 A.BLACK_LIST_YN = #{bean.blackListYn}
+		     			 OR A.RESELLER_DOUBT_YN = #{bean.resellerDoubtYn}
+		     			)
+		     	</when>
+				<when test="bean.otsVipYn != null and bean.otsVipYn != ''">
+					AND A.OTS_VIP_YN = #{bean.otsVipYn}
+				</when>
+				<when test="bean.blackListYn != null and bean.blackListYn != ''">
+	     			AND A.BLACK_LIST_YN = #{bean.blackListYn}
+	     		</when>
+	     		<when test="bean.resellerDoubtYn != null and bean.resellerDoubtYn != ''">
+		     		AND A.RESELLER_DOUBT_YN = #{bean.resellerDoubtYn}
+		     	</when>
+			</choose>
+	     	<if test="bean.genderType != null and bean.genderType != ''">
+	     		AND A.GENDER_TYPE = #{bean.genderType}
+	     	</if>
+	     	<if test="bean.memberState != null and bean.memberState != ''">
+		     	<choose>
+		     		<when test="bean.memberState == '01'">
+		     			AND (
+		     				 A.JOIN_DTM <![CDATA[>]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE())
+	                         AND (A.LAST_LOGIN_DTM IS NULL AND A.LAST_OFLN_USE_DTM IS NULL)
+	                         OR(A.MEMBER_TYPE_CODE = '10001' AND A.LAST_LOGIN_DTM <![CDATA[>]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE())
+	                            AND A.LAST_OFLN_USE_DTM <![CDATA[>]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE()))
+	                         OR(A.MEMBER_TYPE_CODE = '10001' AND A.LAST_LOGIN_DTM <![CDATA[>]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE())
+	                            AND A.LAST_OFLN_USE_DTM IS NULL)
+	                         OR(A.MEMBER_TYPE_CODE = '10001' AND A.LAST_LOGIN_DTM IS NULL
+	                            AND A.LAST_OFLN_USE_DTM <![CDATA[>]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE()))
+	                         OR(A.MEMBER_TYPE_CODE = '10000' AND A.LAST_LOGIN_DTM <![CDATA[>]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE()))
+		     			    )
+		     		</when>
+		     		<otherwise>
+		     			AND (
+		     				 A.JOIN_DTM <![CDATA[<]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE())
+	                         AND (A.LAST_LOGIN_DTM IS NULL AND A.LAST_OFLN_USE_DTM IS NULL)
+	                         OR(A.MEMBER_TYPE_CODE = '10001' AND A.LAST_LOGIN_DTM <![CDATA[<]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE())
+	                            AND A.LAST_OFLN_USE_DTM <![CDATA[<]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE()))
+	                         OR(A.MEMBER_TYPE_CODE = '10001' AND A.LAST_LOGIN_DTM <![CDATA[<]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE())
+	                            AND A.LAST_OFLN_USE_DTM IS NULL)
+	                         OR(A.MEMBER_TYPE_CODE = '10001' AND A.LAST_LOGIN_DTM IS NULL
+	                            AND A.LAST_OFLN_USE_DTM <![CDATA[<]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE()))
+	                         OR(A.MEMBER_TYPE_CODE = '10000' AND A.LAST_LOGIN_DTM <![CDATA[<]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE()))
+		     			    )
+		     		</otherwise>
+		     	</choose>
+	     	</if>
+	     	<choose>
+				<when test="bean.memberTypeCodes != null and  bean.memberTypeCodes !='' and bean.memberTypeCodes.length > 0 ">
+					AND ( A.MEMBER_TYPE_CODE IN
+					<foreach item="item" index="index" collection="bean.memberTypeCodes" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+					<if test="bean.chkMemberTypeERP != null and bean.chkMemberTypeERP !=''">
+						OR A.EMP_YN = 'Y'
+					</if>
+					)
+				</when>
+				<otherwise>
+					<if test="bean.chkMemberTypeERP != null and bean.chkMemberTypeERP !=''">
+						AND A.EMP_YN = 'Y'
+					</if>
+				</otherwise>
+			</choose>
+	     	<if test="bean.dtmType != null and bean.dtmType != ''">
+		     	<choose>
+		     		<when test="bean.dtmType == '01'">
+		     			AND A.JOIN_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+		     		</when>
+		     		<otherwise>
+		     			AND A.LAST_LOGIN_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+		     		</otherwise>
+		     	</choose>
+	     	</if>
+	     	<choose>
+	     		<when test="bean.memberSearchType == '01'">
+			     	<if test="bean.memberName != null and bean.memberName != ''">
+			     		AND A.MEMBER_NAME = #{bean.memberName, jdbcType=VARCHAR}
+			     	</if>
+			     	<if test="bean.hdphnBackNoText != null and bean.hdphnBackNoText != ''">
+			     		AND RIGHT(REPLACE(A.HDPHN_NO_TEXT, '-', ''), 4) = #{bean.hdphnBackNoText, jdbcType=VARCHAR}
+			     	</if>
+	     		</when>
+	     		<when test="bean.memberSearchType == '02'">
+			     	<if test="bean.loginId != null and bean.loginId != ''">
+			     		AND A.LOGIN_ID = #{bean.loginId, jdbcType=VARCHAR}
+			     	</if>
+	     		</when>
+	     		<otherwise>
+	     			<if test="bean.memberNo != null and bean.memberNo != ''">
+			     		AND A.MEMBER_NO = #{bean.memberNo, jdbcType=VARCHAR}
+			     	</if>
+	     		</otherwise>
+	     	</choose>
+	     	<if test="bean.hdphnNoText != null and bean.hdphnNoText != ''">
+	     		AND A.HDPHN_NO_TEXT = #{bean.hdphnNoText, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="bean.emailAddrText != null and bean.emailAddrText != ''">
+	     		AND A.EMAIL_ADDR_TEXT = #{bean.emailAddrText, jdbcType=VARCHAR}
+	     	</if>
+    </select>
+
+    <select id="selectMemberList" parameterType="pageable" resultType="kr.co.abcmart.bo.member.model.master.MbMember">
+    	/*+ kr.co.abcmart.bo.member.repository.master.MbMemberDao.selectMemberList [회원목록 조회] [이동엽] */
+    	SELECT A.MEMBER_NO
+             , A.MBSHP_GRADE_CODE
+             , B.CODE_DTL_NAME AS MBSHP_GRADE_CODE_NAME
+             , CASE WHEN A.JOIN_DTM <![CDATA[<]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE())
+                         AND A.LEAVE_YN = 'N'
+                         AND (A.LAST_LOGIN_DTM IS NULL AND A.LAST_OFLN_USE_DTM IS NULL)
+                         OR(A.MEMBER_TYPE_CODE = '10001' AND A.LAST_LOGIN_DTM <![CDATA[<]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE())
+                            AND A.LAST_OFLN_USE_DTM <![CDATA[<]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE()))
+                         OR(A.MEMBER_TYPE_CODE = '10001' AND A.LAST_LOGIN_DTM <![CDATA[<]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE())
+                            AND A.LAST_OFLN_USE_DTM IS NULL)
+                         OR(A.MEMBER_TYPE_CODE = '10001' AND A.LAST_LOGIN_DTM IS NULL
+                            AND A.LAST_OFLN_USE_DTM <![CDATA[<]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE()))
+                         OR(A.MEMBER_TYPE_CODE = '10000' AND A.LAST_LOGIN_DTM <![CDATA[<]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE()))
+                         THEN '휴면예정' ELSE '정상' END AS MEMBER_STATE
+             , CASE WHEN ISNULL(A.BLACK_LIST_YN, 'N') = 'Y' THEN '블랙' ELSE '-' END AS BLACK_LIST_YN
+             , A.LOGIN_ID
+             , A.MEMBER_NAME
+             , CASE WHEN A.GENDER_TYPE = 'M' THEN '남자'
+                    WHEN A.GENDER_TYPE = 'F' THEN '여자'
+                    ELSE '-' END AS GENDER_TYPE
+             , A.EMAIL_ADDR_TEXT
+	         , REPLACE(A.HDPHN_NO_TEXT, '-', '') AS HDPHN_NO_TEXT
+             , A.MEMBER_TYPE_CODE
+             , D.CODE_DTL_NAME AS MEMBER_TYPE_CODE_NAME
+             , A.LAST_LOGIN_DTM
+             , A.JOIN_DTM
+          FROM MB_MEMBER A WITH (NOLOCK)
+     LEFT JOIN SY_CODE_DETAIL B WITH(NOLOCK) ON A.MBSHP_GRADE_CODE = B.CODE_DTL_NO AND B.CODE_FIELD = 'MBSHP_GRADE_CODE'
+     LEFT JOIN SY_CODE_DETAIL D WITH(NOLOCK) ON A.MEMBER_TYPE_CODE = D.CODE_DTL_NO AND D.CODE_FIELD = 'MEMBER_TYPE_CODE'
+         WHERE A.LEAVE_YN = 'N'
+           AND A.MEMBER_TYPE_CODE != '10002'
+	     	<!-- <if test="bean.mbshpGradeCodes != null and  bean.mbshpGradeCodes !='' and bean.mbshpGradeCodes.length > 0">
+				AND A.MBSHP_GRADE_CODE IN
+				<foreach item="item" index="index" collection="bean.mbshpGradeCodes" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if> -->
+			<choose>
+	     		<when test="bean.otsVipYn != null and bean.blackListYn != null and bean.resellerDoubtYn != null">
+		     		AND (
+		     			 A.OTS_VIP_YN = #{bean.otsVipYn}
+		     			 OR A.BLACK_LIST_YN = #{bean.blackListYn}
+		     			 OR A.RESELLER_DOUBT_YN = #{bean.resellerDoubtYn}
+		     			)
+		     	</when>
+		     	<when test="bean.otsVipYn != null and bean.blackListYn != null">
+		     		AND (
+		     			 A.OTS_VIP_YN = #{bean.otsVipYn}
+		     			 OR A.BLACK_LIST_YN = #{bean.blackListYn}
+		     			)
+		     	</when>
+		     	<when test="bean.otsVipYn != null and bean.resellerDoubtYn != null">
+		     		AND (
+		     			 A.OTS_VIP_YN = #{bean.otsVipYn}
+		     			 OR A.RESELLER_DOUBT_YN = #{bean.resellerDoubtYn}
+		     			)
+		     	</when>
+		     	<when test="bean.blackListYn != null and bean.resellerDoubtYn != null">
+		     		AND (
+		     			 A.BLACK_LIST_YN = #{bean.blackListYn}
+		     			 OR A.RESELLER_DOUBT_YN = #{bean.resellerDoubtYn}
+		     			)
+		     	</when>
+				<when test="bean.otsVipYn != null and bean.otsVipYn != ''">
+					AND A.OTS_VIP_YN = #{bean.otsVipYn}
+				</when>
+				<when test="bean.blackListYn != null and bean.blackListYn != ''">
+	     			AND A.BLACK_LIST_YN = #{bean.blackListYn}
+	     		</when>
+	     		<when test="bean.resellerDoubtYn != null and bean.resellerDoubtYn != ''">
+		     		AND A.RESELLER_DOUBT_YN = #{bean.resellerDoubtYn}
+		     	</when>
+			</choose>
+	     	<if test="bean.genderType != null and bean.genderType != ''">
+	     		AND A.GENDER_TYPE = #{bean.genderType}
+	     	</if>
+	     	<if test="bean.memberState != null and bean.memberState != ''">
+		     	<choose>
+		     		<when test="bean.memberState == '01'">
+		     			AND (
+		     				 A.JOIN_DTM <![CDATA[>]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE())
+	                         AND (A.LAST_LOGIN_DTM IS NULL AND A.LAST_OFLN_USE_DTM IS NULL)
+	                         OR(A.MEMBER_TYPE_CODE = '10001' AND A.LAST_LOGIN_DTM <![CDATA[>]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE())
+	                            AND A.LAST_OFLN_USE_DTM <![CDATA[>]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE()))
+	                         OR(A.MEMBER_TYPE_CODE = '10001' AND A.LAST_LOGIN_DTM <![CDATA[>]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE())
+	                            AND A.LAST_OFLN_USE_DTM IS NULL)
+	                         OR(A.MEMBER_TYPE_CODE = '10001' AND A.LAST_LOGIN_DTM IS NULL
+	                            AND A.LAST_OFLN_USE_DTM <![CDATA[>]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE()))
+	                         OR(A.MEMBER_TYPE_CODE = '10000' AND A.LAST_LOGIN_DTM <![CDATA[>]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE()))
+		     			    )
+		     		</when>
+		     		<otherwise>
+		     			AND (
+		     				 A.JOIN_DTM <![CDATA[<]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE())
+	                         AND (A.LAST_LOGIN_DTM IS NULL AND A.LAST_OFLN_USE_DTM IS NULL)
+	                         OR(A.MEMBER_TYPE_CODE = '10001' AND A.LAST_LOGIN_DTM <![CDATA[<]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE())
+	                            AND A.LAST_OFLN_USE_DTM <![CDATA[<]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE()))
+	                         OR(A.MEMBER_TYPE_CODE = '10001' AND A.LAST_LOGIN_DTM <![CDATA[<]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE())
+	                            AND A.LAST_OFLN_USE_DTM IS NULL)
+	                         OR(A.MEMBER_TYPE_CODE = '10001' AND A.LAST_LOGIN_DTM IS NULL
+	                            AND A.LAST_OFLN_USE_DTM <![CDATA[<]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE()))
+	                         OR(A.MEMBER_TYPE_CODE = '10000' AND A.LAST_LOGIN_DTM <![CDATA[<]]> DATEADD(DD, #{bean.condtnTermValue}*-1, GETDATE()))
+		     			    )
+		     		</otherwise>
+		     	</choose>
+	     	</if>
+			<choose>
+				<when test="bean.memberTypeCodes != null and  bean.memberTypeCodes !='' and bean.memberTypeCodes.length > 0 ">
+					AND ( A.MEMBER_TYPE_CODE IN
+					<foreach item="item" index="index" collection="bean.memberTypeCodes" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+					<if test="bean.chkMemberTypeERP != null and bean.chkMemberTypeERP !=''">
+						OR A.EMP_YN = 'Y'
+					</if>
+					)
+				</when>
+				<otherwise>
+					<if test="bean.chkMemberTypeERP != null and bean.chkMemberTypeERP !=''">
+						AND A.EMP_YN = 'Y'
+					</if>
+				</otherwise>
+			</choose>
+	     	<if test="bean.dtmType != null and bean.dtmType != ''">
+		     	<choose>
+		     		<when test="bean.dtmType == '01'">
+		     			AND A.JOIN_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+		     		</when>
+		     		<otherwise>
+		     			AND A.LAST_LOGIN_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+		     		</otherwise>
+		     	</choose>
+	     	</if>
+	     	<choose>
+	     		<when test="bean.memberSearchType == '01'">
+			     	<if test="bean.memberName != null and bean.memberName != ''">
+			     		AND A.MEMBER_NAME = #{bean.memberName, jdbcType=VARCHAR}
+			     	</if>
+			     	<if test="bean.hdphnBackNoText != null and bean.hdphnBackNoText != ''">
+			     		AND RIGHT(REPLACE(A.HDPHN_NO_TEXT, '-', ''), 4) = #{bean.hdphnBackNoText, jdbcType=VARCHAR}
+			     	</if>
+	     		</when>
+	     		<when test="bean.memberSearchType == '02'">
+			     	<if test="bean.loginId != null and bean.loginId != ''">
+			     		AND A.LOGIN_ID = #{bean.loginId, jdbcType=VARCHAR}
+			     	</if>
+	     		</when>
+	     		<otherwise>
+	     			<if test="bean.memberNo != null and bean.memberNo != ''">
+			     		AND A.MEMBER_NO = #{bean.memberNo, jdbcType=VARCHAR}
+			     	</if>
+	     		</otherwise>
+	     	</choose>
+	     	<if test="bean.hdphnNoText != null and bean.hdphnNoText != ''">
+	     		AND A.HDPHN_NO_TEXT = #{bean.hdphnNoText, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="bean.emailAddrText != null and bean.emailAddrText != ''">
+	     		AND A.EMAIL_ADDR_TEXT = #{bean.emailAddrText, jdbcType=VARCHAR}
+	     	</if>
+	     <choose>
+			 <when test="sortColumn != null">
+			 	ORDER BY
+			 	<if test="sortColumn == 'lastLoginDtm'.toString()">
+			 		A.LAST_LOGIN_DTM
+			 	</if>
+			 	<if test="sortColumn == 'joinDtm'.toString()">
+			 		A.JOIN_DTM
+			 	</if>
+			 	<if test="sortType == 'DESC'.toString()">
+			 		DESC
+			 	</if>
+			 </when>
+			 <otherwise>
+			 	ORDER BY A.JOIN_DTM DESC
+			 </otherwise>
+		</choose>
+		<include refid="Paging.mssql" />
+    </select>
+
+    <select id="selectMemberDefalutInfo" parameterType="String" resultType="kr.co.abcmart.bo.member.model.master.MbMember">
+    	/*+ kr.co.abcmart.bo.member.repository.master.MbMemberDao.selectMemberDetailInfo [회원 기본정보 조회] [이동엽] */
+
+    	SELECT A.MEMBER_NO
+	         , A.LOGIN_ID
+	         , A.MEMBER_NAME
+	         , A.PSWD_TEXT
+	         , A.PSWD_SALT_TEXT
+	         , DATEADD(MM, 10, A.LAST_LOGIN_DTM) AS INACT_DTM
+	         , A.MEMBER_TYPE_CODE
+	         , B.CODE_DTL_NAME AS MEMBER_TYPE_CODE_NAME
+	         , A.MBSHP_GRADE_CODE
+	         , C.CODE_DTL_NAME AS MBSHP_GRADE_CODE_NAME
+	         , A.EMP_YN
+	         , A.OTS_VIP_YN
+	         , A.EMAIL_ADDR_TEXT
+	         , REPLACE(A.HDPHN_NO_TEXT, '-', '') AS HDPHN_NO_TEXT
+	         , A.GENDER_TYPE
+	         , A.BIRTH_YMD
+	         , A.ANNVR_NAME
+	         , A.ANNVR_YMD
+	         , CASE WHEN ANNVR_NAME IS NOT NULL AND ANNVR_YMD IS NOT NULL
+		            THEN CONCAT(ANNVR_NAME,', ', REPLACE(ANNVR_YMD, '-', '')) ELSE NULL END AS ANNIVERSARY
+	         , A.SHOES_SIZE
+	         , A.POINT_PSWD_TEXT
+	         , A.POINT_PSWD_SALT_TEXT
+	         , A.BANK_CODE
+	         , G.CODE_DTL_NAME AS BANK_NAME
+	         , A.ACNT_NO_TEXT
+	         , A.ACNT_HLDR_NAME
+	         , A.ACNT_CRTFC_YN
+	         , A.LOCAL_YN
+	         , A.SMS_RECV_YN
+	         , A.SMS_RECV_YN_MOD_DTM
+	         , A.EMAIL_RECV_YN
+	         , A.EMAIL_RECV_YN_MOD_DTM
+	         , A.NIGHT_SMS_RECV_YN
+	         , A.NIGHT_SMS_RECV_YN_MOD_DTM
+	         , A.JOIN_DTM
+	         , A.MBSHP_CNVRT_DTM
+	         , A.SAFE_KEY
+	         , A.SAFE_KEY_SEQ
+	         , A.CI_VALUE
+	         , A.PSWD_CHNG_DTM
+	         , A.PSWD_INIT_YN
+	         , A.FIRST_ORDER_DTM
+	         , A.LAST_ORDER_DTM
+	         , A.LAST_LOGIN_DTM
+	         , A.LAST_LOGIN_IP_TEXT
+	         , A.PSWD_ERROR_COUNT
+	         , A.MBSHP_CARD_NO
+	         , A.RESELLER_DOUBT_YN
+	         , A.BLACK_LIST_YN
+	         , A.BLACK_LIST_TYPE_CODE
+	         , D.CODE_DTL_NAME AS BLACK_LIST_TYPE_CODE_NAME
+	         , A.LEAVE_YN
+	         , A.INACT_MEMBER_ALERT_YN
+	         , A.LEAVE_GBN_CODE
+	         , E.CODE_DTL_NAME AS LEAVE_GBN_CODE_NAME
+	         , A.LEAVE_RSN_CODE
+	         , F.CODE_DTL_NAME AS LEAVE_RSN_CODE_NAME
+	         , A.LEAVE_ETC_RSN
+	         , A.LEAVE_DTM
+	         , A.RGSTER_NO
+	         , A.RGST_DTM
+	         , A.MODER_NO
+	         , A.MOD_DTM
+	      FROM MB_MEMBER A
+	 LEFT JOIN SY_CODE_DETAIL B WITH(NOLOCK) ON A.MEMBER_TYPE_CODE = B.CODE_DTL_NO AND B.CODE_FIELD = 'MEMBER_TYPE_CODE'
+	 LEFT JOIN SY_CODE_DETAIL C WITH(NOLOCK) ON A.MBSHP_GRADE_CODE = C.CODE_DTL_NO AND C.CODE_FIELD = 'MBSHP_GRADE_CODE'
+	 LEFT JOIN SY_CODE_DETAIL D WITH(NOLOCK) ON A.BLACK_LIST_TYPE_CODE = D.CODE_DTL_NO AND D.CODE_FIELD = 'BLACK_LIST_TYPE_CODE'
+	 LEFT JOIN SY_CODE_DETAIL E WITH(NOLOCK) ON A.LEAVE_GBN_CODE = E.CODE_DTL_NO AND E.CODE_FIELD = 'LEAVE_GBN_CODE'
+	 LEFT JOIN SY_CODE_DETAIL F WITH(NOLOCK) ON A.LEAVE_RSN_CODE = F.CODE_DTL_NO AND F.CODE_FIELD = 'LEAVE_RSN_CODE'
+	 LEFT JOIN SY_CODE_DETAIL G WITH(NOLOCK) ON A.BANK_CODE = G.CODE_DTL_NO AND G.CODE_FIELD = 'BANK_CODE'
+	     WHERE A.MEMBER_NO = #{memberNo}
+    </select>
+
+    <select id="selectMemberDefalutInfoParams" parameterType="kr.co.abcmart.bo.member.model.master.MbMember" resultType="kr.co.abcmart.bo.member.model.master.MbMember">
+    	/*+ kr.co.abcmart.bo.member.repository.master.MbMemberDao.selectMemberDefalutInfoParams [회원 기본정보 조회: 다수 파라메터] [이동엽] */
+
+    	SELECT A.MEMBER_NO
+	         , A.LOGIN_ID
+	         , A.MEMBER_NAME
+	         , A.PSWD_TEXT
+	         , A.PSWD_SALT_TEXT
+	         , CASE WHEN A.JOIN_DTM <![CDATA[<]]> DATEADD(DD, #{condtnTermValue}*-1, GETDATE())
+                AND A.LEAVE_YN = 'N'
+                AND (A.LAST_LOGIN_DTM IS NULL AND A.LAST_OFLN_USE_DTM IS NULL)
+                OR(A.MEMBER_TYPE_CODE = '10001' AND A.LAST_LOGIN_DTM <![CDATA[<]]> DATEADD(DD, #{condtnTermValue}*-1, GETDATE())
+                   AND A.LAST_OFLN_USE_DTM <![CDATA[<]]> DATEADD(DD, #{condtnTermValue}*-1, GETDATE()))
+                OR(A.MEMBER_TYPE_CODE = '10001' AND A.LAST_LOGIN_DTM <![CDATA[<]]> DATEADD(DD, #{condtnTermValue}*-1, GETDATE())
+                   AND A.LAST_OFLN_USE_DTM IS NULL)
+                OR(A.MEMBER_TYPE_CODE = '10001' AND A.LAST_LOGIN_DTM IS NULL
+                   AND A.LAST_OFLN_USE_DTM <![CDATA[<]]> DATEADD(DD, #{condtnTermValue}*-1, GETDATE()))
+                OR(A.MEMBER_TYPE_CODE = '10000' AND A.LAST_LOGIN_DTM <![CDATA[<]]> DATEADD(DD, #{condtnTermValue}*-1, GETDATE()))
+                THEN 'Y' ELSE 'N' END AS MEMBER_STATE
+	         , DATEADD(MM, 10, A.LAST_LOGIN_DTM) AS INACT_DTM
+	         , A.MEMBER_TYPE_CODE
+	         , B.CODE_DTL_NAME AS MEMBER_TYPE_CODE_NAME
+	         , A.MBSHP_GRADE_CODE
+	         , C.CODE_DTL_NAME AS MBSHP_GRADE_CODE_NAME
+	         , A.EMP_YN
+	         , A.OTS_VIP_YN
+	         , A.EMAIL_ADDR_TEXT
+	         , REPLACE(A.HDPHN_NO_TEXT, '-', '') AS HDPHN_NO_TEXT
+	         , A.GENDER_TYPE
+	         , A.BIRTH_YMD
+	         , A.ANNVR_NAME
+	         , A.ANNVR_YMD
+	         , CASE WHEN ANNVR_NAME IS NOT NULL AND ANNVR_YMD IS NOT NULL
+		            THEN CONCAT(ANNVR_NAME,', ', REPLACE(ANNVR_YMD, '-', '')) ELSE NULL END AS ANNIVERSARY
+	         , A.SHOES_SIZE
+	         , A.POINT_PSWD_TEXT
+	         , A.POINT_PSWD_SALT_TEXT
+	         , A.BANK_CODE
+	         , G.CODE_DTL_NAME AS BANK_NAME
+	         , A.ACNT_NO_TEXT
+	         , A.ACNT_HLDR_NAME
+	         , A.ACNT_CRTFC_YN
+	         , A.LOCAL_YN
+	         , A.SMS_RECV_YN
+	         , A.SMS_RECV_YN_MOD_DTM
+	         , A.EMAIL_RECV_YN
+	         , A.EMAIL_RECV_YN_MOD_DTM
+	         , A.NIGHT_SMS_RECV_YN
+	         , A.NIGHT_SMS_RECV_YN_MOD_DTM
+	         , A.JOIN_DTM
+	         , A.MBSHP_CNVRT_DTM
+	         , A.SAFE_KEY
+	         , A.SAFE_KEY_SEQ
+	         , A.CI_VALUE
+	         , A.PSWD_CHNG_DTM
+	         , A.PSWD_INIT_YN
+	         , A.FIRST_ORDER_DTM
+	         , A.LAST_ORDER_DTM
+	         , A.LAST_LOGIN_DTM
+	         , A.LAST_LOGIN_IP_TEXT
+	         , A.PSWD_ERROR_COUNT
+	         , A.MBSHP_CARD_NO
+	         , A.RESELLER_DOUBT_YN
+	         , A.BLACK_LIST_YN
+	         , A.BLACK_LIST_TYPE_CODE
+	         , D.CODE_DTL_NAME AS BLACK_LIST_TYPE_CODE_NAME
+	         , A.LEAVE_YN
+	         , A.INACT_MEMBER_ALERT_YN
+	         , A.LEAVE_GBN_CODE
+	         , E.CODE_DTL_NAME AS LEAVE_GBN_CODE_NAME
+	         , A.LEAVE_RSN_CODE
+	         , F.CODE_DTL_NAME AS LEAVE_RSN_CODE_NAME
+	         , A.LEAVE_ETC_RSN
+	         , A.LEAVE_DTM
+	         , A.RGSTER_NO
+	         , A.RGST_DTM
+	         , A.MODER_NO
+	         , A.MOD_DTM
+	         , A.EMP_CRTFC_FAIL_COUNT
+	         , A.EMP_CRTFC_INIT_DTM
+	      FROM MB_MEMBER A
+	 LEFT JOIN SY_CODE_DETAIL B WITH(NOLOCK) ON A.MEMBER_TYPE_CODE = B.CODE_DTL_NO AND B.CODE_FIELD = 'MEMBER_TYPE_CODE'
+	 LEFT JOIN SY_CODE_DETAIL C WITH(NOLOCK) ON A.MBSHP_GRADE_CODE = C.CODE_DTL_NO AND C.CODE_FIELD = 'MBSHP_GRADE_CODE'
+	 LEFT JOIN SY_CODE_DETAIL D WITH(NOLOCK) ON A.BLACK_LIST_TYPE_CODE = D.CODE_DTL_NO AND D.CODE_FIELD = 'BLACK_LIST_TYPE_CODE'
+	 LEFT JOIN SY_CODE_DETAIL E WITH(NOLOCK) ON A.LEAVE_GBN_CODE = E.CODE_DTL_NO AND E.CODE_FIELD = 'LEAVE_GBN_CODE'
+	 LEFT JOIN SY_CODE_DETAIL F WITH(NOLOCK) ON A.LEAVE_RSN_CODE = F.CODE_DTL_NO AND F.CODE_FIELD = 'LEAVE_RSN_CODE'
+	 LEFT JOIN SY_CODE_DETAIL G WITH(NOLOCK) ON A.BANK_CODE = G.CODE_DTL_NO AND G.CODE_FIELD = 'BANK_CODE'
+	     WHERE A.MEMBER_NO = #{memberNo}
+    </select>
+
+    <select id="selectMemberSubListCount" parameterType="pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.member.repository.master.MbMemberDao.selectMemberSubList [회원 리스트 카운터 조회(타 도메인용)] [이동엽] */
+
+    	SELECT <include refid="Paging.totalCount" />
+		  FROM MB_MEMBER A
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test="bean.memberNo != null and bean.memberNo != ''">
+				AND MEMBER_NO = #{bean.memberNo}
+			</if>
+			<if test="bean.loginId != null and bean.loginId != ''">
+				AND LOGIN_ID LIKE CONCAT(#{bean.loginId, jdbcType=VARCHAR}, '%')
+			</if>
+			<if test="bean.memberName != null and bean.memberName != ''">
+				AND MEMBER_NAME LIKE CONCAT(#{bean.memberName, jdbcType=VARCHAR}, '%')
+			</if>
+			<choose>
+				<when test="bean.memberTypeCodes != null and  bean.memberTypeCodes !='' and bean.memberTypeCodes.length > 0 ">
+					AND ( A.MEMBER_TYPE_CODE IN
+					<foreach item="item" index="index" collection="bean.memberTypeCodes" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+					<if test="bean.empYn != null and bean.empYn !=''">
+						OR A.EMP_YN = 'Y'
+					</if>
+					)
+				</when>
+				<otherwise>
+					<if test="bean.empYn != null and bean.empYn !=''">
+						AND A.EMP_YN = 'Y'
+					</if>
+				</otherwise>
+			</choose>
+			<if test="bean.mbshpGradeCodes != null">
+				AND MBSHP_GRADE_CODE IN
+				<foreach collection="bean.mbshpGradeCodes" item="mbshpGradeCode" open="(" close=")" separator=",">
+					#{mbshpGradeCode}
+				</foreach>
+			</if>
+		</trim>
+    </select>
+
+    <select id="selectMemberSubList" parameterType="pageable" resultType="kr.co.abcmart.bo.member.model.master.MbMember">
+    	/*+ kr.co.abcmart.bo.member.repository.master.MbMemberDao.selectMemberSubList [회원 리스트 조회(타 도메인용)] [이동엽] */
+
+		SELECT MEMBER_NO
+	         , LOGIN_ID
+	         , MEMBER_NAME
+	         , PSWD_TEXT
+	         , PSWD_SALT_TEXT
+	         , MEMBER_TYPE_CODE
+	         , MBSHP_GRADE_CODE
+	         , EMP_YN
+	         , OTS_VIP_YN
+	         , EMAIL_ADDR_TEXT
+	         , HDPHN_NO_TEXT
+	         , GENDER_TYPE
+	         , BIRTH_YMD
+	         , ANNVR_NAME
+	         , ANNVR_YMD
+	         , SHOES_SIZE
+	         , POINT_PSWD_TEXT
+	         , POINT_PSWD_SALT_TEXT
+	         , BANK_CODE
+	         , ACNT_NO_TEXT
+	         , ACNT_HLDR_NAME
+	         , ACNT_CRTFC_YN
+	         , LOCAL_YN
+	         , SMS_RECV_YN
+	         , SMS_RECV_YN_MOD_DTM
+	         , EMAIL_RECV_YN
+	         , EMAIL_RECV_YN_MOD_DTM
+	         , NIGHT_SMS_RECV_YN
+	         , NIGHT_SMS_RECV_YN_MOD_DTM
+	         , JOIN_DTM
+	         , MBSHP_CNVRT_DTM
+	         , SAFE_KEY
+	         , SAFE_KEY_SEQ
+	         , CI_VALUE
+	         , PSWD_CHNG_DTM
+	         , PSWD_INIT_YN
+	         , FIRST_ORDER_DTM
+	         , LAST_ORDER_DTM
+	         , LAST_LOGIN_DTM
+	         , LAST_LOGIN_IP_TEXT
+	         , PSWD_ERROR_COUNT
+	         , MBSHP_CARD_NO
+	         , RESELLER_DOUBT_YN
+	         , BLACK_LIST_YN
+	         , BLACK_LIST_TYPE_CODE
+	         , LEAVE_YN
+	         , INACT_MEMBER_ALERT_YN
+	         , LEAVE_GBN_CODE
+	         , LEAVE_RSN_CODE
+	         , LEAVE_ETC_RSN
+	         , LEAVE_DTM
+	         , RGSTER_NO
+	         , RGST_DTM
+	         , MODER_NO
+	         , MOD_DTM
+	         , DBO.FN_CODE_VALUE('MEMBER_TYPE_CODE', MEMBER_TYPE_CODE) AS MEMBER_TYPE_CODE_NAME
+		  FROM MB_MEMBER A WITH (NOLOCK)
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test="bean.memberNo != null and bean.memberNo != ''">
+				AND MEMBER_NO = #{bean.memberNo}
+			</if>
+			<if test="bean.loginId != null and bean.loginId != ''">
+				AND LOGIN_ID LIKE CONCAT(#{bean.loginId, jdbcType=VARCHAR}, '%')
+			</if>
+			<if test="bean.memberName != null and bean.memberName != ''">
+				AND MEMBER_NAME LIKE CONCAT(#{bean.memberName, jdbcType=VARCHAR}, '%')
+			</if>
+			<choose>
+				<when test="bean.memberTypeCodes != null and  bean.memberTypeCodes !='' and bean.memberTypeCodes.length > 0 ">
+					AND ( A.MEMBER_TYPE_CODE IN
+					<foreach item="item" index="index" collection="bean.memberTypeCodes" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+					<if test="bean.empYn != null and bean.empYn !=''">
+						OR A.EMP_YN = 'Y'
+					</if>
+					)
+				</when>
+				<otherwise>
+					<if test="bean.empYn != null and bean.empYn !=''">
+						AND A.EMP_YN = 'Y'
+					</if>
+				</otherwise>
+			</choose>
+			<if test="bean.mbshpGradeCodes != null">
+				AND MBSHP_GRADE_CODE IN
+				<foreach collection="bean.mbshpGradeCodes" item="mbshpGradeCode" open="(" close=")" separator=",">
+					#{mbshpGradeCode}
+				</foreach>
+			</if>
+		</trim>
+		  ORDER BY MEMBER_NO ASC
+		<include refid="Paging.mssql" />
+    </select>
+
+    <insert id="insertMenuAccessLogging" parameterType="kr.co.abcmart.trace.SQLTrace">
+    /*+ kr.co.abcmart.bo.member.repository.master.MbMemberDao.insertMenuAccessLogging [메뉴/URL 접근 로그 남기기] [최경호] */
+	INSERT INTO SY_MENU_ACCESS_HISTORY
+	     ( ADMIN_NO
+	     , AUTH_NO
+	     , MENU_NO
+	     , MENU_YN
+	     , ACCESS_URL
+	     , ACCESS_PARAMTR_TEXT
+	     , ACCESS_IP_TEXT
+	     , ACCESS_TYPE
+	     , SUCCESS_YN
+	     , FAIL_RSN_TEXT
+	     , SUCCESS_RSN_TEXT
+	     , QUERY_ID
+	     , QUERY_TEXT
+	     , RSLT_COUNT
+	     , RSLT_DESC_TEXT
+	     , RGST_DTM)
+	VALUES
+	     ( #{adminNo}
+	     , #{authNo}
+	     , #{menuNo}
+	     , #{menuYn}
+	     , #{accessUrl}
+	     , #{accessParameterText}
+	     , #{accessIpText}
+	     , #{accessType}
+	     , #{sucessYn}
+	     , #{failRsnText}
+	     , #{sucessRsnText}
+	     , #{queryId}
+	     , #{queryText}
+	     , #{rsltCount}
+	     , #{rsltDescText}
+	     , GETDATE()
+		 )
+    </insert>
+
+    <select id="selectCountByMemberNo" parameterType="String" resultType="int">
+    	/*+ kr.co.abcmart.bo.member.repository.master.MbMemberDao.selectCountByMemberNo [회원 카운트 조회] [이지훈] */
+		SELECT
+			COUNT(*)
+		FROM MB_MEMBER WITH (NOLOCK)
+		WHERE MEMBER_NO = #{memberNo, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectAppPushMemberList" parameterType="kr.co.abcmart.bo.member.model.master.MbMember" resultType="kr.co.abcmart.bo.member.model.master.MbMember">
+    	/*+ kr.co.abcmart.bo.member.repository.master.MbMemberDao.selectAppPushMemberList [AppPush 회원 조회] [이동엽] */
+
+    	SELECT MEMBER_NO
+    	     , MEMBER_NAME
+    	     , LOGIN_ID
+    	  FROM MB_MEMBER WITH (NOLOCK)
+    	<trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test="loginIds != null">
+				AND LOGIN_ID IN
+				<foreach collection="loginIds" item="loginIds" open="(" close=")" separator=",">
+					#{loginIds}
+				</foreach>
+			</if>
+    	</trim>
+    </select>
+
+    <select id="selectMemberStatusCount" resultType="kr.co.abcmart.bo.member.model.master.MbMember">
+    	/*+ kr.co.abcmart.bo.member.repository.master.MbMemberDao.selectMemberStatusCount [통합멤버십, 온라인, 멤버십 전환 현황 조회] [고웅환] */
+		SELECT COUNT(1) AS STATUS_CNT, MEMBER_TYPE_CODE
+		  FROM MB_MEMBER WITH (NOLOCK)
+		 WHERE MEMBER_TYPE_CODE != '10002'
+		   AND LEAVE_YN = 'N'
+           AND JOIN_DTM <![CDATA[<]]> CONVERT(DATETIME, CONCAT(
+					CONVERT(CHAR(10), DATEADD(DD, -1, GETDATE()), 102), ' 23:59:59'))
+		 GROUP BY MEMBER_TYPE_CODE
+	 UNION ALL
+		SELECT COUNT(1) AS STATUS_CNT, '99999'
+		  FROM MB_MEMBER WITH (NOLOCK)
+		 WHERE MEMBER_TYPE_CODE = '10001'
+		   AND BEFORE_MEMBER_TYPE != 'M'
+		   AND MBSHP_CNVRT_DTM IS NOT NULL
+		   AND LEAVE_YN = 'N'
+           AND JOIN_DTM <![CDATA[<]]> CONVERT(DATETIME, CONCAT(
+					CONVERT(CHAR(10), DATEADD(DD, -1, GETDATE()), 102), ' 23:59:59'));
+    </select>
+
+    <update id="updateDefaultMemberInfo" parameterType="kr.co.abcmart.bo.member.model.master.MbMember">
+     /*+ kr.co.abcmart.bo.member.repository.master.MbMemberDao.updateDefaultMemberInfo [기본 정보 변경] [이동엽] */
+
+		UPDATE mb_member
+		<set>
+			<if test="loginId != null">
+				login_id = #{loginId, jdbcType=VARCHAR},
+			</if>
+			<if test="memberName != null">
+				member_name = #{memberName, jdbcType=VARCHAR},
+			</if>
+			<if test="pswdText != null">
+				pswd_text = #{pswdText, jdbcType=VARCHAR},
+			</if>
+			<if test="pswdSaltText != null">
+				pswd_salt_text = #{pswdSaltText, jdbcType=VARCHAR},
+			</if>
+			<if test="memberTypeCode != null">
+				member_type_code = #{memberTypeCode, jdbcType=VARCHAR},
+			</if>
+			<if test="mbshpGradeCode != null">
+				mbshp_grade_code = #{mbshpGradeCode, jdbcType=VARCHAR},
+			</if>
+			<if test="empYn != null">
+				emp_yn = #{empYn, jdbcType=CHAR},
+			</if>
+			<if test="otsVipYn != null">
+				ots_vip_yn = #{otsVipYn, jdbcType=CHAR},
+			</if>
+			<if test="emailAddrText != null">
+				email_addr_text = #{emailAddrText, jdbcType=VARCHAR},
+			</if>
+			<if test="hdphnNoText != null">
+				hdphn_no_text = #{hdphnNoText, jdbcType=VARCHAR},
+			</if>
+			<if test="genderType != null">
+				gender_type = #{genderType, jdbcType=CHAR},
+			</if>
+			<if test="birthYmd != null">
+				birth_ymd = #{birthYmd, jdbcType=DATE},
+			</if>
+			<if test="annvrName != null">
+				annvr_name = #{annvrName, jdbcType=VARCHAR},
+			</if>
+			<if test="annvrYmd != null">
+				annvr_ymd = #{annvrYmd, jdbcType=DATE},
+			</if>
+			<if test="annvrYmdModDtm != null">
+				annvr_ymd_mod_dtm = #{annvrYmdModDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="shoesSize != null">
+				shoes_size = #{shoesSize, jdbcType=INTEGER},
+			</if>
+			<if test="pointPswdText != null">
+				point_pswd_text = #{pointPswdText, jdbcType=VARCHAR},
+			</if>
+			<if test="pointPswdSaltText != null">
+				point_pswd_salt_text = NULL,
+			</if>
+			<choose>
+				<when test="acntCrtfcYn == 'Y'.toString()">
+					<choose>
+						<when test="bankCode != null and acntNoText != null and acntHldrName != null">
+							bank_code = #{bankCode, jdbcType=VARCHAR},
+							acnt_no_text = #{acntNoText, jdbcType=VARCHAR},
+							acnt_hldr_name = #{acntHldrName, jdbcType=VARCHAR},
+							acnt_crtfc_yn = 'Y',
+						</when>
+						<otherwise>
+							bank_code = null,
+							acnt_no_text = null,
+							acnt_hldr_name = null,
+							acnt_crtfc_yn = 'N',
+						</otherwise>
+					</choose>
+				</when>
+				<otherwise>
+					acnt_crtfc_yn = 'N',
+				</otherwise>
+			</choose>
+			<if test="localYn != null">
+				local_yn = #{localYn, jdbcType=CHAR},
+			</if>
+			<if test="smsRecvYn != null">
+				sms_recv_yn = #{smsRecvYn, jdbcType=CHAR},
+			</if>
+			<if test="smsRecvYnModDtm != null">
+				sms_recv_yn_mod_dtm = #{smsRecvYnModDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="emailRecvYn != null">
+				email_recv_yn = #{emailRecvYn, jdbcType=CHAR},
+			</if>
+			<if test="emailRecvYnModDtm != null">
+				email_recv_yn_mod_dtm = #{emailRecvYnModDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="nightSmsRecvYn != null">
+				night_sms_recv_yn = #{nightSmsRecvYn, jdbcType=CHAR},
+			</if>
+			<if test="nightSmsRecvYnModDtm != null">
+				night_sms_recv_yn_mod_dtm = #{nightSmsRecvYnModDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="joinDtm != null">
+				join_dtm = #{joinDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="deviceCode != null">
+				device_code = #{deviceCode, jdbcType=VARCHAR},
+			</if>
+			<if test="memberCnvrtDtm != null">
+				member_cnvrt_dtm = #{memberCnvrtDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="mbshpCnvrtDtm != null">
+				mbshp_cnvrt_dtm = #{mbshpCnvrtDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="safeKey != null">
+				safe_key = #{safeKey, jdbcType=VARCHAR},
+			</if>
+			<if test="safeKeySeq != null">
+				safe_key_seq = #{safeKeySeq, jdbcType=VARCHAR},
+			</if>
+			<if test="ciValue != null">
+				ci_value = #{ciValue, jdbcType=VARCHAR},
+			</if>
+			<if test="pswdChngDtm != null">
+				pswd_chng_dtm = #{pswdChngDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="pswdInitYn != null">
+				pswd_init_yn = #{pswdInitYn, jdbcType=CHAR},
+			</if>
+			<if test="firstOrderDtm != null">
+				first_order_dtm = #{firstOrderDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="lastOrderDtm != null">
+				last_order_dtm = #{lastOrderDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="lastOrderNo != null">
+				last_order_no = #{lastOrderNo, jdbcType=VARCHAR},
+			</if>
+			<if test="lastLoginDtm != null">
+				last_login_dtm = #{lastLoginDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="lastLoginIpText != null">
+				last_login_ip_text = #{lastLoginIpText, jdbcType=VARCHAR},
+			</if>
+			<if test="lastOflnUseDtm != null">
+				last_ofln_use_dtm = #{lastOflnUseDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="pswdErrorCount != null">
+				pswd_error_count = #{pswdErrorCount, jdbcType=INTEGER},
+			</if>
+			<if test="mbshpCardNo != null">
+				mbshp_card_no = #{mbshpCardNo, jdbcType=VARCHAR},
+			</if>
+			<if test="pymntMeansCode != null">
+				pymnt_means_code = #{pymntMeansCode, jdbcType=VARCHAR},
+			</if>
+			<if test="resellerDoubtYn != null">
+				reseller_doubt_yn = #{resellerDoubtYn, jdbcType=CHAR},
+			</if>
+			<if test="blackListYn != null">
+				black_list_yn = #{blackListYn, jdbcType=CHAR},
+			</if>
+			<if test="blackListTypeCode != null">
+				black_list_type_code = #{blackListTypeCode, jdbcType=VARCHAR},
+			</if>
+			<if test="leaveYn != null">
+				leave_yn = #{leaveYn, jdbcType=CHAR},
+			</if>
+			<if test="inactMemberAlertYn != null">
+				inact_member_alert_yn = #{inactMemberAlertYn, jdbcType=CHAR},
+			</if>
+			<if test="leaveGbnCode != null">
+				leave_gbn_code = #{leaveGbnCode, jdbcType=VARCHAR},
+			</if>
+			<if test="leaveRsnCode != null">
+				leave_rsn_code = #{leaveRsnCode, jdbcType=VARCHAR},
+			</if>
+			<if test="leaveEtcRsn != null">
+				leave_etc_rsn = #{leaveEtcRsn, jdbcType=VARCHAR},
+			</if>
+			<if test="leaveDtm != null">
+				leave_dtm = #{leaveDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="beforeMemberType != null">
+				before_member_type = #{beforeMemberType, jdbcType=CHAR},
+			</if>
+			<if test="recmdStoreNo != null">
+				recmd_store_no = #{recmdStoreNo, jdbcType=VARCHAR},
+			</if>
+			<if test="empCrtfcFailCount != null">
+				emp_crtfc_fail_count = #{empCrtfcFailCount, jdbcType=TINYINT},
+			</if>
+			<if test="empCrtfcInitDtm != null">
+				emp_crtfc_init_dtm = #{empCrtfcInitDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="infoModYn != null">
+				info_mod_yn = #{infoModYn, jdbcType=CHAR},
+			</if>
+			<if test="rgsterNo != null">
+				rgster_no = #{rgsterNo, jdbcType=VARCHAR},
+			</if>
+			<if test="rgstDtm != null">
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="moderNo != null">
+				moder_no = #{moderNo, jdbcType=VARCHAR},
+			</if>
+			<if test="modDtm != null">
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		WHERE
+			 member_no = #{memberNo, jdbcType=VARCHAR}
+    </update>
+    
+    <update id="updateLeave" parameterType="kr.co.abcmart.bo.member.model.master.MbMember">
+    	/*+ kr.co.abcmart.web.member.repository.master.MbMemberDao.updateLeave [회원탈퇴 업데이트]  */
+    	UPDATE MB_MEMBER
+    	   SET LEAVE_YN 		= #{leaveYn, jdbcType=CHAR}
+    	     , LEAVE_GBN_CODE 	= #{leaveGbnCode, jdbcType=VARCHAR}
+    	     , LEAVE_RSN_CODE 	= #{leaveRsnCode, jdbcType=VARCHAR}
+    	     , MOD_DTM 			= GETDATE()
+    	     , LEAVE_DTM 		= GETDATE()
+    	     , MODER_NO 		= #{memberNo}
+    	   WHERE MEMBER_NO 		= #{memberNo}
+    </update>
+
+</mapper>

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationBrandDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	excclc_seq, brand_no, brand_name, pymnt_amt, sell_cmsn_amt, promo_amt, penlty_count, penlty_trgt_amt, penlty_mdat_amt, excclc_amt, excclc_mdat_amt, moder_no, mod_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	brand_no = #{brandNo, jdbcType=VARCHAR} AND excclc_seq = #{excclcSeq, jdbcType=INTEGER}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrand" resultType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrand">
+    
+     /*+ kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationBrandDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			SE_EXACT_CALCULATION_BRAND
+		<where> 
+			<if test="excclcSeq != null"> 
+				 excclc_seq = #{excclcSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="brandNo != null"> 
+				 AND brand_no = #{brandNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="brandName != null"> 
+				 AND brand_name = #{brandName, jdbcType=VARCHAR}
+			</if> 
+			<if test="pymntAmt != null"> 
+				 AND pymnt_amt = #{pymntAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="sellCmsnAmt != null"> 
+				 AND sell_cmsn_amt = #{sellCmsnAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="promoAmt != null"> 
+				 AND promo_amt = #{promoAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="penltyCount != null"> 
+				 AND penlty_count = #{penltyCount, jdbcType=INTEGER}
+			</if> 
+			<if test="penltyTrgtAmt != null"> 
+				 AND penlty_trgt_amt = #{penltyTrgtAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="penltyMdatAmt != null"> 
+				 AND penlty_mdat_amt = #{penltyMdatAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="excclcAmt != null"> 
+				 AND excclc_amt = #{excclcAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="excclcMdatAmt != null"> 
+				 AND excclc_mdat_amt = #{excclcMdatAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="moderNo != null"> 
+				 AND moder_no = #{moderNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="modDtm != null"> 
+				 AND mod_dtm = #{modDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <insert id="insert" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrand">	
+
+     /*+ kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationBrandDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO SE_EXACT_CALCULATION_BRAND
+			 ( excclc_seq, brand_no, brand_name, pymnt_amt, sell_cmsn_amt, promo_amt, penlty_count, penlty_trgt_amt, penlty_mdat_amt, excclc_amt, excclc_mdat_amt, moder_no, mod_dtm ) 
+
+		VALUES 
+			 ( #{excclcSeq, jdbcType=INTEGER}, #{brandNo, jdbcType=VARCHAR}, #{brandName, jdbcType=VARCHAR}, #{pymntAmt, jdbcType=INTEGER}, #{sellCmsnAmt, jdbcType=INTEGER}, #{promoAmt, jdbcType=INTEGER}, #{penltyCount, jdbcType=INTEGER}, #{penltyTrgtAmt, jdbcType=INTEGER}, #{penltyMdatAmt, jdbcType=INTEGER}, #{excclcAmt, jdbcType=INTEGER}, #{excclcMdatAmt, jdbcType=INTEGER}, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrand">
+    
+     /*+ kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationBrandDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE SE_EXACT_CALCULATION_BRAND
+		<set> 
+			<if test="excclcSeq != null"> 
+				excclc_seq = #{excclcSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="brandNo != null"> 
+				brand_no = #{brandNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="brandName != null"> 
+				brand_name = #{brandName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="pymntAmt != null"> 
+				pymnt_amt = #{pymntAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="sellCmsnAmt != null"> 
+				sell_cmsn_amt = #{sellCmsnAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="promoAmt != null"> 
+				promo_amt = #{promoAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="penltyCount != null"> 
+				penlty_count = #{penltyCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="penltyTrgtAmt != null"> 
+				penlty_trgt_amt = #{penltyTrgtAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="penltyMdatAmt != null"> 
+				penlty_mdat_amt = #{penltyMdatAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="excclcAmt != null"> 
+				excclc_amt = #{excclcAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="excclcMdatAmt != null"> 
+				excclc_mdat_amt = #{excclcMdatAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 brand_no = #{brandNo, jdbcType=VARCHAR} AND excclc_seq = #{excclcSeq, jdbcType=INTEGER}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrand">
+    
+     /*+ kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationBrandDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM SE_EXACT_CALCULATION_BRAND
+		WHERE 
+			 brand_no = #{brandNo, jdbcType=VARCHAR} AND excclc_seq = #{excclcSeq, jdbcType=INTEGER}  
+    </delete>
+</mapper>

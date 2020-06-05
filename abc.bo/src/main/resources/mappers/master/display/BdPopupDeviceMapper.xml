@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.display.repository.master.BdPopupDeviceDao">
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.display.model.master.BdPopupDevice">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.BdPopupDeviceDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			bd_popup_device
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <insert id="insertPopupDevice" parameterType="kr.co.abcmart.bo.display.model.master.BdPopupDevice">
+    /*+ kr.co.abcmart.bo.display.repository.master.BdPopupDeviceDao.insertPopupDevice [팝업 디바이스 insert 쿼리] [이지훈] */
+    	INSERT
+			INTO
+				BD_POPUP_DEVICE 
+			(
+				POPUP_SEQ
+				,DEVICE_CODE
+				<if test="popupType != null"> 
+				,POPUP_TYPE
+				</if>
+				<if test="popupWidthNum != null"> 
+				,POPUP_WIDTH_NUM
+				</if>
+				<if test="popupHeightNum != null"> 
+				,POPUP_HEIGHT_NUM
+				</if>
+				<if test="popupXPostn != null"> 
+				,POPUP_X_POSTN
+				</if>
+				<if test="popupYPostn != null"> 
+				,POPUP_Y_POSTN
+				</if>
+				,IMAGE_NAME
+				,IMAGE_PATH_TEXT
+				,IMAGE_URL
+				,ALTRN_TEXT
+				,CNNCTN_TYPE
+				,LINK_INFO
+				,LINK_TARGET_TYPE 
+			)
+			VALUES 
+			( 
+				#{popupSeq, jdbcType = INTEGER}
+				,#{deviceCode, jdbcType = VARCHAR}
+				<if test="popupType != null"> 
+				,#{popupType, jdbcType = CHAR}
+				</if>
+				<if test="popupWidthNum != null"> 
+				,#{popupWidthNum, jdbcType = SMALLINT}
+				</if>
+				<if test="popupHeightNum != null"> 
+				,#{popupHeightNum, jdbcType = SMALLINT}
+				</if>
+				<if test="popupXPostn != null"> 
+				,#{popupXPostn, jdbcType = SMALLINT}
+				</if>
+				<if test="popupYPostn != null"> 
+				,#{popupYPostn, jdbcType = SMALLINT}
+				</if>
+				,#{imageName, jdbcType = VARCHAR}
+				,#{imagePathText, jdbcType = VARCHAR}
+				,#{imageUrl, jdbcType = VARCHAR}
+				,#{altrnText, jdbcType = VARCHAR}
+				,#{cnnctnType, jdbcType = CHAR}
+				,#{linkInfo, jdbcType = VARCHAR}
+				,#{linkTargetType, jdbcType = CHAR}
+			)
+    </insert>
+    
+    <update id="updatePopupDevice" parameterType="kr.co.abcmart.bo.display.model.master.BdPopupDevice">
+     /*+ kr.co.abcmart.bo.display.repository.master.BdPopupDeviceDao.updatePopupDevice [팝업 디바이스 update 쿼리] [이지훈] */
+		UPDATE bd_popup_device
+		<set> 
+			<if test="imageName != null"> 
+				IMAGE_NAME = #{imageName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="imagePathText != null"> 
+				IMAGE_PATH_TEXT = #{imagePathText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="imageUrl != null"> 
+				IMAGE_URL = #{imageUrl, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cnnctnType != null"> 
+				CNNCTN_TYPE = #{cnnctnType, jdbcType=CHAR}, 
+			</if> 
+			<if test="linkInfo != null"> 
+				LINK_INFO = #{linkInfo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="altrnText != null"> 
+				ALTRN_TEXT = #{altrnText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="linkTargetType != null"> 
+				LINK_TARGET_TYPE = #{linkTargetType, jdbcType=CHAR}, 
+			</if> 
+			<if test="popupType != null"> 
+				POPUP_TYPE = #{popupType, jdbcType=CHAR}, 
+			</if> 
+			<if test="popupWidthNum != null"> 
+				POPUP_WIDTH_NUM = #{popupWidthNum, jdbcType=SMALLINT}, 
+			</if> 
+			<if test="popupHeightNum != null"> 
+				POPUP_HEIGHT_NUM = #{popupHeightNum, jdbcType=SMALLINT}, 
+			</if> 
+			<if test="popupXPostn != null"> 
+				POPUP_X_POSTN = #{popupXPostn, jdbcType=SMALLINT}, 
+			</if> 
+			<if test="popupYPostn != null"> 
+				POPUP_Y_POSTN = #{popupYPostn, jdbcType=SMALLINT}, 
+			</if> 
+		</set> 
+		WHERE 
+			 DEVICE_CODE = #{deviceCode, jdbcType=VARCHAR} 
+		AND 
+			 POPUP_SEQ = #{popupSeq, jdbcType=INTEGER}   
+    </update>
+    
+    <delete id="deleteByPopupSeq" parameterType="Integer">
+     /*+ kr.co.abcmart.bo.display.repository.master.BdPopupDeviceDao.deleteByPopupSeq [팝업 디바이스 delete 쿼리] [이지훈] */
+		DELETE FROM BD_POPUP_DEVICE
+		WHERE 
+			 POPUP_SEQ = #{popupSeq, jdbcType=INTEGER}  
+    </delete>
+</mapper>

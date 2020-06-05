@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationBrandProductDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	excclc_seq, brand_no, order_no, order_prdt_seq, order_dlvy_hist_seq, brand_name, sales_cncl_gbn_type, prdt_no, prdt_name, eng_prdt_name, optn_name, style_info, prdt_color_code, vndr_prdt_no_text, site_no, chnnl_no, free_dlvy_yn, order_qty, prdt_normal_amt, prdt_sell_amt, optn_add_amt, sell_amt, emp_dscnt_rate, emp_amt, total_dscnt_amt, vndr_cmsn_rate, vndr_cmsn_amt, buy_dcsn_dtm, promo_dscnt_amt, promo_cmsn_amt, cpn_use_yn, cpn_no, cpn_dscnt_amt, cpn_share_rate, cpn_share_amt, plus_cpn_no, plus_cpn_dscnt_amt, plus_cpn_share_rate, plus_cpn_share_amt, buy_point_save_rate, buy_point_save_amt, excclc_amt, delay_day_count, penlty_levy_rate, penlty_amt
+    </sql>
+    
+    <sql id="pk-columns">
+    	brand_no = #{brandNo, jdbcType=VARCHAR} AND excclc_seq = #{excclcSeq, jdbcType=INTEGER} AND order_dlvy_hist_seq = #{orderDlvyHistSeq, jdbcType=TINYINT} AND order_no = #{orderNo, jdbcType=VARCHAR} AND order_prdt_seq = #{orderPrdtSeq, jdbcType=INTEGER}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandProduct" resultType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandProduct">
+    
+     /*+ kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationBrandProductDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			SE_EXACT_CALCULATION_BRAND_PRODUCT
+		<where> 
+			<if test="excclcSeq != null"> 
+				 excclc_seq = #{excclcSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="brandNo != null"> 
+				 AND brand_no = #{brandNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="orderNo != null"> 
+				 AND order_no = #{orderNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="orderPrdtSeq != null"> 
+				 AND order_prdt_seq = #{orderPrdtSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="orderDlvyHistSeq != null"> 
+				 AND order_dlvy_hist_seq = #{orderDlvyHistSeq, jdbcType=TINYINT}
+			</if> 
+			<if test="brandName != null"> 
+				 AND brand_name = #{brandName, jdbcType=VARCHAR}
+			</if> 
+			<if test="salesCnclGbnType != null"> 
+				 AND sales_cncl_gbn_type = #{salesCnclGbnType, jdbcType=CHAR}
+			</if> 
+			<if test="prdtNo != null"> 
+				 AND prdt_no = #{prdtNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="prdtName != null"> 
+				 AND prdt_name = #{prdtName, jdbcType=VARCHAR}
+			</if> 
+			<if test="engPrdtName != null"> 
+				 AND eng_prdt_name = #{engPrdtName, jdbcType=VARCHAR}
+			</if> 
+			<if test="optnName != null"> 
+				 AND optn_name = #{optnName, jdbcType=VARCHAR}
+			</if> 
+			<if test="styleInfo != null"> 
+				 AND style_info = #{styleInfo, jdbcType=VARCHAR}
+			</if> 
+			<if test="prdtColorCode != null"> 
+				 AND prdt_color_code = #{prdtColorCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="vndrPrdtNoText != null"> 
+				 AND vndr_prdt_no_text = #{vndrPrdtNoText, jdbcType=VARCHAR}
+			</if> 
+			<if test="siteNo != null"> 
+				 AND site_no = #{siteNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="chnnlNo != null"> 
+				 AND chnnl_no = #{chnnlNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="freeDlvyYn != null"> 
+				 AND free_dlvy_yn = #{freeDlvyYn, jdbcType=CHAR}
+			</if> 
+			<if test="orderQty != null"> 
+				 AND order_qty = #{orderQty, jdbcType=INTEGER}
+			</if> 
+			<if test="prdtNormalAmt != null"> 
+				 AND prdt_normal_amt = #{prdtNormalAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="prdtSellAmt != null"> 
+				 AND prdt_sell_amt = #{prdtSellAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="optnAddAmt != null"> 
+				 AND optn_add_amt = #{optnAddAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="sellAmt != null"> 
+				 AND sell_amt = #{sellAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="empDscntRate != null"> 
+				 AND emp_dscnt_rate = #{empDscntRate, jdbcType=TINYINT}
+			</if> 
+			<if test="empAmt != null"> 
+				 AND emp_amt = #{empAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="totalDscntAmt != null"> 
+				 AND total_dscnt_amt = #{totalDscntAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="vndrCmsnRate != null"> 
+				 AND vndr_cmsn_rate = #{vndrCmsnRate, jdbcType=TINYINT}
+			</if> 
+			<if test="vndrCmsnAmt != null"> 
+				 AND vndr_cmsn_amt = #{vndrCmsnAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="buyDcsnDtm != null"> 
+				 AND buy_dcsn_dtm = #{buyDcsnDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="promoDscntAmt != null"> 
+				 AND promo_dscnt_amt = #{promoDscntAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="promoCmsnAmt != null"> 
+				 AND promo_cmsn_amt = #{promoCmsnAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="cpnUseYn != null"> 
+				 AND cpn_use_yn = #{cpnUseYn, jdbcType=CHAR}
+			</if> 
+			<if test="cpnNo != null"> 
+				 AND cpn_no = #{cpnNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="cpnDscntAmt != null"> 
+				 AND cpn_dscnt_amt = #{cpnDscntAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="cpnShareRate != null"> 
+				 AND cpn_share_rate = #{cpnShareRate, jdbcType=TINYINT}
+			</if> 
+			<if test="cpnShareAmt != null"> 
+				 AND cpn_share_amt = #{cpnShareAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="plusCpnNo != null"> 
+				 AND plus_cpn_no = #{plusCpnNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="plusCpnDscntAmt != null"> 
+				 AND plus_cpn_dscnt_amt = #{plusCpnDscntAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="plusCpnShareRate != null"> 
+				 AND plus_cpn_share_rate = #{plusCpnShareRate, jdbcType=TINYINT}
+			</if> 
+			<if test="plusCpnShareAmt != null"> 
+				 AND plus_cpn_share_amt = #{plusCpnShareAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="buyPointSaveRate != null"> 
+				 AND buy_point_save_rate = #{buyPointSaveRate, jdbcType=TINYINT}
+			</if> 
+			<if test="buyPointSaveAmt != null"> 
+				 AND buy_point_save_amt = #{buyPointSaveAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="excclcAmt != null"> 
+				 AND excclc_amt = #{excclcAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="delayDayCount != null"> 
+				 AND delay_day_count = #{delayDayCount, jdbcType=TINYINT}
+			</if> 
+			<if test="penltyLevyRate != null"> 
+				 AND penlty_levy_rate = #{penltyLevyRate, jdbcType=TINYINT}
+			</if> 
+			<if test="penltyAmt != null"> 
+				 AND penlty_amt = #{penltyAmt, jdbcType=INTEGER}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <insert id="insert" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandProduct">	
+
+     /*+ kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationBrandProductDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO SE_EXACT_CALCULATION_BRAND_PRODUCT
+			 ( excclc_seq, brand_no, order_no, order_prdt_seq, order_dlvy_hist_seq, brand_name, sales_cncl_gbn_type, prdt_no, prdt_name, eng_prdt_name, optn_name, style_info, prdt_color_code, vndr_prdt_no_text, site_no, chnnl_no, free_dlvy_yn, order_qty, prdt_normal_amt, prdt_sell_amt, optn_add_amt, sell_amt, emp_dscnt_rate, emp_amt, total_dscnt_amt, vndr_cmsn_rate, vndr_cmsn_amt, buy_dcsn_dtm, promo_dscnt_amt, promo_cmsn_amt, cpn_use_yn, cpn_no, cpn_dscnt_amt, cpn_share_rate, cpn_share_amt, plus_cpn_no, plus_cpn_dscnt_amt, plus_cpn_share_rate, plus_cpn_share_amt, buy_point_save_rate, buy_point_save_amt, excclc_amt, delay_day_count, penlty_levy_rate, penlty_amt ) 
+
+		VALUES 
+			 ( #{excclcSeq, jdbcType=INTEGER}, #{brandNo, jdbcType=VARCHAR}, #{orderNo, jdbcType=VARCHAR}, #{orderPrdtSeq, jdbcType=INTEGER}, #{orderDlvyHistSeq, jdbcType=TINYINT}, #{brandName, jdbcType=VARCHAR}, #{salesCnclGbnType, jdbcType=CHAR}, #{prdtNo, jdbcType=VARCHAR}, #{prdtName, jdbcType=VARCHAR}, #{engPrdtName, jdbcType=VARCHAR}, #{optnName, jdbcType=VARCHAR}, #{styleInfo, jdbcType=VARCHAR}, #{prdtColorCode, jdbcType=VARCHAR}, #{vndrPrdtNoText, jdbcType=VARCHAR}, #{siteNo, jdbcType=VARCHAR}, #{chnnlNo, jdbcType=VARCHAR}, #{freeDlvyYn, jdbcType=CHAR}, #{orderQty, jdbcType=INTEGER}, #{prdtNormalAmt, jdbcType=INTEGER}, #{prdtSellAmt, jdbcType=INTEGER}, #{optnAddAmt, jdbcType=INTEGER}, #{sellAmt, jdbcType=INTEGER}, #{empDscntRate, jdbcType=TINYINT}, #{empAmt, jdbcType=INTEGER}, #{totalDscntAmt, jdbcType=INTEGER}, #{vndrCmsnRate, jdbcType=TINYINT}, #{vndrCmsnAmt, jdbcType=INTEGER}, <choose><when test="buyDcsnDtm != null">#{buyDcsnDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{promoDscntAmt, jdbcType=INTEGER}, #{promoCmsnAmt, jdbcType=INTEGER}, #{cpnUseYn, jdbcType=CHAR}, #{cpnNo, jdbcType=VARCHAR}, #{cpnDscntAmt, jdbcType=INTEGER}, #{cpnShareRate, jdbcType=TINYINT}, #{cpnShareAmt, jdbcType=INTEGER}, #{plusCpnNo, jdbcType=VARCHAR}, #{plusCpnDscntAmt, jdbcType=INTEGER}, #{plusCpnShareRate, jdbcType=TINYINT}, #{plusCpnShareAmt, jdbcType=INTEGER}, #{buyPointSaveRate, jdbcType=TINYINT}, #{buyPointSaveAmt, jdbcType=INTEGER}, #{excclcAmt, jdbcType=INTEGER}, #{delayDayCount, jdbcType=TINYINT}, #{penltyLevyRate, jdbcType=TINYINT}, #{penltyAmt, jdbcType=INTEGER} )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandProduct">
+    
+     /*+ kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationBrandProductDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE SE_EXACT_CALCULATION_BRAND_PRODUCT
+		<set> 
+			<if test="excclcSeq != null"> 
+				excclc_seq = #{excclcSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="brandNo != null"> 
+				brand_no = #{brandNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="orderNo != null"> 
+				order_no = #{orderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="orderPrdtSeq != null"> 
+				order_prdt_seq = #{orderPrdtSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="orderDlvyHistSeq != null"> 
+				order_dlvy_hist_seq = #{orderDlvyHistSeq, jdbcType=TINYINT}, 
+			</if> 
+			<if test="brandName != null"> 
+				brand_name = #{brandName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="salesCnclGbnType != null"> 
+				sales_cncl_gbn_type = #{salesCnclGbnType, jdbcType=CHAR}, 
+			</if> 
+			<if test="prdtNo != null"> 
+				prdt_no = #{prdtNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="prdtName != null"> 
+				prdt_name = #{prdtName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="engPrdtName != null"> 
+				eng_prdt_name = #{engPrdtName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="optnName != null"> 
+				optn_name = #{optnName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="styleInfo != null"> 
+				style_info = #{styleInfo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="prdtColorCode != null"> 
+				prdt_color_code = #{prdtColorCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="vndrPrdtNoText != null"> 
+				vndr_prdt_no_text = #{vndrPrdtNoText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="siteNo != null"> 
+				site_no = #{siteNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="chnnlNo != null"> 
+				chnnl_no = #{chnnlNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="freeDlvyYn != null"> 
+				free_dlvy_yn = #{freeDlvyYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="orderQty != null"> 
+				order_qty = #{orderQty, jdbcType=INTEGER}, 
+			</if> 
+			<if test="prdtNormalAmt != null"> 
+				prdt_normal_amt = #{prdtNormalAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="prdtSellAmt != null"> 
+				prdt_sell_amt = #{prdtSellAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="optnAddAmt != null"> 
+				optn_add_amt = #{optnAddAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="sellAmt != null"> 
+				sell_amt = #{sellAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="empDscntRate != null"> 
+				emp_dscnt_rate = #{empDscntRate, jdbcType=TINYINT}, 
+			</if> 
+			<if test="empAmt != null"> 
+				emp_amt = #{empAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="totalDscntAmt != null"> 
+				total_dscnt_amt = #{totalDscntAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="vndrCmsnRate != null"> 
+				vndr_cmsn_rate = #{vndrCmsnRate, jdbcType=TINYINT}, 
+			</if> 
+			<if test="vndrCmsnAmt != null"> 
+				vndr_cmsn_amt = #{vndrCmsnAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="buyDcsnDtm != null"> 
+				buy_dcsn_dtm = #{buyDcsnDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="promoDscntAmt != null"> 
+				promo_dscnt_amt = #{promoDscntAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="promoCmsnAmt != null"> 
+				promo_cmsn_amt = #{promoCmsnAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="cpnUseYn != null"> 
+				cpn_use_yn = #{cpnUseYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="cpnNo != null"> 
+				cpn_no = #{cpnNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cpnDscntAmt != null"> 
+				cpn_dscnt_amt = #{cpnDscntAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="cpnShareRate != null"> 
+				cpn_share_rate = #{cpnShareRate, jdbcType=TINYINT}, 
+			</if> 
+			<if test="cpnShareAmt != null"> 
+				cpn_share_amt = #{cpnShareAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="plusCpnNo != null"> 
+				plus_cpn_no = #{plusCpnNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="plusCpnDscntAmt != null"> 
+				plus_cpn_dscnt_amt = #{plusCpnDscntAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="plusCpnShareRate != null"> 
+				plus_cpn_share_rate = #{plusCpnShareRate, jdbcType=TINYINT}, 
+			</if> 
+			<if test="plusCpnShareAmt != null"> 
+				plus_cpn_share_amt = #{plusCpnShareAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="buyPointSaveRate != null"> 
+				buy_point_save_rate = #{buyPointSaveRate, jdbcType=TINYINT}, 
+			</if> 
+			<if test="buyPointSaveAmt != null"> 
+				buy_point_save_amt = #{buyPointSaveAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="excclcAmt != null"> 
+				excclc_amt = #{excclcAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="delayDayCount != null"> 
+				delay_day_count = #{delayDayCount, jdbcType=TINYINT}, 
+			</if> 
+			<if test="penltyLevyRate != null"> 
+				penlty_levy_rate = #{penltyLevyRate, jdbcType=TINYINT}, 
+			</if> 
+			<if test="penltyAmt != null"> 
+				penlty_amt = #{penltyAmt, jdbcType=INTEGER}, 
+			</if> 
+		</set> 
+		WHERE 
+			 brand_no = #{brandNo, jdbcType=VARCHAR} AND excclc_seq = #{excclcSeq, jdbcType=INTEGER} AND order_dlvy_hist_seq = #{orderDlvyHistSeq, jdbcType=TINYINT} AND order_no = #{orderNo, jdbcType=VARCHAR} AND order_prdt_seq = #{orderPrdtSeq, jdbcType=INTEGER}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandProduct">
+    
+     /*+ kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationBrandProductDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM SE_EXACT_CALCULATION_BRAND_PRODUCT
+		WHERE 
+			 brand_no = #{brandNo, jdbcType=VARCHAR} AND excclc_seq = #{excclcSeq, jdbcType=INTEGER} AND order_dlvy_hist_seq = #{orderDlvyHistSeq, jdbcType=TINYINT} AND order_no = #{orderNo, jdbcType=VARCHAR} AND order_prdt_seq = #{orderPrdtSeq, jdbcType=INTEGER}  
+    </delete>
+</mapper>

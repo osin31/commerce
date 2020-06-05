@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.PdGiftCardDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.product.model.master.PdGiftCard">
+
+     /*+ kr.co.abcmart.bo.product.repository.master.PdGiftCardDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			pd_gift_card WITH(NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <sql id="select-columns-alias-a">
+    	A.gift_card_no, A.gift_card_name, A.gift_card_type_code, A.gift_card_gbn_type, A.valid_term_type, A.image_name, A.image_path_text, A.image_url, A.altrn_text,
+    	CASE WHEN A.gift_card_gbn_type = '1' THEN '-' ELSE REPLACE(CONVERT(VARCHAR, CAST(A.sell_amt AS MONEY),1),'.00','') + '원' END AS format_sell_amt,
+    	A.sell_amt,	A.mgmt_no_text, A.use_yn, A.rgster_no, A.rgst_dtm, A.moder_no, A.mod_dtm
+    </sql>
+
+    <sql id="where-giftCard-search-vo-alias-a">
+    	<where>
+    		<!-- 기프트카드명 -->
+			<if test='bean.giftCardName != null and bean.giftCardName != ""'>
+				 AND A.gift_card_name LIKE '%'+#{bean.giftCardName, jdbcType=VARCHAR}+'%'
+			</if>
+			<!-- 기프트카드유형 -->
+			<if test='bean.giftCardTypeCode != null and bean.giftCardTypeCode != ""'>
+				 AND A.gift_card_type_code = #{bean.giftCardTypeCode, jdbcType=VARCHAR}
+			</if>
+			<!-- 사용여부 -->
+			<if test='bean.useYn != null and bean.useYn != ""'>
+				 AND A.use_yn = #{bean.useYn, jdbcType=CHAR}
+			</if>
+			<!-- 유효기간 -->
+			<if test='bean.validTermType != null and bean.validTermType != ""'>
+				 AND A.valid_term_type = #{bean.validTermType, jdbcType=CHAR}
+			</if>
+			<!-- 기프트카드구분 -->
+			<if test='bean.giftCardGbnType != null and bean.giftCardGbnType != ""'>
+				AND A.gift_card_gbn_type = #{bean.giftCardGbnType, jdbcType=VARCHAR}
+			</if>
+			<!-- 기간조회 (등록일시, 수정일시) -->
+    		<if test="bean.periodType != null and bean.periodType != ''">
+    			<if test='bean.periodStartDate != null and bean.periodEndDate != null'>
+		   			<choose>
+		   				<!-- 등록일시 -->
+		   				<when test="bean.periodType == 'rgst-dtm'">
+							AND A.rgst_dtm
+								BETWEEN CONVERT(DATETIME, CONCAT(#{bean.periodStartDate, jdbcType=VARCHAR}, ' 00:00:00'))
+									AND CONVERT(DATETIME, CONCAT(#{bean.periodEndDate, jdbcType=VARCHAR}, ' 23:59:59'))
+						</when>
+						<!-- 수정일시 -->
+						<when test="bean.periodType == 'mod-dtm'">
+							AND A.mod_dtm
+								BETWEEN CONVERT(DATETIME, CONCAT(#{bean.periodStartDate, jdbcType=VARCHAR}, ' 00:00:00'))
+									AND CONVERT(DATETIME, CONCAT(#{bean.periodEndDate, jdbcType=VARCHAR}, ' 23:59:59'))
+						</when>
+		   			</choose>
+    			</if>
+    		</if>
+		</where>
+    </sql>
+
+    <sql id="join-giftCard-admin">
+    	JOIN sy_admin B WITH(NOLOCK)
+		ON A.rgster_no = B.admin_no
+		JOIN sy_admin C WITH(NOLOCK)
+		ON A.moder_no = C.admin_no
+    </sql>
+
+    <select id="selectGiftCard" parameterType="pageable" resultType="kr.co.abcmart.bo.product.model.master.PdGiftCard">
+
+     /*+ kr.co.abcmart.bo.product.repository.master.PdGiftCardDao.selectGiftCard [기프트 카드 목록] [황성준] */
+
+     	SELECT
+			<include refid="select-columns-alias-a" />
+			, B.admin_name AS rgster_name
+			, B.login_id AS rgster_id
+			, C.admin_name AS moder_name
+			, C.login_id AS moder_id
+		FROM
+			pd_gift_card A WITH (NOLOCK)
+			<include refid="join-giftCard-admin"/>
+			<include refid="where-giftCard-search-vo-alias-a" />
+		ORDER BY
+    	 <choose>
+			 <when test='sortColumn != null and sortColumn != ""'>
+			 	<if test='sortColumn == "formatSellAmt"'>
+			 		A.sell_amt
+			 	</if>
+			 	<if test='sortColumn == "validTermType"'>
+			 		A.valid_term_type
+			 	</if>
+			 	<if test='sortColumn == "giftCardName"'>
+			 		A.gift_card_name
+			 	</if>
+			 	<if test='sortColumn == "rgstDtm"'>
+			 		A.rgst_dtm
+			 	</if>
+			 	<if test='sortColumn == "modDtm"'>
+			 		A.mod_dtm
+			 	</if>
+			 	<if test='sortType == "DESC"'>
+			 		DESC
+			 	</if>
+			 </when>
+			 <otherwise>
+			 	A.rgst_dtm DESC
+			 </otherwise>
+		</choose>
+    	<include refid="Paging.mssql" />
+    </select>
+
+    <select id="selectGiftCardCount" parameterType="pageable" resultType="Integer">
+
+     /*+ kr.co.abcmart.bo.product.repository.master.PdGiftCardDao.selectGiftCardCount [기프트 카드 갯수] [황성준] */
+
+     	SELECT
+			<include refid="Paging.totalCount" />
+		FROM
+			pd_gift_card A WITH (NOLOCK)
+			<include refid="join-giftCard-admin"/>
+			<include refid="where-giftCard-search-vo-alias-a" />
+    </select>
+
+    <insert id="insertWithSelectKey" parameterType="kr.co.abcmart.bo.product.model.master.PdGiftCard">
+
+     /*+ kr.co.abcmart.bo.product.repository.master.PdGiftCardDao.insertWithSelectKey [기프트 카드 등록] [황성준] */
+
+     	<selectKey resultType="java.lang.String" keyProperty="giftCardNo" order="BEFORE">
+    		SELECT
+    			ISNULL(MAX(CONVERT(BIGINT, gift_card_no)) + 1, 10000)
+    		FROM
+    			pd_gift_card A WITH(NOLOCK)
+    	</selectKey>
+     	INSERT INTO pd_gift_card
+			 ( gift_card_no, gift_card_name, gift_card_type_code, gift_card_gbn_type, valid_term_type, image_name, image_path_text, image_url, altrn_text, sell_amt, mgmt_no_text, use_yn, rgster_no, rgst_dtm, moder_no, mod_dtm )
+
+		VALUES
+			 ( #{giftCardNo, jdbcType=VARCHAR}, #{giftCardName, jdbcType=VARCHAR}, #{giftCardTypeCode, jdbcType=VARCHAR}, #{giftCardGbnType, jdbcType=CHAR}, #{validTermType, jdbcType=CHAR}, #{imageName, jdbcType=VARCHAR}, #{imagePathText, jdbcType=VARCHAR}, #{imageUrl, jdbcType=VARCHAR}, #{altrnText, jdbcType=VARCHAR}, #{sellAmt, jdbcType=INTEGER}, #{mgmtNoText, jdbcType=VARCHAR}, #{useYn, jdbcType=CHAR}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )
+    </insert>
+
+</mapper>

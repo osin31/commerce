@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.display.repository.master.DpSearchWordDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.display.model.master.DpSearchWord">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpSearchWordDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			DP_SEARCH_WORD
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectDpSearchWordListCount" parameterType="kr.co.abcmart.bo.display.model.master.DpSearchWord" resultType="int">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpSearchWordDao.selectDpSearchWordListCount [검색어 목록 카운트 조회] [이가영] */
+    
+    	SELECT
+    		<include refid="Paging.totalCount" />
+    	FROM
+    		DP_SEARCH_WORD A with (nolock)
+		<where> 
+			<if test="bean.srchWordSeq != null"> 
+				 A.srch_word_seq = #{bean.srchWordSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="bean.siteNo != null"> 
+				 AND A.site_no = #{bean.siteNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWordGbnType != null"> 
+				 AND A.srch_word_gbn_type = #{bean.srchWordGbnType, jdbcType=CHAR}
+			</if> 
+			<if test="bean.srchWordText != null"> 
+				 AND A.srch_word_text = #{bean.srchWordText, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.cnnctnType != null"> 
+				 AND A.cnnctn_type = #{bean.cnnctnType, jdbcType=CHAR}
+			</if> 
+			<if test="bean.cnnctnUrl != null"> 
+				 AND A.cnnctn_url = #{bean.cnnctnUrl, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.dispYn != null"> 
+				 AND A.disp_yn = #{bean.dispYn, jdbcType=CHAR}
+			</if> 
+			<if test="bean.sortSeq != null"> 
+				 AND A.sort_seq = #{bean.sortSeq, jdbcType=INTEGER}
+			</if>
+		</where>
+    </select>
+    
+    <select id="selectDpSearchWordList" parameterType="kr.co.abcmart.bo.display.model.master.DpSearchWord" resultType="kr.co.abcmart.bo.display.model.master.DpSearchWord">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpSearchWordDao.selectDpSearchWordList [검색어 목록 조회] [이가영] */
+    
+    	SELECT
+    		A.srch_word_seq,
+    		A.site_no,
+    		A.srch_word_gbn_type,
+    		A.srch_word_text,
+    		A.cnnctn_type,
+    		A.cnnctn_url,
+    		A.disp_yn,
+    		A.sort_seq,
+    		A.rgster_no,
+    		A.rgst_dtm,
+    		A.moder_no,
+    		A.mod_dtm,
+    		B.admin_name AS rgster_name,
+			B.login_id AS rgster_id,
+			C.admin_name AS moder_name,
+			C.login_id AS moder_id,
+			'L' AS pageType
+    	FROM
+    		DP_SEARCH_WORD A with (nolock)
+    	LEFT OUTER JOIN SY_ADMIN B with (nolock) ON A.rgster_no = B.admin_no
+		LEFT OUTER JOIN SY_ADMIN C with (nolock) ON A.moder_no = C.admin_no
+		<where> 
+			<if test="bean.srchWordSeq != null"> 
+				 A.srch_word_seq = #{bean.srchWordSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="bean.siteNo != null"> 
+				 AND A.site_no = #{bean.siteNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.srchWordGbnType != null"> 
+				 AND A.srch_word_gbn_type = #{bean.srchWordGbnType, jdbcType=CHAR}
+			</if>
+			<if test="bean.srchWordText != null"> 
+				 AND A.srch_word_text = #{bean.srchWordText, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.cnnctnType != null"> 
+				 AND A.cnnctn_type = #{bean.cnnctnType, jdbcType=CHAR}
+			</if> 
+			<if test="bean.cnnctnUrl != null"> 
+				 AND A.cnnctn_url = #{bean.cnnctnUrl, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.dispYn != null"> 
+				 AND A.disp_yn = #{bean.dispYn, jdbcType=CHAR}
+			</if> 
+			<if test="bean.sortSeq != null"> 
+				 AND A.sort_seq = #{bean.sortSeq, jdbcType=INTEGER}
+			</if>
+		</where>
+		ORDER BY
+			<if test='bean.srchWordGbnType == "S"'> 
+				A.rgst_dtm DESC
+			</if>
+			<if test='bean.srchWordGbnType != "S"'>
+				A.sort_seq ASC 
+			</if>			
+		<if test='bean.isPageable == "Y"'>
+			<include refid="Paging.mssql" />
+		</if>
+    </select>
+    
+    <insert id="insertDpSearchWord" parameterType="kr.co.abcmart.bo.display.model.master.DpSearchWord">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpSearchWordDao.insertDpSearchWord [검색어 추가] [이가영] */
+    	
+    	INSERT INTO DP_SEARCH_WORD (
+    		site_no,
+    		srch_word_gbn_type,
+    		srch_word_text,
+    		cnnctn_type,
+    		cnnctn_url,
+    		disp_yn,
+    		sort_seq,
+    		rgster_no,
+    		rgst_dtm,
+    		moder_no,
+    		mod_dtm
+    	) VALUES (
+    		#{siteNo, jdbcType=VARCHAR},
+    		#{srchWordGbnType, jdbcType=CHAR},
+    		#{srchWordText, jdbcType=VARCHAR},
+    		#{cnnctnType, jdbcType=CHAR},
+    		#{cnnctnUrl, jdbcType=VARCHAR},
+    		#{dispYn, jdbcType=CHAR},
+    		#{sortSeq, jdbcType=INTEGER},
+    		#{rgsterNo, jdbcType=VARCHAR},
+    		getdate(),
+    		#{moderNo, jdbcType=VARCHAR},
+    		getdate()
+    	)
+    </insert>
+    
+    <update id="updateDpSearchWord" parameterType="kr.co.abcmart.bo.display.model.master.DpSearchWord">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpSearchWordDao.updateDpSearchWord [검색어 수정] [이가영] */
+    
+    	UPDATE DP_SEARCH_WORD
+		<set>
+			<if test="siteNo != null"> 
+				site_no = #{siteNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="srchWordGbnType != null"> 
+				srch_word_gbn_type = #{srchWordGbnType, jdbcType=CHAR}, 
+			</if> 
+			<if test="srchWordText != null"> 
+				srch_word_text = #{srchWordText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cnnctnType != null"> 
+				cnnctn_type = #{cnnctnType, jdbcType=CHAR}, 
+			</if> 
+			<if test="dispYn != null"> 
+				disp_yn = #{dispYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="sortSeq != null"> 
+				sort_seq = #{sortSeq, jdbcType=INTEGER}, 
+			</if>
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			cnnctn_url = #{cnnctnUrl, jdbcType=VARCHAR},
+			mod_dtm = getdate()
+		</set> 
+		WHERE 
+			srch_word_seq = #{srchWordSeq, jdbcType=INTEGER}
+    </update>
+    
+    <delete id="deleteDpSearchWord" parameterType="kr.co.abcmart.bo.display.model.master.DpSearchWord">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpSearchWordDao.deleteDpSearchWord [검색어 삭제] [이가영] */
+    
+    	DELETE FROM
+    		DP_SEARCH_WORD
+    	WHERE
+    		srch_word_seq = #{srchWordSeq, jdbcType=INTEGER}
+    </delete>
+    
+    <select id="selectDpSearchWordForValidate" parameterType="kr.co.abcmart.bo.display.model.master.DpSearchWord" resultType="int">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpSearchWordDao.selectDpSearchWordForValidate [검색어 중복 validate] [이강수] */
+    
+    	SELECT COUNT(*)
+    	  FROM DP_SEARCH_WORD with (nolock)
+    	 WHERE SRCH_WORD_GBN_TYPE = #{srchWordGbnType, jdbcType=CHAR}
+    	   AND SRCH_WORD_TEXT	  = #{srchWordText, jdbcType=VARCHAR}
+    	   AND SITE_NO			  = #{siteNo, jdbcType=VARCHAR}
+    </select>
+    
+</mapper>

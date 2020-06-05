@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.display.repository.master.DpWebzineDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.display.model.master.DpWebzine" resultType="kr.co.abcmart.bo.display.model.master.DpWebzine">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpWebzineDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			dp_webzine
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectDpWebzineList" parameterType="pageable" resultType="kr.co.abcmart.bo.display.model.master.DpWebzine">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpWebzineDao.selectDpWebzineList [웹진 리스트 조회] [박민우] */  
+    
+		SELECT 
+			A.wbzn_seq, 
+			A.wbzn_type, 
+			A.wbzn_no, 
+			A.wbzn_title_text, 
+			A.pc_image_name,  
+			A.pc_image_path_text,  
+			A.pc_image_url,  
+			A.pc_altrn_text,  
+			A.mobile_image_name,  
+			A.mobile_image_path_text,  
+			A.mobile_image_url,  
+			A.mobile_altrn_text,  
+			A.movie_upload_yn,  
+			A.movie_play_type,  
+			A.movie_name,  
+			A.movie_path_text,  
+			A.movie_url,  
+			A.wbzn_info,  
+			A.disp_yn,  
+			A.disp_start_ymd,  
+			A.rgster_no,  
+			A.rgst_dtm,  
+			A.moder_no,  
+			A.mod_dtm,
+			B.ADMIN_NAME AS RGSTER_NAME,
+			B.LOGIN_ID AS RGSTER_ID,
+    	    C.ADMIN_NAME AS MODER_NAME,
+			C.LOGIN_ID AS MODER_ID
+		FROM 
+			DP_WEBZINE A WITH(NOLOCK)
+		LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON A.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON A.MODER_NO = C.ADMIN_NO 
+		<where> 
+			
+			<choose>
+				<when test="bean.wbznTypeArr != null and bean.wbznTypeArr.length > 0">
+					AND wbzn_type in
+					<foreach item="item" index="index" collection="bean.wbznTypeArr" open="(" separator="," close=")">
+						#{item}
+					</foreach>	
+				</when>
+				<otherwise>
+					<if test='bean.wbznType != null and bean.wbznType != ""'>
+						<if test='bean.wbznType == "WEBZINE"'>
+							AND wbzn_type in ('C','M','N')
+						</if>
+						<if test='bean.wbznType == "OTS"'>
+							AND wbzn_type in ('O','S','E')
+						</if>
+					</if>
+				</otherwise>
+			</choose>
+			
+			<if test='bean.keyword != null and bean.keyword != ""'>
+				<if test="bean.keywordType == 01">
+					AND A.WBZN_TITLE_TEXT LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+				</if>
+				<if test="bean.keywordType == 02">
+					AND B.ADMIN_NAME LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+				</if>
+				<if test="bean.keywordType == 03">
+					AND C.ADMIN_NAME LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+				</if>
+			</if> 
+	
+			<if test='bean.dispYn != null and bean.dispYn != ""'> 
+				 AND A.DISP_YN = #{bean.dispYn, jdbcType=CHAR}
+			</if>
+
+			<if test='bean.startWbznNo != null and bean.startWbznNo != ""'>
+				AND A.WBZN_NO >= #{bean.startWbznNo, jdbcType=INTEGER} 
+			</if>
+			
+			<if test='bean.endWbznNo != null and bean.endWbznNo != ""'>
+				AND #{bean.endWbznNo, jdbcType=INTEGER} >= A.WBZN_NO 
+			</if>
+			
+			<if test="bean.dateType == 01">
+				<if test='bean.startYmd != null and bean.startYmd != ""'>
+					AND A.RGST_DTM >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR}) 
+				</if>
+				
+				<if test='bean.endYmd != null and bean.endYmd != ""'>
+					AND CONVERT(DATETIME, #{bean.endYmd, jdbcType=VARCHAR}+' 23:59:59') >= A.RGST_DTM  
+				</if>
+			</if>
+			
+			<if test="bean.dateType == 02">
+				<if test='bean.startYmd != null and bean.startYmd != ""'>
+					AND A.MOD_DTM >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR}) 
+				</if>
+				
+				<if test='bean.endYmd != null and bean.endYmd != ""'>
+					AND CONVERT(DATETIME, #{bean.endYmd, jdbcType=VARCHAR}+' 23:59:59') >= A.MOD_DTM  
+				</if>
+			</if>
+			
+			<if test="bean.dateType == 03">
+				<if test='bean.startYmd != null and bean.startYmd != ""'>
+					AND CONVERT(DATETIME, A.DISP_START_YMD) >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})  
+				</if>
+				
+				<if test='bean.endYmd != null and bean.endYmd != ""'>
+					AND CONVERT(DATETIME, #{bean.endYmd, jdbcType=VARCHAR}) >= CONVERT(DATETIME, A.DISP_START_YMD)   
+				</if>
+			</if>
+		</where>
+	     <choose>
+			 <when test="sortColumn != null">
+			 	ORDER BY
+			 	<if test="sortColumn == 'wbznTitleText'.toString()">
+			 		A.WBZN_TITLE_TEXT
+			 	</if>
+			 	<if test="sortColumn == 'rgstDtm'.toString()">
+			 		A.RGST_DTM
+			 	</if>
+			 	<if test="sortColumn == 'modDtm'.toString()">
+			 		A.MOD_DTM
+			 	</if>
+			 	<if test="sortType == 'DESC'.toString()">
+			 		DESC
+			 	</if>
+			 </when>
+			 <otherwise>
+			 	ORDER BY A.RGST_DTM DESC
+			 </otherwise>
+		</choose>
+		<include refid="Paging.mssql" />
+    </select>
+    
+    <select id="selectDpWebzineCount" parameterType="pageable" resultType="int">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpWebzineDao.selectDpWebzineCount [웹진 리스트 카운트 조회] [박민우] */
+    
+    	SELECT <include refid="Paging.totalCount" /> 
+		FROM 
+			DP_WEBZINE A WITH(NOLOCK)
+		LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON A.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON A.MODER_NO = C.ADMIN_NO 
+		<where> 
+		
+			<if test="bean.wbznTypeArr != null and bean.wbznTypeArr.length > 0">
+			AND wbzn_type in
+			<foreach item="item" index="index" collection="bean.wbznTypeArr" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+			</if>
+			
+			<if test='bean.wbznType != null and bean.wbznType != ""'>
+				<if test='bean.wbznType == "WEBZINE"'>
+					AND wbzn_type in ('C','M','N')
+				</if>
+				<if test='bean.wbznType == "OTS"'>
+					AND wbzn_type in ('O','S','E')
+				</if>
+			</if>
+			
+			
+			<if test='bean.keyword != null and bean.keyword != ""'>
+				<if test="bean.keywordType == 01">
+					AND A.WBZN_TITLE_TEXT LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+				</if>
+				<if test="bean.keywordType == 02">
+					AND B.ADMIN_NAME LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+				</if>
+				<if test="bean.keywordType == 03">
+					AND C.ADMIN_NAME LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+				</if>
+			</if> 
+			<if test='bean.dispYn != null and bean.dispYn != ""'> 
+				 AND A.DISP_YN = #{bean.dispYn, jdbcType=CHAR}
+			</if>
+			
+			<if test='bean.startWbznNo != null and bean.startWbznNo != ""'>
+				AND A.WBZN_NO >= #{bean.startWbznNo, jdbcType=INTEGER} 
+			</if>
+			
+			<if test='bean.endWbznNo != null and bean.endWbznNo != ""'>
+				AND #{bean.endWbznNo, jdbcType=INTEGER} >= A.WBZN_NO 
+			</if>
+			
+			<if test="bean.dateType == 01">
+				<if test='bean.startYmd != null and bean.startYmd != ""'>
+					AND A.RGST_DTM >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR}) 
+				</if>
+				
+				<if test='bean.endYmd != null and bean.endYmd != ""'>
+					AND CONVERT(DATETIME, #{bean.endYmd, jdbcType=VARCHAR}+' 23:59:59') >= A.MOD_DTM
+				</if>
+			</if>
+			
+			<if test="bean.dateType == 02">
+				<if test='bean.startYmd != null and bean.startYmd != ""'>
+					AND A.MOD_DTM >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR}) 
+				</if>
+				
+				<if test='bean.endYmd != null and bean.endYmd != ""'>
+					AND CONVERT(DATETIME, #{bean.endYmd, jdbcType=VARCHAR}+' 23:59:59') >= A.MOD_DTM
+				</if>
+			</if>
+			
+			<if test="bean.dateType == 03">
+				<if test='bean.startYmd != null and bean.startYmd != ""'>
+					AND CONVERT(DATETIME, A.DISP_START_YMD) >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})  
+				</if>
+				
+				<if test='bean.endYmd != null and bean.endYmd != ""'>
+					AND CONVERT(DATETIME, #{bean.endYmd, jdbcType=VARCHAR}) >= CONVERT(DATETIME, A.DISP_START_YMD)   
+				</if>
+			</if> 
+		</where>
+    </select>
+    
+    <select id="selectDpWebzine" parameterType="kr.co.abcmart.bo.display.model.master.DpWebzine" resultType="kr.co.abcmart.bo.display.model.master.DpWebzine">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpWebzineDao.selectDpWebzine [웹진 조회] [박민우] */  
+    
+		SELECT 
+			A.wbzn_seq, 
+			A.wbzn_type, 
+			A.wbzn_no, 
+			A.wbzn_title_text, 
+			A.pc_image_name,  
+			A.pc_image_path_text,  
+			A.pc_image_url,  
+			A.pc_altrn_text,  
+			A.mobile_image_name,  
+			A.mobile_image_path_text,  
+			A.mobile_image_url,  
+			A.mobile_altrn_text,  
+			A.movie_upload_yn,  
+			A.movie_play_type,  
+			A.movie_name,  
+			A.movie_path_text,  
+			A.movie_url,  
+			A.wbzn_info,  
+			A.disp_yn,  
+			A.disp_start_ymd,  
+			A.rgster_no,  
+			A.rgst_dtm,  
+			A.moder_no,  
+			A.mod_dtm,
+			B.ADMIN_NAME AS RGSTER_NAME,
+			B.LOGIN_ID AS RGSTER_ID,
+    	    C.ADMIN_NAME AS MODER_NAME,
+			C.LOGIN_ID AS MODER_ID
+		FROM 
+			DP_WEBZINE A WITH(NOLOCK)
+		LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON A.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON A.MODER_NO = C.ADMIN_NO 
+		WHERE 
+			A.WBZN_SEQ = #{wbznSeq, jdbcType=INTEGER}
+    </select>
+    
+    <update id="updateDpWebzine" parameterType="kr.co.abcmart.bo.display.model.master.DpWebzine">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpWebzineDao.updateDpWebzine [웹진 수정] [박민우] */
+    
+		UPDATE dp_webzine
+		<set> 
+			<if test="wbznType != null"> 
+				wbzn_type = #{wbznType, jdbcType=CHAR}, 
+			</if> 
+			<if test="wbznNo != null"> 
+				wbzn_no = #{wbznNo, jdbcType=INTEGER}, 
+			</if> 
+			<if test="wbznTitleText != null"> 
+				wbzn_title_text = #{wbznTitleText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="pcImageName != null"> 
+				pc_image_name = #{pcImageName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="pcImagePathText != null"> 
+				pc_image_path_text = #{pcImagePathText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="pcImageUrl != null"> 
+				pc_image_url = #{pcImageUrl, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="pcAltrnText != null"> 
+				pc_altrn_text = #{pcAltrnText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="mobileImageName != null"> 
+				mobile_image_name = #{mobileImageName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="mobileImagePathText != null"> 
+				mobile_image_path_text = #{mobileImagePathText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="mobileImageUrl != null"> 
+				mobile_image_url = #{mobileImageUrl, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="mobileAltrnText != null"> 
+				mobile_altrn_text = #{mobileAltrnText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="movieImageName != null"> 
+				movie_image_name = #{movieImageName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="movieImagePathText != null"> 
+				movie_image_path_text = #{movieImagePathText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="movieImageUrl != null"> 
+				movie_image_url = #{movieImageUrl, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="movieAltrnText != null"> 
+				movie_altrn_text = #{movieAltrnText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="movieUploadYn != null"> 
+				movie_upload_yn = #{movieUploadYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="moviePlayType != null"> 
+				movie_play_type = #{moviePlayType, jdbcType=CHAR}, 
+			</if> 
+			<if test="movieName != null"> 
+				movie_name = #{movieName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="moviePathText != null"> 
+				movie_path_text = #{moviePathText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="movieUrl != null"> 
+				movie_url = #{movieUrl, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="wbznInfo != null"> 
+				wbzn_info = #{wbznInfo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="dispYn != null"> 
+				disp_yn = #{dispYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="dispStartYmd != null"> 
+				disp_start_ymd = #{dispStartYmd, jdbcType=DATE}, 
+			</if> 
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if>
+		</set> 
+		WHERE 
+			 wbzn_seq = #{wbznSeq, jdbcType=INTEGER}   
+    </update>
+
+</mapper>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyAdminChangeHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.system.model.master.SyAdminChangeHistory" resultType="kr.co.abcmart.bo.system.model.master.SyAdminChangeHistory">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SyAdminChangeHistoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			sy_admin_change_history WITH(NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectAdminChangeHistoryListCount" parameterType="pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.system.repository.master.SyAdminChangeHistoryDao.selectAdminChangeHistoryListCount [관리자 변경이력 카운터 조회] [이동엽] */
+    	SELECT <include refid="Paging.totalCount" />
+          FROM SY_ADMIN_CHANGE_HISTORY A WITH(NOLOCK)
+          JOIN SY_ADMIN B WITH(NOLOCK)
+            ON A.RGSTER_NO= B.ADMIN_NO
+         WHERE A.ADMIN_NO = #{bean.adminNo}
+    </select>
+
+    <select id="selectAdminChangeHistoryList" parameterType="pageable" resultType="kr.co.abcmart.bo.system.model.master.SyAdminChangeHistory">
+    	/*+ kr.co.abcmart.bo.system.repository.master.SyAdminChangeHistoryDao.selectAdminChangeHistoryList [관리자 변경이력 조회] [이동엽] */
+    	SELECT A.ADMIN_NO
+             , A.CHNG_FIELD_NAME
+             , CASE WHEN CHNG_FIELD	!= 'pswdText'
+                    THEN CONCAT(A.CHNG_BEFORE_FIELD_VALUE, ' -> ', A.CHNG_AFTER_FIELD_VALUE)
+                    ELSE 'Y'
+                END AS CHNG_FIELD_VALUE
+             , A.RGSTER_NO
+             , B.LOGIN_ID +'('+B.ADMIN_NAME+')' AS RGSTER_NAME
+             , A.RGST_DTM
+          FROM SY_ADMIN_CHANGE_HISTORY A WITH(NOLOCK)
+          JOIN SY_ADMIN B WITH(NOLOCK)
+            ON A.RGSTER_NO= B.ADMIN_NO
+         WHERE A.ADMIN_NO = #{bean.adminNo}
+        <if test="bean.chngField != null and bean.chngField != ''">
+           AND A.CHNG_FIELD = #{bean.chngField}
+        </if>
+        <if test="bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+           AND A.RGST_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+        </if>
+        <choose>
+		 <when test="sortColumn != null">
+		 	ORDER BY
+		 	<choose>
+		 		<when test="sortColumn == 'rgstDtm'.toString()">
+		 			A.RGST_DTM
+		 		</when>
+		 		<when test="sortColumn == 'chngField'.toString()">
+		 			A.CHNG_FIELD
+		 		</when>
+		 	</choose>
+		 	<if test="sortType == 'DESC'.toString()">
+		 		DESC
+		 	</if>
+		 </when>
+		 <otherwise>
+		 	ORDER BY A.RGST_DTM DESC
+		 </otherwise>
+		</choose>
+         <include refid="Paging.mssql" />
+    </select>
+
+    <insert id="insertAdminChangeHistoryNoTrx" parameterType="kr.co.abcmart.bo.system.model.master.SyAdminChangeHistory">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAdminChangeHistoryDao.insertAdminChangeHistoryNoTrx [관리자 변경 이력 저장][이동엽] */
+		<selectKey resultType="int" keyProperty="chngHistSeq" order="BEFORE">
+			SELECT ISNULL(MAX(CHNG_HIST_SEQ), 0) + 1
+			  FROM SY_ADMIN_CHANGE_HISTORY
+			 WHERE ADMIN_NO = #{adminNo, jdbcType=VARCHAR}
+		</selectKey>
+		INSERT INTO SY_ADMIN_CHANGE_HISTORY(
+			   ADMIN_NO
+			 , CHNG_HIST_SEQ
+			 , CHNG_FIELD
+			 , CHNG_FIELD_NAME
+			 , CHNG_BEFORE_FIELD_VALUE
+			 , CHNG_AFTER_FIELD_VALUE
+			 , RGSTER_NO
+			 , RGST_DTM
+		)VALUES(
+			   #{adminNo, jdbcType=VARCHAR}
+			 , #{chngHistSeq, jdbcType=INTEGER}
+			 , #{chngField, jdbcType=VARCHAR}
+			 , #{chngFieldName, jdbcType=VARCHAR}
+			 , #{chngBeforeFieldValue, jdbcType=VARCHAR}
+			 , #{chngAfterFieldValue, jdbcType=VARCHAR}
+			 , #{rgsterNo, jdbcType=VARCHAR}
+			 , GETDATE()
+		)
+
+	</insert>
+
+</mapper>

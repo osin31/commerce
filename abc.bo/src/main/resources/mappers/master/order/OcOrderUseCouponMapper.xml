@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.order.repository.master.OcOrderUseCouponDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.order.model.master.OcOrderUseCoupon">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOrderUseCouponDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			OC_ORDER_USE_COUPON
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+	<select id="selectOrderCouponList" parameterType="kr.co.abcmart.bo.order.vo.OcOrderDiscountVO" resultType="kr.co.abcmart.bo.order.vo.OcOrderDiscountVO">
+	/*+ kr.co.abcmart.bo.order.repository.master.OcOrderUseCouponDao.selectOrderCouponList [주문 쿠폰 사용 목록 조회 ] [Generator] */  
+    
+		SELECT 'COUPON' 			AS DISCOUNT_GBN
+			 , A.CPN_NO 			AS DISCOUNT_ID
+			 , A.DSCNT_TYPE			AS DISCOUNT_TYPE
+			 , A.DSCNT_VALUE 		AS DISCOUNT_VALUE
+			 , A.DSCNT_AMT			AS DISCOUNT_AMT
+			 , B.PRDT_NO			AS DISCOUNT_PRDT_NO
+			 , B.PRDT_NAME 			AS DISCOUNT_PRDT_NAME
+			 , CONVERT(VARCHAR(10),C.VALID_START_DTM,120)	AS DISCOUNT_START_DT
+			 , CONVERT(VARCHAR(10),C.VALID_END_DTM,120)	AS DISCOUNT_END_DT
+			 , D.CPN_NAME			AS DISCOUNT_TXT
+		  FROM OC_ORDER_USE_COUPON A WITH (NOLOCK)
+		  JOIN OC_ORDER_PRODUCT B WITH (NOLOCK)	
+		    ON A.ORDER_NO 		= B.ORDER_NO
+		   AND A.ORDER_PRDT_SEQ = B.ORDER_PRDT_SEQ
+		  JOIN MB_MEMBER_COUPON C WITH (NOLOCK)
+		    ON A.HOLD_CPN_SEQ 	= C.HOLD_CPN_SEQ
+		   AND A.MEMBER_NO 		= C.MEMBER_NO
+		  JOIN PR_COUPON D WITH (NOLOCK)
+			ON D.CPN_NO 		= A.CPN_NO
+		 WHERE A.ORDER_NO 		= #{orderNo, jdbcType=VARCHAR}
+		<if test='memberNo != null and memberNo != ""'>
+		   AND A.MEMBER_NO  	= #{memberNo, jdbcType=VARCHAR}
+		</if>
+	</select>
+	
+	<select id="selectClaimCancelCouponList" parameterType="kr.co.abcmart.bo.claim.vo.OcClaimDiscountVO" resultType="kr.co.abcmart.bo.claim.vo.OcClaimDiscountVO">
+	/*+ kr.co.abcmart.bo.order.repository.master.OcOrderUseCouponDao.selectClaimCancelCouponList [클레임 취소 쿠폰 사용 목록 조회 ] [KTH] */  
+		SELECT 'COUPON' 			AS DISCOUNT_GBN
+			 , A.CPN_NO 			AS DISCOUNT_ID
+			 , A.DSCNT_TYPE			AS DISCOUNT_TYPE
+			 , A.DSCNT_VALUE 		AS DISCOUNT_VALUE
+			 , A.DSCNT_AMT			AS DISCOUNT_AMT
+			 , A.CLM_NO				AS CLM_NO
+			 , B.PRDT_NO			AS DISCOUNT_PRDT_NO
+			 , B.PRDT_NAME 			AS DISCOUNT_PRDT_NAME
+			 , C.VALID_START_DTM	AS DISCOUNT_START_DT
+			 , C.VALID_END_DTM		AS DISCOUNT_END_DT
+			 , D.CPN_NAME			AS DISCOUNT_TXT
+		  FROM OC_ORDER_USE_COUPON A WITH (NOLOCK)
+		  JOIN OC_ORDER_PRODUCT B WITH (NOLOCK)
+		    ON A.ORDER_NO 		= B.ORDER_NO
+		   AND A.ORDER_PRDT_SEQ = B.ORDER_PRDT_SEQ
+		  LEFT OUTER JOIN MB_MEMBER_COUPON C WITH (NOLOCK)
+		    ON A.HOLD_CPN_SEQ 	= C.HOLD_CPN_SEQ
+		   AND A.MEMBER_NO 		= C.MEMBER_NO
+		  JOIN PR_COUPON D WITH (NOLOCK)
+			ON D.CPN_NO 		= A.CPN_NO
+		 WHERE A.CLM_NO IS NOT NULL
+		<if test='orgOrderNo != null and orgOrderNo != ""'>
+		   AND A.ORDER_NO IN (SELECT ORDER_NO FROM OC_ORDER WHERE ORG_ORDER_NO = #{orgOrderNo, jdbcType=VARCHAR})
+		</if>
+		<if test='orderNo != null and orderNo != ""'>
+		   AND A.ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+		</if>
+	</select>
+	
+	<select id="selectOrderUserCouponForClaimList" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderUseCoupon" resultType="kr.co.abcmart.bo.order.model.master.OcOrderUseCoupon">
+	/*+ kr.co.abcmart.bo.order.repository.master.OcOrderUseCouponDao.selectOrderClaimCouponList [클레임 처리용 쿠폰 사용 목록 조회] [KTH] */  
+		SELECT A.ORDER_NO
+			 , A.ORDER_USE_CPN_SEQ
+			 , A.ORDER_PRDT_SEQ
+			 , A.MEMBER_NO
+			 , A.HOLD_CPN_SEQ
+			 , A.CPN_NO
+			 , A.VNDR_NO
+			 , A.DSCNT_TYPE
+			 , A.DSCNT_VALUE
+			 , A.DSCNT_AMT
+			 , A.CLM_NO
+			 , B.PRDT_TYPE_CODE
+			 , C.VALID_START_DTM
+			 , C.VALID_END_DTM
+			 , C.CPN_STAT_CODE
+			 , D.CPN_NAME
+			 , D.CPN_TYPE_CODE
+		  FROM OC_ORDER_USE_COUPON A WITH (NOLOCK)
+		  LEFT OUTER JOIN OC_ORDER_PRODUCT B WITH (NOLOCK)
+		    ON A.ORDER_NO 		= B.ORDER_NO
+		   AND A.ORDER_PRDT_SEQ = B.ORDER_PRDT_SEQ
+		  LEFT OUTER JOIN MB_MEMBER_COUPON C WITH (NOLOCK)
+		    ON A.HOLD_CPN_SEQ 	= C.HOLD_CPN_SEQ
+		   AND A.MEMBER_NO 		= C.MEMBER_NO
+		  JOIN PR_COUPON D WITH (NOLOCK)
+			ON D.CPN_NO 		= A.CPN_NO
+		<where>
+			<if test='orgOrderNo != null and orgOrderNo != ""'>
+			   AND A.ORDER_NO IN (SELECT ORDER_NO FROM OC_ORDER WHERE ORG_ORDER_NO = #{orgOrderNo, jdbcType=VARCHAR})
+			</if>
+			<if test='orderNo != null and orderNo != ""'>
+			   AND A.ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+			</if>
+		</where>
+	</select>
+	
+	<update id="updateOrderUseCouponClmNo" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderUseCoupon">
+    	/*+ kr.co.abcmart.bo.order.repository.master.OcOrderUseCouponDao.updateOrderUseCouponClmNo [주문사용쿠폰 클레임번호 업데이트] [KTH] */
+    	UPDATE OC_ORDER_USE_COUPON
+    	   SET CLM_NO = #{clmNo, jdbcType=VARCHAR}
+    	 WHERE ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+		<if test='orderUseCpnSeq != null'>
+		   AND ORDER_USE_CPN_SEQ = #{orderUseCpnSeq, jdbcType=TINYINT}
+		</if>
+		<if test='orderPrdtSeq != null'>
+		   AND ORDER_PRDT_SEQ = #{orderPrdtSeq, jdbcType=INTEGER}
+		</if>
+		<if test='holdCpnSeq != null'>
+		   AND HOLD_CPN_SEQ = #{holdCpnSeq, jdbcType=INTEGER}
+		</if>
+    </update>
+
+</mapper>

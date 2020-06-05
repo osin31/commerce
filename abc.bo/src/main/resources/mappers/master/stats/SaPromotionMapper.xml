@@ -1,0 +1,1131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.stats.repository.master.SaPromotionStatusDao">
+
+
+	<sql id="dateConvert">
+		<choose>
+			<when test="bean.choicePeriod == 'date' and bean.choicePeriod != null">
+		 		 CONCAT(CONVERT(CHAR(10), ORDER_DTM, 23),'(', DATENAME(WEEKDAY,ORDER_DTM), ')')
+			</when>
+			<when test="bean.choicePeriod == 'month' and bean.choicePeriod != null">
+		 		 LEFT(CONVERT(CHAR(10), ORDER_DTM, 23), 7)
+			</when>
+			<otherwise>
+		  		 LEFT(CONVERT(CHAR(10), ORDER_DTM, 23), 4)
+			</otherwise>
+		</choose>
+	</sql>
+	<sql id="stats-search">
+   		<!-- 프로모션유형 -->
+    	<if test="bean.promoType != null and bean.promoType !=''">
+   			AND B.PROMO_TYPE_CODE = #{bean.promoType, jdbcType=VARCHAR}
+   		</if>
+   		<!-- 사이트번호 -->
+    	<if test="bean.siteNo != null and bean.siteNo !=''">
+    		AND A.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+    	</if>
+    	<!-- 디바이스코드 -->
+    	<if test="bean.deviceCodeArr != null and bean.deviceCodeArr !=''">
+    		<foreach collection="bean.deviceCodeArr" item="deviceCode" open="AND A.DEVICE_CODE IN (" close=")" separator=",">
+    			#{deviceCode, jdbcType=VARCHAR}
+    		</foreach>
+    	</if>
+   		<!-- 판매 기간 -->
+   		<if test="(bean.sellFromDate != null and bean.sellFromDate != '') and (bean.sellToDate != null and bean.sellToDate != '' )">
+   			<if test='bean.dateKeywordType == "order-date"'>
+   				AND	A.ORDER_DTM BETWEEN CONVERT(DATETIME, #{bean.sellFromDate, jdbcType=VARCHAR} + ' 00:00:00')
+	   								AND CONVERT(DATETIME, #{bean.sellToDate, jdbcType=VARCHAR} + ' 23:59:59')
+   			</if>
+   			<if test='bean.dateKeywordType == "payment-confirm-date"'>
+   				AND A.ORDER_NO IN (
+   					SELECT ORDER_NO FROM OC_ORDER_PAYMENT
+   					<where>
+   						AND PYMNT_STAT_CODE = '10001' <!-- 결제완료 -->
+   						AND	PYMNT_DTM BETWEEN CONVERT(DATETIME, #{bean.sellFromDate, jdbcType=VARCHAR} + ' 00:00:00')
+	   									  AND CONVERT(DATETIME, #{bean.sellToDate, jdbcType=VARCHAR} + ' 23:59:59')
+   					</where>
+   				)
+   			</if>
+   		</if>
+   		<!-- 기획전 기간 -->
+   		<if test="(bean.plndpFromDate != null and bean.plndpFromDate != '') and (bean.plndpToDate != null and bean.plndpToDate != '' )">
+  				<if test='bean.choiceDate == "start-date"'>
+  					AND B.PLNDP_START_DTM
+  				</if>
+  				<if test='bean.choiceDate == "end-date"'>
+  					AND B.PLNDP_END_DTM
+  				</if>
+			BETWEEN CONVERT(DATETIME, #{bean.plndpFromDate, jdbcType=VARCHAR} + ' 00:00:00')
+				AND CONVERT(DATETIME, #{bean.plndpToDate, jdbcType=VARCHAR} + ' 23:59:59')
+   		</if>
+   		<!-- 프로모션 기간 -->
+   		<if test="(bean.promoFromDate != null and bean.promoFromDate != '') and (bean.promoToDate != null and bean.promoToDate != '' )">
+  				<if test='bean.choiceDate == "start-date"'>
+  					AND B.PROMO_START_DTM
+  				</if>
+  				<if test='bean.choiceDate == "end-date"'>
+  					AND B.PROMO_END_DTM
+  				</if>
+   			BETWEEN CONVERT(DATETIME, #{bean.promoFromDate, jdbcType=VARCHAR} + ' 00:00:00')
+				AND CONVERT(DATETIME, #{bean.promoToDate, jdbcType=VARCHAR} + ' 23:59:59')
+   		</if>
+    	<if test='(bean.searchKeywordType != null and bean.searchKeywordType != "") and (bean.searchKeyword != null and bean.searchKeyword != "")'>
+   			<!-- 기획전명 -->
+   			<if test='bean.searchKeywordType == "planning-name"'>
+   				AND B.PLNDP_NAME
+   			</if>
+   			<!-- 기획전 ID -->
+   			<if test='bean.searchKeywordType == "planning-id"'>
+   				AND A.PLNDP_NO
+   			</if>
+   			<!-- 프로모션명 -->
+   			<if test='bean.searchKeywordType == "promo-name"'>
+   				AND B.PROMO_NAME
+   			</if>
+   			<!-- 프로모션번호 -->
+   			<if test='bean.searchKeywordType == "promo-no"'>
+   				AND B.PROMO_NO
+   			</if>
+    		LIKE '%'+#{bean.searchKeyword, jdbcType=VARCHAR}+'%'
+    	</if>
+    	<!-- 입점사 번호 -->
+    	<if test='bean.vndrNo != null and bean.vndrNo != ""'>
+			AND A.VNDR_NO = #{bean.vndrNo, jdbcType=VARCHAR}
+		</if>
+    </sql>
+    <sql id="multiShoeSearch">
+    	<where>
+    		<if test="(bean.promoFromDate != null or bean.promoFromDate != '') and (bean.promoToDate != null or bean.promoToDate != '') ">
+    			A.ORDER_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{bean.promoFromDate, jdbcType=VARCHAR}, ' 00:00:00')) -- 기간
+		   			  AND CONVERT(DATETIME, CONCAT(#{bean.promoToDate, jdbcType=VARCHAR}, ' 23:59:59'))
+    		</if>
+	    	<if test="bean.siteNo !=null and bean.siteNo != '' ">
+	    		AND A.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR} -- 사이트번호
+	    	</if>
+	    	<if test="bean.deviceCodeArr != null and bean.deviceCodeArr !='' ">
+	   			AND
+	    		<foreach collection="bean.deviceCodeArr" item="deviceCode" open="(" close=")" separator="or">
+	    			A.DEVICE_CODE = #{deviceCode, jdbcType=VARCHAR} -- 디바이스별
+	    		</foreach>
+	    	</if>
+	    	<if test="bean.searchKeyword != null and bean.searchKeyword != '' ">
+		    	<if test="bean.promotionType =='promoNo' ">
+		    		AND C.PROMO_NO = #{bean.searchKeyword, jdbcType=VARCHAR} -- 프로모션 번호
+		    	</if>
+		    	<if test="bean.promotionType == 'promoName'">
+		    		AND	EXISTS (
+		    			SELECT TOP 1 PROMO_NO
+		    				FROM PR_PROMOTION PR WITH (NOLOCK)
+		    			WHERE PROMO_NAME = #{bean.searchKeyword, jdbcType=VARCHAR}
+		    				AND C.PROMO_NO = PR.PROMO_NO
+		    			)
+		    	</if>
+	    	</if>
+	    	<if test="bean.vndrNo != null and bean.vndrNo != '' ">
+	    		AND B.VNDR_NO = #{bean.vndrNo, jdbcType=VARCHAR}
+	    	</if>
+    	</where>
+    </sql>
+
+   <select id="planningStatsCount" parameterType="pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaPromotionStatusDao.planningStatsCount [기획전 현황 count] [변지은] */
+    	SELECT <include refid="Paging.totalCount"/>
+ 		FROM SA_SALES_ORDER A WITH (NOLOCK)
+ 		JOIN PR_PLANNING_DISPLAY B WITH(NOLOCK)
+ 		ON A.PLNDP_NO = B.PLNDP_NO
+ 		<where>
+	    	<include refid="stats-search"/>
+	    	AND A.SALES_CNCL_GBN_TYPE = 'S'
+ 		</where>
+    </select>
+
+    <select id="planningStats" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaPromotionPlanStatus" >
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaPromotionStatusDao.planningStats [기획전 현황 통계 목록] [변지은] */
+   		SELECT
+	    	  A.PLANNING_ID AS PLANNING_ID
+			, A.SITE_NO AS SITE_NO
+			, A.PLNDP_NAME AS PLANNING_NAME
+		    , STUFF((SELECT ',' + DBO.FN_CODE_VALUE('PLNDP_TYPE_CODE', C.PLNDP_TYPE_CODE)
+		               FROM PR_PLANNING_DISPLAY_TYPE C
+		              WHERE C.PLNDP_NO = A.PLANNING_ID
+		                FOR XML PATH('')), 1, 1, '') AS PLANNING_TYPE
+			, ORDER_QTY_ALL
+			, PRDT_NORMAL_AMT_ALL
+			, SELL_AMT_ALL
+			, ORDER_QTY_10000
+			, PRDT_NORMAL_AMT_10000
+			, SELL_AMT_10000
+			, ORDER_QTY_10001
+			, PRDT_NORMAL_AMT_10001
+			, SELL_AMT_10001
+			, ORDER_QTY_10002
+			, PRDT_NORMAL_AMT_10002
+			, SELL_AMT_10002
+			, ORDER_QTY_10003
+			, PRDT_NORMAL_AMT_10003
+			, SELL_AMT_10003
+		FROM
+			(
+			SELECT
+				'합계' AS PLANNING_ID ,
+				'' AS SITE_NO ,
+				'' AS PLNDP_NAME ,
+				SUM(A.ORDER_QTY) AS ORDER_QTY_ALL,
+				SUM(CONVERT(BIGINT,ISNULL(A.PRDT_NORMAL_AMT,0))) AS PRDT_NORMAL_AMT_ALL,
+				SUM(CONVERT(BIGINT,ISNULL(A.SELL_AMT,0))) AS SELL_AMT_ALL,
+				
+				SUM(CASE STOCK_GBN_CODE WHEN '10000' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10000,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10000' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10000,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10000' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10000,
+				
+				SUM(CASE STOCK_GBN_CODE WHEN '10001' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10001,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10001' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10001,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10001' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10001,
+				
+				SUM(CASE STOCK_GBN_CODE WHEN '10002' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10002,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10002' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10002,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10002' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10002,
+				
+				SUM(CASE STOCK_GBN_CODE WHEN '10003' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10003,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10003' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10003,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10003' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10003
+			FROM SA_SALES_ORDER A WITH(NOLOCK)
+			JOIN PR_PLANNING_DISPLAY B WITH(NOLOCK)
+			ON A.PLNDP_NO = B.PLNDP_NO
+			<where>
+				<include refid="stats-search"/>
+				AND A.SALES_CNCL_GBN_TYPE = 'S'
+			</where>
+			UNION
+	  		SELECT
+				A.PLNDP_NO AS PLANNING_ID ,
+				A.SITE_NO AS SITE_NO,
+				B.PLNDP_NAME AS PLNDP_NAME,
+				SUM(A.ORDER_QTY) AS ORDER_QTY_ALL,
+				SUM(CONVERT(BIGINT,ISNULL(A.PRDT_NORMAL_AMT,0))) AS PRDT_NORMAL_AMT_ALL,
+				SUM(CONVERT(BIGINT,ISNULL(A.SELL_AMT,0))) AS SELL_AMT_ALL,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10000' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10000,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10000' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10000,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10000' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10000,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10001' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10001,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10001' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10001,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10001' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10001,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10002' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10002,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10002' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10002,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10002' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10002,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10003' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10003,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10003' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10003,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10003' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10003
+	  		FROM SA_SALES_ORDER A WITH(NOLOCK)
+			JOIN PR_PLANNING_DISPLAY B WITH(NOLOCK)
+			ON A.PLNDP_NO = B.PLNDP_NO
+			<where>
+		  		<include refid="stats-search"/>
+				AND A.SALES_CNCL_GBN_TYPE = 'S'
+			</where>
+			GROUP BY A.PLNDP_NO, A.SITE_NO, B.PLNDP_NAME
+			<if test='bean.isExcel == null or bean.isExcel == ""'>
+				ORDER BY A.PLNDP_NO DESC
+	   			<include refid="Paging.mssql" />
+   			</if>
+		) A
+		ORDER BY A.PLANNING_ID DESC
+    </select>
+
+    <select id="planningProductStatsCount" parameterType="pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaPromotionStatusDao.planningProductStatsCount [기획전 상품 현황 count] [변지은] */
+    	SELECT <include refid="Paging.totalCount"/>
+    	FROM SA_SALES_ORDER A WITH(NOLOCK)
+    	JOIN PD_PRODUCT B WITH(NOLOCK)
+    	ON A.PRDT_NO = B.PRDT_NO
+    	JOIN DP_BRAND C WITH(NOLOCK)
+    	ON A.BRAND_NO = C.BRAND_NO
+    	<where>
+    		AND A.PLNDP_NO = #{bean.planningId, jdbcType=VARCHAR}
+			AND A.SALES_CNCL_GBN_TYPE = 'S'
+    	</where>
+    </select>
+
+    <select id="planningProductStats" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaPromotionPlanStatus" >
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaPromotionStatusDao.planningProductStats [기획전 상품 현황통계 popup 조회] [변지은] */
+   		SELECT
+   			SELECT_SEQ,
+ 		    BRAND_NAME,
+			CTGR_NAME,
+			STYLE_INFO,
+			PRDT_COLOR_INFO,
+			PRDT_NO_NAME,
+
+			ORDER_QTY_ALL,
+			PRDT_NORMAL_AMT_ALL,
+			SELL_AMT_ALL,
+			ORDER_QTY_10000,
+			PRDT_NORMAL_AMT_10000,
+			SELL_AMT_10000,
+			ORDER_QTY_10001,
+			PRDT_NORMAL_AMT_10001,
+			SELL_AMT_10001,
+			ORDER_QTY_10002,
+			PRDT_NORMAL_AMT_10002,
+			SELL_AMT_10002,
+			ORDER_QTY_10003,
+			PRDT_NORMAL_AMT_10003,
+			SELL_AMT_10003
+		FROM
+			(
+			SELECT
+			    '' AS SELECT_SEQ,
+				'' AS BRAND_NAME,
+				'합계' AS CTGR_NAME,
+				'' AS STYLE_INFO,
+				'' AS PRDT_COLOR_INFO,
+				'' AS PRDT_NO_NAME,
+
+				SUM(A.ORDER_QTY) AS ORDER_QTY_ALL,
+				SUM(CONVERT(BIGINT,ISNULL(A.PRDT_NORMAL_AMT,0))) AS PRDT_NORMAL_AMT_ALL,
+				SUM(CONVERT(BIGINT,ISNULL(A.SELL_AMT,0))) AS SELL_AMT_ALL,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10000' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10000,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10000' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10000,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10000' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10000,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10001' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10001,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10001' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10001,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10001' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10001,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10002' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10002,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10002' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10002,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10002' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10002,
+				
+				SUM(CASE STOCK_GBN_CODE WHEN '10003' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10003,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10003' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10003,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10003' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10003
+
+			FROM SA_SALES_ORDER A WITH(NOLOCK)
+			JOIN PD_PRODUCT B WITH(NOLOCK)
+	    	ON A.PRDT_NO = B.PRDT_NO
+	    	JOIN DP_BRAND C WITH(NOLOCK)
+	    	ON A.BRAND_NO = C.BRAND_NO
+	    	<where>
+	    		AND A.PLNDP_NO = #{bean.planningId, jdbcType=VARCHAR}
+				AND A.SALES_CNCL_GBN_TYPE = 'S'
+	    	</where>
+			UNION
+		  	SELECT
+		  		ROW_NUMBER() OVER(ORDER BY BRAND_NAME),
+				C.BRAND_NAME AS BRAND_NAME,
+				MAX(D.CTGR_NAME_PATH) AS CTGR_NAME,
+				B.STYLE_INFO AS STYLE_INFO,
+				B.PRDT_COLOR_INFO AS PRDT_COLOR_INFO,
+				B.PRDT_NO + ' / ' + B.PRDT_NAME AS PRDT_NO_NAME,
+
+				SUM(A.ORDER_QTY) AS ORDER_QTY_ALL,
+				SUM(CONVERT(BIGINT,ISNULL(A.PRDT_NORMAL_AMT,0))) AS PRDT_NORMAL_AMT_ALL,
+				SUM(CONVERT(BIGINT,ISNULL(A.SELL_AMT,0))) AS SELL_AMT_ALL,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10000' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10000,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10000' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10000,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10000' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10000,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10001' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10001,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10001' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10001,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10001' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10001,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10002' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10002,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10002' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10002,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10002' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10002,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10003' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10003,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10003' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10003,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10003' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10003
+	  		FROM SA_SALES_ORDER A WITH(NOLOCK)
+			JOIN PD_PRODUCT B WITH(NOLOCK)
+	    	ON A.PRDT_NO = B.PRDT_NO
+	    	JOIN DP_BRAND C WITH(NOLOCK)
+	    	ON A.BRAND_NO = C.BRAND_NO
+	    	JOIN VIEW_CATEGORY D WITH(NOLOCK)
+			ON B.STDR_CTGR_NO = D.CTGR_NO
+	    	<where>
+	    		AND A.PLNDP_NO = #{bean.planningId, jdbcType=VARCHAR}
+				AND A.SALES_CNCL_GBN_TYPE = 'S'
+	    	</where>
+			GROUP BY C.BRAND_NAME, B.STDR_CTGR_NO, B.STYLE_INFO, B.PRDT_COLOR_INFO, B.PRDT_NO + ' / ' + B.PRDT_NAME
+			<if test='bean.isExcel == null or bean.isExcel == ""'>
+				ORDER BY C.BRAND_NAME
+	   			<include refid="Paging.mssql" />
+   			</if>
+		) A
+		ORDER BY A.BRAND_NAME
+    </select>
+
+	<select id="promotionStatsCount" parameterType="pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaPromotionStatusDao.promotionStatsCount [프로모션 현황 count] [변지은] */
+		SELECT <include refid="Paging.totalCount"/>
+		FROM SA_SALES_ORDER A WITH (NOLOCK)
+		JOIN PR_PROMOTION B WITH(NOLOCK)
+		ON A.PROMO_NO = B.PROMO_NO
+		<where>
+			<include refid="stats-search"/>
+			AND A.SALES_CNCL_GBN_TYPE = 'S'
+		</where>
+    </select>
+
+    <select id="promotionStats" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaPromotionPlanStatus" >
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaPromotionStatusDao.promotionStats [프로모션 현황통계] [변지은] */
+    	SELECT
+	    	PROMO_NO,
+			PROMO_NAME,
+			PROMO_TYPE,
+			ORDER_QTY_ALL,
+			PRDT_NORMAL_AMT_ALL,
+			SELL_AMT_ALL,
+			ORDER_QTY_10000,
+			PRDT_NORMAL_AMT_10000,
+			SELL_AMT_10000,
+			ORDER_QTY_10001,
+			PRDT_NORMAL_AMT_10001,
+			SELL_AMT_10001,
+			ORDER_QTY_10002,
+			PRDT_NORMAL_AMT_10002,
+			SELL_AMT_10002,
+			ORDER_QTY_10003,
+			PRDT_NORMAL_AMT_10003,
+			SELL_AMT_10003
+		FROM (
+			SELECT
+				'합계' AS PROMO_NO,
+				'' AS PROMO_NAME,
+				'' AS PROMO_TYPE,
+
+				SUM(A.ORDER_QTY) AS ORDER_QTY_ALL,
+				SUM(CONVERT(BIGINT,ISNULL(A.PRDT_NORMAL_AMT,0))) AS PRDT_NORMAL_AMT_ALL,
+				SUM(CONVERT(BIGINT,ISNULL(A.SELL_AMT,0))) AS SELL_AMT_ALL,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10000' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10000,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10000' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10000,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10000' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10000,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10001' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10001,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10001' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10001,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10001' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10001,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10002' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10002,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10002' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10002,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10002' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10002,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10003' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10003,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10003' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10003,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10003' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10003
+
+			FROM SA_SALES_ORDER A WITH (NOLOCK)
+			JOIN PR_PROMOTION B WITH(NOLOCK)
+			ON A.PROMO_NO = B.PROMO_NO
+			<where>
+				<include refid="stats-search"/>
+				AND A.SALES_CNCL_GBN_TYPE = 'S'
+			</where>
+			UNION
+			SELECT
+				B.PROMO_NO AS PROMO_NO,
+				B.PROMO_NAME AS PROMO_NAME,
+				DBO.FN_CODE_VALUE('PROMO_TYPE_CODE', B.PROMO_TYPE_CODE) AS PROMO_TYPE,
+
+				SUM(A.ORDER_QTY) AS ORDER_QTY_ALL,
+				SUM(CONVERT(BIGINT,ISNULL(A.PRDT_NORMAL_AMT,0))) AS PRDT_NORMAL_AMT_ALL,
+				SUM(CONVERT(BIGINT,ISNULL(A.SELL_AMT,0))) AS SELL_AMT_ALL,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10000' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10000,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10000' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10000,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10000' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10000,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10001' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10001,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10001' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10001,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10001' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10001,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10002' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10002,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10002' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10002,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10002' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10002,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10003' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10003,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10003' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10003,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10003' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10003
+
+			FROM SA_SALES_ORDER A WITH (NOLOCK)
+			JOIN PR_PROMOTION B WITH(NOLOCK)
+			ON A.PROMO_NO = B.PROMO_NO
+			<where>
+				<include refid="stats-search"/>
+				AND A.SALES_CNCL_GBN_TYPE = 'S'
+			</where>
+			GROUP BY A.PROMO_NO, A.SITE_NO, B.PROMO_NAME, B.PROMO_NO, B.PROMO_TYPE_CODE
+			<if test='bean.isExcel == null or bean.isExcel == ""'>
+				ORDER BY A.PROMO_NO DESC
+				<include refid="Paging.mssql" />
+			</if>
+		) A
+		ORDER BY A.PROMO_NO DESC
+    </select>
+
+    <select id="promotionProductStatsCount" parameterType="pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaPromotionStatusDao.promotionProductStatsCount [프로모션 상품 현황 count] [변지은] */
+    	SELECT <include refid="Paging.totalCount"/>
+		FROM SA_SALES_ORDER A
+		JOIN PD_PRODUCT B WITH(NOLOCK)
+		ON A.PRDT_NO = B.PRDT_NO
+		JOIN DP_BRAND C WITH(NOLOCK)
+		ON A.BRAND_NO = C.BRAND_NO
+		<where>
+			AND A.PROMO_NO = #{bean.promoNo, jdbcType=VARCHAR}
+			AND A.SALES_CNCL_GBN_TYPE = 'S'
+		</where>
+    </select>
+
+    <select id="promotionProductStats" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaPromotionPlanStatus" >
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaPromotionStatusDao.promotionProductStats [프로모션 상품 현황통계 popup 조회] [변지은] */
+   		SELECT
+   			ROW_NUMBER() OVER(ORDER BY BRAND_NAME) AS SELECT_SEQ,
+ 		    BRAND_NAME,
+			CTGR_NAME,
+			STYLE_INFO,
+			PRDT_COLOR_INFO,
+			PRDT_NO_NAME,
+
+			ORDER_QTY_ALL,
+			PRDT_NORMAL_AMT_ALL,
+			SELL_AMT_ALL,
+			ORDER_QTY_10000,
+			PRDT_NORMAL_AMT_10000,
+			SELL_AMT_10000,
+			ORDER_QTY_10001,
+			PRDT_NORMAL_AMT_10001,
+			SELL_AMT_10001,
+			ORDER_QTY_10002,
+			PRDT_NORMAL_AMT_10002,
+			SELL_AMT_10002,
+			ORDER_QTY_10003,
+			PRDT_NORMAL_AMT_10003
+		FROM (
+			SELECT
+				'' AS BRAND_NAME,
+				'합계' AS CTGR_NAME,
+				'' AS STYLE_INFO,
+				'' AS PRDT_COLOR_INFO,
+				'' AS PRDT_NO_NAME,
+
+				SUM(A.ORDER_QTY) AS ORDER_QTY_ALL,
+				SUM(CONVERT(BIGINT,ISNULL(A.PRDT_NORMAL_AMT,0))) AS PRDT_NORMAL_AMT_ALL,
+				SUM(CONVERT(BIGINT,ISNULL(A.SELL_AMT,0))) AS SELL_AMT_ALL,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10000' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10000,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10000' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10000,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10000' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10000,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10001' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10001,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10001' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10001,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10001' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10001,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10002' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10002,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10002' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10002,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10002' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10002,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10003' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10003,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10003' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10003,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10003' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10003
+			FROM SA_SALES_ORDER A WITH(NOLOCK)
+			JOIN PD_PRODUCT B WITH(NOLOCK)
+			ON A.PRDT_NO = B.PRDT_NO
+			JOIN DP_BRAND C WITH(NOLOCK)
+			ON A.BRAND_NO = C.BRAND_NO
+			<where>
+				AND A.PROMO_NO = #{bean.promoNo, jdbcType=VARCHAR}
+				AND A.SALES_CNCL_GBN_TYPE = 'S'
+			</where>
+			UNION
+			SELECT
+				C.BRAND_NAME AS BRAND_NAME,
+				MAX(D.CTGR_NAME_PATH) AS CTGR_NAME,
+				B.STYLE_INFO AS STYLE_INFO,
+				B.PRDT_COLOR_INFO AS PRDT_COLOR_INFO,
+				B.PRDT_NO + ' / ' + B.PRDT_NAME AS PRDT_NO_NAME,
+
+				SUM(A.ORDER_QTY) AS ORDER_QTY_ALL,
+				SUM(CONVERT(BIGINT,ISNULL(A.PRDT_NORMAL_AMT,0))) AS PRDT_NORMAL_AMT_ALL,
+				SUM(CONVERT(BIGINT,ISNULL(A.SELL_AMT,0))) AS SELL_AMT_ALL,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10000' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10000,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10000' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10000,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10000' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10000,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10001' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10001,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10001' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10001,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10001' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10001,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10002' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10002,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10002' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10002,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10002' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10002,
+
+				SUM(CASE STOCK_GBN_CODE WHEN '10003' THEN A.ORDER_QTY ELSE 0 END) AS ORDER_QTY_10003,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10003' THEN A.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10003,
+				SUM(CONVERT(BIGINT,CASE STOCK_GBN_CODE WHEN '10003' THEN A.SELL_AMT ELSE 0 END)) AS SELL_AMT_10003
+	  		FROM SA_SALES_ORDER A WITH(NOLOCK)
+			JOIN PD_PRODUCT B WITH(NOLOCK)
+			ON A.PRDT_NO = B.PRDT_NO
+			JOIN DP_BRAND C WITH(NOLOCK)
+			ON A.BRAND_NO = C.BRAND_NO
+	    	JOIN VIEW_CATEGORY D WITH(NOLOCK)
+			ON B.STDR_CTGR_NO = D.CTGR_NO
+			<where>
+				AND A.PROMO_NO = #{bean.promoNo, jdbcType=VARCHAR}
+				AND A.SALES_CNCL_GBN_TYPE = 'S'
+			</where>
+			GROUP BY C.BRAND_NAME, B.STDR_CTGR_NO, B.STYLE_INFO, B.PRDT_COLOR_INFO, B.PRDT_NO + ' / ' + B.PRDT_NAME
+			<if test='bean.isExcel == null or bean.isExcel == ""'>
+				ORDER BY BRAND_NAME
+	   			<include refid="Paging.mssql" />
+   			</if>
+		) A
+		ORDER BY BRAND_NAME
+    </select>
+
+   <select id="couponStatsListCount" parameterType="pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaPromotionStatusDao.couponStatsListCount [쿠폰 현황 통계 카운트] [백인천] */
+			SELECT <include refid="Paging.totalCount"/>
+    		  FROM (
+			        SELECT <include refid="Paging.totalCount"/>
+					  FROM PR_COUPON CP WITH(NOLOCK) 
+					  JOIN OC_ORDER_USE_COUPON ODUC WITH(NOLOCK) 
+						ON CP.CPN_NO = ODUC.CPN_NO
+					   AND ODUC.CLM_NO IS NULL
+					  JOIN MB_MEMBER_COUPON MMC WITH(NOLOCK) 
+						ON ODUC.CPN_NO = MMC.CPN_NO
+					   AND ODUC.HOLD_CPN_SEQ = MMC.HOLD_CPN_SEQ
+					   AND ODUC.MEMBER_NO = MMC.MEMBER_NO
+					  LEFT JOIN OC_ORDER_PRODUCT OOP WITH(NOLOCK)  
+					    ON OOP.ORDER_NO = ODUC.ORDER_NO
+					   AND ODUC.ORDER_PRDT_SEQ = OOP.ORDER_PRDT_SEQ
+					  LEFT JOIN OC_ORDER  OD WITH(NOLOCK) 
+					    ON OOP.ORDER_NO = OD.ORDER_NO
+					<include refid="couponStatsWhere"/>
+					 GROUP BY CP.CPN_NO, CP.CPN_USE_GBN_TYPE, CP.NORMAL_CPN_YN, CP.CPN_NAME, CP.CPN_CRT_TYPE,
+					       CP.CPN_TYPE_CODE, CP.DSCNT_TYPE, CP.DSCNT_VALUE, CP.VALID_START_DTM,
+					       CP.VALID_END_DTM, CP.TOTAL_ISSUE_COUNT, CP.VALID_TERM_GBN_TYPE,
+					       CP.USE_LIMIT_DAY_COUNT
+					) A
+    </select>
+
+    <select id="couponStatsList" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaCouponStats" >
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaPromotionStatusDao.couponStatsList [쿠폰 현황 통계 리스트] [백인천] */
+		SELECT X.CPN_NO
+			 , X.CPN_NAME										/* 쿠폰명 */
+			 , CASE WHEN X.DISP_YN = 'Y' THEN '전시'
+					WHEN X.DISP_YN = 'N' THEN '전시안함'
+			  	END AS DISP_YN									/* 전시여부 */
+			 , CASE WHEN X.CPN_USE_GBN_TYPE = 'E' THEN '행사_일반'
+					WHEN X.CPN_USE_GBN_TYPE = 'F' THEN '행사_다운로드'
+					WHEN X.CPN_USE_GBN_TYPE = 'C' THEN 'CS'
+					WHEN X.CPN_USE_GBN_TYPE = 'D' THEN 'eDM'
+			  	END AS CPN_USE_GBN_TYPE							/* 분류 */
+			 , CASE WHEN X.NORMAL_CPN_YN = 'Y' THEN '일반쿠폰'
+					WHEN X.NORMAL_CPN_YN = 'N' THEN '플러스쿠폰'
+			  	END AS NORMAL_CPN_YN							/* 속성 */
+			 , CASE WHEN X.CPN_CRT_TYPE = 'O' THEN '온라인생성'
+					WHEN X.CPN_CRT_TYPE = 'P' THEN '지류생성'
+			  	END AS CPN_CRT_TYPE								/* 생성형태 */
+			 , CASE WHEN X.USE_PLACE_GBN_TYPE = 'O' THEN '온라인'
+					WHEN X.USE_PLACE_GBN_TYPE = 'F' THEN '오프라인'
+					WHEN X.USE_PLACE_GBN_TYPE = 'A' THEN '온/오프라인'
+			  	END AS USE_PLACE_GBN_TYPE						/* 사용처 */
+			 , X.CPN_TYPE_CODE
+			 , X.DSCNT_VALUE
+			 , X.VALID_DTM
+			 , X.TOTAL_ISSUE_COUNT
+			 , CONCAT((X.USE_ONLINE+X.USE_OFFLINE), '/', REPLACE(CONVERT(VARCHAR, CONVERT(MONEY, CONVERT(FLOAT,X.DSCNT_AMT*(X.USE_ONLINE+X.USE_OFFLINE))),1),'.00','')) AS USE_COUNT
+			 , CONCAT((X.USE_ONLINE), '/', REPLACE(CONVERT(VARCHAR, CONVERT(MONEY, CONVERT(FLOAT,X.DSCNT_AMT*(X.USE_ONLINE))),1),'.00','')) AS USE_ONLINE_COUNT
+			 , CONCAT((X.USE_OFFLINE), '/', REPLACE(CONVERT(VARCHAR, CONVERT(MONEY, CONVERT(FLOAT,X.DSCNT_AMT*(X.USE_OFFLINE))),1),'.00','')) AS USE_OFFLINE_COUNT
+			 , CONCAT((X.DEVICE_PC), '/', REPLACE(CONVERT(VARCHAR, CONVERT(MONEY, CONVERT(FLOAT,X.DSCNT_AMT*(X.DEVICE_PC))),1),'.00','')) AS DEVICE_PC_COUNT
+			 , CONCAT((X.DEVICE_MOBILE), '/', REPLACE(CONVERT(VARCHAR, CONVERT(MONEY, CONVERT(FLOAT,X.DSCNT_AMT*(X.DEVICE_MOBILE))),1),'.00','')) AS DEVICE_MO_COUNT
+			 , CONCAT((X.DEVICE_APP), '/', REPLACE(CONVERT(VARCHAR, CONVERT(MONEY, CONVERT(FLOAT,X.DSCNT_AMT*(X.DEVICE_APP))),1),'.00','')) AS DEVICE_APP_COUNT
+		  FROM (
+				SELECT CP.CPN_NO AS CPN_NO				/* 쿠폰번호 */
+					 , CP.CPN_NAME AS CPN_NAME				/* 쿠폰명 */
+					 , DBO.FN_CODE_VALUE('CPN_TYPE_CODE', CP.CPN_TYPE_CODE) AS CPN_TYPE_CODE  /* 쿠폰종류 */
+					 , CASE WHEN CP.DSCNT_TYPE = 'R' THEN CONCAT(CP.DSCNT_VALUE, '%')
+							WHEN CP.DSCNT_TYPE = 'A' THEN CONCAT(REPLACE(CONVERT(VARCHAR, CONVERT(MONEY, CP.DSCNT_VALUE),1),'.00',''), '원')
+						END AS DSCNT_VALUE							/* 할인금액/율 */
+					 , CASE WHEN CP.VALID_TERM_GBN_TYPE = 'D' THEN CONCAT('발급 후 ', CP.USE_LIMIT_DAY_COUNT, '일')
+							WHEN CP.VALID_START_DTM IS NULL OR CP.VALID_END_DTM IS NULL THEN ''
+							ELSE CONCAT(CONVERT(CHAR(10), CP.VALID_START_DTM, 23), ' ~ ', CONVERT(CHAR(10), CP.VALID_END_DTM, 23))
+						END AS VALID_DTM								/* 유효기간 VALID_START_DTM ~ VALID_END_DTM */
+					 , (SELECT COUNT(*) FROM MB_MEMBER_COUPON X WITH(NOLOCK) WHERE X.CPN_NO = CP.CPN_NO) AS TOTAL_ISSUE_COUNT	/* 발급수 - 확인 */
+					 , COUNT(ODUC.ORDER_NO) AS USE_ONLINE								/* 디바이스 - PC */
+					 , (SELECT COUNT(*) FROM MB_MEMBER_COUPON X WITH(NOLOCK)  WHERE X.CPN_NO = CP.CPN_NO AND X.USE_STORE_NO IS NOT NULL) AS USE_OFFLINE
+					 , MAX(ODUC.DSCNT_AMT) AS DSCNT_AMT
+					 , SUM((CASE WHEN OD.DEVICE_CODE = '10000' THEN 1
+								 ELSE 0
+						     END)) AS DEVICE_PC								/* 디바이스 - PC */
+					 , SUM((CASE WHEN OD.DEVICE_CODE = '10001' THEN 1
+								 ELSE 0
+						  	 END)) AS DEVICE_MOBILE							/* 디바이스 - MOBILE */
+					 , SUM((CASE WHEN OD.DEVICE_CODE = '10002' THEN 1
+								 ELSE 0
+						  	 END)) AS DEVICE_APP							/* 디바이스 - APP */
+					 , MAX(CP.DISP_YN) AS DISP_YN
+					 , MAX(CP.CPN_USE_GBN_TYPE) AS CPN_USE_GBN_TYPE
+					 , MAX(CP.NORMAL_CPN_YN) AS NORMAL_CPN_YN
+					 , MAX(CP.CPN_CRT_TYPE) AS CPN_CRT_TYPE
+					 , MAX(CP.USE_PLACE_GBN_TYPE) AS USE_PLACE_GBN_TYPE
+				  FROM PR_COUPON CP WITH(NOLOCK) 
+				  JOIN OC_ORDER_USE_COUPON ODUC WITH(NOLOCK) 
+					ON CP.CPN_NO = ODUC.CPN_NO
+				   AND ODUC.CLM_NO IS NULL
+				  JOIN MB_MEMBER_COUPON MMC WITH(NOLOCK) 
+					ON ODUC.CPN_NO = MMC.CPN_NO
+				   AND ODUC.HOLD_CPN_SEQ = MMC.HOLD_CPN_SEQ
+				   AND ODUC.MEMBER_NO = MMC.MEMBER_NO
+				  LEFT JOIN OC_ORDER_PRODUCT OOP WITH(NOLOCK)  
+				    ON OOP.ORDER_NO = ODUC.ORDER_NO
+				   AND ODUC.ORDER_PRDT_SEQ = OOP.ORDER_PRDT_SEQ
+				  LEFT JOIN OC_ORDER OD WITH(NOLOCK) 
+				    ON OOP.ORDER_NO = OD.ORDER_NO
+				<include refid="couponStatsWhere"/>
+				 GROUP BY CP.CPN_NO, CP.CPN_USE_GBN_TYPE, CP.NORMAL_CPN_YN, CP.CPN_NAME, CP.CPN_CRT_TYPE,
+				       CP.CPN_TYPE_CODE, CP.DSCNT_TYPE, CP.DSCNT_VALUE, CP.VALID_START_DTM,
+				       CP.VALID_END_DTM, CP.TOTAL_ISSUE_COUNT, CP.VALID_TERM_GBN_TYPE,
+				       CP.USE_LIMIT_DAY_COUNT
+				 ORDER BY CP.CPN_NO DESC
+			   	<include refid="Paging.mssql" />
+				)X
+			ORDER BY X.CPN_NO DESC
+    </select>
+
+	<select id="selectCouponStatsListForExcel" parameterType="kr.co.abcmart.bo.stats.vo.CouponStatsSearchVO" resultType="kr.co.abcmart.bo.stats.model.master.SaCouponStats">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaPromotionStatusDao.selectCouponStatsListForExcel [쿠폰 현황 통계 엑셀 다운로드] [백인천] */
+		SELECT X.CPN_NO
+			 , X.CPN_NAME										/* 쿠폰명 */
+			 , CASE WHEN X.DISP_YN = 'Y' THEN '전시'
+					WHEN X.DISP_YN = 'N' THEN '전시안함'
+			  	END AS DISP_YN									/* 전시여부 */
+			 , CASE WHEN X.CPN_USE_GBN_TYPE = 'E' THEN '행사_일반'
+					WHEN X.CPN_USE_GBN_TYPE = 'F' THEN '행사_다운로드'
+					WHEN X.CPN_USE_GBN_TYPE = 'C' THEN 'CS'
+					WHEN X.CPN_USE_GBN_TYPE = 'D' THEN 'eDM'
+			  	END AS CPN_USE_GBN_TYPE							/* 분류 */
+			 , CASE WHEN X.NORMAL_CPN_YN = 'Y' THEN '일반쿠폰'
+					WHEN X.NORMAL_CPN_YN = 'N' THEN '플러스쿠폰'
+			  	END AS NORMAL_CPN_YN							/* 속성 */
+			 , CASE WHEN X.CPN_CRT_TYPE = 'O' THEN '온라인생성'
+					WHEN X.CPN_CRT_TYPE = 'P' THEN '지류생성'
+			  	END AS CPN_CRT_TYPE								/* 생성형태 */
+			 , CASE WHEN X.USE_PLACE_GBN_TYPE = 'O' THEN '온라인'
+					WHEN X.USE_PLACE_GBN_TYPE = 'F' THEN '오프라인'
+					WHEN X.USE_PLACE_GBN_TYPE = 'A' THEN '온/오프라인'
+			  	END AS USE_PLACE_GBN_TYPE						/* 사용처 */
+			 , X.CPN_TYPE_CODE
+			 , X.DSCNT_VALUE
+			 , X.VALID_DTM
+			 , X.TOTAL_ISSUE_COUNT
+			 , CONCAT((X.USE_ONLINE+X.USE_OFFLINE), '/', REPLACE(CONVERT(VARCHAR, CONVERT(MONEY, CONVERT(FLOAT,X.DSCNT_AMT*(X.USE_ONLINE+X.USE_OFFLINE))),1),'.00','')) AS USE_COUNT
+			 , CONCAT((X.USE_ONLINE), '/', REPLACE(CONVERT(VARCHAR, CONVERT(MONEY, CONVERT(FLOAT,X.DSCNT_AMT*(X.USE_ONLINE))),1),'.00','')) AS USE_ONLINE_COUNT
+			 , CONCAT((X.USE_OFFLINE), '/', REPLACE(CONVERT(VARCHAR, CONVERT(MONEY, CONVERT(FLOAT,X.DSCNT_AMT*(X.USE_OFFLINE))),1),'.00','')) AS USE_OFFLINE_COUNT
+			 , CONCAT((X.DEVICE_PC), '/', REPLACE(CONVERT(VARCHAR, CONVERT(MONEY, CONVERT(FLOAT,X.DSCNT_AMT*(X.DEVICE_PC))),1),'.00','')) AS DEVICE_PC_COUNT
+			 , CONCAT((X.DEVICE_MOBILE), '/', REPLACE(CONVERT(VARCHAR, CONVERT(MONEY, CONVERT(FLOAT,X.DSCNT_AMT*(X.DEVICE_MOBILE))),1),'.00','')) AS DEVICE_MO_COUNT
+			 , CONCAT((X.DEVICE_APP), '/', REPLACE(CONVERT(VARCHAR, CONVERT(MONEY, CONVERT(FLOAT,X.DSCNT_AMT*(X.DEVICE_APP))),1),'.00','')) AS DEVICE_APP_COUNT
+		  FROM (
+				SELECT CP.CPN_NO AS CPN_NO				/* 쿠폰번호 */
+					 , CP.CPN_NAME AS CPN_NAME				/* 쿠폰명 */
+					 , DBO.FN_CODE_VALUE('CPN_TYPE_CODE', CP.CPN_TYPE_CODE) AS CPN_TYPE_CODE  /* 쿠폰종류 */
+					 , CASE WHEN CP.DSCNT_TYPE = 'R' THEN CONCAT(CP.DSCNT_VALUE, '%')
+							WHEN CP.DSCNT_TYPE = 'A' THEN CONCAT(REPLACE(CONVERT(VARCHAR, CONVERT(MONEY, CP.DSCNT_VALUE),1),'.00',''), '원')
+						END AS DSCNT_VALUE							/* 할인금액/율 */
+					 , CASE WHEN CP.VALID_TERM_GBN_TYPE = 'D' THEN CONCAT('발급 후 ', CP.USE_LIMIT_DAY_COUNT, '일')
+							WHEN CP.VALID_START_DTM IS NULL OR CP.VALID_END_DTM IS NULL THEN ''
+							ELSE CONCAT(CONVERT(CHAR(10), CP.VALID_START_DTM, 23), ' ~ ', CONVERT(CHAR(10), CP.VALID_END_DTM, 23))
+						END AS VALID_DTM								/* 유효기간 VALID_START_DTM ~ VALID_END_DTM */
+					 , (SELECT COUNT(*) FROM MB_MEMBER_COUPON X WITH(NOLOCK) WHERE X.CPN_NO = CP.CPN_NO) AS TOTAL_ISSUE_COUNT	/* 발급수 - 확인 */
+					 , COUNT(ODUC.ORDER_NO) AS USE_ONLINE								/* 디바이스 - PC */
+					 , (SELECT COUNT(*) FROM MB_MEMBER_COUPON X WITH(NOLOCK)  WHERE X.CPN_NO = CP.CPN_NO AND X.USE_STORE_NO IS NOT NULL) AS USE_OFFLINE
+					 , MAX(ODUC.DSCNT_AMT) AS DSCNT_AMT
+					 , SUM((CASE WHEN OD.DEVICE_CODE = '10000' THEN 1
+								 ELSE 0
+						     END)) AS DEVICE_PC								/* 디바이스 - PC */
+					 , SUM((CASE WHEN OD.DEVICE_CODE = '10001' THEN 1
+								 ELSE 0
+						  	 END)) AS DEVICE_MOBILE							/* 디바이스 - MOBILE */
+					 , SUM((CASE WHEN OD.DEVICE_CODE = '10002' THEN 1
+								 ELSE 0
+						  	 END)) AS DEVICE_APP							/* 디바이스 - APP */
+					 , MAX(CP.DISP_YN) AS DISP_YN
+					 , MAX(CP.CPN_USE_GBN_TYPE) AS CPN_USE_GBN_TYPE
+					 , MAX(CP.NORMAL_CPN_YN) AS NORMAL_CPN_YN
+					 , MAX(CP.CPN_CRT_TYPE) AS CPN_CRT_TYPE
+					 , MAX(CP.USE_PLACE_GBN_TYPE) AS USE_PLACE_GBN_TYPE
+				  FROM PR_COUPON CP WITH(NOLOCK) 
+				  JOIN OC_ORDER_USE_COUPON ODUC WITH(NOLOCK) 
+					ON CP.CPN_NO = ODUC.CPN_NO
+				   AND ODUC.CLM_NO IS NULL
+				  JOIN MB_MEMBER_COUPON MMC WITH(NOLOCK) 
+					ON ODUC.CPN_NO = MMC.CPN_NO
+				   AND ODUC.HOLD_CPN_SEQ = MMC.HOLD_CPN_SEQ
+				   AND ODUC.MEMBER_NO = MMC.MEMBER_NO
+				  LEFT JOIN OC_ORDER_PRODUCT OOP WITH(NOLOCK)  
+				    ON OOP.ORDER_NO = ODUC.ORDER_NO
+				   AND ODUC.ORDER_PRDT_SEQ = OOP.ORDER_PRDT_SEQ
+				  LEFT JOIN OC_ORDER OD WITH(NOLOCK) 
+				    ON OOP.ORDER_NO = OD.ORDER_NO
+				<include refid="couponStatsVoWhere"/>
+				 GROUP BY CP.CPN_NO, CP.CPN_USE_GBN_TYPE, CP.NORMAL_CPN_YN, CP.CPN_NAME, CP.CPN_CRT_TYPE,
+				       CP.CPN_TYPE_CODE, CP.DSCNT_TYPE, CP.DSCNT_VALUE, CP.VALID_START_DTM,
+				       CP.VALID_END_DTM, CP.TOTAL_ISSUE_COUNT, CP.VALID_TERM_GBN_TYPE,
+				       CP.USE_LIMIT_DAY_COUNT
+				)X
+			ORDER BY X.CPN_NO DESC
+	</select>
+
+	<select id="selectMultiShoeCount" parameterType="pageable" resultType="int">
+		/*+ kr.co.abcmart.bo.stats.repository.master.SaPromotionStatusDao.selectMultiShoeCount [다족구매 족수별 통계 카운트] [이재렬] */
+			SELECT <include refid="Paging.totalCount"/>
+			  FROM (SELECT<include refid="Paging.totalCount"/>
+			  			FROM OC_ORDER A WITH (NOLOCK)
+			  				INNER JOIN OC_ORDER_PRODUCT B WITH (NOLOCK)
+			  					ON A.ORDER_NO = B.ORDER_NO
+			  				INNER JOIN OC_ORDER_PRODUCT_APPLY_PROMOTION C WITH (NOLOCK)
+			  					ON A.ORDER_NO = C.ORDER_NO
+			  					AND B.ORDER_NO = C.ORDER_NO
+			  					AND B.ORDER_PRDT_SEQ = C.ORDER_PRDT_SEQ
+					  	<include refid="multiShoeSearch"/>
+					  	GROUP BY <include refid="dateConvert"/>
+			)A
+
+
+	</select>
+    <select id="selectMultiShoeList" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaPromotionPlanStatus">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaPromotionStatusDao.selectMultiShoeList [다족구매 족수별 통계 조회] [이재렬] */
+			WITH MANYORDER AS (
+				SELECT T.*
+				  FROM (
+					SELECT S.ORG_ORDER_NO
+						 , MAX(S.ORDER_NO) AS ORDER_NO
+						 , S.ORDER_PRDT_SEQ
+						 , S.PROMO_NO
+					     , SUM(S.SALES_AMT) AS SALES_AMT
+					     , SUM(S.DISCOUNT_AMT) AS DISCOUNT_AMT
+					     , MAX(S.ORDER_DTM) AS ORDER_DTM
+					  FROM (
+						SELECT A.SALES_CNCL_GBN_TYPE
+						     , A.ORDER_NO
+						     , A.ORG_ORDER_NO
+						     , CONVERT(CHAR(10), A.ORDER_DTM, 23) AS ORDER_DTM
+						     , B.ORDER_PRDT_SEQ
+						     , B.TOTAL_DSCNT_AMT
+						     , B.ORDER_AMT
+						     , C.PROMO_NO
+						     , ORDER_AMT * (CASE WHEN CHARINDEX ( 'S'  ,SALES_CNCL_GBN_TYPE) <![CDATA[>]]> 0 THEN 1
+									 WHEN CHARINDEX ( 'P'  ,SALES_CNCL_GBN_TYPE) <![CDATA[>]]> 0 THEN 1
+									 WHEN CHARINDEX ( 'C'  ,SALES_CNCL_GBN_TYPE) <![CDATA[>]]> 0 THEN -1
+									 WHEN CHARINDEX ( 'M'  ,SALES_CNCL_GBN_TYPE) <![CDATA[>]]> 0 THEN -1
+									 ELSE 1
+									 END) AS SALES_AMT
+						     , TOTAL_DSCNT_AMT * (CASE WHEN CHARINDEX ( 'S'  ,SALES_CNCL_GBN_TYPE) <![CDATA[>]]> 0 THEN 1
+									       WHEN CHARINDEX ( 'P'  ,SALES_CNCL_GBN_TYPE) <![CDATA[>]]> 0 THEN 1
+									       WHEN CHARINDEX ( 'C'  ,SALES_CNCL_GBN_TYPE) <![CDATA[>]]> 0 THEN -1
+									       WHEN CHARINDEX ( 'M'  ,SALES_CNCL_GBN_TYPE) <![CDATA[>]]> 0 THEN -1
+									 ELSE 1
+									 END) AS DISCOUNT_AMT
+						  FROM OC_ORDER A WITH (NOLOCK)
+						JOIN OC_ORDER_PRODUCT B WITH (NOLOCK)
+							ON A.ORDER_NO = B.ORDER_NO
+						LEFT JOIN OC_ORDER_PRODUCT_APPLY_PROMOTION C WITH (NOLOCK)
+							ON C.ORDER_NO = A.ORG_ORDER_NO
+							AND C.ORDER_PRDT_SEQ = B.ORDER_PRDT_SEQ
+							AND C.PROMO_TYPE_CODE = '10001'
+						<include refid="multiShoeSearch"/>
+					)S
+				GROUP BY S.ORG_ORDER_NO , S.ORDER_PRDT_SEQ , S.PROMO_NO
+				)T
+			WHERE SALES_AMT <![CDATA[>]]> 0
+			AND DISCOUNT_AMT <![CDATA[>]]> 0
+			),
+			  RESULT_QUERY AS(
+			    	SELECT ORDER_DTM
+			    	     , BUY_QTY
+			    	     , SUM(ORDER_QTY) AS ORDER_QTY
+			    	     , SUM(DISCOUNT_AMT) AS DISCOUNT_AMT
+			    	     , SUM(SALES_AMT) AS SALES_AMT
+			    	FROM (
+			    		SELECT ORD.*
+			    			 , PRO.BUY_QTY, PRO.MAX_BUY_QTY
+			    		     , IIF((ORD.ORDER_QTY = PRO.BUY_QTY AND PRO.BUY_QTY != PRO.MAX_BUY_QTY) OR (ORD.ORDER_QTY <![CDATA[>=]]> MAX_BUY_QTY AND PRO.BUY_QTY = PRO.MAX_BUY_QTY), 'T', 'F') AS FLAG
+			    		  FROM (
+			    			SELECT ORDER_NO
+			    			     , MAX(ORDER_DTM) AS ORDER_DTM
+			    			     , PROMO_NO
+			               , SUM(DISCOUNT_AMT) AS DISCOUNT_AMT
+			    			     , SUM(SALES_AMT) SALES_AMT
+			    			     , COUNT(ORG_ORDER_NO) AS ORDER_QTY
+			    			  FROM MANYORDER A WITH (NOLOCK)
+			    			GROUP BY ORDER_NO , PROMO_NO
+			    		)ORD
+			    		JOIN  (
+			    			SELECT A.PROMO_NO, A.BUY_QTY
+			    			,  MAX(BUY_QTY) OVER (PARTITION BY PROMO_NO) AS MAX_BUY_QTY
+			    			FROM PR_PROMOTION_MULTI_BUY_DISCOUNT A WITH (NOLOCK)
+			    		)PRO
+			    		ON ORD.PROMO_NO = PRO.PROMO_NO
+			    	) V
+			    WHERE FLAG = 'T'
+			    GROUP BY ORDER_DTM , BUY_QTY
+			  ),
+			      TOTAL_SHOES_PROMOTION AS(
+			          SELECT ORDER_DTM
+			               , COUNT(ORDER_QTY) AS ORDER_QTY_ALL
+			               , SUM(DISCOUNT_AMT) AS DSCNT_AMT_ALL
+			               , SUM(SALES_AMT) AS PYMNT_AMT_ALL
+			               , SUM((CASE WHEN ORDER_QTY <![CDATA[>=]]>2 AND ORDER_QTY<![CDATA[<]]>3 THEN 1 ELSE 0 END)) AS TWO_QTY
+			               , SUM((CASE WHEN ORDER_QTY <![CDATA[>=]]>2 AND ORDER_QTY<![CDATA[<]]>3 THEN DISCOUNT_AMT ELSE 0 END)) AS TWO_DSCNT
+			               , SUM((CASE WHEN ORDER_QTY <![CDATA[>=]]>2 AND ORDER_QTY<![CDATA[<]]>3 THEN SALES_AMT ELSE 0 END)) AS TWO_PYMNT
+			               , SUM((CASE WHEN ORDER_QTY <![CDATA[>=]]>3 AND ORDER_QTY<![CDATA[<]]>4 THEN 1 ELSE 0 END)) AS THREE_QTY
+			               , SUM((CASE WHEN ORDER_QTY <![CDATA[>=]]>3 AND ORDER_QTY<![CDATA[<]]>4 THEN DISCOUNT_AMT ELSE 0 END)) AS THREE_DSCNT
+			               , SUM((CASE WHEN ORDER_QTY <![CDATA[>=]]>3 AND ORDER_QTY<![CDATA[<]]>4 THEN SALES_AMT ELSE 0 END)) AS THREE_PYMNT
+			               , SUM((CASE WHEN ORDER_QTY <![CDATA[>=]]>4 AND ORDER_QTY<![CDATA[<]]>5 THEN 1 ELSE 0 END)) AS FOUR_QTY
+			               , SUM((CASE WHEN ORDER_QTY <![CDATA[>=]]>4 AND ORDER_QTY<![CDATA[<]]>5 THEN DISCOUNT_AMT ELSE 0 END)) AS FOUR_DSCNT
+			               , SUM((CASE WHEN ORDER_QTY <![CDATA[>=]]>4 AND ORDER_QTY<![CDATA[<]]>5 THEN SALES_AMT ELSE 0 END)) AS FOUR_PYMNT
+			               , SUM((CASE WHEN ORDER_QTY <![CDATA[>=]]>5 AND ORDER_QTY<![CDATA[<]]>6 THEN 1 ELSE 0 END)) AS FIVE_QTY
+			               , SUM((CASE WHEN ORDER_QTY <![CDATA[>=]]>5 AND ORDER_QTY<![CDATA[<]]>6 THEN DISCOUNT_AMT ELSE 0 END)) AS FIVE_DSCNT
+			               , SUM((CASE WHEN ORDER_QTY <![CDATA[>=]]>5 AND ORDER_QTY<![CDATA[<]]>6 THEN SALES_AMT ELSE 0 END)) AS FIVE_PYMNT
+			               , SUM((CASE WHEN ORDER_QTY <![CDATA[>=]]>6 THEN 1 ELSE 0 END)) AS SIX_MORE_QTY
+			               , SUM((CASE WHEN ORDER_QTY <![CDATA[>=]]>6 THEN DISCOUNT_AMT ELSE 0 END)) AS SIX_MORE_DSCNT
+			               , SUM((CASE WHEN ORDER_QTY <![CDATA[>=]]>6 THEN SALES_AMT ELSE 0 END)) AS SIX_MORE_PYMNT
+			            FROM RESULT_QUERY
+			            GROUP BY ORDER_DTM
+			        )
+			          SELECT  '합계' AS HOUR_TITLE
+			                , SUM(ORDER_QTY_ALL) AS ORDER_QTY_ALL
+			                , SUM(DSCNT_AMT_ALL) AS DSCNT_AMT_ALL
+			                , SUM(PYMNT_AMT_ALL) AS PYMNT_AMT_ALL
+			                , SUM(TWO_QTY) AS TWO_QTY
+			                , SUM(TWO_DSCNT) AS TWO_DSCNT
+			                , SUM(TWO_PYMNT) AS TWO_PYMNT
+			                , SUM(THREE_QTY) AS THREE_QTY
+			                , SUM(THREE_DSCNT) AS THREE_DSCNT
+			                , SUM(THREE_PYMNT) AS THREE_PYMNT
+			                , SUM(FOUR_QTY) AS FOUR_QTY
+			                , SUM(FOUR_DSCNT) AS FOUR_DSCNT
+			                , SUM(FOUR_PYMNT) AS FOUR_PYMNT
+			                , SUM(FIVE_QTY) AS FIVE_QTY
+			                , SUM(FIVE_DSCNT) AS FIVE_DSCNT
+			                , SUM(FIVE_PYMNT) AS FIVE_PYMNT
+			                , SUM(SIX_MORE_QTY) AS SIX_MORE_QTY
+			                , SUM(SIX_MORE_DSCNT) AS SIX_MORE_DSCNT
+			                , SUM(SIX_MORE_PYMNT) AS SIX_MORE_PYMNT
+			          FROM TOTAL_SHOES_PROMOTION
+			        UNION ALL
+			           SELECT <include refid="dateConvert"/> AS HOUR_TITLE
+			                , SUM(ORDER_QTY_ALL) AS ORDER_QTY_ALL
+			                , SUM(DSCNT_AMT_ALL) AS DSCNT_AMT_ALL
+			                , SUM(PYMNT_AMT_ALL) AS PYMNT_AMT_ALL
+			                , SUM(TWO_QTY) AS TWO_QTY
+			                , SUM(TWO_DSCNT) AS TWO_DSCNT
+			                , SUM(TWO_PYMNT) AS TWO_PYMNT
+			                , SUM(THREE_QTY) AS THREE_QTY
+			                , SUM(THREE_DSCNT) AS THREE_DSCNT
+			                , SUM(THREE_PYMNT) AS THREE_PYMNT
+			                , SUM(FOUR_QTY) AS FOUR_QTY
+			                , SUM(FOUR_DSCNT) AS FOUR_DSCNT
+			                , SUM(FOUR_PYMNT) AS FOUR_PYMNT
+			                , SUM(FIVE_QTY) AS FIVE_QTY
+			                , SUM(FIVE_DSCNT) AS FIVE_DSCNT
+			                , SUM(FIVE_PYMNT) AS FIVE_PYMNT
+			                , SUM(SIX_MORE_QTY) AS SIX_MORE_QTY
+			                , SUM(SIX_MORE_DSCNT) AS SIX_MORE_DSCNT
+			                , SUM(SIX_MORE_PYMNT) AS SIX_MORE_PYMNT
+			          FROM TOTAL_SHOES_PROMOTION
+			          GROUP BY <include refid="dateConvert"/>
+    </select>
+
+	<sql id="couponStatsWhere">
+    	<where>
+				OOP.ORDER_PRDT_STAT_CODE NOT IN('10000', '10001', '10010', '10011')   
+				AND OOP.PRDT_TYPE_CODE NOT IN('10003')
+	    	<if test="bean.siteNo != null and bean.siteNo !='' ">
+	    		AND OD.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+	    	</if>
+		 	<if test="bean.cpnUseGbnTypeArr != null and bean.cpnUseGbnTypeArr != '' ">
+	    		AND CP.CPN_USE_GBN_TYPE IN
+				<foreach collection="bean.cpnUseGbnTypeArr" item="cpnUseGbnType" open="(" close=")" separator=",">
+					#{cpnUseGbnType, jdbcType=VARCHAR}
+				</foreach>
+	    	</if>
+		 	<if test="bean.cpnTypeCodeArr != null and bean.cpnTypeCodeArr != '' ">
+	    		AND CP.CPN_TYPE_CODE IN
+	    		<foreach collection="bean.cpnTypeCodeArr" item="cpnTypeCode" open="(" close=")" separator=",">
+	    			#{cpnTypeCode, jdbcType=VARCHAR}
+	    		</foreach>
+	    	</if>
+	    	<if test="bean.normalCpnYn != null and bean.normalCpnYn !='' ">
+	    		AND CP.NORMAL_CPN_YN = #{bean.normalCpnYn, jdbcType=VARCHAR}
+	    	</if>
+	    	<if test="bean.useYn != null and bean.useYn !='' ">
+	    		AND CP.USE_YN = #{bean.useYn, jdbcType=VARCHAR}
+	    	</if>
+	    	<if test="bean.dispYn != null and bean.dispYn !='' ">
+	    		AND CP.DISP_YN = #{bean.dispYn, jdbcType=VARCHAR}
+	    	</if>
+	    	<if test="bean.dayFromDate != null and bean.dayFromDate !='' ">
+				AND
+				<choose>
+			    	<when test="bean.issueType == 'startDtm' ">
+						CP.ISSUE_START_DTM <![CDATA[>=]]> CONVERT(DATETIME, CONVERT(CHAR(8), DATEADD(DD, 1, CONVERT(date, #{bean.dayFromDate, jdbcType=VARCHAR})), 112))
+					</when>
+					<otherwise>
+						CP.ISSUE_END_DTM <![CDATA[>=]]> CONVERT(DATETIME, CONVERT(CHAR(8), DATEADD(DD, 1, CONVERT(date, #{bean.dayFromDate, jdbcType=VARCHAR})), 112))
+					</otherwise>
+				</choose>
+	    	</if>
+	    	<if test="bean.dayToDate != null and bean.dayToDate !='' ">
+				AND
+				<choose>
+			    	<when test="bean.issueType == 'startDtm' ">
+						CP.ISSUE_START_DTM <![CDATA[<=]]> CONVERT(DATETIME, CONVERT(CHAR(8), DATEADD(DD, 1, CONVERT(date, #{bean.dayToDate, jdbcType=VARCHAR})), 112))
+					</when>
+					<otherwise>
+						CP.ISSUE_END_DTM <![CDATA[<=]]> CONVERT(DATETIME, CONVERT(CHAR(8), DATEADD(DD, 1, CONVERT(date, #{bean.dayToDate, jdbcType=VARCHAR})), 112))
+					</otherwise>
+				</choose>
+	    	</if>
+	    	<if test="bean.usePlaceGbnTypeArr != null and bean.usePlaceGbnTypeArr !='' ">
+	    		AND CP.USE_PLACE_GBN_TYPE IN
+	    		<foreach collection="bean.usePlaceGbnTypeArr" item="usePlaceGbnType" open="(" close=")" separator=",">
+	    			 #{usePlaceGbnType, jdbcType=VARCHAR}
+	    		</foreach>
+	    	</if>
+	    	<if test="bean.cpnCrtType != null and bean.cpnCrtType !='' ">
+	    		AND CP.CPN_CRT_TYPE = #{bean.cpnCrtType, jdbcType=VARCHAR}
+	    	</if>
+	    	<if test="bean.deviceCodeArr != null and bean.deviceCodeArr !='' ">
+	    		AND OD.DEVICE_CODE IN
+	    		<foreach collection="bean.deviceCodeArr" item="deviceCode" open="(" close=")" separator=",">
+	    			#{deviceCode, jdbcType=VARCHAR}
+	    		</foreach>
+	    	</if>
+	    	<if test="bean.chnnlNoArr != null and bean.chnnlNoArr !='' ">
+	    		AND EXISTS (
+	    			SELECT PCAC.CPN_NO FROM PR_COUPON_APPLY_CHANNEL PCAC WITH(NOLOCK)
+		    		WHERE PCAC.CHNNL_NO IN
+		    		<foreach collection="bean.chnnlNoArr" item="chnnlNo" open="(" close=")" separator=",">
+		    			#{chnnlNo, jdbcType=VARCHAR}
+		    		</foreach>
+	    		)
+	    	</if>
+	    	<if test="bean.cpnSrchVal != null and bean.cpnSrchVal !='' ">
+	    		<choose>
+					<when test="bean.cpnSrchKey == 'cpnName'">
+				  		AND CP.CPN_NAME LIKE CONCAT('%', #{bean.cpnSrchVal, jdbcType=VARCHAR}, '%')
+					</when>
+					<when test="bean.cpnSrchKey == 'cpnNo'">
+				 		AND CP.CPN_NO = #{bean.cpnSrchVal, jdbcType=VARCHAR}
+					</when>
+				</choose>
+	    	</if>
+	    	<if test="bean.relayCpnUseYn != null and bean.relayCpnUseYn != '' ">
+	    		AND CP.RELAY_CPN_USE_YN = #{bean.relayCpnUseYn, jdbcType=VARCHAR}
+	    	</if>
+    	</where>
+    </sql>
+
+   	<sql id="couponStatsVoWhere">
+    	<where>
+	    		OOP.ORDER_PRDT_STAT_CODE NOT IN('10000', '10001', '10010', '10011')   
+				AND OOP.PRDT_TYPE_CODE NOT IN('10003')
+	    		--AND OD.ORDER_STAT_CODE = '10002'
+	    	<if test="siteNo != null and siteNo !='' ">
+	    		AND OD.SITE_NO = #{siteNo, jdbcType=VARCHAR}
+	    	</if>
+		 	<if test="cpnUseGbnTypeArr != null and cpnUseGbnTypeArr != '' ">
+	    		AND CP.CPN_USE_GBN_TYPE IN
+				<foreach collection="cpnUseGbnTypeArr" item="cpnUseGbnType" open="(" close=")" separator=",">
+					#{cpnUseGbnType, jdbcType=VARCHAR}
+				</foreach>
+	    	</if>
+		 	<if test="cpnTypeCodeArr != null and cpnTypeCodeArr != '' ">
+	    		AND CP.CPN_TYPE_CODE IN
+	    		<foreach collection="cpnTypeCodeArr" item="cpnTypeCode" open="(" close=")" separator=",">
+	    			#{cpnTypeCode, jdbcType=VARCHAR}
+	    		</foreach>
+	    	</if>
+	    	<if test="normalCpnYn != null and normalCpnYn !='' ">
+	    		AND CP.NORMAL_CPN_YN = #{normalCpnYn, jdbcType=VARCHAR}
+	    	</if>
+	    	<if test="useYn != null and useYn !='' ">
+	    		AND CP.USE_YN = #{useYn, jdbcType=VARCHAR}
+	    	</if>
+	    	<if test="dispYn != null and dispYn !='' ">
+	    		AND CP.DISP_YN = #{dispYn, jdbcType=VARCHAR}
+	    	</if>
+	    	<if test="dayFromDate != null and dayFromDate !='' ">
+				AND
+				<choose>
+			    	<when test="issueType == 'startDtm' ">
+						CP.ISSUE_START_DTM <![CDATA[>=]]> CONVERT(DATETIME, CONVERT(CHAR(8), DATEADD(DD, 1, CONVERT(date, #{dayFromDate, jdbcType=VARCHAR})), 112))
+					</when>
+					<otherwise>
+						CP.ISSUE_END_DTM <![CDATA[>=]]> CONVERT(DATETIME, CONVERT(CHAR(8), DATEADD(DD, 1, CONVERT(date, #{dayFromDate, jdbcType=VARCHAR})), 112))
+					</otherwise>
+				</choose>
+	    	</if>
+	    	<if test="dayToDate != null and dayToDate !='' ">
+				AND
+				<choose>
+			    	<when test="issueType == 'startDtm' ">
+						CP.ISSUE_START_DTM <![CDATA[<=]]> CONVERT(DATETIME, CONVERT(CHAR(8), DATEADD(DD, 1, CONVERT(date, #{dayToDate, jdbcType=VARCHAR})), 112))
+					</when>
+					<otherwise>
+						CP.ISSUE_END_DTM <![CDATA[<=]]> CONVERT(DATETIME, CONVERT(CHAR(8), DATEADD(DD, 1, CONVERT(date, #{dayToDate, jdbcType=VARCHAR})), 112))
+					</otherwise>
+				</choose>
+	    	</if>
+	    	<if test="usePlaceGbnTypeArr != null and usePlaceGbnTypeArr !='' ">
+	    		AND CP.USE_PLACE_GBN_TYPE IN
+	    		<foreach collection="usePlaceGbnTypeArr" item="usePlaceGbnType" open="(" close=")" separator=",">
+	    			 #{usePlaceGbnType, jdbcType=VARCHAR}
+	    		</foreach>
+	    	</if>
+	    	<if test="cpnCrtType != null and cpnCrtType !='' ">
+	    		AND CP.CPN_CRT_TYPE = #{cpnCrtType, jdbcType=VARCHAR}
+	    	</if>
+	    	<if test="deviceCodeArr != null and deviceCodeArr !='' ">
+	    		AND OD.DEVICE_CODE IN
+	    		<foreach collection="deviceCodeArr" item="deviceCode" open="(" close=")" separator=",">
+	    			#{deviceCode, jdbcType=VARCHAR}
+	    		</foreach>
+	    	</if>
+	    	<if test="chnnlNoArr != null and chnnlNoArr !='' ">
+	    		AND EXISTS (
+	    			SELECT PCAC.CPN_NO FROM PR_COUPON_APPLY_CHANNEL PCAC WITH(NOLOCK)
+		    		WHERE PCAC.CHNNL_NO IN
+		    		<foreach collection="chnnlNoArr" item="chnnlNo" open="(" close=")" separator=",">
+		    			#{chnnlNo, jdbcType=VARCHAR}
+		    		</foreach>
+	    		)
+	    	</if>
+	    	<if test="cpnSrchVal != null and cpnSrchVal !='' ">
+	    		<choose>
+					<when test="cpnSrchKey == 'cpnName'">
+				  		AND CP.CPN_NAME LIKE CONCAT('%', #{cpnSrchVal, jdbcType=VARCHAR}, '%')
+					</when>
+					<when test="cpnSrchKey == 'cpnNo'">
+				 		AND CP.CPN_NO = #{cpnSrchVal, jdbcType=VARCHAR}
+					</when>
+				</choose>
+	    	</if>
+	    	<if test="relayCpnUseYn != null and relayCpnUseYn != '' ">
+	    		AND CP.RELAY_CPN_USE_YN = #{relayCpnUseYn, jdbcType=VARCHAR}
+	    	</if>
+    	</where>
+    </sql>
+
+</mapper>

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.cmm.repository.master.CmCounselScriptDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	cnsl_script_seq, cnsl_gbn_code, cnsl_type_code, cnsl_type_dtl_code, cnsl_script_title_text, cnsl_script_cont_text, point_pay_yn, aswr_alert_type, aswr_alert_id, use_yn, rgster_no, rgst_dtm, moder_no, mod_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	cnsl_script_seq = #{cnslScriptSeq, jdbcType=VARCHAR}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.cmm.model.master.CmCounselScript" resultType="kr.co.abcmart.bo.cmm.model.master.CmCounselScript">
+    
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmCounselScriptDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			cm_counsel_script WITH (NOLOCK)
+
+		<where> 
+			<if test="cnslScriptSeq != null"> 
+				 cnsl_script_seq = #{cnslScriptSeq, jdbcType=VARCHAR}
+			</if> 
+			<if test="cnslGbnCode != null"> 
+				 AND cnsl_gbn_code = #{cnslGbnCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="cnslTypeCode != null"> 
+				 AND cnsl_type_code = #{cnslTypeCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="cnslTypeDtlCode != null"> 
+				 AND cnsl_type_dtl_code = #{cnslTypeDtlCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="cnslScriptTitleText != null"> 
+				 AND cnsl_script_title_text = #{cnslScriptTitleText, jdbcType=VARCHAR}
+			</if> 
+			<if test="cnslScriptContText != null"> 
+				 AND cnsl_script_cont_text = #{cnslScriptContText, jdbcType=VARCHAR}
+			</if> 
+			<if test="pointPayYn != null"> 
+				 AND point_pay_yn = #{pointPayYn, jdbcType=CHAR}
+			</if> 
+			<if test="aswrAlertType != null"> 
+				 AND aswr_alert_type = #{aswrAlertType, jdbcType=CHAR}
+			</if> 
+			<if test="aswrAlertId != null"> 
+				 AND aswr_alert_id = #{aswrAlertId, jdbcType=VARCHAR}
+			</if> 
+			<if test="useYn != null"> 
+				 AND use_yn = #{useYn, jdbcType=CHAR}
+			</if> 
+			<if test="rgsterNo != null"> 
+				 AND rgster_no = #{rgsterNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="rgstDtm != null"> 
+				 AND rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="moderNo != null"> 
+				 AND moder_no = #{moderNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="modDtm != null"> 
+				 AND mod_dtm = #{modDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <insert id="insert" parameterType="kr.co.abcmart.bo.cmm.model.master.CmCounselScript">	
+
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmCounselScriptDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO cm_counsel_script
+			 ( cnsl_script_seq, cnsl_gbn_code, cnsl_type_code, cnsl_type_dtl_code, cnsl_script_title_text, cnsl_script_cont_text, point_pay_yn, aswr_alert_type, aswr_alert_id, use_yn, rgster_no, rgst_dtm, moder_no, mod_dtm ) 
+
+		VALUES 
+			 ( #{cnslScriptSeq, jdbcType=VARCHAR}, #{cnslGbnCode, jdbcType=VARCHAR}, #{cnslTypeCode, jdbcType=VARCHAR}, #{cnslTypeDtlCode, jdbcType=VARCHAR}, #{cnslScriptTitleText, jdbcType=VARCHAR}, #{cnslScriptContText, jdbcType=VARCHAR}, #{pointPayYn, jdbcType=CHAR}, #{aswrAlertType, jdbcType=CHAR}, #{aswrAlertId, jdbcType=VARCHAR}, #{useYn, jdbcType=CHAR}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.cmm.model.master.CmCounselScript">
+    
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmCounselScriptDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE cm_counsel_script
+		<set> 
+			<if test="cnslScriptSeq != null"> 
+				cnsl_script_seq = #{cnslScriptSeq, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cnslGbnCode != null"> 
+				cnsl_gbn_code = #{cnslGbnCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cnslTypeCode != null"> 
+				cnsl_type_code = #{cnslTypeCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cnslTypeDtlCode != null"> 
+				cnsl_type_dtl_code = #{cnslTypeDtlCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cnslScriptTitleText != null"> 
+				cnsl_script_title_text = #{cnslScriptTitleText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cnslScriptContText != null"> 
+				cnsl_script_cont_text = #{cnslScriptContText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="pointPayYn != null"> 
+				point_pay_yn = #{pointPayYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="aswrAlertType != null"> 
+				aswr_alert_type = #{aswrAlertType, jdbcType=CHAR}, 
+			</if> 
+			<if test="aswrAlertId != null"> 
+				aswr_alert_id = #{aswrAlertId, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="useYn != null"> 
+				use_yn = #{useYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="rgsterNo != null"> 
+				rgster_no = #{rgsterNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 cnsl_script_seq = #{cnslScriptSeq, jdbcType=VARCHAR}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.cmm.model.master.CmCounselScript">
+    
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmCounselScriptDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM cm_counsel_script
+		WHERE 
+			 cnsl_script_seq = #{cnslScriptSeq, jdbcType=VARCHAR}  
+    </delete>
+</mapper>

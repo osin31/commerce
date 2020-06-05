@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.claim.repository.master.OcClaimMemoDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimMemo">
+    
+     /*+ kr.co.abcmart.bo.claim.repository.master.OcClaimMemoDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			OC_CLAIM_MEMO WITH (NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+	
+	<select id="selectByOrderNo" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimMemo" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimMemo">
+    
+     /*+ kr.co.abcmart.bo.claim.repository.master.OcClaimMemoDao.selectByOrderNo [주문번호에 따른 메모 목록 조회 쿼리] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			OC_CLAIM_MEMO WITH (NOLOCK)
+		<where> 
+				 org_order_no = #{orgOrderNo, jdbcType=VARCHAR}
+		</where>  
+    </select>
+    
+    <select id="countByOrderNo" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimMemo"  resultType="Integer">
+    
+     /*+ kr.co.abcmart.bo.claim.repository.master.OcClaimMemoDao.countByOrderNo [주문번호에 따른 메모 목록 갯수 조회 쿼리] [Generator] */
+    
+		SELECT 
+			COUNT(CLM_MEMO_SEQ)
+		FROM 
+			OC_CLAIM_MEMO WITH (NOLOCK)
+		<where> 
+				 org_order_no = #{orgOrderNo, jdbcType=VARCHAR}
+		</where>  
+    </select>
+
+    <insert id="insertClaimMemo" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimMemo">
+	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimMemoDao.insertClaimMemo [주문번호에 따른 메모 목록 갯수 조회 쿼리] */
+		INSERT INTO OC_CLAIM_MEMO
+			 (
+			   CLM_NO
+			 , CLM_MEMO_SEQ
+			<if test="clmPrdtSeq != null">
+			 , CLM_PRDT_SEQ
+			</if>
+			<if test="orgOrderNo != null">
+			 , ORG_ORDER_NO
+			</if>
+			 , CLM_GBN_CODE
+			 , MEMO_TEXT
+			 , DEL_YN
+			 , RGSTER_NO
+			 , RGST_DTM
+			 )
+		VALUES 
+			 (
+			   #{clmNo, jdbcType=VARCHAR}
+			 , (
+				SELECT ISNULL(MAX(CLM_MEMO_SEQ), 0) + 1
+				  FROM OC_CLAIM_MEMO WITH (NOLOCK)
+				 WHERE CLM_NO = #{clmNo, jdbcType=VARCHAR}
+			   )
+			<if test="clmPrdtSeq != null">
+			 , #{clmPrdtSeq, jdbcType=INTEGER}
+			</if>
+			<if test="orgOrderNo != null">
+			 , #{orgOrderNo, jdbcType=VARCHAR}
+			</if>
+			 , #{clmGbnCode, jdbcType=VARCHAR}
+			 , #{memoText, jdbcType=VARCHAR}
+			 , 'N'
+			 , #{rgsterNo, jdbcType=VARCHAR}
+			 , GETDATE()
+			 )
+    </insert>
+    
+	<select id="selectClaimMemoList" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimMemo" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimMemo">
+		/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimMemoDao.selectClaimMemoList [클레임 메모 목록 조회 쿼리] [KTH] */
+		SELECT A.CLM_NO
+			 , A.CLM_MEMO_SEQ
+			 , A.CLM_PRDT_SEQ
+			 , A.ORG_ORDER_NO
+			 , A.CLM_GBN_CODE
+			 , DBO.FN_CODE_VALUE('CLM_GBN_CODE', A.CLM_GBN_CODE) AS CLM_GBN_CODE_NAME
+			 , A.MEMO_TEXT
+			 , A.DEL_YN
+			 , A.RGSTER_NO
+			 , A.RGST_DTM
+			 , B.LOGIN_ID AS LOGIN_ID
+			 , B.ADMIN_NAME AS ADMIN_NAME
+		  FROM OC_CLAIM_MEMO A WITH (NOLOCK)
+		  JOIN SY_ADMIN B WITH (NOLOCK)
+			ON A.RGSTER_NO = B.ADMIN_NO
+		 WHERE A.CLM_NO = #{clmNo, jdbcType=VARCHAR}
+		<if test="clmGbnCode != null and clmGbnCode != ''">
+		   AND A.CLM_GBN_CODE = #{clmGbnCode, jdbcType=VARCHAR}
+		</if>
+		<if test="delYn != null and delYn != ''">
+		   AND A.DEL_YN = #{delYn, jdbcType=CHAR}
+		</if>
+		ORDER BY A.CLM_MEMO_SEQ DESC
+	</select>
+	
+	<update id="udpateClaimMemoForDelete" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimMemo">
+		/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimMemoDao.udpateClaimMemoForDelete [클레임 메모 삭제 업데이트] [KTH] */
+		UPDATE OC_CLAIM_MEMO
+		   SET DEL_YN = #{delYn, jdbcType=CHAR}
+		 WHERE CLM_NO = #{clmNo, jdbcType=VARCHAR}
+		   AND CLM_MEMO_SEQ = #{clmMemoSeq, jdbcType=INTEGER}
+		   AND RGSTER_NO = #{rgsterNo, jdbcType=VARCHAR}
+	</update>
+
+</mapper>

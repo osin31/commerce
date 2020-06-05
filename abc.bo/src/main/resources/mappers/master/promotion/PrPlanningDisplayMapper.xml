@@ -1,0 +1,837 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplay">
+    
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			PR_PLANNING_DISPLAY
+		WHERE 
+			<include refid="pk-columns" />
+    </select>
+    
+    <select id="selectPrPlanningDisplayList" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplay" resultType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplay">   
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayDao.selectPrPlanningDisplayList [기획전 리스트 조회] [이가영] */
+    
+    	SELECT
+    		A.plndp_no,
+    		A.plndp_name,
+    		A.plndp_start_dtm,
+    		A.plndp_end_dtm,
+    		A.chnnl_no,
+    		( SELECT CHNNL_NAME FROM SY_SITE_CHNNL WITH (NOLOCK) WHERE CHNNL_NO = A.chnnl_no ) AS CHNNL_NAME,
+    		A.vndr_gbn_type,
+    		A.vndr_no,
+    		A.srch_word_text,
+    		A.plndp_cont_text,
+    		A.pc_plndp_url,
+    		A.mobile_plndp_url,
+    		A.pc_banner_image_name,
+    		A.pc_banner_image_path_text,
+    		A.pc_banner_image_url,
+    		A.pc_banner_image_altrn_text,
+    		A.mobile_banner_image_name,
+    		A.mobile_banner_image_path_text,
+    		A.mobile_banner_image_url,
+    		A.mobile_banner_image_altrn_text,
+    		A.threed_image_name,
+    		A.threed_image_path_text,
+    		A.threed_image_disp_seq,
+    		A.movie_upload_yn,
+    		A.disp_movie_name,
+    		A.movie_name,
+    		A.movie_path_text,
+    		A.movie_url,
+    		A.movie_image_name,
+    		A.movie_image_path_text,
+    		A.movie_image_url,
+    		A.movie_image_altrn_text,
+    		A.movie_disp_seq,
+    		A.pc_dtl_desc_text,
+    		A.mobile_dtl_desc_text,
+    		A.dtl_desc_disp_seq, disp_type,
+    		A.corner_apply_yn,
+    		A.corner_disp_type,
+    		A.disp_yn,
+    		A.art_disp_yn,
+    		A.use_yn,
+    		A.plndp_stat_code,
+    		A.rgster_no,
+    		A.rgst_dtm,
+    		A.moder_no,
+    		A.mod_dtm,
+    		A.emp_yn,
+    		(select
+				STUFF((
+					select
+						DISTINCT ',' + AA.DEVICE_CODE
+					from
+						PR_PLANNING_DISPLAY_APPLY_DEVICE AA with (nolock)
+					WHERE
+						AA.PLNDP_NO = A.PLNDP_NO for xml path('')), 1,	1, '')
+			) as DEVICE_CODE_STR,
+    		(select
+				STUFF((
+					select
+						DISTINCT ',' + DBO.FN_CODE_VALUE('DEVICE_CODE', AA.DEVICE_CODE)
+					from
+						PR_PLANNING_DISPLAY_APPLY_DEVICE AA with (nolock)
+					WHERE
+						AA.PLNDP_NO = A.PLNDP_NO for xml path('')), 1,	1, '')
+			) as DEVICE_CODE_NAME_STR,
+			(select
+				STUFF((
+					select
+						DISTINCT ',' + DBO.FN_CODE_VALUE('MEMBER_TYPE_CODE', AA.MEMBER_TYPE_CODE)
+					from
+						PR_PLANNING_DISPLAY_APPLY_GRADE AA with (nolock)
+					WHERE
+						AA.PLNDP_NO = A.PLNDP_NO for xml path('')), 1,	1, '')
+			) as MEMBER_TYPE_CODE_STR,
+			(select
+				STUFF((
+					select
+						DISTINCT ',' + DBO.FN_CODE_VALUE('PLNDP_TYPE_CODE', AA.PLNDP_TYPE_CODE)
+					from
+						PR_PLANNING_DISPLAY_TYPE AA with (nolock)
+					WHERE
+						AA.PLNDP_NO = A.PLNDP_NO for xml path('')), 1,	1, '')
+			) as PLNDP_TYPE_CODE_STR,
+			B.ADMIN_NAME AS RGSTER_NAME,
+			B.LOGIN_ID AS RGSTER_ID,
+			C.ADMIN_NAME AS MODER_NAME,
+			C.LOGIN_ID AS MODER_ID,
+			V.VNDR_NAME,
+			D.plndp_aprv_hist_seq,
+			D.plndp_stat_code,
+			D.reqtr_no,
+			D.req_dtm, 
+			D.return_rsn_text, 
+			D.aprver_no, 
+			D.aprver_dtm,
+			E.ADMIN_NAME AS APRVER_NAME,
+			E.LOGIN_ID AS APRVER_ID
+    	FROM
+    		PR_PLANNING_DISPLAY A with (nolock)
+    	LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON A.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON A.MODER_NO = C.ADMIN_NO
+		LEFT OUTER JOIN VD_VENDOR V WITH(NOLOCK) ON V.VNDR_NO = A.VNDR_NO
+		LEFT OUTER JOIN PR_PLANNING_DISPLAY_APPROVAL_HISTORY D WITH(NOLOCK) ON
+			D.PLNDP_APRV_HIST_SEQ = (SELECT TOP 1 F.PLNDP_APRV_HIST_SEQ FROM PR_PLANNING_DISPLAY_APPROVAL_HISTORY F WHERE F.PLNDP_NO = A.PLNDP_NO ORDER BY F.APRVER_DTM DESC, F.REQ_DTM DESC)
+			AND D.PLNDP_NO = A.PLNDP_NO
+		LEFT OUTER JOIN SY_ADMIN E WITH(NOLOCK) ON D.APRVER_NO = E.ADMIN_NO
+		<where>
+			<if test="bean.plndpStartDtm != null"> 
+				 AND A.plndp_start_dtm = #{bean.plndpStartDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="bean.plndpEndDtm != null"> 
+				 AND A.plndp_end_dtm = #{bean.plndpEndDtm, jdbcType=TIMESTAMP}
+			</if>
+			<if test="bean.chnnlNo != null">
+				AND A.chnnl_no = #{bean.chnnlNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.chnnlNoArr != null and bean.chnnlNoArr.length > 0">
+				AND A.chnnl_no in
+				<foreach item="item" index="index" collection="bean.chnnlNoArr" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="bean.plndpStatCodeArr != null and bean.plndpStatCodeArr.length > 0">
+				AND A.plndp_stat_code in
+				<foreach item="item" index="index" collection="bean.plndpStatCodeArr" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="bean.plndpStatCodeArr == null">
+				<if test='bean.pageType != null and bean.pageType == "A"'>
+					AND A.plndp_stat_code != '10003'
+				</if>
+				<if test='bean.pageType != null and bean.pageType == "D"'>
+					AND A.plndp_stat_code = '10003'
+				</if>		
+			</if>
+			<if test="bean.vndrGbnType != null">
+				 AND A.vndr_gbn_type = #{bean.vndrGbnType, jdbcType=CHAR}
+				 <if test='bean.vndrGbnType == "V" and bean.vndrNo != null'>
+					AND A.vndr_no = #{bean.vndrNo, jdbcType=VARCHAR}
+				</if>
+			</if>			
+			<if test="bean.dispType != null"> 
+				 AND A.disp_type = #{bean.dispType, jdbcType=CHAR}
+			</if>
+			<if test="bean.dispYn != null"> 
+				 AND A.disp_yn = #{bean.dispYn, jdbcType=CHAR}
+			</if> 
+			<if test="bean.artDispYn != null"> 
+				 AND A.art_disp_yn = #{bean.artDispYn, jdbcType=CHAR}
+			</if> 
+			<if test="bean.useYn != null">
+				 AND A.use_yn = #{bean.useYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.rgstDtm != null">
+				 AND A.rgst_dtm = #{bean.rgstDtm, jdbcType=TIMESTAMP}
+			</if>
+			<if test="bean.modDtm != null">
+				 AND A.mod_dtm = #{bean.modDtm, jdbcType=TIMESTAMP}
+			</if>
+			<if test="bean.progressArr != null and bean.progressArr.length > 0">		
+				AND (
+					<trim prefix="" prefixOverrides="AND|OR">
+						<foreach item="item" index="index" collection="bean.progressArr">
+							<if test='item == "W"'>
+								plndp_start_dtm >= getdate()
+							</if>
+							<if test='item == "O"'>
+								OR (plndp_start_dtm &lt;= getdate() AND plndp_end_dtm >= getdate())
+							</if>
+							<if test='item == "D"'>
+								OR plndp_end_dtm &lt;= getdate()
+							</if>
+						</foreach>
+					</trim>
+				)
+			</if>
+			<if test="bean.searchWord != null and bean.searchWord != '' and bean.searchType != null and bean.searchType != ''">
+				<if test='bean.searchType == "I"'>
+					 AND A.plndp_no like '%' + #{bean.searchWord, jdbcType=VARCHAR} + '%'
+				</if>
+				<if test='bean.searchType == "N"'>
+					 AND A.plndp_name like '%' + #{bean.searchWord, jdbcType=VARCHAR} + '%'				
+				</if> 
+			</if>
+			<if test="bean.dateSearchType != null and bean.dateSearchS != null and bean.dateSearchE != null">
+				<if test='bean.dateSearchType == "S"'>
+					 AND A.PLNDP_START_DTM >= CONVERT(DATETIME, #{bean.dateSearchS, jdbcType=VARCHAR}+' 00:00:00')
+					 AND A.PLNDP_START_DTM &lt;= CONVERT(DATETIME, #{bean.dateSearchE, jdbcType=VARCHAR}+' 23:59:59')
+				</if>
+				<if test='bean.dateSearchType == "E"'>
+					 AND A.PLNDP_END_DTM >= CONVERT(DATETIME, #{bean.dateSearchS, jdbcType=VARCHAR}+' 00:00:00')
+					 AND A.PLNDP_END_DTM &lt;= CONVERT(DATETIME, #{bean.dateSearchE, jdbcType=VARCHAR}+' 23:59:59')
+				</if>
+				<if test='bean.dateSearchType == "R"'>
+					 AND A.RGST_DTM >= CONVERT(DATETIME, #{bean.dateSearchS, jdbcType=VARCHAR}+' 00:00:00')
+					 AND A.RGST_DTM &lt;= CONVERT(DATETIME, #{bean.dateSearchE, jdbcType=VARCHAR}+' 23:59:59')
+				</if>
+				<if test='bean.dateSearchType == "M"'>
+					 AND A.MOD_DTM >= CONVERT(DATETIME, #{bean.dateSearchS, jdbcType=VARCHAR}+' 00:00:00')
+					 AND A.MOD_DTM &lt;= CONVERT(DATETIME, #{bean.dateSearchE, jdbcType=VARCHAR}+' 23:59:59')	
+				</if>
+				<if test='bean.dateSearchType == "A"'>
+					 AND D.REQ_DTM >= CONVERT(DATETIME, #{bean.dateSearchS, jdbcType=VARCHAR}+' 00:00:00')
+					 AND D.REQ_DTM &lt;= CONVERT(DATETIME, #{bean.dateSearchE, jdbcType=VARCHAR}+' 23:59:59')
+				</if>
+				<if test='bean.dateSearchType == "F"'>
+					 AND D.PLNDP_STAT_CODE = '10002'
+					 AND D.REQ_DTM >= CONVERT(DATETIME, #{bean.dateSearchS, jdbcType=VARCHAR}+' 00:00:00')
+					 AND D.REQ_DTM &lt;= CONVERT(DATETIME, #{bean.dateSearchE, jdbcType=VARCHAR}+' 23:59:59')	
+				</if>
+			</if>
+			<if test="bean.plndpTypeCodeAll == null and bean.plndpTypeCodeArr != null and bean.plndpTypeCodeArr.length > 0">
+			AND EXISTS
+				(
+					SELECT PPAT.PLNDP_NO FROM PR_PLANNING_DISPLAY_TYPE PPAT WITH(NOLOCK) WHERE A.PLNDP_NO = PPAT.PLNDP_NO
+					AND PPAT.PLNDP_TYPE_CODE IN
+					<foreach collection="bean.plndpTypeCodeArr" item="plndpTypeCode" open="(" close=")" separator=",">
+						#{plndpTypeCode}
+					</foreach>
+				)
+			</if>
+			<if test="bean.deviceCodeAll == null and bean.deviceCodeArr != null and bean.deviceCodeArr.length > 0">
+			AND EXISTS
+				(
+					SELECT PPAD.PLNDP_NO FROM PR_PLANNING_DISPLAY_APPLY_DEVICE PPAD WITH(NOLOCK) WHERE A.PLNDP_NO = PPAD.PLNDP_NO
+					AND PPAD.DEVICE_CODE IN
+					<foreach collection="bean.deviceCodeArr" item="deviceCode" open="(" close=")" separator=",">
+						#{deviceCode}
+					</foreach>
+				)	
+			</if>
+			<if test='bean.memberTypeCodeAll != "Y"'>
+				<choose>
+					<when test='bean.memberTypeCodeArr != null'>
+						AND (EXISTS
+						(
+							SELECT PPAG.PLNDP_NO FROM PR_PLANNING_DISPLAY_APPLY_GRADE PPAG WITH(NOLOCK) WHERE A.PLNDP_NO = PPAG.PLNDP_NO
+							AND PPAG.MEMBER_TYPE_CODE IN
+							<foreach collection="bean.memberTypeCodeArr" item="memberTypeCode" open="(" close=")" separator=",">
+								#{memberTypeCode}
+							</foreach>
+						)
+						<if test="bean.empYn != null"> 
+							 OR A.emp_yn = #{bean.empYn, jdbcType=CHAR}
+						</if>
+						)
+					</when>
+					<otherwise>
+						<if test="bean.empYn != null">
+							 AND A.emp_yn = #{bean.empYn, jdbcType=CHAR}
+						</if>
+					</otherwise>
+				</choose>
+			</if>
+			<if test='bean.mappingPrdtNo != null'>
+				AND (
+					EXISTS (
+						select pdp.plndp_no from pr_planning_display_product pdp
+						where pdp.plndp_no=a.plndp_no
+						and a.corner_apply_yn='N'
+						and pdp.prdt_no=#{bean.mappingPrdtNo, jdbcType=VARCHAR}
+					) OR EXISTS (
+						select pdcp.plndp_no from pr_planning_display_corner_product pdcp
+						where pdcp.plndp_no=a.plndp_no
+						and a.corner_apply_yn='Y'
+						and pdcp.prdt_no=#{bean.mappingPrdtNo, jdbcType=VARCHAR}
+					)
+				)
+			</if>
+		</where>
+    	ORDER BY
+    		<choose>
+    			<when test="sortColumn != null">
+    				<if test="sortColumn == 'plndpName'.toString()">
+    					A.plndp_name 
+    				</if>
+    				<if test="sortColumn == 'plndpStartDtm'.toString()">
+    					A.plndp_start_dtm 
+    				</if>
+    				<if test="sortColumn == 'plndpEndDtm'.toString()">
+    					A.plndp_end_dtm
+    				</if>
+    				<if test="sortColumn == 'aprverDtm'.toString()">
+    					D.aprver_dtm
+    				</if>
+    				<if test="sortColumn == 'rgstDtm'.toString()">
+    					A.rgst_dtm
+    				</if>
+    				<if test="sortColumn == 'modDtm'.toString()">
+    					A.mod_dtm 
+    				</if>
+    				<if test="sortColumn == 'reqDtm'.toString()">
+    					D.req_dtm 
+    				</if>   				
+    				<if test="sortType == 'DESC'.toString()">
+				 		DESC
+				 	</if>
+    			</when>
+    			<otherwise>case when A.plndp_stat_code = '10000' then 0 else 1 end, A.rgst_dtm DESC</otherwise>
+    		</choose>
+    	<include refid="Paging.mssql" />
+    </select>
+    
+    <select id="selectPrPlanningDisplayDetail" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplay" resultType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplay">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayDao.selectPrPlanningDisplayDetail [기획전 상세 조회] [이가영] */
+    
+    	SELECT
+    		TOP 1
+			A.plndp_no,
+    		A.plndp_name,
+    		A.plndp_start_dtm,
+    		A.plndp_end_dtm,
+    		A.chnnl_no,
+    		A.vndr_gbn_type,
+    		A.vndr_no,
+    		A.srch_word_text,
+    		A.plndp_cont_text,
+    		A.pc_plndp_url,
+    		A.mobile_plndp_url,
+    		A.pc_banner_image_name,
+    		A.pc_banner_image_path_text,
+    		A.pc_banner_image_url,
+    		A.pc_banner_image_altrn_text,
+    		A.mobile_banner_image_name,
+    		A.mobile_banner_image_path_text,
+    		A.mobile_banner_image_url,
+    		A.mobile_banner_image_altrn_text,
+    		A.threed_image_name,
+    		A.threed_image_path_text,
+    		A.threed_image_disp_seq,
+    		A.movie_upload_yn,
+    		A.disp_movie_name,
+    		A.movie_name,
+    		A.movie_path_text,
+    		A.movie_url,
+    		A.movie_image_name,
+    		A.movie_image_path_text,
+    		A.movie_image_url,
+    		A.movie_image_altrn_text,
+    		A.movie_disp_seq,
+    		A.pc_dtl_desc_text,
+    		A.mobile_dtl_desc_text,
+    		A.dtl_desc_disp_seq, disp_type,
+    		A.corner_apply_yn,
+    		A.corner_disp_type,
+    		A.disp_yn,
+    		A.art_disp_yn,
+    		A.use_yn,
+    		A.plndp_stat_code,
+    		A.rgster_no,
+    		A.rgst_dtm,
+    		A.moder_no,
+    		A.mod_dtm,
+    		A.emp_yn,
+			B.ADMIN_NAME AS RGSTER_NAME,
+			B.LOGIN_ID AS RGSTER_ID,
+			C.ADMIN_NAME AS MODER_NAME,
+			C.LOGIN_ID AS MODER_ID,
+			D.plndp_no,
+			D.plndp_aprv_hist_seq,
+			D.reqtr_no,
+			D.req_dtm,
+			D.plndp_stat_code,
+			D.return_rsn_text,
+			D.aprver_no,
+			D.aprver_dtm,
+			(select vndr_name from vd_vendor with (nolock) where vndr_no=A.vndr_no) AS vndr_name
+		FROM 
+			PR_PLANNING_DISPLAY A with (nolock)
+		LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON A.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON A.MODER_NO = C.ADMIN_NO
+		LEFT OUTER JOIN PR_PLANNING_DISPLAY_APPROVAL_HISTORY D WITH(NOLOCK) ON A.PLNDP_NO = D.PLNDP_NO AND A.plndp_stat_code = D.plndp_stat_code
+		WHERE 
+			A.plndp_no = #{plndpNo, jdbcType=VARCHAR}
+			<if test="vndrNo != null">
+				AND A.vndr_no =  #{vndrNo, jdbcType=VARCHAR}
+			</if>
+		ORDER BY
+			D.req_dtm desc
+    </select>
+    
+    <select id="selectPrPlanningDisplayCount" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplay" resultType="int">   
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayDao.selectPrPlanningDisplayCount [기획전 카운트 조회] [이가영] */
+    
+    	SELECT
+    		count(A.plndp_no)
+    	FROM
+    		PR_PLANNING_DISPLAY A with (nolock)
+    	LEFT OUTER JOIN PR_PLANNING_DISPLAY_APPROVAL_HISTORY D WITH(NOLOCK) ON
+			D.PLNDP_APRV_HIST_SEQ = (SELECT TOP 1 F.PLNDP_APRV_HIST_SEQ FROM PR_PLANNING_DISPLAY_APPROVAL_HISTORY F WHERE F.PLNDP_NO = A.PLNDP_NO ORDER BY F.APRVER_DTM DESC, F.REQ_DTM DESC)
+			AND D.PLNDP_NO = A.PLNDP_NO
+		<where>
+			<if test="bean.plndpStartDtm != null"> 
+				 AND A.plndp_start_dtm = #{bean.plndpStartDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="bean.plndpEndDtm != null"> 
+				 AND A.plndp_end_dtm = #{bean.plndpEndDtm, jdbcType=TIMESTAMP}
+			</if>
+			<if test="bean.chnnlNo != null">
+				AND A.chnnl_no = #{bean.chnnlNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.chnnlNoArr != null and bean.chnnlNoArr.length > 0">
+				AND A.chnnl_no in
+				<foreach item="item" index="index" collection="bean.chnnlNoArr" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="bean.plndpStatCodeArr != null and bean.plndpStatCodeArr.length > 0">
+				AND A.plndp_stat_code in
+				<foreach item="item" index="index" collection="bean.plndpStatCodeArr" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="bean.plndpStatCodeArr == null">
+				<if test='bean.pageType != null and bean.pageType == "A"'>
+					AND A.plndp_stat_code != '10003'
+				</if>
+				<if test='bean.pageType != null and bean.pageType == "D"'>
+					AND A.plndp_stat_code = '10003'
+				</if>
+			</if>
+			<if test="bean.vndrGbnType != null">
+				 AND A.vndr_gbn_type = #{bean.vndrGbnType, jdbcType=CHAR}
+				 <if test='bean.vndrGbnType == "V" and bean.vndrNo != null'>
+					AND A.vndr_no = #{bean.vndrNo, jdbcType=VARCHAR}
+				</if>
+			</if>			
+			<if test="bean.dispType != null"> 
+				 AND A.disp_type = #{bean.dispType, jdbcType=CHAR}
+			</if>
+			<if test="bean.dispYn != null"> 
+				 AND A.disp_yn = #{bean.dispYn, jdbcType=CHAR}
+			</if> 
+			<if test="bean.artDispYn != null"> 
+				 AND A.art_disp_yn = #{bean.artDispYn, jdbcType=CHAR}
+			</if> 
+			<if test="bean.useYn != null"> 
+				 AND A.use_yn = #{bean.useYn, jdbcType=CHAR}
+			</if>			
+			<if test="bean.rgstDtm != null"> 
+				 AND A.rgst_dtm = #{bean.rgstDtm, jdbcType=TIMESTAMP}
+			</if>
+			<if test="bean.modDtm != null"> 
+				 AND A.mod_dtm = #{bean.modDtm, jdbcType=TIMESTAMP}
+			</if>
+			<if test="bean.progressArr != null and bean.progressArr.length > 0">		
+				AND (
+					<trim prefix="" prefixOverrides="AND|OR">
+						<foreach item="item" index="index" collection="bean.progressArr">
+							<if test='item == "W"'>
+								plndp_start_dtm >= getdate()
+							</if>
+							<if test='item == "O"'>
+								OR (plndp_start_dtm &lt;= getdate() AND plndp_end_dtm >= getdate())
+							</if>
+							<if test='item == "D"'>
+								OR plndp_end_dtm &lt;= getdate()
+							</if>
+						</foreach>
+					</trim>
+				)
+			</if>
+			<if test="bean.searchWord != null and bean.searchWord != '' and bean.searchType != null and bean.searchType != ''">
+				<if test='bean.searchType == "I"'>
+					 AND A.plndp_no like '%' + #{bean.searchWord, jdbcType=VARCHAR} + '%'
+				</if>
+				<if test='bean.searchType == "N"'>
+					 AND A.plndp_name like '%' + #{bean.searchWord, jdbcType=VARCHAR} + '%'				
+				</if> 
+			</if>
+			<if test="bean.dateSearchType != null and bean.dateSearchS != null and bean.dateSearchE != null">
+				<if test='bean.dateSearchType == "S"'>
+					 AND A.PLNDP_START_DTM >= CONVERT(DATETIME, #{bean.dateSearchS, jdbcType=VARCHAR}+' 00:00:00')
+					 AND A.PLNDP_START_DTM &lt;= CONVERT(DATETIME, #{bean.dateSearchE, jdbcType=VARCHAR}+' 23:59:59')
+				</if>
+				<if test='bean.dateSearchType == "E"'>
+					 AND A.PLNDP_END_DTM >= CONVERT(DATETIME, #{bean.dateSearchS, jdbcType=VARCHAR}+' 00:00:00')
+					 AND A.PLNDP_END_DTM &lt;= CONVERT(DATETIME, #{bean.dateSearchE, jdbcType=VARCHAR}+' 23:59:59')
+				</if>
+				<if test='bean.dateSearchType == "R"'>
+					 AND A.RGST_DTM >= CONVERT(DATETIME, #{bean.dateSearchS, jdbcType=VARCHAR}+' 00:00:00')
+					 AND A.RGST_DTM &lt;= CONVERT(DATETIME, #{bean.dateSearchE, jdbcType=VARCHAR}+' 23:59:59')
+				</if>
+				<if test='bean.dateSearchType == "M"'>
+					 AND A.MOD_DTM >= CONVERT(DATETIME, #{bean.dateSearchS, jdbcType=VARCHAR}+' 00:00:00')
+					 AND A.MOD_DTM &lt;= CONVERT(DATETIME, #{bean.dateSearchE, jdbcType=VARCHAR}+' 23:59:59')	
+				</if>
+				<if test='bean.dateSearchType == "A"'>
+					 AND D.REQ_DTM >= CONVERT(DATETIME, #{bean.dateSearchS, jdbcType=VARCHAR}+' 00:00:00')
+					 AND D.REQ_DTM &lt;= CONVERT(DATETIME, #{bean.dateSearchE, jdbcType=VARCHAR}+' 23:59:59')
+				</if>
+				<if test='bean.dateSearchType == "F"'>
+					 AND D.PLNDP_STAT_CODE = '10002'
+					 AND D.REQ_DTM >= CONVERT(DATETIME, #{bean.dateSearchS, jdbcType=VARCHAR}+' 00:00:00')
+					 AND D.REQ_DTM &lt;= CONVERT(DATETIME, #{bean.dateSearchE, jdbcType=VARCHAR}+' 23:59:59')	
+				</if>
+			</if>
+			<if test="bean.plndpTypeCodeAll == null and bean.plndpTypeCodeArr != null and bean.plndpTypeCodeArr.length > 0">
+			AND EXISTS
+				(
+					SELECT PPAT.PLNDP_NO FROM PR_PLANNING_DISPLAY_TYPE PPAT WITH(NOLOCK) WHERE A.PLNDP_NO = PPAT.PLNDP_NO
+					AND PPAT.PLNDP_TYPE_CODE IN
+					<foreach collection="bean.plndpTypeCodeArr" item="plndpTypeCode" open="(" close=")" separator=",">
+						#{plndpTypeCode}
+					</foreach>
+				)
+			</if>
+			<if test="bean.deviceCodeAll == null and bean.deviceCodeArr != null and bean.deviceCodeArr.length > 0">
+			AND EXISTS
+				(
+					SELECT PPAD.PLNDP_NO FROM PR_PLANNING_DISPLAY_APPLY_DEVICE PPAD WITH(NOLOCK) WHERE A.PLNDP_NO = PPAD.PLNDP_NO
+					AND PPAD.DEVICE_CODE IN
+					<foreach collection="bean.deviceCodeArr" item="deviceCode" open="(" close=")" separator=",">
+						#{deviceCode}
+					</foreach>
+				)
+			</if>
+			<if test='bean.memberTypeCodeAll != "Y"'>
+				<choose>
+					<when test='bean.memberTypeCodeArr != null'>
+						AND (EXISTS
+						(
+							SELECT PPAG.PLNDP_NO FROM PR_PLANNING_DISPLAY_APPLY_GRADE PPAG WITH(NOLOCK) WHERE A.PLNDP_NO = PPAG.PLNDP_NO
+							AND PPAG.MEMBER_TYPE_CODE IN
+							<foreach collection="bean.memberTypeCodeArr" item="memberTypeCode" open="(" close=")" separator=",">
+								#{memberTypeCode}
+							</foreach>
+						)
+						<if test="bean.empYn != null"> 
+							 OR A.emp_yn = #{bean.empYn, jdbcType=CHAR}
+						</if>
+						)
+					</when>
+					<otherwise>
+						<if test="bean.empYn != null">
+							 AND A.emp_yn = #{bean.empYn, jdbcType=CHAR}
+						</if>
+					</otherwise>
+				</choose>
+			</if>
+		</where>
+    </select>
+    
+    <insert id="insertPrPlanningDisplay" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplay">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayDao.insertPrPlanningDisplay [기획전 등록] [이가영] */
+    	
+    	<selectKey resultType="String" keyProperty="plndpNo" order="BEFORE">
+			SELECT NEXT VALUE FOR SEQ_PR_PLANNING_DISPLAY_PLNDP_NO
+		</selectKey>
+		
+    	INSERT INTO PR_PLANNING_DISPLAY (
+    		plndp_no,
+    		plndp_name,
+    		plndp_start_dtm,
+    		plndp_end_dtm,
+    		chnnl_no,
+    		vndr_gbn_type,
+    		vndr_no,
+    		srch_word_text,
+    		plndp_cont_text,
+    		pc_plndp_url,
+    		mobile_plndp_url,
+    		pc_banner_image_name,
+    		pc_banner_image_path_text,
+    		pc_banner_image_url,
+    		pc_banner_image_altrn_text,
+    		mobile_banner_image_name,
+    		mobile_banner_image_path_text,
+    		mobile_banner_image_url,
+    		mobile_banner_image_altrn_text,
+    		threed_image_name,
+    		threed_image_path_text,
+    		threed_image_disp_seq,
+    		movie_upload_yn,
+    		disp_movie_name,
+    		movie_name,
+    		movie_path_text,
+    		movie_url,
+    		movie_image_name,
+    		movie_image_path_text,
+    		movie_image_url,
+    		movie_image_altrn_text,
+    		movie_disp_seq,
+    		pc_dtl_desc_text,
+    		mobile_dtl_desc_text,
+    		dtl_desc_disp_seq, disp_type,
+    		corner_apply_yn,
+    		corner_disp_type,
+    		disp_yn,
+    		art_disp_yn,
+    		use_yn,
+    		plndp_stat_code,
+    		rgster_no,
+    		rgst_dtm,
+    		moder_no,
+    		mod_dtm,
+    		emp_yn
+    	) VALUES (
+    		#{plndpNo, jdbcType=VARCHAR},
+    		#{plndpName, jdbcType=VARCHAR},
+    		CONVERT(DATETIME, #{plndpStartD, jdbcType=VARCHAR} + ' ' + #{plndpStartH, jdbcType=VARCHAR} + ':' + #{plndpStartM, jdbcType=VARCHAR} + ':' + '00'),
+    		CONVERT(DATETIME, #{plndpEndD, jdbcType=VARCHAR} + ' ' + #{plndpEndH, jdbcType=VARCHAR} + ':' + #{plndpEndM, jdbcType=VARCHAR} + ':' + '59'),
+    		#{chnnlNo, jdbcType=VARCHAR},
+    		#{vndrGbnType, jdbcType=CHAR},
+    		#{vndrNo, jdbcType=VARCHAR},
+    		#{srchWordText, jdbcType=VARCHAR},
+    		#{plndpContText, jdbcType=VARCHAR},
+    		#{pcPlndpUrl, jdbcType=VARCHAR},
+    		#{mobilePlndpUrl, jdbcType=VARCHAR},
+    		#{pcBannerImageName, jdbcType=VARCHAR},
+    		#{pcBannerImagePathText, jdbcType=VARCHAR},
+    		#{pcBannerImageUrl, jdbcType=VARCHAR},
+    		#{pcBannerImageAltrnText, jdbcType=VARCHAR},
+    		#{mobileBannerImageName, jdbcType=VARCHAR},
+    		#{mobileBannerImagePathText, jdbcType=VARCHAR},
+    		#{mobileBannerImageUrl, jdbcType=VARCHAR},
+    		#{mobileBannerImageAltrnText, jdbcType=VARCHAR},
+    		#{threedImageName, jdbcType=VARCHAR},
+    		#{threedImagePathText, jdbcType=VARCHAR},
+    		#{threedImageDispSeq, jdbcType=INTEGER},
+    		#{movieUploadYn, jdbcType=CHAR},
+    		#{dispMovieName, jdbcType=VARCHAR},
+    		#{movieName, jdbcType=VARCHAR},
+    		#{moviePathText, jdbcType=VARCHAR},
+    		#{movieUrl, jdbcType=VARCHAR},
+    		#{movieImageName, jdbcType=VARCHAR},
+    		#{movieImagePathText, jdbcType=VARCHAR},
+    		#{movieImageUrl, jdbcType=VARCHAR},
+    		#{movieImageAltrnText, jdbcType=VARCHAR},
+    		#{movieDispSeq, jdbcType=INTEGER},
+    		#{pcDtlDescText, jdbcType=VARCHAR},
+    		#{mobileDtlDescText, jdbcType=VARCHAR},
+    		#{dtlDescDispSeq, jdbcType=INTEGER},
+    		#{dispType, jdbcType=CHAR},
+    		#{cornerApplyYn, jdbcType=CHAR},
+    		#{cornerDispType, jdbcType=CHAR},
+    		#{dispYn, jdbcType=CHAR},
+    		#{artDispYn, jdbcType=CHAR},
+    		#{useYn, jdbcType=CHAR},
+    		#{plndpStatCode, jdbcType=VARCHAR},
+    		#{rgsterNo, jdbcType=VARCHAR},
+    		getdate(),
+    		#{moderNo, jdbcType=VARCHAR},
+    		getdate(),
+    		ISNULL(#{empYn, jdbcType=CHAR}, 'N')
+    	)
+    </insert>
+    
+    <update id="updatePrPlanningDisplay" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplay" >
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayDao.updatePrPlanningDisplay [기획전 수정] [이가영] */
+    
+		UPDATE PR_PLANNING_DISPLAY
+		<set>
+			<if test="plndpName != null"> 
+				plndp_name = #{plndpName, jdbcType=VARCHAR}, 
+			</if>
+			<if test="dispType != null"> 
+				disp_type = #{dispType, jdbcType=CHAR}, 
+			</if> 
+			<if test="cornerApplyYn != null"> 
+				corner_apply_yn = #{cornerApplyYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="cornerDispType != null"> 
+				corner_disp_type = #{cornerDispType, jdbcType=CHAR}, 
+			</if>
+			<if test="plndpStatCode != null"> 
+				plndp_stat_code = #{plndpStatCode, jdbcType=VARCHAR}, 
+			</if>
+			<if test='pageType != "PM"'>
+				<if test="plndpStartD != null">
+					plndp_start_dtm = CONVERT(DATETIME, #{plndpStartD, jdbcType=VARCHAR} + ' ' + #{plndpStartH, jdbcType=VARCHAR} + ':' + #{plndpStartM, jdbcType=VARCHAR} + ':' + '00'),
+				</if>
+				<if test="plndpEndD != null">
+					plndp_end_dtm = CONVERT(DATETIME, #{plndpEndD, jdbcType=VARCHAR} + ' ' + #{plndpEndH, jdbcType=VARCHAR} + ':' + #{plndpEndM, jdbcType=VARCHAR} + ':' + '59'), 
+				</if> 
+				<if test="chnnlNo != null"> 
+					chnnl_no = #{chnnlNo, jdbcType=VARCHAR}, 
+				</if>
+				<if test="vndrNo != null"> 
+					vndr_no = #{vndrNo, jdbcType=VARCHAR},
+				</if> 
+				<if test="srchWordText != null"> 
+					srch_word_text = #{srchWordText, jdbcType=VARCHAR}, 
+				</if> 
+				plndp_cont_text = #{plndpContText, jdbcType=VARCHAR}, 
+				<if test="pcPlndpUrl != null"> 
+					pc_plndp_url = #{pcPlndpUrl, jdbcType=VARCHAR}, 
+				</if> 
+				<if test="mobilePlndpUrl != null"> 
+					mobile_plndp_url = #{mobilePlndpUrl, jdbcType=VARCHAR}, 
+				</if> 
+				pc_banner_image_name = #{pcBannerImageName, jdbcType=VARCHAR},
+				pc_banner_image_path_text = #{pcBannerImagePathText, jdbcType=VARCHAR}, 
+				pc_banner_image_url = #{pcBannerImageUrl, jdbcType=VARCHAR},
+				pc_banner_image_altrn_text = #{pcBannerImageAltrnText, jdbcType=VARCHAR},			
+				mobile_banner_image_name = #{mobileBannerImageName, jdbcType=VARCHAR}, 		 
+			 	mobile_banner_image_path_text = #{mobileBannerImagePathText, jdbcType=VARCHAR}, 
+			 	mobile_banner_image_url = #{mobileBannerImageUrl, jdbcType=VARCHAR}, 
+				mobile_banner_image_altrn_text = #{mobileBannerImageAltrnText, jdbcType=VARCHAR},
+				threed_image_name = #{threedImageName, jdbcType=VARCHAR},
+				threed_image_path_text = #{threedImagePathText, jdbcType=VARCHAR}, 
+				<if test="threedImageDispSeq != null"> 
+					threed_image_disp_seq = #{threedImageDispSeq, jdbcType=INTEGER}, 
+				</if> 
+				<if test="movieUploadYn != null"> 
+					movie_upload_yn = #{movieUploadYn, jdbcType=CHAR}, 
+				</if>
+				disp_movie_name = #{dispMovieName, jdbcType=VARCHAR},				
+				movie_name = #{movieName, jdbcType=VARCHAR}, 
+				movie_path_text = #{moviePathText, jdbcType=VARCHAR}, 
+				movie_url = #{movieUrl, jdbcType=VARCHAR},
+				movie_image_name = #{movieImageName, jdbcType=VARCHAR}, 
+				movie_image_path_text = #{movieImagePathText, jdbcType=VARCHAR}, 
+				movie_image_url = #{movieImageUrl, jdbcType=VARCHAR}, 
+				movie_image_altrn_text = #{movieImageAltrnText, jdbcType=VARCHAR},
+				<if test="movieDispSeq != null"> 
+					movie_disp_seq = #{movieDispSeq, jdbcType=INTEGER}, 
+				</if>  
+				pc_dtl_desc_text = #{pcDtlDescText, jdbcType=VARCHAR}, 
+				mobile_dtl_desc_text = #{mobileDtlDescText, jdbcType=VARCHAR}, 
+				<if test="dtlDescDispSeq != null"> 
+					dtl_desc_disp_seq = #{dtlDescDispSeq, jdbcType=INTEGER}, 
+				</if>			
+				<if test="dispYn != null"> 
+					disp_yn = #{dispYn, jdbcType=CHAR}, 
+				</if> 
+				<if test="artDispYn != null"> 
+					art_disp_yn = #{artDispYn, jdbcType=CHAR},
+				</if> 
+				<if test="useYn != null"> 
+					use_yn = #{useYn, jdbcType=CHAR}, 
+				</if>				
+				emp_yn = ISNULL(#{empYn, jdbcType=CHAR}, 'N'),
+			</if>
+			<if test="moderNo != null">
+				moder_no = #{moderNo, jdbcType=VARCHAR},
+			</if>
+			mod_dtm = getdate()
+		</set>
+		WHERE 
+			 plndp_no = #{plndpNo, jdbcType=VARCHAR}
+    </update>
+    
+    <update id="updatePrPlanningDisplayStatus" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplay">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayDao.updatePrPlanningDisplayStatus [기획전 상태 수정] [이가영] */
+    	UPDATE
+    		PR_PLANNING_DISPLAY
+    	<set>
+			<if test="plndpStatCode != null"> 
+				plndp_stat_code = #{plndpStatCode, jdbcType=VARCHAR}, 
+			</if>
+			<if test="moderNo != null">
+				moder_no = #{moderNo, jdbcType=VARCHAR},
+			</if>
+			mod_dtm = getdate()
+		</set>
+    	WHERE
+    		plndp_no in 
+    		<foreach item="item" index="index" collection="plndpNoList" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+    </update>
+
+
+	<select id="selectDashboardDisplanningCount" resultType="hashMap">
+	/*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayDao.selectDashboardDisplanningCount [대시보드 기획전 카운트 조회] [김영진] */
+		SELECT
+			   'P' AS gbn
+			 , count(*) AS [count]
+		 FROM PR_PLANNING_DISPLAY WITH(NOLOCK)
+		WHERE DISP_YN ='Y'
+		  AND USE_YN ='Y'
+		  AND ((PLNDP_START_DTM &lt;= GETDATE() AND PLNDP_END_DTM >= GETDATE()))
+		  AND PLNDP_START_DTM BETWEEN CONVERT(DATETIME, CONCAT(
+                                  CONVERT(CHAR(10), DATEADD(MM, -1, GETDATE()), 102), ' 00:00:00'))
+                              AND CONVERT(DATETIME, CONCAT(
+                                  CONVERT(CHAR(10), GETDATE(), 102), ' 23:59:59'))
+		<if test="vndrNo != null and vndrNo != '' and vndrNo != 'null'">
+		   AND VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+		</if>
+		UNION ALL
+	   SELECT
+			  'D' AS gbn
+			, count(*) AS [count]
+		 FROM PR_PLANNING_DISPLAY WITH(NOLOCK)
+		WHERE PLNDP_STAT_CODE = '10002'
+		  AND PLNDP_START_DTM BETWEEN CONVERT(DATETIME, CONCAT(
+                                  CONVERT(CHAR(10), DATEADD(MM, -1, GETDATE()), 102), ' 00:00:00'))
+                              AND CONVERT(DATETIME, CONCAT(
+                                  CONVERT(CHAR(10), GETDATE(), 102), ' 23:59:59'))
+	    <if test="vndrNo != null and vndrNo != '' and vndrNo != 'null'">
+		  AND VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+	    </if>
+		UNION ALL
+	    SELECT
+			  'R' AS gbn
+			, count(*) AS [count]
+		 FROM PR_PLANNING_DISPLAY WITH(NOLOCK)
+		WHERE PLNDP_STAT_CODE = '10001'
+		  AND PLNDP_START_DTM BETWEEN CONVERT(DATETIME, CONCAT(
+                                  CONVERT(CHAR(10), DATEADD(MM, -1, GETDATE()), 102), ' 00:00:00'))
+                              AND CONVERT(DATETIME, CONCAT(
+                                  CONVERT(CHAR(10), GETDATE(), 102), ' 23:59:59'))
+		 <if test="vndrNo != null and vndrNo != '' and vndrNo != 'null'">
+		  AND VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+		 </if>
+		
+	</select>
+	
+</mapper>

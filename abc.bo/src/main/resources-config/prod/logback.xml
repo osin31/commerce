@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration debug="false">
+
+	<property resource="app-config.properties" />
+    <appender name="FILEOUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}/abc.bo.log</file>
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <fileNamePattern>${log.path}/abc.bo.%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
+            <!-- or whenever the file size reaches 200MB -->
+            <maxFileSize>200MB</maxFileSize>
+            <maxHistory>${log.file.appender.maxHistory}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+         	<!-- pattern ex) [2018-06-25 15:10:24.305] [log Level] [class:line] - message -->
+            <pattern>[%d{yyyy-MM-dd} %d{HH:mm:ss.SSS}][%p][%c:%L] - %m %n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>[%d{yyyy-MM-dd} %d{HH:mm:ss.SSS}][%p][%c:%L] - %m %n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Loggers -->
+
+    <logger name="org.springframework.core">
+        <level value="error" />
+    </logger>
+
+    <logger name="org.springframework.beans">
+        <level value="error" />
+    </logger>
+
+    <logger name="org.springframework.context">
+        <level value="error" />
+    </logger>
+
+    <logger name="org.springframework.web">
+        <level value="error" />
+    </logger>
+
+    <logger name="kr.co.abcmart">
+        <level value="error" />
+    </logger>    
+    <logger name="kr.co.abcmart.common">
+        <level value="error" />
+    </logger>
+    <logger name="kr.co.abcmart.fset.datasource">
+        <level value="error" />
+    </logger>
+    
+    <logger name="java.sql">
+        <level value="error" />
+    </logger>
+
+    <logger name="org.mybatis.spring">
+        <level value="error" />
+    </logger>
+
+
+    <root level="error">
+       <appender-ref ref="FILEOUT"/> 
+       <appender-ref ref="STDOUT" />
+    </root>
+
+</configuration>

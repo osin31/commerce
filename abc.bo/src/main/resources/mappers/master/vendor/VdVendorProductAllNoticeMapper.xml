@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.vendor.repository.master.VdVendorProductAllNoticeDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.vendor.model.master.VdVendorProductAllNotice">
+
+     /*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorProductAllNoticeDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			vd_vendor_product_all_notice with (nolock)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <sql id="select-columns-alias-a">
+    	A.vndr_no, A.vndr_prdt_all_notc_seq, A.all_notc_start_ymd, A.all_notc_end_ymd, A.all_notc_title_text, A.all_notc_cont_text, A.disp_yn, A.rgster_no, A.rgst_dtm, A.moder_no, A.mod_dtm
+    </sql>
+
+    <sql id="where-productAllNotice-search-vo-alias-a">
+    	<where>
+			<!-- 업체구분 -->
+			<if test='bean.vndrGbnType != null and bean.vndrGbnType != ""'>
+				 AND A.vndr_no IN ( SELECT vndr_no FROM vd_vendor WHERE vndr_gbn_type = #{bean.vndrGbnType, jdbcType=VARCHAR} )
+			</if>
+			<if test='bean.vndrName != null and bean.vndrName != ""'>
+				 AND A.vndr_no IN ( SELECT vndr_no FROM vd_vendor WHERE vndr_name LIKE #{bean.vndrName, jdbcType=VARCHAR}+'%' )
+			</if>
+			<!-- 업체번호 -->
+			<if test='bean.vndrNo != null and bean.vndrNo != ""'>
+				 AND A.vndr_no = #{bean.vndrNo, jdbcType=VARCHAR}
+			</if>
+			<!-- 전시여부 -->
+			<if test='bean.dispYn != null and bean.dispYn != ""'>
+				 AND A.disp_yn = #{bean.dispYn, jdbcType=VARCHAR}
+			</if>
+			<!-- 검색어 -->
+			<if test='bean.searchKeywordType != null and bean.searchKeywordType != ""'>
+				<if test='bean.searchKeyword != null and bean.searchKeyword != ""'>
+					<choose>
+    				<!-- 제목 -->
+	    			<when test='bean.searchKeywordType == "all-notc-title-text"'>
+	    				<if test='bean.searchKeyword != null and bean.searchKeyword != ""'>
+	    					AND A.all_notc_title_text LIKE '%'+#{bean.searchKeyword, jdbcType=VARCHAR}+'%'
+	    				</if>
+	    			</when>
+	    			<!-- 등록자명 -->
+	    			<when test='bean.searchKeywordType == "rgster-name"'>
+	    				AND A.rgster_no IN (SELECT admin_no FROM sy_admin WHERE admin_name LIKE '%'+#{bean.searchKeyword, jdbcType=VARCHAR}+'%')
+	    			</when>
+	    		</choose>
+				</if>
+    		</if>
+			<!-- 기간조회 (상품전체공지 등록일,상품전체공지 전시일) -->
+    		<if test='bean.periodType != null and bean.periodType != ""'>
+    			<if test='bean.periodStartDate != null and bean.periodEndDate != null'>
+    				<choose>
+    				<!-- 상품전체공지 등록일 -->
+    				<when test='bean.periodType == "rgst-dtm"'>
+						AND A.rgst_dtm
+							BETWEEN CONVERT(DATETIME, CONCAT(#{bean.periodStartDate, jdbcType=VARCHAR}, ' 00:00:00'))
+								AND CONVERT(DATETIME, CONCAT(#{bean.periodEndDate, jdbcType=VARCHAR}, ' 23:59:59'))
+					</when>
+					<!-- 상품전체공지 전시일 -->
+					<when test='bean.periodType == "all-notc-ymd"'>
+						AND A.all_notc_start_ymd >= CONVERT(DATETIME, CONCAT(#{bean.periodStartDate, jdbcType=VARCHAR}, ' 00:00:00'))
+						AND A.all_notc_end_ymd <![CDATA[<=]]> CONVERT(DATETIME, CONCAT(#{bean.periodEndDate, jdbcType=VARCHAR}, ' 23:59:59'))
+					</when>
+				</choose>
+    			</if>
+			</if>
+		</where>
+    </sql>
+
+    <select id="searchByPrimaryKey" parameterType="kr.co.abcmart.bo.vendor.model.master.VdVendorProductAllNotice" resultType="kr.co.abcmart.bo.vendor.model.master.VdVendorProductAllNotice">
+
+    	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorProductAllNoticeDao.searchByPrimaryKey [상품전체공지 상세 조회 쿼리] [황성준] */
+
+    	SELECT
+			<include refid="select-columns-alias-a" />
+			, B.login_id AS rgster_id
+			, B.admin_name AS rgster_name
+			, C.vndr_name
+			, C.vndr_gbn_type
+			, D.login_id AS moder_id
+			, D.admin_name AS moder_name
+		FROM
+			vd_vendor_product_all_notice A WITH(NOLOCK)
+			<include refid="join-productAllNotice-admin"/>
+			JOIN sy_admin D WITH(NOLOCK)
+			ON A.moder_no = D.admin_no
+		<where>
+			AND A.vndr_no = #{vndrNo, jdbcType=VARCHAR}
+			AND A.vndr_prdt_all_notc_seq = #{vndrPrdtAllNotcSeq, jdbcType=INTEGER}
+		</where>
+	</select>
+
+	<sql id="join-productAllNotice-admin">
+		JOIN sy_admin B WITH(NOLOCK)
+		ON A.rgster_no = B.admin_no
+		JOIN vd_vendor C WITH(NOLOCK)
+		ON A.vndr_no = C.vndr_no
+	</sql>
+
+    <select id="selectProductAllNotice" parameterType="Pageable" resultType="kr.co.abcmart.bo.vendor.model.master.VdVendorProductAllNotice">
+
+    	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorProductAllNoticeDao.selectProductAllNotice [상품전체공지 조회 쿼리] [황성준] */
+
+    	SELECT
+			<include refid="select-columns-alias-a" />
+			, B.login_id AS rgster_id
+			, B.admin_name AS rgster_name
+			, C.vndr_name
+			, C.vndr_gbn_type
+		FROM
+			vd_vendor_product_all_notice A WITH(NOLOCK)
+			<include refid="join-productAllNotice-admin"/>
+			<include refid="where-productAllNotice-search-vo-alias-a" />
+		ORDER BY
+    	<choose>
+			 <when test='sortColumn != null and sortColumn != ""'>
+			 	<if test='sortColumn == "vndrName"'>
+			 		C.vndr_name
+			 	</if>
+			 	<if test='sortColumn == "allNotcTitleText"'>
+			 		A.all_notc_title_text
+			 	</if>
+			 	<if test='sortColumn == "allNotcStartYmd"'>
+			 		A.all_notc_start_ymd
+			 	</if>
+			 	<if test='sortColumn == "allNotcEndYmd"'>
+			 		A.all_notc_end_ymd
+			 	</if>
+			 	<if test='sortColumn == "rgstDtm"'>
+			 		A.rgst_dtm
+			 	</if>
+			 	<if test='sortType == "DESC"'>
+			 		DESC
+			 	</if>
+			 </when>
+			 <otherwise>
+			 	A.vndr_prdt_all_notc_seq DESC
+			 </otherwise>
+		</choose>
+    	<include refid="Paging.mssql" />
+    </select>
+
+    <select id="selectProductAllNoticeCount" parameterType="Pageable" resultType="Integer">
+
+    	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorProductAllNoticeDao.selectProductAllNoticeCount [상품전체공지 조회 쿼리] [황성준] */
+    	SELECT
+			<include refid="Paging.totalCount" />
+		FROM
+			vd_vendor_product_all_notice A WITH(NOLOCK)
+			<include refid="join-productAllNotice-admin"/>
+			<include refid="where-productAllNotice-search-vo-alias-a" />
+    </select>
+
+    <insert id="insertWithSelectKey" parameterType="kr.co.abcmart.bo.vendor.model.master.VdVendorProductAllNotice">
+
+    	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorProductAllNoticeDao.insertWithSelectKey [상품전체공지 등록 쿼리] [황성준] */
+    	<selectKey resultType="java.lang.Integer" keyProperty="vndrPrdtAllNotcSeq" order="BEFORE">
+    		SELECT
+    			ISNULL(MAX(vndr_prdt_all_notc_seq) + 1, 1)
+    		FROM
+    			vd_vendor_product_all_notice
+    		<where>
+    			AND VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+    		</where>
+    	</selectKey>
+    		INSERT INTO vd_vendor_product_all_notice
+			 ( vndr_no, vndr_prdt_all_notc_seq, all_notc_start_ymd, all_notc_end_ymd, all_notc_title_text, all_notc_cont_text, disp_yn, rgster_no, rgst_dtm, moder_no, mod_dtm )
+
+			VALUES
+			 ( #{vndrNo, jdbcType=VARCHAR}, #{vndrPrdtAllNotcSeq, jdbcType=INTEGER}, <choose><when test="allNotcStartYmd != null">#{allNotcStartYmd, jdbcType=DATE}</when><otherwise>getdate()</otherwise></choose>, <choose><when test="allNotcEndYmd != null">#{allNotcEndYmd, jdbcType=DATE}</when><otherwise>getdate()</otherwise></choose>, #{allNotcTitleText, jdbcType=VARCHAR}, #{allNotcContText, jdbcType=VARCHAR}, #{dispYn, jdbcType=CHAR}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )
+    </insert>
+
+</mapper>

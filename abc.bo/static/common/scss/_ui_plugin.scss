@@ -1,0 +1,41 @@
+@import 'scss_header';
+
+.rating-container {
+	position: relative;
+	text-align: left;
+	font-size: 0;
+
+	&.rating-disabled {
+		.rating-input, .rating-stars {
+			cursor: inherit;
+		}
+	}
+
+	.star {
+		margin: 0;
+
+		+ .star {
+			margin-left: 4px;
+		}
+	}
+
+	.glyphicon-star-empty:before,
+	.glyphicon-star:before {
+		content: '';
+		display: inline-block;
+		width: 16px;
+		height: 16px;
+		background: {
+			repeat: no-repeat;
+			size: 16px;
+		}
+	}
+
+	.glyphicon-star-empty:before {
+		background-image: url(../../images/icon/ico_star_off.png);
+	}
+
+	.glyphicon-star:before {
+		background-image: url(../../images/icon/ico_star_on.png);
+	}
+}

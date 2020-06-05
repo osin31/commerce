@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.display.repository.master.DpHashtagProductDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.display.model.master.DpHashtagProduct">
+
+     /*+ kr.co.abcmart.bo.display.repository.master.DpHashtagProductDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			DP_HASHTAG_PRODUCT
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <insert id="insertDpHashtagProductList" parameterType="kr.co.abcmart.bo.display.model.master.DpHashtagProduct">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpHashtagProductDao.insertDpHashtagProductList [해쉬태그 상품 저장] [김진성] */
+    	INSERT INTO DP_HASHTAG_PRODUCT
+    	(
+    		  HSHTG_SEQ
+    		, PRDT_NO
+    		, SORT_SEQ
+    	)
+    	VALUES
+    	<foreach item="item" collection="list" separator=",">
+    	(
+			  #{item.hshtgSeq, jdbcType=INTEGER}
+    		, #{item.prdtNo, jdbcType=VARCHAR}
+    		, <choose><when test='item.sortSeq != null and item.sortSeq != ""'>#{item.sortSeq, jdbcType=INTEGER}</when><otherwise>1</otherwise></choose>
+    	)
+    	</foreach>
+    </insert>
+
+    <delete id="deleteDpHashtagProductList" parameterType="Integer">
+     /*+ kr.co.abcmart.bo.display.repository.master.DpHashtagProductDao.deleteDpHashtagProductList [해쉬태그 상품 삭제] [Generator] */
+		DELETE FROM DP_HASHTAG_PRODUCT
+	 	 WHERE HSHTG_SEQ = #{hshtgSeq, jdbcType=INTEGER}
+    </delete>
+
+	<select	id="selectExcelUploadPorudctList" parameterType="kr.co.abcmart.bo.display.model.master.DpHashtag" resultType="java.util.HashMap">
+	/*+ kr.co.abcmart.bo.display.repository.master.DpHashtagProductDao.selectExcelUploadPorudctList	[해쉬태그 엑셀 업로드 상품 조회] [Generator]	*/
+		SELECT PRODUCT_LIST.PRDT_NO, PRODUCT_LIST.PRDT_TYPE_CODE, PRODUCT_LIST.SITE_NO,	PRODUCT_LIST.CHNNL_NO, PRODUCT_LIST.PRDT_NAME,
+		       PRODUCT_LIST.ENG_PRDT_NAME, PRODUCT_LIST.VNDR_NO, PRODUCT_LIST.VNDR_PRDT_NO_TEXT, PRODUCT_LIST.MMNY_PRDT_YN, PRODUCT_LIST.BRAND_NO,
+		       PRODUCT_LIST.BRAND_SORT_SEQ, PRODUCT_LIST.ORG_PLACE_CODE, PRODUCT_LIST.STYLE_INFO, PRODUCT_LIST.PRDT_COLOR_INFO,	PRODUCT_LIST.MNFTR_NAME,
+		       PRODUCT_LIST.STD_CTGR_NO, PRODUCT_LIST.STDR_CTGR_NO, PRODUCT_LIST.CNTC_PRDT_SETUP_YN, PRODUCT_LIST.RLTN_GOODS_SETUP_YN, PRODUCT_LIST.ADD_OPTN_SETUP_YN,
+		       PRODUCT_LIST.SIZE_CHART_DISP_YN,	PRODUCT_LIST.SIZE_CHART_SEQ, PRODUCT_LIST.EMP_DSCNT_YN,	PRODUCT_LIST.ORDER_MNFCT_YN, PRODUCT_LIST.DPRC_EXCEPT_YN,
+		       PRODUCT_LIST.STORE_PICKUP_PSBLT_YN, PRODUCT_LIST.FREE_DLVY_YN, PRODUCT_LIST.STOCK_INTGR_YN, PRODUCT_LIST.STOCK_UN_INTGR_RSN_CODE, PRODUCT_LIST.STOCK_MGMT_YN,
+		       PRODUCT_LIST.BUY_LIMIT_YN, PRODUCT_LIST.MIN_BUY_PSBLT_QTY, PRODUCT_LIST.DAY_MAX_BUY_PSBLT_QTY, PRODUCT_LIST.MAX_BUY_PSBLT_QTY, PRODUCT_LIST.ITEM_CODE,
+		       PRODUCT_LIST.GENDER_GBN_CODE, PRODUCT_LIST.DISP_FLAG_TEXT, PRODUCT_LIST.SRCH_PSBLT_YN, PRODUCT_LIST.SRCH_KEY_WORD_TEXT, PRODUCT_LIST.WRHS_ALERT_YN,
+		       PRODUCT_LIST.SELL_START_DTM, PRODUCT_LIST.SELL_END_DTM, PRODUCT_LIST.RSV_PRDT_YN, PRODUCT_LIST.RSV_DLVY_YMD, PRODUCT_LIST.AFFLTS_SEND_YN,
+		       PRODUCT_LIST.SABANGNET_SEND_YN, PRODUCT_LIST.ACONNECT_DISP_YN, PRODUCT_LIST.DISP_YN, PRODUCT_LIST.IGRMALL_DISP_EXCEPT_YN, PRODUCT_LIST.VNDR_SUSPD_YN,
+		       PRODUCT_LIST.APRV_STAT_CODE, PRODUCT_LIST.SELL_STAT_CODE, PRODUCT_LIST.USE_YN, PRODUCT_LIST.RGSTER_NO, PRODUCT_LIST.RGST_DTM,
+		       PRODUCT_LIST.APRVER_NO, PRODUCT_LIST.APRVER_DTM,	PRODUCT_LIST.MODER_NO, PRODUCT_LIST.MOD_DTM, PRODUCT_LIST.NORMAL_AMT,
+		       PRODUCT_LIST.SELL_AMT, PRODUCT_LIST.ERP_DSCNT_RATE, PRODUCT_LIST.ONLN_DSCNT_RATE, PRODUCT_LIST.EMP_DSCNT_RATE, PRODUCT_LIST.BRAND_NAME,
+		       PRODUCT_LIST.BRAND_EN_NAME, PRODUCT_LIST.TITLE_IMAGE_NAME, PRODUCT_LIST.TITLE_IMAGE_PATH_TEXT, PRODUCT_LIST.TITLE_IMAGE_URL, PRODUCT_LIST.TITLE_IMAGE_ALTRN_TEXT,
+		       PRODUCT_LIST.STD_CTGR_NAME, PRODUCT_LIST.STDR_CTGR_NAME,	PRODUCT_LIST.SITE_NAME,	PRODUCT_LIST.CHNNL_NAME, PRODUCT_LIST.VNDR_NAME,
+		       PRODUCT_LIST.DFLT_CMSN_RATE, DBO.FN_PRDT_PROMO_PRICE(PRODUCT_LIST.PRDT_NO) AS DISPLAY_PRODUCT_PRICE,
+		       DBO.FN_GET_IDXDATA_LIKE_SPLIT(PRODUCT_LIST.APRVER_ADMIN,	1, '^')	AS APRVER_ID,
+		       DBO.FN_GET_IDXDATA_LIKE_SPLIT(PRODUCT_LIST.APRVER_ADMIN,	2, '^')	AS APRVER_NAME,
+		       DBO.FN_GET_IDXDATA_LIKE_SPLIT(PRODUCT_LIST.RGSTER_ADMIN,	1, '^')	AS RGSTER_ID,
+		       DBO.FN_GET_IDXDATA_LIKE_SPLIT(PRODUCT_LIST.RGSTER_ADMIN,	2, '^')	AS RGSTER_NAME,
+		       DBO.FN_GET_IDXDATA_LIKE_SPLIT(PRODUCT_LIST.MODER_ADMIN, 1, '^') AS MODER_ID,
+		       DBO.FN_GET_IDXDATA_LIKE_SPLIT(PRODUCT_LIST.MODER_ADMIN, 2, '^') AS MODER_NAME,
+		       CONVERT(INT, DBO.FN_GET_IDXDATA_LIKE_SPLIT(PRODUCT_LIST.STOCK_INFO, 1, '^')) AS ORDER_PSBLT_QTY,
+		       CONVERT(INT, DBO.FN_GET_IDXDATA_LIKE_SPLIT(PRODUCT_LIST.STOCK_INFO, 2, '^')) AS TOTAL_STOCK_QTY,
+		       CONVERT(INT, DBO.FN_GET_IDXDATA_LIKE_SPLIT(PRODUCT_LIST.STOCK_INFO, 3, '^')) AS TOTAL_ORDER_QTY,
+		       CONVERT(INT, DBO.FN_GET_IDXDATA_LIKE_SPLIT(PRODUCT_LIST.STOCK_INFO, 4, '^')) AS STOCK_AI_QTY,
+		       CONVERT(INT, DBO.FN_GET_IDXDATA_LIKE_SPLIT(PRODUCT_LIST.STOCK_INFO, 5, '^')) AS STOCK_AW_QTY,
+		       CONVERT(INT, DBO.FN_GET_IDXDATA_LIKE_SPLIT(PRODUCT_LIST.STOCK_INFO, 6, '^')) AS STOCK_AS_QTY,
+		       CONVERT(INT, DBO.FN_GET_IDXDATA_LIKE_SPLIT(PRODUCT_LIST.STOCK_INFO, 7, '^')) AS STOCK_VD_QTY,
+		       CONVERT(INT, DBO.FN_GET_IDXDATA_LIKE_SPLIT(PRODUCT_LIST.STOCK_INFO, 8, '^')) AS AVAIABLE_STOCK_QTY,
+		       CONVERT(INT, DBO.FN_GET_IDXDATA_LIKE_SPLIT(PRODUCT_LIST.STOCK_INFO, 9, '^')) AS USE_YN_QTY,
+		       CONVERT(FLOAT, DBO.FN_GET_IDXDATA_LIKE_SPLIT(PRODUCT_LIST.STOCK_INFO, 10, '^')) AS TOTAL_OPTION_COUNT,
+		       CEILING(CONVERT(FLOAT, DBO.FN_GET_IDXDATA_LIKE_SPLIT(PRODUCT_LIST.STOCK_INFO, 9, '^')) / CONVERT(FLOAT, DBO.FN_GET_IDXDATA_LIKE_SPLIT(PRODUCT_LIST.STOCK_INFO, 10, '^')) * 100) AS AVAILABILITY_RATE
+		  FROM (
+			       SELECT PRODUCT.*,
+				      ISNULL(PRODUCT_IMAGE.IMAGE_NAME, '') AS TITLE_IMAGE_NAME,	ISNULL(PRODUCT_IMAGE.IMAGE_PATH_TEXT, '') AS TITLE_IMAGE_PATH_TEXT, ISNULL(PRODUCT_IMAGE.IMAGE_URL, '')	AS TITLE_IMAGE_URL, ISNULL(PRODUCT_IMAGE.ALTRN_TEXT, '') AS TITLE_IMAGE_ALTRN_TEXT,
+				      STANDARD_CATEGORY.STD_CTGR_NAME,
+				      CATEGORY.CTGR_NAME AS STDR_CTGR_NAME,
+				      SITE.SITE_NAME,
+				      SITE_CHNNL.CHNNL_NAME,
+				      VENDOR.VNDR_NAME,
+				      VENDOR_COMMISION.DFLT_CMSN_RATE,
+				      (
+					      SELECT CONCAT(Z.LOGIN_ID,	'^', Z.ADMIN_NAME)
+						FROM SY_ADMIN Z
+					       WHERE Z.ADMIN_NO	= PRODUCT.APRVER_NO
+				      )	AS APRVER_ADMIN,
+				      (
+					      SELECT CONCAT(Z.LOGIN_ID,	'^', Z.ADMIN_NAME)
+						FROM SY_ADMIN Z
+					       WHERE Z.ADMIN_NO	= PRODUCT.RGSTER_NO
+				      )	AS RGSTER_ADMIN,
+				      (
+					      SELECT CONCAT(Z.LOGIN_ID,	'^', Z.ADMIN_NAME)
+						FROM SY_ADMIN Z
+					       WHERE Z.ADMIN_NO	= PRODUCT.MODER_NO
+				      )	AS MODER_ADMIN,
+				      CASE PRODUCT.MMNY_PRDT_YN	WHEN 'Y' THEN -- 자사 상품
+									      CASE PRODUCT.STOCK_INTGR_YN WHEN 'Y' THEN	( --재고 통함 여부
+														       SELECT CONCAT(
+																       MIN(X.ORDER_PSBLT_QTY)
+																     , '^'
+																     , MIN(X.TOTAL_STOCK_QTY)
+																     , '^'
+																     , MIN(X.TOTAL_ORDER_QTY)
+																     , '^'
+																     , CONVERT(VARCHAR(10), SUM(CASE Y.STOCK_GBN_CODE WHEN '10000' THEN	Y.STOCK_QTY - Y.ORDER_COUNT ELSE 0 END))
+																     , '^'
+																     , CONVERT(VARCHAR(10), SUM(CASE Y.STOCK_GBN_CODE WHEN '10001' THEN	Y.STOCK_QTY - Y.ORDER_COUNT ELSE 0 END))
+																     , '^'
+																     , CONVERT(VARCHAR(10), SUM(CASE Y.STOCK_GBN_CODE WHEN '10002' THEN	Y.STOCK_QTY - Y.ORDER_COUNT ELSE 0 END))
+																     , '^0'
+																     , '^'
+																     , CONVERT(VARCHAR(10), SUM(Y.STOCK_QTY - Y.ORDER_COUNT))
+																     , '^'
+																     , CONVERT(VARCHAR(10), SUM(CASE WHEN X.USE_YN = 'Y' AND X.ORDER_PSBLT_QTY > 0 THEN 1 ELSE 0 END) / 3)
+																     , '^'
+																     , CONVERT(VARCHAR(10), COUNT(DISTINCT X.PRDT_OPTN_NO))
+															      )
+															 FROM PD_PRODUCT_OPTION	X
+															 JOIN PD_PRODUCT_OPTION_STOCK Y	ON X.PRDT_NO = Y.PRDT_NO AND X.PRDT_OPTN_NO = Y.PRDT_OPTN_NO
+															WHERE X.PRDT_NO	= PRODUCT.PRDT_NO
+															  --AND	X.SELL_STAT_CODE = '10001'
+															  --AND	X.USE_YN = 'Y'
+															GROUP BY X.PRDT_NO
+														       )
+													 ELSE	      (	--재고 통함	여부
+														       SELECT CONCAT(
+																       MIN(X.ORDER_PSBLT_QTY)
+																     , '^'
+																     , MIN(X.TOTAL_STOCK_QTY)
+																     , '^'
+																     , MIN(X.TOTAL_ORDER_QTY)
+																     , '^'
+																     , CONVERT(VARCHAR(10), SUM(CASE Y.STOCK_GBN_CODE WHEN '10000' THEN	Y.STOCK_QTY - Y.ORDER_COUNT ELSE 0 END))
+																     , '^0^0^0'
+																     , '^'
+																     , CONVERT(VARCHAR(10), SUM(Y.STOCK_QTY - Y.ORDER_COUNT))
+																     , '^'
+																     , CONVERT(VARCHAR(10), SUM(CASE WHEN X.USE_YN = 'Y' AND X.ORDER_PSBLT_QTY > 0 THEN 1 ELSE 0 END) / 3)
+																     , '^'
+																     , CONVERT(VARCHAR(10), COUNT(DISTINCT X.PRDT_OPTN_NO))
+															      )
+															 FROM PD_PRODUCT_OPTION	X
+															 JOIN PD_PRODUCT_OPTION_STOCK Y	ON X.PRDT_NO = Y.PRDT_NO AND X.PRDT_OPTN_NO = Y.PRDT_OPTN_NO
+															WHERE X.PRDT_NO	= PRODUCT.PRDT_NO
+															  --AND	X.SELL_STAT_CODE = '10001'
+															  --AND	X.USE_YN = 'Y'
+															GROUP BY X.PRDT_NO
+														       )
+									      END
+								WHEN 'N' THEN
+									      CASE PRODUCT.STOCK_MGMT_YN WHEN 'Y' THEN (
+														       SELECT CONCAT(
+																       MIN(X.ORDER_PSBLT_QTY)
+																     , '^'
+																     , MIN(X.TOTAL_STOCK_QTY)
+																     , '^'
+																     , MIN(X.TOTAL_ORDER_QTY)
+																     , '^0^0^0^'
+																     , CONVERT(VARCHAR(10), SUM(CASE Y.STOCK_GBN_CODE WHEN '10003' THEN	Y.STOCK_QTY - Y.ORDER_COUNT ELSE 0 END))
+																     , '^'
+																     , CONVERT(VARCHAR(10), SUM(Y.STOCK_QTY - Y.ORDER_COUNT))
+																     , '^'
+																     , CONVERT(VARCHAR(10), SUM(CASE WHEN X.USE_YN = 'Y' AND X.ORDER_PSBLT_QTY > 0 THEN 1 ELSE 0 END) / 3)
+																     , '^'
+																     , CONVERT(VARCHAR(10), COUNT(DISTINCT X.PRDT_OPTN_NO))
+															      )
+															 FROM PD_PRODUCT_OPTION	X
+															 JOIN PD_PRODUCT_OPTION_STOCK Y	ON X.PRDT_NO = Y.PRDT_NO AND X.PRDT_OPTN_NO = Y.PRDT_OPTN_NO
+															WHERE X.PRDT_NO	= PRODUCT.PRDT_NO
+															GROUP BY X.PRDT_NO
+														       )
+													 ELSE	       (
+														       SELECT CONCAT(
+																       '9999^9999^9999^0^0^0^9999^9999^'
+																     , CONVERT(VARCHAR(10), SUM(CASE WHEN X.USE_YN = 'Y' AND X.ORDER_PSBLT_QTY > 0 THEN 1 ELSE 0 END) / 3)
+																     , '^'
+																     , CONVERT(VARCHAR(10), COUNT(DISTINCT X.PRDT_OPTN_NO))
+															      )
+															 FROM PD_PRODUCT_OPTION	X
+															 JOIN PD_PRODUCT_OPTION_STOCK Y	ON X.PRDT_NO = Y.PRDT_NO AND X.PRDT_OPTN_NO = Y.PRDT_OPTN_NO
+															WHERE X.PRDT_NO	= PRODUCT.PRDT_NO
+															GROUP BY X.PRDT_NO
+														       )
+									      END
+
+				      END AS STOCK_INFO
+				 FROM (
+					      SELECT A.PRDT_NO,	A.PRDT_TYPE_CODE, A.SITE_NO, A.CHNNL_NO, A.PRDT_NAME, A.ENG_PRDT_NAME, A.VNDR_NO, A.VNDR_PRDT_NO_TEXT, A.MMNY_PRDT_YN, A.BRAND_NO, A.BRAND_SORT_SEQ,
+						     A.ORG_PLACE_CODE, A.STYLE_INFO, A.PRDT_COLOR_INFO,	A.MNFTR_NAME, A.STD_CTGR_NO, A.STDR_CTGR_NO, A.CNTC_PRDT_SETUP_YN, A.RLTN_GOODS_SETUP_YN, A.ADD_OPTN_SETUP_YN, A.SIZE_CHART_DISP_YN,
+						     A.SIZE_CHART_SEQ, A.EMP_DSCNT_YN, A.ORDER_MNFCT_YN, A.DPRC_EXCEPT_YN, A.STORE_PICKUP_PSBLT_YN, A.FREE_DLVY_YN, A.STOCK_INTGR_YN, A.STOCK_UN_INTGR_RSN_CODE, A.STOCK_MGMT_YN, A.BUY_LIMIT_YN,
+						     A.MIN_BUY_PSBLT_QTY, A.DAY_MAX_BUY_PSBLT_QTY, A.MAX_BUY_PSBLT_QTY,	A.ITEM_CODE, A.GENDER_GBN_CODE,	A.DISP_FLAG_TEXT, A.SRCH_PSBLT_YN, A.SRCH_KEY_WORD_TEXT, A.WRHS_ALERT_YN, A.SELL_START_DTM,
+						     A.SELL_END_DTM, A.RSV_PRDT_YN, A.RSV_DLVY_YMD, A.AFFLTS_SEND_YN, A.SABANGNET_SEND_YN, A.ACONNECT_DISP_YN, A.DISP_YN, A.IGRMALL_DISP_EXCEPT_YN, A.VNDR_SUSPD_YN, A.APRV_STAT_CODE,
+						     A.SELL_STAT_CODE, A.USE_YN, A.RGSTER_NO, A.RGST_DTM, A.APRVER_NO, A.APRVER_DTM, A.MODER_NO, A.MOD_DTM,
+						     B.NORMAL_AMT, B.SELL_AMT, B.ERP_DSCNT_RATE, B.ONLN_DSCNT_RATE, B.EMP_DSCNT_RATE,
+						     C.BRAND_NAME, C.BRAND_EN_NAME
+						FROM PD_PRODUCT	A WITH(NOLOCK)
+						JOIN PD_PRODUCT_PRICE_HISTORY B	WITH(NOLOCK) ON	A.PRDT_NO = B.PRDT_NO
+						JOIN DP_BRAND C	WITH(NOLOCK) ON	A.BRAND_NO = C.BRAND_NO
+						LEFT OUTER JOIN	SA_PRODUCT_SALES_RANK D	WITH(NOLOCK) ON	A.PRDT_NO = D.PRDT_NO AND D.TOTAL_TYPE = 'M'<!-- 월기준 --> AND D.TOTAL_DAY =	(
+																		  SELECT MAX(TOTAL_DAY)
+																		    FROM SA_PRODUCT_SALES_RANK Z
+																		   WHERE Z.PRDT_NO = A.PRDT_NO
+																		     AND Z.TOTAL_TYPE = 'M'<!-- 월기준 -->
+																		     AND Z.TOTAL_DAY >=	DATEADD(DAY, -2, GETDATE())
+																		 )
+					       WHERE GETDATE() BETWEEN B.APPLY_START_DTM AND B.APPLY_END_DTM
+						 AND EXISTS (SELECT 1 FROM PD_PRODUCT_OPTION Z WITH(NOLOCK) WHERE Z.PRDT_NO = A.PRDT_NO	AND Z.USE_YN = 'Y')
+						 AND EXISTS (SELECT	1 FROM PD_PRODUCT_OPTION_STOCK Z WITH(NOLOCK) WHERE Z.PRDT_NO =	A.PRDT_NO)
+						-- AND A.APRV_STAT_CODE	= '10004'
+						-- AND A.PRDT_TYPE_CODE	IN ('10000', '10001', '10002')
+	<if test="siteNo != null">
+						 AND A.SITE_NO = #{siteNo, jdbcType=VARCHAR}
+	</if>
+						 AND A.PRDT_NO IN
+	<foreach item="item" index="index" collection="prdtNoArr1" open="(" separator="," close=")">
+								#{item, jdbcType=VARCHAR}
+	</foreach>
+				      )	PRODUCT
+				 LEFT OUTER JOIN PD_PRODUCT_RELATION_FILE PRODUCT_IMAGE	WITH(NOLOCK) ON	PRODUCT.PRDT_NO	= PRODUCT_IMAGE.PRDT_NO
+												    AND	PRODUCT_IMAGE.PRDT_RLTN_FILE_SEQ = 1
+												    AND	PRODUCT_IMAGE.DISP_POSTN_TYPE =	'P'
+												    AND	PRODUCT_IMAGE.FILE_TYPE	= 'I'
+				 LEFT OUTER JOIN SY_STANDARD_CATEGORY STANDARD_CATEGORY	WITH(NOLOCK) ON	STANDARD_CATEGORY.STD_CTGR_NO =	PRODUCT.STD_CTGR_NO
+				 LEFT OUTER JOIN DP_CATEGORY CATEGORY WITH(NOLOCK) ON PRODUCT.STDR_CTGR_NO = CATEGORY.CTGR_NO
+				 LEFT OUTER JOIN SY_SITE SITE WITH(NOLOCK) ON PRODUCT.SITE_NO =	SITE.SITE_NO
+				 LEFT OUTER JOIN SY_SITE_CHNNL SITE_CHNNL WITH(NOLOCK) ON PRODUCT.CHNNL_NO = SITE_CHNNL.CHNNL_NO
+				 LEFT OUTER JOIN VD_VENDOR VENDOR WITH(NOLOCK) ON PRODUCT.VNDR_NO = VENDOR.VNDR_NO
+				 LEFT OUTER JOIN VD_VENDOR_DEFAULT_COMMISSION VENDOR_COMMISION WITH(NOLOCK) ON PRODUCT.VNDR_NO = VENDOR_COMMISION.VNDR_NO
+													   AND GETDATE() BETWEEN VENDOR_COMMISION.APPLY_START_YMD AND VENDOR_COMMISION.APPLY_END_YMD
+		       ) PRODUCT_LIST
+	</select>
+
+</mapper>

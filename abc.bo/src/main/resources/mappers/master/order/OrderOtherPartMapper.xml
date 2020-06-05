@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.order.repository.master.OrderOtherPartDao">
+
+
+
+	<select id="getOrderMemberPointExportList" parameterType="kr.co.abcmart.bo.order.model.master.OcOrder" resultType="kr.co.abcmart.bo.order.model.master.OcOrder">
+	/*+ kr.co.abcmart.bo.order.repository.master.OcOrderDao.getOrderMemberPointExportList [회원 - 포인트 사후적립] */
+		SELECT T.ORDER_NO  	AS ORDER_NO -- 주문번호
+    		 , T.ORDER_DTM 	AS ORDER_DTM -- 주문일시
+    		 , CASE WHEN T.RANK_COUNT  > 1
+    		        THEN RTRIM(T.PRDT_NAME)  + LTRIM('외 '+ CAST(T.RANK_COUNT AS VARCHAR ))+'개'
+    		        ELSE  RTRIM(T.PRDT_NAME)
+    		    END AS ORDER_PRDT_INFO 		--주문상품 정보
+    		 , T.PYMNT_AMT AS PYMNT_AMT 		-- 결제금액
+    		 , CASE WHEN T.SAVEPOINTDTM IS NULL
+                    THEN '-'
+                    ELSE T.SAVEPOINTDTM
+                END AS SAVE_POINT   		-- 적립포인트
+    		 , T.ORDER_CANCEL_YN     AS ORDER_CANCEL_YN		--취소여부
+    		 , T.SAVEPOINTDTM  AS SAVEPOINT_DTM 	--적립일시
+    		 , T.CRTFC_NO_TEXT -- 인증번호
+    		 , T.POINT_SAVE_YN AS SAVEPOINT_YN
+		  FROM (    
+              	SELECT OC.ORDER_NO  -- 주문번호
+	   				 , OC.ORDER_DTM  --주문일자
+	   				 , OC.BUY_DCSN_DTM --구매확정일자
+	   				 , OC.PYMNT_AMT  -- 결제금액
+	   				 , OOP.BUY_POINT_SAVE_RATE -- 구매포인트 적립율
+	   				 , OOP.PRDT_NAME
+	   				 , RANK()OVER( PARTITION BY OOP.ORDER_NO  ORDER BY  OOP.ORDER_NO , OOP.ORDER_PRDT_SEQ  DESC ) AS RANK_SEQ
+	   				 , COUNT(OC.ORDER_NO) OVER( PARTITION BY OOP.ORDER_NO   ) AS RANK_COUNT
+	   				 , CASE WHEN OC.CNCL_AMT  > 0  
+							THEN 'Y'
+	   						ELSE  'N'
+	   					END AS ORDER_CANCEL_YN 			--취소 여부
+	   				 , MP.SAVE_AMT AS SAVEPOINTDTM
+	   				 , OC.CRTFC_NO_TEXT
+	   				 , OC.POINT_SAVE_YN
+		          FROM OC_ORDER OC
+		          JOIN OC_ORDER_PRODUCT OOP
+		            ON OC.ORDER_NO = OOP.ORDER_NO
+		     LEFT JOIN MB_MEMBER_EXPOST_SAVE_POINT MS
+		            ON OC.ORDER_NO = MS.BUY_NO_TEXT
+		     LEFT JOIN MB_MEMBER_POINT MP
+		            ON MS.MEMBER_NO = MP.MEMBER_NO
+		           AND MS.EXPOST_SAVE_POINT_SEQ = MP.EXPOST_SAVE_POINT_SEQ
+		         WHERE OOP.PRDT_TYPE_CODE != '10004'	-- 배송비 제외
+		           AND OOP.ORDER_PRDT_STAT_CODE ='10008'  --구매확정
+		           AND OC.BUY_DCSN_DTM  IS NOT NULL
+		           AND GETDATE() BETWEEN  OC.BUY_DCSN_DTM  AND  DATEADD(DD, 30,  OC.BUY_DCSN_DTM )   -- 구매확정일부터 30일 기준
+		         <if test="memberTypeCode == '10000' and @kr.co.abcmart.common.util.UtilsText@isNotBlank(memberTypeCode)">
+				  -- 온라인 회원
+				 	AND OC.MEMBER_TYPE_CODE ='10000'
+				 	AND OC.MEMBER_NO =  #{memberNo, jdbcType=VARCHAR}    -- 회원 번호
+				 </if>
+				 <if test="memberTypeCode == '10002' and @kr.co.abcmart.common.util.UtilsText@isNotBlank(memberTypeCode)">
+				  -- 비회원
+				 	AND OC.MEMBER_TYPE_CODE ='10002'
+				 	AND OC.ORDER_NO = #{orderNo, jdbcType=VARCHAR}  -- 비회원 주문번호 필수
+				 	<if test="crtfcNoText != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(crtfcNoText)">
+				 		AND OC.CRTFC_NO_TEXT = #{crtfcNoText, jdbcType=VARCHAR}  -- 비회원 인증 번호 선택
+				 	</if>
+				 	<if test="orderDtm != null">
+				 		AND CONVERT(DATE, OC.ORDER_DTM) =  CONVERT(DATE, CONVERT(DATETIME, #{orderDtm})) -- 비회원 주문일자
+				 	</if>
+				 </if>
+		       ) T WHERE RANK_SEQ =1
+	</select>
+
+	<select id="selectOverDayYnAfterBuyDecision" parameterType="kr.co.abcmart.bo.order.model.master.OcOrder" resultType="kr.co.abcmart.bo.order.vo.OrderOtherPartVo">
+
+		/*+ kr.co.abcmart.web.order.repository.master.OrderOtherPartDao.selectOverDayYnAfterBuyDecision [구매확정 후 30 진행 여부 유효성 검사] [방난기] */
+
+		SELECT TOP 1
+               OC.ORDER_NO
+             , OC.STORE_NAME
+             , CASE WHEN ( OC.MEMBER_TYPE_CODE = '10001') THEN 'Y'
+                    ELSE 'N'
+                  END AS MEMBER_SHIP_YN						-- 멤버십회원 여부
+             , OC.BUY_DCSN_DTM								-- 구매확정일시
+             , CASE WHEN OC.BUY_DCSN_DTM IS NOT NULL AND GETDATE() <![CDATA[<]]> DATEADD(DD, 31, CONVERT(DATE, OC.BUY_DCSN_DTM ) ) THEN 'N'
+					ELSE 'Y'
+				  END AS BUYDAY_OVERDAY					-- 30일경과 여부 NULL 경우는 경과로 처리
+             , OC.PYMNT_AMT								-- 결제 금액
+             , OC.ORDER_DTM								-- 주문일자
+             , OC.POINT_SAVE_YN							-- 포인트 적립여부
+             , OC.CRTFC_NO_TEXT                        	-- 인증번호
+          FROM OC_ORDER			OC	WITH (NOLOCK)
+             , OC_ORDER_PRODUCT	OOP	WITH (NOLOCK)
+         WHERE OC.MEMBER_NO 		= #{memberNo}		-- 필수
+           AND OC.ORDER_NO 			= #{orderNo}		-- 필수
+           AND OC.ORDER_NO 			= OOP.ORDER_NO
+           AND OC.ORDER_STAT_CODE  	= '10002'			-- 주문상태코드 결제완료
+           AND OOP.ORDER_PRDT_STAT_CODE NOT IN (
+					 '10000'	-- 임시주문
+					,'10001'	--입금대기
+					,'10009'	-- 취소접수
+					,'10010'	-- 환수/환불접수
+					,'10011'	--취소완료
+			   )
+
+	</select>
+
+	<parameterMap id="paramMap" type="hashMap">
+		<parameter property="onOffType" javaType="java.lang.String" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="buyNoText" javaType="java.lang.String" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="crtfcNoText" javaType="java.lang.String" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="output" javaType="java.lang.String" jdbcType="VARCHAR" mode="OUT" />
+	</parameterMap>
+
+	<select id="callProcedureForDecodeOrderNum" statementType="CALLABLE" parameterMap="paramMap">
+		{ call  dbo.PR_DECODE_ORDERNO (?, ?, ?, ?) }
+	</select>
+
+	<select id="getOrderProductInfoList" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderProduct" resultType="kr.co.abcmart.bo.order.model.master.OcOrderProduct">
+	/*+ kr.co.abcmart.web.order.repository.master.OrderOtherPartDao.getOrderProductInfoList [주문상품 조회] [유성민] */
+		SELECT ORDER_NO
+			 , ORDER_PRDT_SEQ
+			 , PRDT_NO
+			 , PRDT_OPTN_NO
+			 , VNDR_PRDT_NO_TEXT
+			 , MMNY_PRDT_YN
+			 , ORDER_PRDT_STAT_CODE
+		  FROM OC_ORDER_PRODUCT WITH (NOLOCK)
+		 WHERE ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+	</select>
+
+	<update id="updatePointSaveYn" parameterType="kr.co.abcmart.bo.order.model.master.OcOrder">
+	/*+ kr.co.abcmart.web.order.repository.master.OrderOtherPartDao.updatePointSaveYn [포인트 적럽여부 update] [유성민] */
+		UPDATE OC_ORDER
+		   SET POINT_SAVE_YN = 'Y'
+			 , MODER_NO = #{moderNo, jdbcType=VARCHAR}
+		 WHERE ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+	</update>
+	
+	<select id="selectProgressOrderClmAsCount" parameterType="kr.co.abcmart.bo.order.model.master.OcOrder" resultType="kr.co.abcmart.bo.order.vo.OrderOtherPartVo">
+
+		/*+ kr.co.abcmart.web.order.repository.master.OrderOtherPartDao.selectProgressOrderClmAsCount [주문, 클레임, AS의 갯수 - 진행중 대상건수] [이강수] */
+
+		SELECT CC.CLAIM_CNT   -- 클레임 건수
+             , OC.ORDER_CNT   -- 주문건수
+             , AC.AS_CNT      -- AS 건수
+		  FROM (
+               SELECT COUNT( OC.CLM_NO) CLAIM_CNT
+                 FROM OC_CLAIM OC WITH (NOLOCK)
+                WHERE OC.MEMBER_NO = #{memberNo}
+				  AND OC.CLM_STAT_CODE IN (
+							  '10000'	--	취소접수
+							, '10003'	--	환수접수
+							, '10004'	--	환불접수
+							, '10006'	--	교환접수
+							, '10009'	--	수거지시
+							, '10010'	--	수령완료
+							, '10011'	--	심의완료
+							, '10012'	--	환수접수
+							, '10013'	--	환불접수
+							, '10014'	--	교환배송지시
+							, '10015'	--	교환배송중
+							, '10018'	--	반품접수
+							, '10021'	--	수거지시
+							, '10022'	--	수령완료
+							, '10023'	--	심의완료
+							, '10024'	--	환수접수
+							, '10025'	--	환불접수
+					  )
+          ) CC -- 클레임 건수
+        , (
+                SELECT COUNT(DISTINCT OC.ORDER_NO) AS ORDER_CNT
+                 FROM OC_ORDER OC WITH (NOLOCK)
+                    , OC_ORDER_PRODUCT OOP WITH (NOLOCK)
+				WHERE OC.MEMBER_NO = #{memberNo}
+				  AND OC.ORDER_NO = OOP.ORDER_NO
+				  AND OC.ORDER_STAT_CODE  ='10002'
+				  AND OOP.PRDT_TYPE_CODE IN ( '10000','10001','10002' ) --사은품, 배송비 제외
+				  AND OOP.ORDER_PRDT_STAT_CODE  IN (
+							 '10002'	--	결제완료
+							,'10003'	--	상품준비중
+							,'10004'	--	상품출고
+							,'10005'	--	배송중
+							,'10006'	--	픽업준비완료
+							,'10007'	--	배송완료
+					   ) 
+				   AND NOT EXISTS (
+							SELECT 1
+							  FROM OC_CLAIM_PRODUCT OCP WITH (NOLOCK)
+							 WHERE OCP.ORG_ORDER_NO	  = OC.ORG_ORDER_NO
+							   AND OCP.ORDER_PRDT_SEQ = OOP.ORDER_PRDT_SEQ
+							   AND ISNULL(OCP.UP_CLM_PRDT_SEQ, 0) = 0
+							   AND CLM_PRDT_STAT_CODE = '10026' -- 반품완료
+					   )
+          ) OC -- 주문건수
+        , (
+               SELECT COUNT(OAA.AS_ACCEPT_NO) AS AS_CNT
+                 FROM OC_AS_ACCEPT OAA WITH (NOLOCK)
+                WHERE OAA.MEMBER_NO = #{memberNo}
+                  AND OAA.AS_STAT_CODE IN (
+                             '10000'	--	AS접수
+							,'10003'	--	AS접수완료
+							,'10004'	--	수거지시
+							,'10005'	--	수령완료
+							,'10006'	--	심의완료
+							,'10007'	--	수선완료
+							,'10008'	--	비용결제요청
+							,'10009'	--	비용결제완료
+							,'10010'	--	AS배송중
+                            )
+          ) AC -- AS건수
+
+	</select>
+
+</mapper>

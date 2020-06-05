@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.BdProductInquiryMemoDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.product.model.master.BdProductInquiryMemo">
+    
+     /*+ kr.co.abcmart.bo.product.repository.master.BdProductInquiryMemoDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			bd_product_inquiry_memo WITH(NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <insert id="insertWithoutPrdtInqryMemoSeq" parameterType="kr.co.abcmart.bo.product.model.master.BdProductInquiryMemo">
+     /*+ kr.co.abcmart.bo.product.repository.master.BdProductInquiryMemoDao.insertWithoutPrdtInqryMemoSeq [상품문의 메모 저장(순서 자동 채번)] [황성준] */
+     	
+     	INSERT INTO bd_product_inquiry_memo
+			 ( prdt_inqry_seq, prdt_inqry_memo_seq, memo_text, del_yn, rgster_no, rgst_dtm ) 
+
+		VALUES 
+			 ( #{prdtInqrySeq, jdbcType=INTEGER}, (SELECT ISNULL(COUNT(prdt_inqry_memo_seq)+1,1) FROM bd_product_inquiry_memo WHERE prdt_inqry_seq = #{prdtInqrySeq, jdbcType=INTEGER}) , #{memoText, jdbcType=VARCHAR}, 'N', #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )
+    </insert>
+    
+    <select id="searchProductInquiryMemo" parameterType="kr.co.abcmart.bo.product.model.master.BdProductInquiryMemo" resultType="kr.co.abcmart.bo.product.model.master.BdProductInquiryMemo">
+    	 /*+ kr.co.abcmart.bo.product.repository.master.BdProductInquiryMemoDao.searchProductInquiryMemo [상품문의 메모 조회 쿼리] [황성준] */
+		
+		SELECT 
+			 <include refid="select-columns" />
+			 , (SELECT login_id FROM sy_admin S WITH (NOLOCK) WHERE S.admin_no = A.rgster_no) AS rgster_id
+			 , (SELECT admin_name FROM sy_admin S WITH (NOLOCK) WHERE S.admin_no = A.rgster_no) AS rgster_name
+		FROM 
+			bd_product_inquiry_memo A WITH(NOLOCK)
+		<where> 
+			<if test="prdtInqrySeq != null"> 
+				 AND A.prdt_inqry_seq = #{prdtInqrySeq, jdbcType=INTEGER}
+			</if> 
+			<if test="prdtInqryMemoSeq != null"> 
+				 AND A.prdt_inqry_memo_seq = #{prdtInqryMemoSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="memoText != null"> 
+				 AND A.memo_text = #{memoText, jdbcType=VARCHAR}
+			</if> 
+			<if test="delYn != null"> 
+				 AND A.del_yn = #{delYn, jdbcType=CHAR}
+			</if> 
+			<if test="rgsterNo != null"> 
+				 AND A.rgster_no = #{rgsterNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="rgstDtm != null"> 
+				 AND A.rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+
+</mapper>

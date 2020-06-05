@@ -1,0 +1,320 @@
+@import 'scss_header';
+
+
+.ui-sel {
+	display: inline-block;
+	width: 100%;
+	height: 23px;
+	border: 1px solid #ddd;
+	padding: 0 24px 1px 8px;
+	background-color: #fff;
+	font-size: $defaultFontSize;
+	color: #111;
+	letter-spacing: -0.3px;
+	vertical-align: top;
+
+	&.inline {
+		width: auto;
+	}
+
+	&:focus, &:hover {
+		border-color: #111;
+		color: #111;
+		outline: 0;
+	}
+
+	&:disabled {
+		cursor: default;
+		border-color: #ddd;
+		background-color: #f8f8f8;
+		color: #bbb;
+	}
+
+	+ .ui-textarea {
+		margin-top: 6px;
+	}
+
+	&.size-full {
+		width: 100% !important;
+	}
+}
+
+.ui-chk {
+	position: relative;
+	display: inline-block;
+	font-size: 0;
+	vertical-align: top;
+
+	input[type=checkbox] {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		border: 0;
+
+		+ label {
+			display: inline-block;
+			position: relative;
+			padding: 0 0 0 25px;
+			cursor: pointer;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			font-size: $defaultFontSize;
+			color: #111;
+			line-height: 18px;
+			letter-spacing: -0.6px;
+
+			&:before {
+				content: '';
+				position: absolute;
+				left: 0;
+				top: 0;
+				width: 18px;
+				height: 18px;
+				line-height: 18px;
+				text-align: center;
+				background: #fff;
+				border: 1px solid #ccc;
+				box-sizing: border-box;
+			}
+		}
+
+		&:checked + label:before {
+			background: #fff url(../../images/ui/ui_chk_arr.png) center no-repeat;
+		}
+
+		&:indeterminate + label:before {
+			background: #fff url(../../images/ui/ui_chk_indeterminate.png) center no-repeat;
+		}
+
+		&:disabled + label {
+			opacity: 0.6;
+		}
+
+		&:focus + label:before, &:hover + label:before {
+			border-color: #111;
+		}
+	}
+}
+
+.ui-rdo {
+	position: relative;
+	display: inline-block;
+	font-size: 0;
+	vertical-align: top;
+
+	input[type=radio] {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		border: 0;
+
+		+ label {
+			display: inline-block;
+			position: relative;
+			padding: 0 0 0 25px;
+			cursor: pointer;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			color: #111;
+			letter-spacing: -0.6px;
+			font-size: $defaultFontSize;
+			line-height: 18px;
+
+			&:before {
+				content: '';
+				position: absolute;
+				left: 0;
+				top: 0;
+				width: 18px;
+				height: 18px;
+				line-height: 18px;
+				text-align: center;
+				background: #fff;
+				border: 1px solid #cdcdcd;
+				border-radius: 50%;
+				box-sizing: border-box;
+			}
+		}
+
+		&:focus + label:before, &:hover + label:before {
+			border-color: #111;
+		}
+
+		&:checked:hover + label {
+			border-color: #111;
+		}
+
+		&:checked + label {
+			&:before {
+				background: #fff;
+			}
+
+			&:after {
+				content: '';
+				position: absolute;
+				top: 5px;
+				left: 5px;
+				width: 8px;
+				height: 8px;
+				background: #ed1b26;
+				border-radius: 100%;
+			}
+		}
+
+		&:disabled + label {
+			opacity: 0.6;
+		}
+	}
+
+	+ .ip-text-box, + .file-wrap {
+		margin-left: 15px;
+	}
+}
+
+.ui-chk, .ui-rdo {
+	label {
+		.ui-cvs {
+			display: inline-block;
+			width: 42px;
+			height: 18px;
+			background: {
+				image: url(../../images/ui/ui_cvs.png);
+				repeat: no-repeat;
+				position: 0 0;
+			}
+			font-size: 0;
+			vertical-align: top;
+
+			&.cu {
+				background-position: 0 -18px;
+			}
+		}
+	}
+
+	// label이 text이외에 input과 같이 쓰이는 경우
+	&.ip-label-instead {
+		input {
+			+ label {
+				&:before {
+					top: 2px;
+				}
+			}
+
+			&:checked {
+				+ label {
+					&:after {
+						top: 7px;
+					}
+				}
+			}
+		}
+	}
+}
+
+.ui-input {
+	display: inline-block;
+	width: 100%;
+	height: 23px;
+	border: 1px solid #ddd;
+	padding: 0 8px 1px;
+	background-color: #fff;
+	font-size: $defaultFontSize;
+	color: #111;
+	letter-spacing: -0.3px;
+	vertical-align: top;
+
+	&:focus, &:hover {
+		border-color: #111;
+		color: #111;
+		outline: 0;
+	}
+
+	&:disabled {
+		border-color: #ddd;
+		background-color: #f8f8f8;
+		color: #bbb;
+	}
+
+	&.input-date {
+		width: 80px !important;
+	}
+
+	+ .ui-input {
+		margin-left: 4px;
+	}
+
+	@for $i from 0 through 9 {
+		&.num-unit#{pow(10, $i)} {
+			width: $i * 7px + 25px !important;
+		}
+	}
+
+	&.text-unit20 {
+		width: 260px !important;
+	}
+
+	&.text-unit30 {
+		width: 370px !important;
+	}
+
+	&.name {
+		width: 80px !important;
+	}
+
+	&.phone-number {
+		width: 90px !important;
+	}
+
+	&.url {
+		width: 500px !important;
+	}
+
+	+ .td-text-list {
+		margin-top: 5px;
+	}
+}
+
+
+.ui-textarea {
+	display: inline-block;
+	width: 100%;
+	min-height: 140px;
+	border: 1px solid #ddd;
+	padding: 8px;
+	background-color: #fff;
+	color: #111;
+	font-size: $defaultFontSize;
+	letter-spacing: -0.3px;
+	vertical-align: top;
+
+	&.h-lg {
+		height: 300px;
+	}
+
+	&.h-sm {
+		min-height: 50px;
+		height: 50px;
+	}
+
+	&:focus {
+		border-color: #111;
+		color: #111;
+		outline: 0;
+	}
+
+	&:disabled {
+		border-color: #ddd;
+		background-color: #f8f8f8;
+		color: #bbb;
+	}
+}

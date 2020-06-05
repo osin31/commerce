@@ -1,0 +1,23 @@
+@import 'scss_header';
+
+/* 기획전 전시코너 관리 (등록·수정/상세) > 템플릿 선택 리스트 */
+.prod-template-list {
+	margin: -2px 0 -3px;
+
+	li {
+		display: inline-block;
+		margin: 2px 31px 3px 0;
+		vertical-align: top;
+		text-align: center;
+
+		&:last-child {
+			margin-right: 0;
+		}
+
+		.template-img {
+			display: block;
+			margin-top: 2px;
+		}
+	}
+
+}

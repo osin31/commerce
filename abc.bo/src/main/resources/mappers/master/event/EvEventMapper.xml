@@ -1,0 +1,836 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.event.repository.master.EvEventDao">
+
+
+	<!--
+		※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+		기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+		
+	-->
+	<select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.event.model.master.EvEvent">
+	
+	 /*+ kr.co.abcmart.bo.event.repository.master.EvEventDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+	
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			EV_EVENT WITH(NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+	</select>
+	
+	<!-- <resultMap id="eventResult" type="kr.co.abcmart.bo.event.model.master.EvEvent">
+		<id property="eventNo" column="EVENT_NO"/>
+		<result property="eventTypeCode" column="EVENT_TYPE_CODE"/>
+		<result property="eventName" column="EVENT_NAME"/>
+		<result property="eventTermSetupYn" column="EVENT_TERM_SETUP_YN"/>
+		<result property="eventStartDtm" column="EVENT_START_DTM"/>
+		<result property="eventEndDtm" column="EVENT_END_DTM"/>
+		<result property="przwrMgmtYn" column="PRZWR_MGMT_YN"/>
+		<result property="przwrPblcTodoYmd" column="PRZWR_PBLC_TODO_YMD"/>
+		<result property="przwrPblcYn" column="PRZWR_PBLC_YN"/>
+		<result property="pointDdctYn" column="POINT_DDCT_YN"/>
+		<result property="ddctPointAmt" column="DDCT_POINT_AMT"/>
+		<result property="eventStplatUseYn" column="EVENT_STPLAT_USE_YN"/>
+		<result property="eventStplatContText" column="EVENT_STPLAT_CONT_TEXT"/>
+		<result property="eventJoinType" column="EVENT_JOIN_TYPE"/>
+		<result property="loginIdDupPermYn" column="LOGIN_ID_DUP_PERM_YN"/>
+		<result property="prdtRecptStoreType" column="PRDT_RECPT_STORE_TYPE"/>
+		<result property="insdMgmtInfoText" column="INSD_MGMT_INFO_TEXT"/>
+		<result property="pcEventContText" column="PC_EVENT_CONT_TEXT"/>
+		<result property="mobileEventContText" column="MOBILE_EVENT_CONT_TEXT"/>
+		<result property="srchKeyWord" column="SRCH_KEY_WORD"/>
+		<result property="noteText" column="NOTE_TEXT"/>
+		<result property="useYn" column="USE_YN"/>
+		<result property="dispYn" column="DISP_YN"/>
+		<result property="tmprSaveYn" column="TMPR_SAVE_YN"/>
+		<result property="rgsterNo" column="RGSTER_NO"/>
+		<result property="rgstDtm" column="RGST_DTM"/>
+		<result property="moderNo" column="MODER_NO"/>
+		<result property="modDtm" column="MOD_DTM"/>
+		<result property="rgsterName" column="RGSTER_NAME"/>
+		<result property="rgsterId" column="RGSTER_ID"/>
+		<result property="moderName" column="MODER_NAME"/>
+		<result property="moderId" column="MODER_ID"/>
+		<result property="eventProgressStatus" column="EVENT_PROGRESS_STATUS"/>
+		<result property="eventTypeCodeName" column="EVENT_TYPE_CODE_NAME"/>
+		<result property="deviceCodeName" column="DEVICE_CODE_NAME"/>
+		<result property="chnnlName" column="CHNNL_NAME"/>
+		<result property="joinCount" column="JOIN_COUNT"/>
+		<result property="eventJoinDtm" column="EVENT_JOIN_DTM"/>
+		<collection property="evEventTargetGradeList" resultMap="targetGradeResult" columnPrefix="EETG_" />
+	</resultMap>
+	
+	<resultMap id="targetGradeResult" type="kr.co.abcmart.bo.event.model.master.EvEventTargetGrade">
+		<id property="eventNo" column="EVENT_NO"/>
+		<result property="memberTypeCode" column="MEMBER_TYPE_CODE"/>
+		<result property="mbshpGradeCode" column="MBSHP_GRADE_CODE"/>
+		<result property="memberTypeCodeName" column="MEMBER_TYPE_CODE_NAME"/>
+		<result property="mbshpGradeCodeName" column="MBSHP_GRADE_CODE_NAME"/>
+		<result property="empYn" column="EMP_YN"/>
+	</resultMap> -->
+	
+	<select id="selectEvEventList" parameterType="Pageable" resultType="kr.co.abcmart.bo.event.model.master.EvEvent">
+	/*+ kr.co.abcmart.bo.event.repository.master.EvEventDao.selectEvEventList [이벤트 리스트 조회 쿼리] [이지훈] */	
+		SELECT EE.EVENT_NO
+			 , EE.EVENT_TYPE_CODE
+			 , EE.EVENT_NAME
+			 , EE.EVENT_TERM_SETUP_YN
+			 , EE.EVENT_START_DTM
+			 , EE.EVENT_END_DTM
+			 , EE.PRZWR_MGMT_YN
+			 , EE.PRZWR_PBLC_TODO_YMD
+			 , EE.PRZWR_ORDER_START_YMD
+			 , EE.PRZWR_ORDER_END_YMD
+			 , EE.PICKUP_START_YMD
+			 , EE.PICKUP_END_YMD
+			 , EE.PRZWR_PBLC_YN
+			 , EE.POINT_DDCT_YN
+			 , EE.DDCT_POINT_AMT
+			 , EE.EVENT_STPLAT_USE_YN
+			 , EE.EVENT_STPLAT_CONT_TEXT
+			 , EE.EVENT_JOIN_TYPE
+			 , EE.LOGIN_ID_DUP_PERM_YN
+			 , EE.ONLN_RECPT_YN
+			 , EE.PRDT_RECPT_STORE_TYPE
+			 , EE.INSD_MGMT_INFO_TEXT
+			 , EE.PC_EVENT_CONT_TEXT
+			 , EE.MOBILE_EVENT_CONT_TEXT
+			 , EE.SRCH_KEY_WORD
+			 , EE.NOTE_TEXT
+			 , EE.USE_YN
+			 , EE.DISP_YN
+			 <!-- ,EE.ART_DISP_YN  -->
+			 , EE.TMPR_SAVE_YN
+			 , EE.RGSTER_NO
+			 , EE.RGST_DTM
+			 , EE.MODER_NO
+			 , EE.MOD_DTM
+			 , B.ADMIN_NAME AS RGSTER_NAME
+			 , B.LOGIN_ID AS RGSTER_ID
+			 , C.ADMIN_NAME AS MODER_NAME
+			 , C.LOGIN_ID AS MODER_ID
+			 , CASE WHEN EE.TMPR_SAVE_YN = 'Y' THEN 'temp'
+					WHEN EE.EVENT_TERM_SETUP_YN = 'N' AND EE.EVENT_START_DTM <![CDATA[<=]]> getDate() THEN 'ing'
+					WHEN EE.EVENT_START_DTM <![CDATA[>]]> getDate() THEN 'wait'
+					WHEN EE.EVENT_START_DTM <![CDATA[<=]]> getDate() AND EE.EVENT_END_DTM <![CDATA[>=]]> getDate() THEN 'ing'
+					ELSE 'end'
+				END AS EVENT_PROGRESS_STATUS
+			 , DBO.FN_CODE_VALUE('EVENT_TYPE_CODE', EE.EVENT_TYPE_CODE) AS EVENT_TYPE_CODE_NAME
+			 , STUFF((SELECT CONCAT(',', DBO.FN_CODE_VALUE('DEVICE_CODE', EETD.DEVICE_CODE)) 
+						FROM EV_EVENT_TARGET_DEVICE EETD WITH(NOLOCK)
+					   WHERE EE.EVENT_NO = EETD.EVENT_NO FOR XML PATH('')), 1, 1, '') AS DEVICE_CODE_NAME
+			 , STUFF((SELECT CONCAT(',', SSC.CHNNL_NAME) 
+						FROM EV_EVENT_TARGET_CHANNEL EETC WITH(NOLOCK)
+						JOIN SY_SITE_CHNNL SSC WITH(NOLOCK)
+						  ON EETC.CHNNL_NO = SSC.CHNNL_NO
+						 AND SSC.USE_YN = 'Y'
+					   WHERE EETC.EVENT_NO = EE.EVENT_NO FOR XML PATH('')), 1, 1, '') AS CHNNL_NAME
+			 , STUFF((SELECT CONCAT(',', (CASE WHEN EETG.EMP_YN != 'Y' THEN DBO.FN_CODE_VALUE('MEMBER_TYPE_CODE', EETG.MEMBER_TYPE_CODE)
+											   ELSE '임직원'
+										  END))
+						FROM EV_EVENT_TARGET_GRADE EETG WITH(NOLOCK)
+					   WHERE EE.EVENT_NO = EETG.EVENT_NO FOR XML PATH('')), 1, 1, '') AS MEMBER_TYPE_CODE_NAME
+			, (SELECT COUNT(*)
+				 FROM EV_EVENT_RESULT WITH(NOLOCK)
+				WHERE EVENT_NO = EE.EVENT_NO) AS RESULT_COUNT
+			, (CASE WHEN EE.EVENT_TYPE_CODE = '10001' THEN (SELECT COUNT(*) 
+															  FROM EV_EVENT_ANSWER TARGET WITH(NOLOCK)
+															 WHERE TARGET.EVENT_NO = EE.EVENT_NO) 
+					WHEN EE.EVENT_TYPE_CODE = '10004' THEN (SELECT COUNT(*)
+															  FROM EV_EVENT_ROULETTE_JOIN_MEMBER TARGET WITH(NOLOCK)
+															 WHERE TARGET.EVENT_NO = EE.EVENT_NO)
+					WHEN EE.EVENT_TYPE_CODE = '10002' THEN (SELECT COUNT(ATTEND.EVENT_NO)
+															  FROM(
+																	SELECT EEACM.EVENT_NO
+																		 , EEACM.MEMBER_NO 
+																	  FROM EV_EVENT_ATTENDANCE_CHECK_MEMBER EEACM WITH(NOLOCK)
+																	  JOIN MB_MEMBER MM WITH(NOLOCK) 
+																		ON EEACM.MEMBER_NO = MM.MEMBER_NO 
+																	 WHERE EEACM.EVENT_NO = EE.EVENT_NO
+																	GROUP BY EEACM.EVENT_NO, EEACM.MEMBER_NO
+																) ATTEND
+															)
+					ELSE (SELECT COUNT(*)
+							FROM EV_EVENT_JOIN_MEMBER TARGET WITH(NOLOCK)
+						   WHERE TARGET.EVENT_NO = EE.EVENT_NO)
+				END) AS JOIN_COUNT
+			 , 'L' AS PAGE_TYPE
+		  FROM EV_EVENT EE WITH(NOLOCK)
+		  LEFT JOIN SY_ADMIN B WITH(NOLOCK)
+			ON EE.RGSTER_NO = B.ADMIN_NO
+		  LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK)
+			ON EE.MODER_NO = C.ADMIN_NO
+		<include refid="whereSql" />
+		<choose>
+			 <when test="sortColumn != null">
+				ORDER BY
+				<if test="sortColumn == 'eventName'.toString()">
+					EE.EVENT_NAME
+				</if>
+				<if test="sortColumn == 'eventStartDtm'.toString()">
+					EE.EVENT_START_DTM
+				</if>
+				<if test="sortColumn == 'eventEndDtm'.toString()">
+					EE.EVENT_END_DTM
+				</if>
+				<if test="sortColumn == 'rgstDtm'.toString()">
+					EE.RGST_DTM
+				</if>
+				<if test="sortColumn == 'modDtm'.toString()">
+					EE.MOD_DTM
+				</if>
+				<if test="sortType == 'DESC'.toString()">
+					DESC
+				</if>
+			 </when>
+			 <otherwise>
+				ORDER BY EE.RGST_DTM DESC 
+			 </otherwise>
+		</choose>
+		<include refid="Paging.mssql" />
+	</select>
+	
+	<select id="selectEvEventCount" parameterType="Pageable" resultType="int">
+		SELECT
+			<include refid="Paging.totalCount" /> 
+		FROM  
+			EV_EVENT EE WITH(NOLOCK)
+		<include refid="whereSql" />
+	</select>
+
+	<select id="selectEvEvent" parameterType="kr.co.abcmart.bo.event.model.master.EvEvent" resultType="kr.co.abcmart.bo.event.model.master.EvEvent">
+	/*+ kr.co.abcmart.bo.event.repository.master.EvEventDao.selectEvEvent [이벤트 조회 쿼리] [이지훈] */
+		SELECT EE.EVENT_NO
+			 , EE.EVENT_TYPE_CODE
+			 , EE.EVENT_NAME
+			 , EE.EVENT_TERM_SETUP_YN
+			 , EE.EVENT_START_DTM
+			 , EE.EVENT_END_DTM
+			 , EE.PRZWR_MGMT_YN
+			 , EE.PRZWR_PBLC_TODO_YMD
+			 , EE.PRZWR_ORDER_START_YMD
+			 , EE.PRZWR_ORDER_END_YMD
+			 , EE.PICKUP_START_YMD
+			 , EE.PICKUP_END_YMD
+			 , EE.PRZWR_PBLC_YN
+			 , EE.POINT_DDCT_YN
+			 , EE.DDCT_POINT_AMT
+			 , EE.EVENT_STPLAT_USE_YN
+			 , EE.EVENT_STPLAT_CONT_TEXT
+			 , EE.EVENT_JOIN_TYPE
+			 , EE.LOGIN_ID_DUP_PERM_YN
+			 , EE.ONLN_RECPT_YN
+			 , EE.PRDT_RECPT_STORE_TYPE
+			 , EE.INSD_MGMT_INFO_TEXT
+			 , EE.PC_EVENT_CONT_TEXT
+			 , EE.MOBILE_EVENT_CONT_TEXT
+			 , EE.SRCH_KEY_WORD
+			 , EE.NOTE_TEXT
+			 , EE.USE_YN
+			 , EE.DISP_YN
+			 <!-- ,EE.ART_DISP_YN -->
+			 , EE.TMPR_SAVE_YN
+			 , EE.RGSTER_NO
+			 , EE.RGST_DTM
+			 , EE.MODER_NO
+			 , EE.MOD_DTM
+			 , EE.GE_BENEFIT_TYPE
+			 , EE.GE_BENEFIT_VALUE
+			 , EE.GE_BENEFIT_NAME
+			 , DBO.FN_CODE_VALUE('EVENT_TYPE_CODE', EE.EVENT_TYPE_CODE) AS EVENT_TYPE_CODE_NAME
+			 , B.ADMIN_NAME AS RGSTER_NAME
+			 , B.LOGIN_ID AS RGSTER_ID
+			 , C.ADMIN_NAME AS MODER_NAME
+			 , C.LOGIN_ID AS MODER_ID
+			 , (SELECT COUNT(*) 
+				  FROM EV_EVENT_PUBLICATION_NUMBER EEPN WITH(NOLOCK)
+				 WHERE EEPN.EVENT_NO = EE.EVENT_NO) AS EVENT_PBLICTE_NO_CNT
+			 , CASE WHEN EE.EVENT_TYPE_CODE = '10003' 
+						 THEN (SELECT COUNT(*) FROM EV_EVENT_JOIN_MEMBER EEJM WITH(NOLOCK) WHERE EE.EVENT_NO = EEJM.EVENT_NO)
+					ELSE 0
+			   END AS DRAW_JOIN_CHECK_CNT
+			 , CASE WHEN EE.TMPR_SAVE_YN = 'Y' THEN 'temp'
+					WHEN EE.EVENT_TERM_SETUP_YN = 'N' AND EE.EVENT_START_DTM <![CDATA[<=]]> GETDATE() THEN 'ing'
+					WHEN EE.EVENT_START_DTM <![CDATA[>]]> GETDATE() THEN 'wait'
+					WHEN EE.EVENT_START_DTM <![CDATA[<=]]> GETDATE() AND EE.EVENT_END_DTM <![CDATA[>=]]> GETDATE() THEN 'ing'
+					ELSE 'end'
+				END AS EVENT_PROGRESS_STATUS
+		 FROM EV_EVENT EE WITH(NOLOCK)
+		 LEFT JOIN SY_ADMIN B WITH(NOLOCK)
+		   ON EE.RGSTER_NO = B.ADMIN_NO
+		 LEFT JOIN SY_ADMIN C WITH(NOLOCK)
+		   ON EE.MODER_NO = C.ADMIN_NO
+		WHERE EE.EVENT_NO = #{eventNo, jdbcType=VARCHAR}
+	</select>
+
+	<insert id="insertEvEvent" parameterType="kr.co.abcmart.bo.event.model.master.EvEvent">
+	/*+ kr.co.abcmart.bo.event.repository.master.EvEventDao.insertEvEvent [이벤트 등록 쿼리] [이지훈] */
+		<selectKey keyProperty="eventNo" resultType="String" order="BEFORE">
+			SELECT NEXT VALUE FOR SEQ_EV_EVENT_EVENT_NO
+		</selectKey>
+		INSERT INTO EV_EVENT 
+			(
+				  EVENT_NO
+				, EVENT_TYPE_CODE
+				, EVENT_NAME
+				<if test='eventTermSetupYn != null and eventTermSetupYn != ""'>
+				, EVENT_TERM_SETUP_YN
+				</if>
+				, EVENT_START_DTM
+				, EVENT_END_DTM
+				<if test='przwrMgmtYn != null and przwrMgmtYn != ""'>
+				, PRZWR_MGMT_YN
+				</if>
+				, PRZWR_PBLC_TODO_YMD
+				<if test="przwrOrderStartYmd != null"> 
+				, PRZWR_ORDER_START_YMD
+				</if>
+				<if test="przwrOrderEndYmd != null"> 
+				, PRZWR_ORDER_END_YMD
+				</if>
+				<if test="pickupStartYmd != null">
+				, PICKUP_START_YMD
+				</if>
+				<if test="pickupEndYmd != null"> 
+				, PICKUP_END_YMD
+				</if>
+				<if test='przwrPblcYn != null and przwrPblcYn != ""'>
+				, PRZWR_PBLC_YN
+				</if>
+				<if test='pointDdctYn != null and pointDdctYn != ""'>
+				, POINT_DDCT_YN
+				</if>
+				<if test='ddctPointAmt != null and ddctPointAmt != ""'>
+				, DDCT_POINT_AMT
+				</if>
+				<if test='eventStplatUseYn != null and eventStplatUseYn != ""'>
+				, EVENT_STPLAT_USE_YN
+				</if>
+				, EVENT_STPLAT_CONT_TEXT
+				, EVENT_JOIN_TYPE
+				, LOGIN_ID_DUP_PERM_YN
+				<if test="onlnRecptYn != null"> 
+				, ONLN_RECPT_YN
+				</if>
+				<if test='prdtRecptStoreType != null and prdtRecptStoreType != ""'>
+				, PRDT_RECPT_STORE_TYPE
+				</if>
+				, INSD_MGMT_INFO_TEXT
+				, PC_EVENT_CONT_TEXT
+				, MOBILE_EVENT_CONT_TEXT
+				, SRCH_KEY_WORD
+				, NOTE_TEXT
+				<if test='useYn != null and useYn != ""'>				
+				, USE_YN
+				</if>
+				, DISP_YN
+				<!--
+				,ART_DISP_YN
+				-->
+				<if test='tmprSaveYn != null and tmprSaveYn != ""'>
+				, TMPR_SAVE_YN
+				</if>
+				, RGSTER_NO
+				, RGST_DTM
+				, MODER_NO
+				, MOD_DTM 
+				, GE_BENEFIT_TYPE
+				, GE_BENEFIT_VALUE
+				, GE_BENEFIT_NAME
+			)
+			VALUES 
+			( 
+				  #{eventNo, jdbcType = VARCHAR}
+				, #{eventTypeCode, jdbcType = VARCHAR}
+				, #{eventName, jdbcType = VARCHAR}
+				<if test='eventTermSetupYn != null and eventTermSetupYn != ""'>
+				, #{eventTermSetupYn, jdbcType = CHAR}
+				</if>
+				, #{eventStartDtm, jdbcType = TIMESTAMP}
+				, #{eventEndDtm, jdbcType = TIMESTAMP}
+				<if test='przwrMgmtYn != null and przwrMgmtYn != ""'>
+				, #{przwrMgmtYn, jdbcType = CHAR}
+				</if>
+				, #{przwrPblcTodoYmd, jdbcType = TIMESTAMP}
+				<if test="przwrOrderStartYmd != null"> 
+				, #{przwrOrderStartYmd, jdbcType=TIMESTAMP} 
+				</if> 
+				<if test="przwrOrderEndYmd != null"> 
+				, #{przwrOrderEndYmd, jdbcType=TIMESTAMP} 
+				</if> 
+				<if test="pickupStartYmd != null"> 
+				, #{pickupStartYmd, jdbcType=DATE} 
+				</if> 
+				<if test="pickupEndYmd != null"> 
+				, #{pickupEndYmd, jdbcType=DATE}
+				</if> 
+				<if test='przwrPblcYn != null and przwrPblcYn != ""'>
+				, #{przwrPblcYn, jdbcType = CHAR}
+				</if>
+				<if test='pointDdctYn != null and pointDdctYn != ""'>
+				, #{pointDdctYn, jdbcType = CHAR}
+				</if>
+				<if test='ddctPointAmt != null and ddctPointAmt != ""'>
+				, #{ddctPointAmt, jdbcType = INTEGER}
+				</if>
+				<if test='eventStplatUseYn != null and eventStplatUseYn != ""'>
+				, #{eventStplatUseYn, jdbcType = CHAR}
+				</if>
+				, #{eventStplatContText, jdbcType = VARCHAR}
+				, #{eventJoinType, jdbcType = CHAR}
+				, #{loginIdDupPermYn, jdbcType = CHAR}
+				<if test="onlnRecptYn != null">
+				, #{onlnRecptYn, jdbcType = CHAR} 
+				</if>
+				<if test='prdtRecptStoreType != null and prdtRecptStoreType != ""'>
+				, #{prdtRecptStoreType, jdbcType = CHAR}
+				</if>
+				, #{insdMgmtInfoText, jdbcType = VARCHAR}
+				, #{pcEventContText, jdbcType = VARCHAR}
+				, #{mobileEventContText, jdbcType = VARCHAR}
+				, #{srchKeyWord, jdbcType = VARCHAR}
+				, #{noteText, jdbcType = VARCHAR}
+				<if test='useYn != null and useYn != ""'>
+				, #{useYn, jdbcType = CHAR}
+				</if>
+				, #{dispYn, jdbcType = CHAR}
+				<!-- 
+				,#{artDispYn, jdbcType = CHAR}
+				 -->
+				<if test='tmprSaveYn != null and tmprSaveYn != ""'>
+				, #{tmprSaveYn, jdbcType = CHAR}
+				</if>
+				, #{rgsterNo, jdbcType = VARCHAR}
+				, GETDATE()
+				, #{moderNo, jdbcType = VARCHAR}
+				, GETDATE()
+				, #{geBenefitType, jdbcType=CHAR}
+				, #{geBenefitValue, jdbcType=VARCHAR}
+				, #{geBenefitName, jdbcType=VARCHAR}
+			)
+	</insert>
+	
+	<update id="updateEvEvent" parameterType="kr.co.abcmart.bo.event.model.master.EvEvent">
+	 /*+ kr.co.abcmart.bo.event.repository.master.EvEventDao.updateEvEvent [이벤트 update 쿼리] [이지훈] */
+		UPDATE EV_EVENT
+		<set> 
+			<if test="eventTypeCode != null"> 
+				event_type_code = #{eventTypeCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="eventName != null"> 
+				event_name = #{eventName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="eventTermSetupYn != null"> 
+				event_term_setup_yn = #{eventTermSetupYn, jdbcType=CHAR}, 
+			</if>
+			<choose>
+				<when test='eventStartDtm != null and eventTermSetupYn != "N" '> 
+					event_start_dtm = #{eventStartDtm, jdbcType=TIMESTAMP},
+				</when>
+				<when test='eventStartDtm == null and tmprSaveYn == "Y" '>
+					event_start_dtm = NULL,
+				</when>
+				<otherwise>event_start_dtm = rgst_dtm,</otherwise> 
+			</choose> 
+				event_end_dtm = #{eventEndDtm, jdbcType=TIMESTAMP}, 
+			<if test="przwrMgmtYn != null"> 
+				przwr_mgmt_yn = #{przwrMgmtYn, jdbcType=CHAR}, 
+			</if>
+			przwr_pblc_todo_ymd = #{przwrPblcTodoYmd, jdbcType=TIMESTAMP}, 
+			<if test="przwrOrderStartYmd != null"> 
+				przwr_order_start_ymd = #{przwrOrderStartYmd, jdbcType=TIMESTAMP},
+			</if> 
+			<if test="przwrOrderEndYmd != null"> 
+				przwr_order_end_ymd = #{przwrOrderEndYmd, jdbcType=TIMESTAMP},
+			</if> 
+			<if test="pickupStartYmd != null"> 
+				pickup_start_ymd = #{pickupStartYmd, jdbcType=DATE}, 
+			</if> 
+			<if test="pickupEndYmd != null"> 
+				pickup_end_ymd = #{pickupEndYmd, jdbcType=DATE}, 
+			</if> 
+			<if test="przwrPblcYn != null"> 
+				przwr_pblc_yn = #{przwrPblcYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="pointDdctYn != null"> 
+				point_ddct_yn = #{pointDdctYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="ddctPointAmt != null"> 
+				ddct_point_amt = #{ddctPointAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="eventStplatUseYn != null"> 
+				event_stplat_use_yn = #{eventStplatUseYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="eventStplatContText != null"> 
+				event_stplat_cont_text = #{eventStplatContText, jdbcType=VARCHAR}, 
+			</if> 
+			event_join_type = #{eventJoinType, jdbcType=CHAR}, 
+			login_id_dup_perm_yn = #{loginIdDupPermYn, jdbcType=CHAR}, 
+			<if test="onlnRecptYn != null"> 
+				onln_recpt_yn = #{onlnRecptYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="prdtRecptStoreType != null"> 
+				prdt_recpt_store_type = #{prdtRecptStoreType, jdbcType=CHAR}, 
+			</if> 
+			<if test="insdMgmtInfoText != null"> 
+				insd_mgmt_info_text = #{insdMgmtInfoText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="pcEventContText != null"> 
+				pc_event_cont_text = #{pcEventContText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="mobileEventContText != null"> 
+				mobile_event_cont_text = #{mobileEventContText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="srchKeyWord != null"> 
+				srch_key_word = #{srchKeyWord, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="noteText != null"> 
+				note_text = #{noteText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="useYn != null"> 
+				use_yn = #{useYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="dispYn != null"> 
+				disp_yn = #{dispYn, jdbcType=CHAR}, 
+			</if>
+			<!-- 
+			<if test="artDispYn != null"> 
+				art_disp_yn = #{artDispYn, jdbcType=CHAR}, 
+			</if>
+			 --> 
+			<if test="tmprSaveYn != null"> 
+				tmpr_save_yn = #{tmprSaveYn, jdbcType=CHAR}, 
+			</if>
+			ge_benefit_type = #{geBenefitType, jdbcType=CHAR},
+			ge_benefit_value = #{geBenefitValue, jdbcType=VARCHAR},
+			<choose>
+				<when test='geBenefitValue == null'> 
+					ge_benefit_name = null,
+				</when>
+				<otherwise> 
+					ge_benefit_name = #{geBenefitName, jdbcType=VARCHAR},
+				</otherwise>
+			</choose> 
+			moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			mod_dtm = GETDATE()
+		</set> 
+		WHERE event_no = #{eventNo, jdbcType=VARCHAR}	
+	</update>
+	
+	<select id="selectEventDuplCheck" parameterType="Map" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM  
+			EV_EVENT EE WITH(NOLOCK)
+		WHERE INSD_MGMT_INFO_TEXT = #{insdMgmtInfoText, jdbcType=VARCHAR}
+		<if test='eventNo != null and eventNo != "" '>
+			AND EE.EVENT_NO != #{eventNo, jdbcType=VARCHAR}
+		</if>
+	</select>
+	
+	<select id="selectMemberHistoryEventCount" parameterType="Pageable" resultType="int">
+		SELECT
+			<include refid="Paging.totalCount" /> 
+		FROM  
+			EV_EVENT EE WITH(NOLOCK)
+		INNER JOIN 
+			(SELECT EVENT_NO AS EVENT_NO FROM EV_EVENT_ANSWER WITH(NOLOCK)	WHERE MEMBER_NO = #{bean.memberNo, jdbcType=VARCHAR} GROUP BY EVENT_NO
+			UNION ALL
+			SELECT EVENT_NO AS EVENT_NO FROM EV_EVENT_ATTENDANCE_CHECK_MEMBER WITH(NOLOCK) WHERE MEMBER_NO = #{bean.memberNo, jdbcType=VARCHAR} GROUP BY EVENT_NO
+			UNION ALL
+			SELECT EVENT_NO AS EVENT_NO FROM EV_EVENT_ROULETTE_JOIN_MEMBER WITH(NOLOCK)	 WHERE MEMBER_NO = #{bean.memberNo, jdbcType=VARCHAR} GROUP BY EVENT_NO
+			UNION ALL
+			SELECT EVENT_NO AS EVENT_NO FROM EV_EVENT_JOIN_MEMBER WITH(NOLOCK) WHERE MEMBER_NO = #{bean.memberNo, jdbcType=VARCHAR} GROUP BY EVENT_NO) MEMBER_HISTORY
+		ON EE.EVENT_NO = MEMBER_HISTORY.EVENT_NO
+		<include refid="whereSql" />
+	</select>
+	
+	<select id="selectMemberHistoryEventList" parameterType="Pageable" resultType="kr.co.abcmart.bo.event.model.master.EvEvent">
+	/*+ kr.co.abcmart.bo.event.repository.master.EvEventDao.selectMemberHistoryEventList [이벤트 리스트 조회 쿼리(회원참여)] [이지훈] */	 
+		SELECT 
+			EE.EVENT_NO
+			,EE.EVENT_TYPE_CODE
+			,EE.EVENT_NAME
+			,EE.EVENT_TERM_SETUP_YN
+			,EE.EVENT_START_DTM
+			,EE.EVENT_END_DTM
+			,EE.PRZWR_MGMT_YN
+			,EE.PRZWR_PBLC_TODO_YMD
+			,EE.PRZWR_ORDER_START_YMD
+			,EE.PRZWR_ORDER_END_YMD
+			,EE.PICKUP_START_YMD
+			,EE.PICKUP_END_YMD
+			,EE.PRZWR_PBLC_YN
+			,EE.POINT_DDCT_YN
+			,EE.DDCT_POINT_AMT
+			,EE.EVENT_STPLAT_USE_YN
+			,EE.EVENT_STPLAT_CONT_TEXT
+			,EE.EVENT_JOIN_TYPE
+			,EE.LOGIN_ID_DUP_PERM_YN
+			,EE.ONLN_RECPT_YN
+			,EE.PRDT_RECPT_STORE_TYPE
+			,EE.INSD_MGMT_INFO_TEXT
+			,EE.PC_EVENT_CONT_TEXT
+			,EE.MOBILE_EVENT_CONT_TEXT
+			,EE.SRCH_KEY_WORD
+			,EE.NOTE_TEXT
+			,EE.USE_YN
+			,EE.DISP_YN
+			,EE.TMPR_SAVE_YN
+			,EE.RGSTER_NO
+			,EE.RGST_DTM
+			,EE.MODER_NO
+			,EE.MOD_DTM
+			,B.ADMIN_NAME AS RGSTER_NAME
+			,B.LOGIN_ID AS RGSTER_ID
+			,C.ADMIN_NAME AS MODER_NAME
+			,C.LOGIN_ID AS MODER_ID
+			,CASE
+				WHEN EE.EVENT_TERM_SETUP_YN = 'N' AND EE.EVENT_START_DTM <![CDATA[<=]]> getDate() THEN 'ing'
+				WHEN EE.EVENT_START_DTM <![CDATA[>]]> getDate() THEN 'wait'
+				WHEN EE.EVENT_START_DTM <![CDATA[<=]]> getDate() AND EE.EVENT_END_DTM <![CDATA[>=]]> getDate() THEN 'ing'
+				ELSE 'end'
+			 END AS EVENT_PROGRESS_STATUS
+			,DBO.FN_CODE_VALUE('EVENT_TYPE_CODE', EE.EVENT_TYPE_CODE) AS EVENT_TYPE_CODE_NAME
+			,STUFF((SELECT CONCAT(',',DBO.FN_CODE_VALUE('DEVICE_CODE', EETD.DEVICE_CODE)) FROM EV_EVENT_TARGET_DEVICE EETD WITH(NOLOCK) WHERE EE.EVENT_NO = EETD.EVENT_NO FOR XML PATH('')), 1, 1, '') AS DEVICE_CODE_NAME
+			,STUFF((SELECT CONCAT(',', SSC.CHNNL_NAME) FROM EV_EVENT_TARGET_CHANNEL EETC JOIN SY_SITE_CHNNL SSC ON EETC.CHNNL_NO = SSC.CHNNL_NO AND SSC.USE_YN = 'Y' WHERE EETC.EVENT_NO = EE.EVENT_NO FOR XML PATH('')), 1, 1, '') AS CHNNL_NAME
+			,STUFF((SELECT CONCAT(',',
+						CASE 
+							WHEN EETG.EMP_YN != 'Y' THEN DBO.FN_CODE_VALUE('MEMBER_TYPE_CODE', EETG.MEMBER_TYPE_CODE)
+							ELSE '임직원'
+						END 
+			) FROM EV_EVENT_TARGET_GRADE EETG WITH(NOLOCK) WHERE EE.EVENT_NO = EETG.EVENT_NO FOR XML PATH('')), 1, 1, '') AS MEMBER_TYPE_CODE_NAME
+		   <!--	 ,EETG.MEMBER_TYPE_CODE AS EETG_MEMBER_TYPE_CODE
+			,EETG.MBSHP_GRADE_CODE AS EETG_MBSHP_GRADE_CODE
+			,EETG.EMP_YN AS EETG_EMP_YN
+			,DBO.FN_CODE_VALUE('MEMBER_TYPE_CODE', EETG.MEMBER_TYPE_CODE) AS EETG_MEMBER_TYPE_CODE_NAME
+			,DBO.FN_CODE_VALUE('MBSHP_GRADE_CODE', EETG.MBSHP_GRADE_CODE) AS EETG_MBSHP_GRADE_CODE_NAME -->
+			,(SELECT COUNT(*) FROM EV_EVENT_RESULT WITH(NOLOCK) WHERE EVENT_NO = EE.EVENT_NO) AS RESULT_COUNT
+			,CASE
+				WHEN EE.EVENT_TYPE_CODE = '10001' THEN (SELECT COUNT(*) FROM EV_EVENT_ANSWER TARGET WHERE TARGET.EVENT_NO = EE.EVENT_NO) 
+				WHEN EE.EVENT_TYPE_CODE = '10002' THEN (SELECT COUNT(*) FROM EV_EVENT_ATTENDANCE_CHECK_MEMBER TARGET WHERE TARGET.EVENT_NO = EE.EVENT_NO)
+				WHEN EE.EVENT_TYPE_CODE = '10004' THEN (SELECT COUNT(*) FROM EV_EVENT_ROULETTE_JOIN_MEMBER TARGET WHERE TARGET.EVENT_NO = EE.EVENT_NO)
+				ELSE (SELECT COUNT(*) FROM EV_EVENT_JOIN_MEMBER TARGET WHERE TARGET.EVENT_NO = EE.EVENT_NO)
+			 END AS JOIN_COUNT
+			 ,CASE
+				WHEN EE.EVENT_TYPE_CODE = '10001' THEN (SELECT TOP(1) TARGET.RGST_DTM FROM EV_EVENT_ANSWER TARGET WHERE TARGET.MEMBER_NO = #{bean.memberNo, jdbcType=VARCHAR} AND TARGET.EVENT_NO = EE.EVENT_NO ORDER BY TARGET.RGST_DTM DESC) 
+				WHEN EE.EVENT_TYPE_CODE = '10002' THEN (SELECT TOP(1) TARGET.ATEND_DTM FROM EV_EVENT_ATTENDANCE_CHECK_MEMBER TARGET 
+																							WHERE TARGET.MEMBER_NO = #{bean.memberNo, jdbcType=VARCHAR} 
+																							AND TARGET.EVENT_NO = EE.EVENT_NO ORDER BY TARGET.ATEND_DTM DESC)
+				WHEN EE.EVENT_TYPE_CODE = '10004' THEN (SELECT TOP(1) TARGET.JOIN_DTM FROM EV_EVENT_ROULETTE_JOIN_MEMBER TARGET WHERE TARGET.MEMBER_NO = #{bean.memberNo, jdbcType=VARCHAR} AND TARGET.EVENT_NO = EE.EVENT_NO ORDER BY TARGET.JOIN_DTM DESC)
+				ELSE (SELECT TOP(1) TARGET.JOIN_DTM FROM EV_EVENT_JOIN_MEMBER TARGET WHERE TARGET.MEMBER_NO = #{bean.memberNo, jdbcType=VARCHAR} AND TARGET.EVENT_NO = EE.EVENT_NO ORDER BY TARGET.JOIN_DTM DESC)
+			 END AS EVENT_JOIN_DTM
+		FROM 
+			EV_EVENT EE WITH(NOLOCK)
+		INNER JOIN 
+			(SELECT EVENT_NO AS EVENT_NO FROM EV_EVENT_ANSWER WITH(NOLOCK)	WHERE MEMBER_NO = #{bean.memberNo, jdbcType=VARCHAR} GROUP BY EVENT_NO
+			UNION ALL
+			SELECT EVENT_NO AS EVENT_NO FROM EV_EVENT_ATTENDANCE_CHECK_MEMBER WITH(NOLOCK) WHERE MEMBER_NO = #{bean.memberNo, jdbcType=VARCHAR} GROUP BY EVENT_NO
+			UNION ALL
+			SELECT EVENT_NO AS EVENT_NO FROM EV_EVENT_ROULETTE_JOIN_MEMBER WITH(NOLOCK)	 WHERE MEMBER_NO = #{bean.memberNo, jdbcType=VARCHAR} GROUP BY EVENT_NO
+			UNION ALL
+			SELECT EVENT_NO AS EVENT_NO FROM EV_EVENT_JOIN_MEMBER WITH(NOLOCK) WHERE MEMBER_NO = #{bean.memberNo, jdbcType=VARCHAR} GROUP BY EVENT_NO) MEMBER_HISTORY
+		ON EE.EVENT_NO = MEMBER_HISTORY.EVENT_NO
+		<!-- LEFT OUTER JOIN EV_EVENT_TARGET_GRADE EETG WITH(NOLOCK)
+							ON EETG.EVENT_NO = EE.EVENT_NO -->
+		LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON EE.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON EE.MODER_NO = C.ADMIN_NO
+		<include refid="whereSql" />
+		<choose>
+			 <when test="sortColumn != null">
+				ORDER BY
+				<if test="sortColumn == 'eventName'.toString()">
+					EE.EVENT_NAME
+				</if>
+				<if test="sortColumn == 'eventStartDtm'.toString()">
+					EE.EVENT_START_DTM
+				</if>
+				<if test="sortColumn == 'eventEndDtm'.toString()">
+					EE.EVENT_END_DTM
+				</if>
+				<if test="sortColumn == 'rgstDtm'.toString()">
+					EE.RGST_DTM
+				</if>
+				<if test="sortColumn == 'modDtm'.toString()">
+					EE.MOD_DTM
+				</if>
+				<if test="sortType == 'DESC'.toString()">
+					DESC
+				</if>
+			 </when>
+			 <otherwise>
+				ORDER BY EE.RGST_DTM DESC 
+			 </otherwise>
+		</choose>
+		<include refid="Paging.mssql" />
+	</select>
+	
+	<sql id="whereSql">
+		<where>
+			<if test='bean.eventTypeCode != null and bean.eventTypeCode != "" '>
+				AND EE.EVENT_TYPE_CODE = #{bean.eventTypeCode, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.przwrPblcYn != null and bean.przwrPblcYn != "" '>
+				AND EE.PRZWR_PBLC_YN = #{bean.przwrPblcYn, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.answerYns != null and bean.answerYns != "" '>
+				AND
+				<foreach collection="bean.answerYns" item="answerYn" open="(" close=")" separator="OR">
+					<if test='answerYn == "Y" '>
+						EXISTS(
+							SELECT EER.EVENT_NO
+							  FROM EV_EVENT_RESULT EER WITH(NOLOCK)
+							 WHERE EE.EVENT_NO = EER.EVENT_NO
+						)
+					</if>
+					<if test='answerYn == "N" '>
+						NOT EXISTS(
+							SELECT EER.EVENT_NO
+							  FROM EV_EVENT_RESULT EER WITH(NOLOCK)
+							 WHERE EE.EVENT_NO = EER.EVENT_NO
+						)
+					</if>
+				</foreach>
+			</if>
+			<if test='bean.eventProgressStatus != null and bean.eventProgressStatus !="" '>
+				<choose>
+					<when test='bean.eventProgressStatus == "ing" '>
+						AND (
+							(EVENT_TERM_SETUP_YN = 'Y' AND EVENT_START_DTM <![CDATA[<=]]> GETDATE() AND EE.EVENT_END_DTM <![CDATA[>=]]> GETDATE())
+							OR (EVENT_TERM_SETUP_YN = 'N' AND EVENT_START_DTM <![CDATA[<=]]> GETDATE())
+							)
+					</when>
+					<when test='bean.eventProgressStatus == "wait" '>
+						AND EVENT_START_DTM <![CDATA[>]]> GETDATE()
+					</when>
+					<otherwise>
+						AND EVENT_END_DTM <![CDATA[<]]> GETDATE()
+					</otherwise>
+				</choose>
+			</if>
+			<if test='bean.eventProgressStatusArr != null and bean.eventProgressStatusArr !="" '>
+				AND
+				<foreach collection="bean.eventProgressStatusArr " item="eventProgressStatus" open="(" close=")" separator="OR">
+					<choose>
+						<when test='eventProgressStatus == "ing" '>
+							(
+							(EVENT_TERM_SETUP_YN = 'Y' AND EVENT_START_DTM <![CDATA[<=]]> GETDATE() AND EE.EVENT_END_DTM <![CDATA[>=]]> GETDATE())
+							OR (EVENT_TERM_SETUP_YN = 'N' AND EVENT_START_DTM <![CDATA[<=]]> GETDATE())
+							)
+						</when>
+						<when test='eventProgressStatus == "wait" '>
+							EVENT_START_DTM <![CDATA[>]]> GETDATE()
+						</when>
+						<when test='eventProgressStatus == "temp" '>
+							TMPR_SAVE_YN = 'Y'
+						</when>
+						<otherwise>
+							EVENT_END_DTM <![CDATA[<]]> GETDATE()
+						</otherwise>
+					</choose>
+				</foreach>
+			</if>
+			<if test='bean.dateType != null and bean.dateType != ""'>
+				<if test='bean.dateType == "eventStartYmd"'>
+					<if test='bean.startYmd != null and bean.startYmd != ""'>
+						AND CONVERT(DATETIME, EE.EVENT_START_DTM) >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})
+					</if>
+					<if test='bean.endYmd != null and bean.endYmd != ""'>
+						AND CONVERT(DATETIME, CONCAT(#{bean.endYmd, jdbcType=VARCHAR}, ' 23:59:59')) >= CONVERT(DATETIME, EE.EVENT_START_DTM)
+					</if>
+				</if>
+				<if test='bean.dateType == "eventEndYmd"'>
+					<if test='bean.startYmd != null and bean.startYmd != ""'>
+						AND CONVERT(DATETIME, EE.EVENT_END_DTM) >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})
+					</if>
+					<if test='bean.endYmd != null and bean.endYmd != ""'>
+						AND CONVERT(DATETIME, CONCAT(#{bean.endYmd, jdbcType=VARCHAR}, ' 23:59:59')) >= CONVERT(DATETIME, EE.EVENT_END_DTM)
+					</if>
+				</if>
+				<if test='bean.dateType == "rgster"'>
+					<if test='bean.startYmd != null and bean.startYmd != ""'>
+						AND EE.RGST_DTM >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})
+					</if>
+					<if test='bean.endYmd != null and bean.endYmd != ""'>
+						AND CONVERT(DATETIME, CONCAT(#{bean.endYmd, jdbcType=VARCHAR}, ' 23:59:59')) >= EE.RGST_DTM
+					</if>
+				</if>
+				<if test='bean.dateType == "moder"'>
+					<if test='bean.startYmd != null and bean.startYmd != ""'>
+						AND EE.MOD_DTM >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR}) 
+					</if>
+					<if test='bean.endYmd != null and bean.endYmd != ""'>
+						AND CONVERT(DATETIME, CONCAT(#{bean.endYmd, jdbcType=VARCHAR}, ' 23:59:59')) >= EE.MOD_DTM
+					</if>
+				</if>
+			</if>
+			<if test='bean.useYn != null and bean.useYn != ""'> 
+				AND EE.USE_YN = #{bean.useYn, jdbcType=CHAR}
+			</if>
+			<if test='bean.chnnlNos != null and bean.chnnlNos.length > 0'>
+				AND EXISTS(
+					SELECT EETC.EVENT_NO 
+					  FROM EV_EVENT_TARGET_CHANNEL EETC WITH(NOLOCK)
+					 WHERE EE.EVENT_NO = EETC.EVENT_NO
+					   AND EETC.CHNNL_NO IN
+					<foreach collection="bean.chnnlNos" item="chnnlNo" open="(" close=")" separator=",">
+						#{chnnlNo}
+					</foreach>
+				)
+			</if>
+			<if test='bean.deviceCodes != null and bean.deviceCodes.length > 0'>
+				AND EXISTS(
+					SELECT EETD.EVENT_NO 
+					  FROM EV_EVENT_TARGET_DEVICE EETD WITH(NOLOCK)
+					 WHERE EE.EVENT_NO = EETD.EVENT_NO
+					   AND EETD.DEVICE_CODE IN
+					<foreach collection="bean.deviceCodes" item="deviceCode" open="(" close=")" separator=",">
+						#{deviceCode}
+					</foreach>
+				)
+			</if>
+			<if test='bean.memberTypeCodes != null or bean.empYn != null'>
+				AND EXISTS(
+					SELECT EETG.EVENT_NO 
+					  FROM EV_EVENT_TARGET_GRADE EETG WITH(NOLOCK) 
+					<where> 
+						<if test='bean.memberTypeCodes != null'>
+							AND (EE.EVENT_NO = EETG.EVENT_NO AND EETG.MEMBER_TYPE_CODE IN
+							<foreach collection="bean.memberTypeCodes" item="memberTypeCode" open="(" close=")" separator=",">
+								#{memberTypeCode}
+							</foreach>
+							AND EETG.EMP_YN = 'N')
+						</if>
+						<if test='bean.empYn != null and bean.empYn == "Y" '>
+							OR (EE.EVENT_NO = EETG.EVENT_NO AND EETG.EMP_YN = 'Y')
+						</if>
+					</where>
+				)
+			</if>
+			<if test='bean.dispYn != null and bean.dispYn != ""'>
+				AND EE.DISP_YN = #{bean.dispYn, jdbcType=VARCHAR}
+			</if>
+			<!--
+			<if test='bean.artDispYn != null and bean.artDispYn != ""'>
+				AND EE.ART_DISP_YN = #{bean.artDispYn, jdbcType=VARCHAR}
+			</if>
+			-->
+			<if test='bean.keywordType != null and bean.keywordType != "" and bean.keyword != null and bean.keyword != ""'>
+				<choose>
+					<when test='bean.keywordType == "eventNo"'>
+						AND EE.EVENT_NO LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+					</when>
+					<when test='bean.keywordType == "eventName"'>
+						AND EE.EVENT_NAME LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+					</when>
+					<otherwise>
+						AND EE.INSD_MGMT_INFO_TEXT LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+					</otherwise>
+				</choose>	
+			</if>
+		</where>
+	</sql>
+</mapper>

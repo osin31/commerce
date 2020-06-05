@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.display.repository.master.DpDisplayTemplateDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.display.model.master.DpDisplayTemplate">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayTemplateDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			dp_display_template
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <insert id="insertTemplate" parameterType="kr.co.abcmart.bo.display.model.master.DpDisplayTemplate">	
+
+     /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayTemplateDao.insertTemplate [템플릿 저장] [박민우] */
+    	<selectKey resultType="String" keyProperty="dispTmplNo" order="BEFORE">
+			SELECT ISNULL(MAX(DISP_TMPL_NO)+1, 1000000) FROM DP_DISPLAY_TEMPLATE
+		</selectKey>
+		INSERT INTO DP_DISPLAY_TEMPLATE
+			 ( DISP_TMPL_NO, TMPL_NAME, SITE_NO, CHNNL_NO, DEVICE_CODE, TMPL_TYPE_CODE, TMPL_URL, IMAGE_NAME, IMAGE_PATH_TEXT, IMAGE_URL, ALTRN_TEXT, USE_YN, RGSTER_NO, RGST_DTM, MODER_NO, MOD_DTM) 
+		VALUES 
+			 ( #{dispTmplNo, jdbcType=VARCHAR}, #{tmplName, jdbcType=VARCHAR}, #{siteNo, jdbcType=VARCHAR}, #{chnnlNo, jdbcType=VARCHAR}, #{deviceCode, jdbcType=VARCHAR}, #{tmplTypeCode, jdbcType=VARCHAR}, #{tmplUrl, jdbcType=VARCHAR}, #{imageName, jdbcType=VARCHAR}, #{imagePathText, jdbcType=VARCHAR}, #{imageUrl, jdbcType=VARCHAR}, #{altrnText, jdbcType=VARCHAR}, #{useYn, jdbcType=CHAR}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <select id="selectTemplateList" parameterType="pageable" resultType="kr.co.abcmart.bo.display.model.master.DpDisplayTemplate">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayTemplateDao.selectTemplatList [템플릿 리스트 조회] [박민우] */
+    
+		SELECT
+			A.DISP_TMPL_NO,
+			A.TMPL_NAME,
+			A.SITE_NO,
+			A.CHNNL_NO,
+			A.DEVICE_CODE,
+			A.TMPL_TYPE_CODE,
+			A.TMPL_URL,
+			A.USE_YN,
+			A.RGSTER_NO,
+			A.RGST_DTM,
+			A.MODER_NO,
+			A.MOD_DTM,
+			A.IMAGE_NAME, 
+			A.IMAGE_PATH_TEXT, 
+			A.IMAGE_URL, 
+			A.ALTRN_TEXT,
+			B.ADMIN_NAME AS RGSTER_NAME,
+			B.LOGIN_ID AS RGSTER_ID,
+    	    C.ADMIN_NAME AS MODER_NAME,
+			C.LOGIN_ID AS MODER_ID,
+			D.SITE_NAME,
+			E.CHNNL_NAME,
+			DBO.FN_CODE_VALUE('DEVICE_CODE', A.DEVICE_CODE) as device_name,
+			DBO.FN_CODE_VALUE('TMPL_TYPE_CODE', A.TMPL_TYPE_CODE) as tmpl_type_name
+		FROM
+			DP_DISPLAY_TEMPLATE A WITH(NOLOCK)
+			LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON A.RGSTER_NO = B.ADMIN_NO
+			LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON A.MODER_NO = C.ADMIN_NO 
+			INNER JOIN SY_SITE D WITH(NOLOCK) ON A.SITE_NO = D.SITE_NO 
+			INNER JOIN SY_SITE_CHNNL E WITH(NOLOCK) ON A.SITE_NO = E.SITE_NO AND A.CHNNL_NO = E.CHNNL_NO 
+		<where> 
+			<if test='bean.keyword != null and bean.keyword != ""'>
+				<if test="bean.keywordType == 01">
+					AND A.TMPL_NAME LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+				</if>
+				<if test="bean.keywordType == 02">
+					AND A.DISP_TMPL_NO LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+				</if>
+				<if test="bean.keywordType == 03">
+					AND B.ADMIN_NAME LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+				</if>
+				<if test="bean.keywordType == 04">
+					AND C.ADMIN_NAME LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+				</if>
+				<if test="bean.keywordType == 05">
+					AND B.LOGIN_ID LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+				</if>
+				<if test="bean.keywordType == 06">
+					AND C.LOGIN_ID LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+				</if>
+			</if> 
+			<if test='bean.siteNo != null and bean.siteNo != ""'> 
+				 AND A.site_no = #{bean.siteNo, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.chnnlNo != null and bean.chnnlNo != ""'> 
+				 AND A.chnnl_no = #{bean.chnnlNo, jdbcType=VARCHAR}
+			</if> 
+			<if test='bean.deviceCode != null and bean.deviceCode != ""'> 
+				 AND A.device_code = #{bean.deviceCode, jdbcType=VARCHAR}
+			</if> 
+			<if test='bean.useYn != null and bean.useYn != ""'> 
+				 AND A.use_yn = #{bean.useYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.tmplTypeCodeAll == null">
+				<if test="bean.tmplTypeCodeArr != null">
+					AND tmpl_type_code in 
+					<foreach item="item" index="index" collection="bean.tmplTypeCodeArr" open="(" separator="," close=")">
+					      #{item}
+					</foreach>
+				</if>
+			</if> 
+		</where>
+	     <choose>
+			 <when test="sortColumn != null">
+			 	ORDER BY
+			 	<if test="sortColumn == 'rgstDtm'.toString()">
+			 		A.RGST_DTM
+			 	</if>
+			 	<if test="sortColumn == 'modDtm'.toString()">
+			 		A.MOD_DTM
+			 	</if>
+			 	<if test="sortType == 'DESC'.toString()">
+			 		DESC
+			 	</if>
+			 </when>
+			 <otherwise>
+			 	ORDER BY A.RGST_DTM DESC
+			 </otherwise>
+		</choose> 
+		<include refid="Paging.mssql" /> 
+    </select>
+    
+    <select id="selectTemplateListCount" parameterType="pageable" resultType="int">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayTemplateDao.selectTemplateListCount [템플릿 리스트 카운트 조회] [박민우] */
+    
+		SELECT <include refid="Paging.totalCount" /> 
+		FROM
+			DP_DISPLAY_TEMPLATE A WITH(NOLOCK)
+			LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON A.RGSTER_NO = B.ADMIN_NO
+			LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON A.MODER_NO = C.ADMIN_NO 
+			INNER JOIN SY_SITE D WITH(NOLOCK) ON A.SITE_NO = D.SITE_NO 
+			INNER JOIN SY_SITE_CHNNL E WITH(NOLOCK) ON A.SITE_NO = E.SITE_NO AND A.CHNNL_NO = E.CHNNL_NO 
+		<where> 
+			<if test='bean.keyword != null and bean.keyword != ""'>
+				<if test="bean.keywordType == 01">
+					AND A.TMPL_NAME LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+				</if>
+				<if test="bean.keywordType == 02">
+					AND A.DISP_TMPL_NO LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+				</if>
+				<if test="bean.keywordType == 03">
+					AND B.ADMIN_NAME LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+				</if>
+				<if test="bean.keywordType == 04">
+					AND C.ADMIN_NAME LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+				</if>
+			</if> 
+			<if test='bean.siteNo != null and bean.siteNo != ""'> 
+				 AND A.site_no = #{bean.siteNo, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.chnnlNo != null and bean.chnnlNo != ""'> 
+				 AND A.chnnl_no = #{bean.chnnlNo, jdbcType=VARCHAR}
+			</if> 
+			<if test='bean.deviceCode != null and bean.deviceCode != ""'> 
+				 AND A.device_code = #{bean.deviceCode, jdbcType=VARCHAR}
+			</if> 
+			<if test='bean.useYn != null and bean.useYn != ""'> 
+				 AND A.use_yn = #{bean.useYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.tmplTypeCode != null"> 
+				 AND tmpl_type_code in ( #{bean.tmplTypeCode, jdbcType=VARCHAR} )
+			</if> 
+			<if test="bean.tmplTypeCodeAll == null">
+				<if test="bean.tmplTypeCodeArr != null">
+					AND tmpl_type_code in 
+					<foreach item="item" index="index" collection="bean.tmplTypeCodeArr" open="(" separator="," close=")">
+					      #{item}
+					</foreach>
+				</if>
+			</if> 
+		</where>  
+    </select>
+    
+    <select id="selectTemplate" parameterType="kr.co.abcmart.bo.display.model.master.DpDisplayTemplate" resultType="kr.co.abcmart.bo.display.model.master.DpDisplayTemplate">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayTemplateDao.selectTemplate [템플릿  조회] [박민우] */
+		SELECT
+			A.DISP_TMPL_NO,
+			A.TMPL_NAME,
+			A.SITE_NO,
+			A.CHNNL_NO,
+			A.DEVICE_CODE,
+			A.TMPL_TYPE_CODE,
+			A.TMPL_URL,
+			A.USE_YN,
+			A.RGSTER_NO,
+			A.RGST_DTM,
+			A.MODER_NO,
+			A.MOD_DTM,
+			A.IMAGE_NAME, 
+			A.IMAGE_PATH_TEXT, 
+			A.IMAGE_URL, 
+			A.ALTRN_TEXT,
+			B.ADMIN_NAME AS RGSTER_NAME,
+			B.LOGIN_ID AS RGSTER_ID,
+    	    C.ADMIN_NAME AS MODER_NAME,
+			C.LOGIN_ID AS MODER_ID
+		FROM
+			DP_DISPLAY_TEMPLATE A WITH(NOLOCK)
+			LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON A.RGSTER_NO = B.ADMIN_NO
+			LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON A.MODER_NO = C.ADMIN_NO 
+		<where>
+			AND A.DISP_TMPL_NO = #{dispTmplNo, jdbcType=VARCHAR}
+		</where> 
+    </select>
+    
+    <update id="updateTemplate" parameterType="kr.co.abcmart.bo.display.model.master.DpDisplayTemplate">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayTemplateDao.updateTemplate [전시 템플릿 수정] [박민우] */
+    
+		UPDATE dp_display_template
+		<set> 
+			<if test="tmplName != null"> 
+				tmpl_name = #{tmplName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="siteNo != null"> 
+				site_no = #{siteNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="chnnlNo != null"> 
+				chnnl_no = #{chnnlNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="deviceCode != null"> 
+				device_code = #{deviceCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="tmplTypeCode != null"> 
+				tmpl_type_code = #{tmplTypeCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="tmplUrl != null"> 
+				tmpl_url = #{tmplUrl, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="imageName != null"> 
+				 image_name = #{imageName, jdbcType=VARCHAR},
+			</if> 
+			<if test="imagePathText != null"> 
+				 image_path_text = #{imagePathText, jdbcType=VARCHAR},
+			</if> 
+			<if test="imageUrl != null"> 
+				 image_url = #{imageUrl, jdbcType=VARCHAR},
+			</if> 
+			<if test="altrnText != null"> 
+				 altrn_text = #{altrnText, jdbcType=VARCHAR},
+			</if> 
+			<if test="useYn != null"> 
+				use_yn = #{useYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 disp_tmpl_no = #{dispTmplNo, jdbcType=VARCHAR}   
+    </update>
+
+</mapper>

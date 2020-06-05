@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.cmm.repository.master.CmEmailSendHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.cmm.model.master.CmEmailSendHistory">
+    
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmEmailSendHistoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			artkr_dm.dbo.cm_email_send_history WITH (NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectEmailSendHistoryListCount" parameterType="pageable" resultType="int" >
+    	/*+ kr.co.abcmart.bo.cmm.repository.master.CmEmailSendHistoryDao.selectEmailSendHistoryListCount [메일 발송 이력 리스트 개수 조회][최경호] */
+		SELECT <include refid="Paging.totalCount" />
+		    FROM(
+		        SELECT C.LOGIN_ID AS ADMIN_ID
+		             , ISNULL(B.LEAVE_YN, 'Y') AS LEAVE_YN
+		             , B.LOGIN_ID
+		             , A.*
+		        	FROM artkr_dm.dbo.CM_EMAIL_SEND_HISTORY A with (nolock)
+		            LEFT OUTER JOIN MB_MEMBER B with (nolock) ON A.MEMBER_NO = B.MEMBER_NO
+		            LEFT OUTER JOIN SY_ADMIN C with (nolock) ON A.RGSTER_NO = C.ADMIN_NO  
+		        )X
+		        INNER JOIN SY_SITE Y with (nolock) ON X.SITE_NO = Y.SITE_NO
+				<trim prefix="WHERE" prefixOverrides="AND|OR">
+					<if test="bean.dateSearchType eq 'sendDtm'">
+					AND X.SEND_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+					</if>
+					<if test="bean.dateSearchType eq 'rgstDtm'">
+					AND X.RGST_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+					</if>
+				  	<if test="bean.siteNo != null and bean.siteNo !='' and bean.siteNo !='ALL'">
+					AND X.SITE_NO = #{bean.siteNo}
+				  	</if>
+				  	<if test="bean.rcvrSearchText != null and bean.rcvrSearchText != ''">
+				  		<if test="bean.rcvrSearchType eq 'rcvrName'">
+							AND X.RCVR_NAME = #{bean.rcvrSearchText}
+						</if>
+				  		<if test="bean.rcvrSearchType eq 'loginId'">
+							AND X.LOGIN_ID = #{bean.rcvrSearchText}
+						</if>
+				  		<if test="bean.rcvrSearchType eq 'rcvrEmailAddrText'">
+						AND X.RCVR_EMAIL_ADDR_TEXT = #{bean.rcvrSearchText}
+						</if>
+				  	</if>
+					<if test="bean.emailTitleText != null and bean.emailTitleText != ''">
+					AND X.EMAIL_TITLE_TEXT LIKE '%'+ #{bean.emailTitleText} +'%'
+					</if>
+					<if test="bean.adminSendYn != null and bean.adminSendYn !=''">
+					AND X.ADMIN_SEND_YN = #{bean.adminSendYn}
+				  	</if>
+					<if test="bean.arrSendYn != null and bean.arrSendYn.length > 0 !=''">
+					AND X.SEND_YN IN 
+					 <foreach collection="bean.arrSendYn" item="sendYn" open="(" close=")" separator=",">
+						 #{sendYn}
+					 </foreach>
+			    	</if>
+		    	</trim>
+    </select>
+    
+    <select id="selectEmailSendHistoryList" parameterType="pageable" resultType="kr.co.abcmart.bo.cmm.model.master.CmEmailSendHistory">
+    	/*+ kr.co.abcmart.bo.cmm.repository.master.CmDaysCondtnDao.selectEmailSendHistoryList [메일 발송 이력 리스트 조회][최경호] */
+    	SELECT X.*
+		     , Y.SITE_NAME
+		     , CASE WHEN X.ADMIN_SEND_YN = 'Y' THEN '관리자' ELSE '시스템' END AS ADMIN_SEND_YN_NAME
+		    FROM(
+		        SELECT A.EMAIL_SNDR_SEQ
+				     , A.SNDR_EMAIL_ADDR_TEXT
+				     , A.SNDR_NAME
+				     , A.EMAIL_TITLE_TEXT
+				     , A.EMAIL_CONT_TEXT
+				     , A.RCVR_EMAIL_ADDR_TEXT
+				     , A.RCVR_NAME, A.SEND_YN
+				     , A.SEND_DTM
+				     , A.SITE_NO
+				     , A.EMAIL_TMPL_SEQ
+				     , A.MEMBER_NO
+				     , A.RGSTER_NO
+				     , A.RGST_DTM
+				     , A.ADMIN_SEND_YN
+		             , B.LOGIN_ID
+		             , ISNULL(B.LEAVE_YN, 'Y') AS LEAVE_YN
+		             , C.LOGIN_ID AS ADMIN_ID
+		             , C.ADMIN_NAME
+		             , C.ADMIN_NO
+		        	FROM artkr_dm.dbo.CM_EMAIL_SEND_HISTORY A with (nolock)
+		            LEFT OUTER JOIN MB_MEMBER B with (nolock) ON A.MEMBER_NO = B.MEMBER_NO
+		            LEFT OUTER JOIN SY_ADMIN C with (nolock) ON A.RGSTER_NO = C.ADMIN_NO  
+		        )X
+		        INNER JOIN SY_SITE Y with (nolock) ON X.SITE_NO = Y.SITE_NO
+				<trim prefix="WHERE" prefixOverrides="AND|OR">
+					<if test="bean.dateSearchType eq 'sendDtm'">
+					AND X.SEND_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+					</if>
+					<if test="bean.dateSearchType eq 'rgstDtm'">
+					AND X.RGST_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+					</if>
+				  	<if test="bean.siteNo != null and bean.siteNo !='' and bean.siteNo !='ALL'">
+					AND X.SITE_NO = #{bean.siteNo}
+				  	</if>
+				  	<if test="bean.rcvrSearchText != null and bean.rcvrSearchText != ''">
+				  		<if test="bean.rcvrSearchType eq 'rcvrName'">
+							AND X.RCVR_NAME = #{bean.rcvrSearchText}
+						</if>
+				  		<if test="bean.rcvrSearchType eq 'loginId'">
+							AND X.LOGIN_ID = #{bean.rcvrSearchText}
+						</if>
+				  		<if test="bean.rcvrSearchType eq 'rcvrEmailAddrText'">
+						AND X.RCVR_EMAIL_ADDR_TEXT = #{bean.rcvrSearchText}
+						</if>
+				  	</if>
+					<if test="bean.emailTitleText != null and bean.emailTitleText != ''">
+					AND X.EMAIL_TITLE_TEXT LIKE '%'+ #{bean.emailTitleText} +'%'
+					</if>
+					<if test="bean.adminSendYn != null and bean.adminSendYn !=''">
+					AND X.ADMIN_SEND_YN = #{bean.adminSendYn}
+				  	</if>
+					<if test="bean.arrSendYn != null and bean.arrSendYn.length > 0 !=''">
+					AND X.SEND_YN IN 
+					 <foreach collection="bean.arrSendYn" item="sendYn" open="(" close=")" separator=",">
+						 #{sendYn}
+					 </foreach>
+			    	</if>
+		    	</trim>
+		<choose>    	
+			<when test="sortColumn != null">
+			ORDER BY
+				<if test="sortColumn == 'rgstDtm'.toString()">
+		        X.RGST_DTM
+		 		</if>
+				<if test="sortColumn == 'sendDtm'.toString()">
+		        X.SEND_DTM
+		 		</if>
+				<if test="sortType == 'DESC'.toString()">
+		       DESC
+		 		</if>
+			</when>
+			<otherwise>
+		    ORDER BY X.EMAIL_SNDR_SEQ DESC    	
+			</otherwise>	
+		</choose>
+		<include refid="Paging.mssql" />
+    </select>
+
+    <select id="getmailSendHistoryDetail" parameterType="pageable" resultType="kr.co.abcmart.bo.cmm.model.master.CmEmailSendHistory">
+    	/*+ kr.co.abcmart.bo.cmm.repository.master.CmDaysCondtnDao.getmailSendHistoryDetail [메일 발송 이력 상세 데이터 조회][최경호] */
+        SELECT C.LOGIN_ID AS ADMIN_ID
+        	 , C.ADMIN_NAME
+        	 , C.ADMIN_NO
+             , ISNULL(B.LEAVE_YN, 'Y') AS LEAVE_YN
+             , B.LOGIN_ID
+             , C.MEMBER_INFO_MGMT_YN
+             , A.*
+        	FROM artkr_dm.dbo.CM_EMAIL_SEND_HISTORY A with (nolock)
+            LEFT OUTER JOIN MB_MEMBER B with (nolock) ON A.MEMBER_NO = B.MEMBER_NO
+            LEFT OUTER JOIN SY_ADMIN C with (nolock) ON A.RGSTER_NO = C.ADMIN_NO  
+		  WHERE A.EMAIL_SNDR_SEQ = #{emailSndrSeq}
+    </select>
+    
+    <insert id="insertMail" useGeneratedKeys="true" keyProperty="emailSndrSeq" parameterType="kr.co.abcmart.bo.cmm.model.master.CmEmailSendHistory">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmEmailSendHistoryDao.insertMail [insert 쿼리] [김영현] */
+		INSERT INTO artkr_dm.dbo.cm_email_send_history (
+			sndr_email_addr_text,
+			sndr_name,
+			email_title_text,
+			email_cont_text,
+			rcvr_email_addr_text,
+			rcvr_name,
+			send_yn,
+			send_dtm,
+			site_no,
+			email_tmpl_seq,
+			member_no,
+			rgster_no,
+			rgst_dtm
+		) VALUES (
+			#{sndrEmailAddrText, jdbcType=VARCHAR},
+			#{sndrName, jdbcType=VARCHAR},
+			#{emailTitleText, jdbcType=VARCHAR},
+			#{emailContText, jdbcType=VARCHAR},
+			#{rcvrEmailAddrText, jdbcType=VARCHAR},
+			#{rcvrName, jdbcType=VARCHAR},
+			#{sendYn, jdbcType=CHAR},
+			<choose>
+				<when test='@kr.co.abcmart.util.UtilsText@isNotBlank(sendYn)
+						and sendYn == "Y"'>
+					getdate()
+				</when>
+				<otherwise>
+					null
+				</otherwise>
+			</choose>,
+			#{siteNo, jdbcType=VARCHAR},
+			#{emailTmplSeq, jdbcType=INTEGER},
+			#{memberNo, jdbcType=VARCHAR},
+			#{rgsterNo, jdbcType=VARCHAR},
+			getdate()
+		)  
+    </insert>
+    
+</mapper>

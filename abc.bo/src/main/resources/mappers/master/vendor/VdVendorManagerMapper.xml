@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.vendor.repository.master.VdVendorManagerDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.vendor.model.master.VdVendorManager">
+
+     /*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorManagerDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			vd_vendor_manager WITH (NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+	<select id="getVndrMngrNoNextVal" parameterType="kr.co.abcmart.bo.vendor.model.master.VdVendorManager" resultType="short">
+	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorManagerDao.getVndrMngrNoNextVal [업체담당자번호] [유성민] */
+		SELECT ISNULL(MAX(VNDR_MNGR_NO), 0) + 1
+		  FROM VD_VENDOR_MANAGER
+		 WHERE VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+	</select>
+
+
+</mapper>

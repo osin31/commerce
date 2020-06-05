@@ -1,0 +1,783 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			OC_ORDER_DELIVERY_HISTORY
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+	
+	<select id="selectDeliveryHistoryList" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory" resultType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+		/*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.selectOrderDelveryArr [주문 배송 목록 배열 조회]  */
+		SELECT <include refid="select-columns" />
+		     , dbo.FN_CODE_VALUE('STOCK_GBN_CODE' , STOCK_GBN_CODE) AS  STOCK_GBN_CODE_NAME
+			 , dbo.FN_CODE_VALUE('LOGIS_VNDR_CODE' , LOGIS_VNDR_CODE) AS  LOGIS_VNDR_CODE_NAME
+			 , dbo.FN_CODE_VALUE('DLVY_DSCNTC_RSN_CODE' , DLVY_DSCNTC_RSN_CODE) AS  DLVY_DSCNTC_RSN_CODE_NAME
+			 , dbo.FN_CODE_VALUE('MISS_PROC_TYPE_CODE' , MISS_PROC_TYPE_CODE) AS  MISS_PROC_TYPE_CODE_NAME
+			 , dbo.FN_CODE_VALUE('DLVY_STAT_CODE' , DLVY_STAT_CODE) AS  DLVY_STAT_CODE_NAME
+			 , (SELECT STORE_NAME FROM CM_STORE B WHERE B.STORE_NO = A.STORE_NO) AS STORE_NAME
+			 , A.STOCK_GBN_CODE AS ORG_STOCK_GBN_CODE
+		  FROM OC_ORDER_DELIVERY_HISTORY A WITH (NOLOCK)
+		 <where>
+			 <choose>
+				<when test="orderNos != null and orderNos !='' and orderNos.length > 0 ">
+					ORDER_NO IN
+					<foreach item="item" index="index" collection="orderNos" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+				</when>
+				<otherwise>
+					ORDER_NO = #{orderNo, jdbcType=VARCHAR} 
+						<if test="orderPrdtSeq != null and orderPrdtSeq != ''"> 
+							AND ORDER_PRDT_SEQ = #{orderPrdtSeq, jdbcType=INTEGER}
+						</if>
+						<if test="orderDlvyHistSeq != null and orderDlvyHistSeq != ''"> 
+							AND ORDER_DLVY_HIST_SEQ = #{orderDlvyHistSeq, jdbcType=INTEGER}
+						</if>
+				</otherwise>
+			</choose>
+		</where>
+		 ORDER BY ORDER_DLVY_HIST_SEQ 
+	</select>	
+	
+	<select id="getPrdtDeliveryInfo" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory" resultType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+		/*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.selectOrderDelveryArr [주문 배송 상품 상세 조회]  */
+
+		SELECT S.ORDER_NO
+			 , S.ORDER_PRDT_SEQ
+			 , S.ORDER_DLVY_HIST_SEQ
+			 , S.DLVY_DGRE_COUNT
+			 , S.STOCK_GBN_CODE
+			 , S.STORE_NO
+			 , S.STORE_CHNG_DGRE_COUNT
+			 , S.DLVY_PROC_DTM
+			 , S.LOGIS_VNDR_CODE
+			 , S.WAYBIL_NO_TEXT
+			 , S.DLVY_DSCNTC_YN
+			 , S.DLVY_DSCNTC_RSN_CODE
+			 , S.DLVY_DSCNTC_OPETR_NO
+			 , S.DLVY_DSCNTC_PROC_DTM
+			 , S.PICKUP_PRPARE_CMLPT_DTM
+			 , S.PICKUP_PSBLT_YMD
+			 , S.MISS_PROC_YN
+			 , S.MISS_PROC_TYPE_CODE
+			 , S.INSD_MGMT_INFO_TEXT
+			 , S.WMS_SEND_YN
+			 , S.DLVY_TODO_YMD
+			 , S.RCVR_NAME
+			 , S.RCVR_TEL_NO_TEXT
+			 , S.RCVR_HDPHN_NO_TEXT
+			 , S.RCVR_POST_CODE_TEXT
+			 , S.RCVR_POST_ADDR_TEXT
+			 , S.RCVR_DTL_ADDR_TEXT
+			 , S.CLM_NO
+			 , S.CLM_PRDT_SEQ
+			 , S.DLVY_MEMO_TEXT
+			 , S.DLVY_STAT_CODE
+			 , S.LOGIS_CNVRT_SEND_DTM
+			 , S.RSV_DLVY_DTM
+			 , S.DLVY_ID_TEXT
+			 , S.LOGIS_PYMNT_PRDT_AMT
+			 , S.LOGIS_PYMNT_DLVY_AMT
+			 , dbo.FN_CODE_VALUE('STOCK_GBN_CODE' , S.STOCK_GBN_CODE) AS  STOCK_GBN_CODE_NAME
+			 , dbo.FN_CODE_VALUE('LOGIS_VNDR_CODE' , S.LOGIS_VNDR_CODE) AS  LOGIS_VNDR_CODE_NAME
+			 , dbo.FN_CODE_VALUE('DLVY_DSCNTC_RSN_CODE' , S.DLVY_DSCNTC_RSN_CODE) AS  DLVY_DSCNTC_RSN_CODE_NAME
+			 , dbo.FN_CODE_VALUE('MISS_PROC_TYPE_CODE' , S.MISS_PROC_TYPE_CODE) AS  MISS_PROC_TYPE_CODE_NAME
+			 , dbo.FN_CODE_VALUE('DLVY_STAT_CODE' , S.DLVY_STAT_CODE) AS  DLVY_STAT_CODE_NAME 
+		  FROM ( 
+		  SELECT <include refid="select-columns" /> 
+		       , RANK( )OVER( PARTITION BY ORDER_NO,ORDER_PRDT_SEQ ORDER BY  ORDER_DLVY_HIST_SEQ  DESC ) AS RANK_SEQ 
+		   FROM OC_ORDER_DELIVERY_HISTORY A WITH (NOLOCK) 
+		<where>
+			AND ORDER_NO = #{orderNo, jdbcType=VARCHAR} 
+			AND ORDER_PRDT_SEQ = #{orderPrdtSeq, jdbcType=INTEGER}
+			<if test="orderDlvyHistSeq != null and orderDlvyHistSeq != ''"> 
+				AND ORDER_DLVY_HIST_SEQ = #{orderDlvyHistSeq, jdbcType=INTEGER}
+			</if>
+		</where>
+		  )S WHERE RANK_SEQ = 1 		
+	</select>	
+	
+	<update id="UpdateDeliveryStop" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+		/*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.UpdateDeliveryStop [배송중단처리]  */
+		/*+ 배송 중단 처리시  DLVY_DSCNTC_ACCEPT_DTM 배송중단 접수일시 처리  재배송 처리시 처리 완료일시 등록  */
+		UPDATE OC_ORDER_DELIVERY_HISTORY 
+		   SET MOD_DTM 					= GETDATE()
+		     <if test="dlvyDscntcYn != null and dlvyDscntcYn != '' ">
+		     ,  DLVY_DSCNTC_YN	 		= #{dlvyDscntcYn, jdbcType=VARCHAR}
+		     </if>
+		     <if test="dlvyDscntcRsnCode != null and dlvyDscntcRsnCode != '' ">
+			 , DLVY_DSCNTC_RSN_CODE 	= #{dlvyDscntcRsnCode, jdbcType=VARCHAR}
+			 , DLVY_DSCNTC_ACCEPT_DTM 	= GETDATE()  -- 배송중단 접수일시
+			 </if>
+			 
+			 <if test="dlvyDscntcOpetrNo != null and dlvyDscntcOpetrNo != '' ">
+			 , DLVY_DSCNTC_OPETR_NO 	= #{dlvyDscntcOpetrNo, jdbcType=VARCHAR}
+			 </if>
+ 
+ 			<if test="stockGbnCode != null and stockGbnCode != '' ">
+  			 , STOCK_GBN_CODE 		    = '10000' --매장 픽업을 온라인 물류로 변경 처리
+			 , LOGIS_CNVRT_SEND_DTM = GETDATE()  -- 택배전환발송일시
+			</if>
+			 <if test="wmsSendYn != null and wmsSendYn != '' ">
+			 , WMS_SEND_YN 				= #{wmsSendYn, jdbcType=VARCHAR}
+			 </if>
+			 <if test="dlvyDscntcProcDtm != null and dlvyDscntcProcDtm != '' ">
+			 , DLVY_DSCNTC_PROC_DTM 	= GETDATE() -- 배송중단 처리일시 매장픽업택배전화으로 변경시 해당 일자를 등록일자로 바로 Update진행
+			 </if>
+			 <if test="procGubnCode != null and procGubnCode != '' ">
+			 , PROC_GUBN_CODE 			= #{procGubnCode, jdbcType=VARCHAR} --처리구분코드 확인필요로 update
+			 </if>
+			 , MODER_NO 				= #{moderNo, jdbcType=VARCHAR}
+			 
+		 WHERE	ORDER_NO 				= #{orderNo, jdbcType=VARCHAR}
+		  <if test="orderPrdtSeq != null and orderPrdtSeq != '' ">
+		   AND	ORDER_PRDT_SEQ 			= #{orderPrdtSeq, jdbcType=INTEGER}
+		  </if>
+		   <if test="orderDlvyHistSeq != null and orderDlvyHistSeq != '' ">
+		   AND	ORDER_DLVY_HIST_SEQ 	= #{orderDlvyHistSeq, jdbcType=TINYINT}
+		   </if>
+		   <if test="dlvyIdText != null and dlvyIdText != '' ">
+			AND	DLVY_ID_TEXT 			= #{dlvyIdText, jdbcType=TINYINT}
+		   </if>
+	</update>	
+	
+	<update id="updateDeliveryStatus" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+		/*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.updateDeliveryStatus [구매 확정 배송상태 변경]  */
+		WITH DELIVERY AS (
+			SELECT ORDER_NO , ORDER_PRDT_SEQ , ORDER_DLVY_HIST_SEQ , DLVY_STAT_CODE , MODER_NO , MOD_DTM
+				 , RANK( )OVER( PARTITION BY ORDER_NO,ORDER_PRDT_SEQ ORDER BY  ORDER_DLVY_HIST_SEQ  DESC ) AS RANK_SEQ 
+			  FROM OC_ORDER_DELIVERY_HISTORY WITH (NOLOCK)
+			 WHERE ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+			   AND ORDER_PRDT_SEQ = #{orderPrdtSeq, jdbcType=INTEGER }
+		) 
+		UPDATE D
+			SET D.DLVY_STAT_CODE = #{dlvyStatCode, jdbcType=VARCHAR }
+			  , D.MODER_NO = #{moderNo, jdbcType=VARCHAR}
+			  , D.MOD_DTM = GETDATE()
+		   FROM ( SELECT ORDER_NO 
+					   , ORDER_PRDT_SEQ 
+					   , ORDER_DLVY_HIST_SEQ 
+					   , DLVY_STAT_CODE 
+					   , MODER_NO
+					   , MOD_DTM
+					FROM DELIVERY 
+				   WHERE RANK_SEQ = 1
+		)D
+
+	</update>	
+	
+
+	<insert id="setReDelivery" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+		/*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.setReDelivery [재배송처리]  */
+		<selectKey keyProperty="orderDlvyHistSeq" resultType="short" order="BEFORE">
+			SELECT MAX(ORDER_DLVY_HIST_SEQ) + 1 AS orderDlvyHistSeq 
+			  FROM OC_ORDER_DELIVERY_HISTORY WITH (NOLOCK)
+			 WHERE ORDER_NO 		= #{orderNo, jdbcType=VARCHAR}
+			   AND ORDER_PRDT_SEQ 	= #{orderPrdtSeq, jdbcType=INTEGER }
+		</selectKey>
+			INSERT INTO OC_ORDER_DELIVERY_HISTORY (
+				   ORDER_NO
+				 , ORDER_PRDT_SEQ
+				 , ORDER_DLVY_HIST_SEQ
+				 , DLVY_DGRE_COUNT
+				 , STOCK_GBN_CODE
+				 , STORE_NO
+				 , MISS_PROC_YN
+				 , WMS_SEND_YN
+				 , DLVY_STAT_CODE
+				 , RGSTER_NO
+				 , RGST_DTM
+			) VALUES (
+				   #{orderNo			, jdbcType=VARCHAR }
+				 , #{orderPrdtSeq		, jdbcType=TINYINT }
+				 , #{orderDlvyHistSeq	, jdbcType=TINYINT }
+				 , #{orderDlvyHistSeq	, jdbcType=TINYINT } -- 배송차수 orderDlvyHistSeq 와 동일처리
+				 , #{stockGbnCode		, jdbcType=VARCHAR }
+				 , #{storeNo			, jdbcType=VARCHAR }
+				 , #{missProcYn			, jdbcType=VARCHAR }
+				 , #{wmsSendYn			, jdbcType=VARCHAR }
+				 , #{dlvyStatCode		, jdbcType=VARCHAR }
+				 , #{rgsterNo			, jdbcType=VARCHAR }
+				 , GETDATE()
+			)
+	</insert>	
+	
+	<update id="setChangeDelivery" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+		/*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.setChangeDelivery [배송 상태 수정처리]  */
+		UPDATE OC_ORDER_DELIVERY_HISTORY 
+		   SET	DLVY_STAT_CODE	 		= #{dlvyStatCode, jdbcType=VARCHAR}
+			 , MODER_NO 				= #{moderNo, jdbcType=VARCHAR}
+			 , MOD_DTM 					= GETDATE()
+		 WHERE	ORDER_NO 				= #{orderNo, jdbcType=VARCHAR}
+		   AND	ORDER_PRDT_SEQ 			= #{orderPrdtSeq, jdbcType=INTEGER}
+		   AND	ORDER_DLVY_HIST_SEQ 	= #{orderDlvyHistSeq, jdbcType=TINYINT}
+
+	</update>	
+	<insert id="insertDeliveryByClaimImpossibility" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+	
+		/*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.insertDeliveryByClaimImpossibility [클레임 불가 처리에 의한 클레임 반송 등록] [이강수] */
+	
+		<selectKey keyProperty="orderDlvyHistSeq" resultType="short" order="BEFORE">
+			SELECT ISNULL(MAX(ORDER_DLVY_HIST_SEQ), 0) + 1 AS orderDlvyHistSeq 
+			  FROM OC_ORDER_DELIVERY_HISTORY 
+			 WHERE ORDER_NO 		= #{orderNo}
+			   AND ORDER_PRDT_SEQ 	= #{orderPrdtSeq}
+		</selectKey>
+			INSERT INTO OC_ORDER_DELIVERY_HISTORY (
+				   ORDER_NO
+				 , ORDER_PRDT_SEQ
+				 , CLM_NO
+				 , CLM_PRDT_SEQ
+				 , ORDER_DLVY_HIST_SEQ
+				 , DLVY_DGRE_COUNT
+				 , DLVY_STAT_CODE
+			   <if test="dlvyTodoYmd != null and dlvyTodoYmd != '' ">
+				-- 날짜 Null처리
+				, DLVY_TODO_YMD 
+				</if>
+	 			 , RCVR_NAME
+	 			 , RCVR_HDPHN_NO_TEXT
+	 			 , RCVR_POST_CODE_TEXT
+	 			 , RCVR_POST_ADDR_TEXT
+	 			 , RCVR_DTL_ADDR_TEXT
+	 			 , DLVY_MEMO_TEXT
+	 			 , RGSTER_NO
+				 , RGST_DTM
+				 , DLVY_DSCNTC_YN
+				 , MISS_PROC_YN
+				 , WMS_SEND_YN
+				 , DLVY_ID_TEXT
+				 , STOCK_GBN_CODE
+			) VALUES (
+				   #{orderNo}
+				 , #{orderPrdtSeq}
+				 , #{clmNo}
+				 , #{clmPrdtSeq}
+				 , #{orderDlvyHistSeq}
+				 , (SELECT ISNULL(MAX(DLVY_DGRE_COUNT), 0) + 1
+  					  FROM OC_ORDER_DELIVERY_HISTORY WITH (NOLOCK)
+ 					 WHERE ORDER_NO		  = #{orderNo}
+   					   AND ORDER_PRDT_SEQ = #{orderPrdtSeq})
+				 , #{dlvyStatCode}
+				 <if test="dlvyTodoYmd != null and dlvyTodoYmd != '' ">
+					-- 날짜 Null처리
+				 , #{dlvyTodoYmd}
+				 </if>
+				 , #{rcvrName}
+				 , #{rcvrHdphnNoText}
+				 , #{rcvrPostCodeText}
+				 , #{rcvrPostAddrText}
+				 , #{rcvrDtlAddrText}
+				 , #{dlvyMemoText}
+				 , #{rgsterNo}
+				 , GETDATE()
+				 , #{dlvyDscntcYn}
+				 , #{missProcYn}
+				 , #{wmsSendYn}
+				 , #{dlvyIdText}
+				 , #{stockGbnCode}
+			)
+			
+	</insert>
+	
+	<insert id="insertDelivery" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+		/*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.insertDelivery [주문배송이력 등록] [KTH] */
+		<selectKey keyProperty="orderDlvyHistSeq" resultType="short" order="BEFORE">
+			SELECT ISNULL(MAX(ORDER_DLVY_HIST_SEQ), 0) + 1 AS orderDlvyHistSeq 
+			  FROM OC_ORDER_DELIVERY_HISTORY 
+			 WHERE ORDER_NO 		= #{orderNo}
+			   AND ORDER_PRDT_SEQ 	= #{orderPrdtSeq}
+		</selectKey>
+		INSERT INTO OC_ORDER_DELIVERY_HISTORY
+			 (
+			   ORDER_NO
+			 , ORDER_PRDT_SEQ
+			 , ORDER_DLVY_HIST_SEQ
+			 , DLVY_DGRE_COUNT
+			 , STOCK_GBN_CODE
+			 , STORE_NO
+			 , STORE_CHNG_DGRE_COUNT
+			 , DLVY_PROC_DTM
+			 , LOGIS_VNDR_CODE
+			 , WAYBIL_NO_TEXT
+			 , DLVY_DSCNTC_YN
+			 , DLVY_DSCNTC_RSN_CODE
+			 , DLVY_DSCNTC_OPETR_NO
+			 , DLVY_DSCNTC_ACCEPT_DTM
+			 , DLVY_DSCNTC_PROC_DTM
+			 , PICKUP_PRPARE_CMLPT_DTM
+			 , PICKUP_PSBLT_YMD
+			 , MISS_PROC_YN
+			 , MISS_PROC_TYPE_CODE
+			 , INSD_MGMT_INFO_TEXT
+			 , WMS_SEND_YN
+			 , DLVY_TODO_YMD
+			 , DLVY_CMLPT_DTM
+			 , RCVR_NAME
+			 , RCVR_TEL_NO_TEXT
+			 , RCVR_HDPHN_NO_TEXT
+			 , RCVR_POST_CODE_TEXT
+			 , RCVR_POST_ADDR_TEXT
+			 , RCVR_DTL_ADDR_TEXT
+			 , CLM_NO
+			 , CLM_PRDT_SEQ
+			 , DLVY_MEMO_TEXT
+			 , DLVY_STAT_CODE
+			 , LOGIS_CNVRT_SEND_DTM
+			 , RSV_DLVY_DTM
+			 , DLVY_ID_TEXT
+			 , LOGIS_PYMNT_PRDT_AMT
+			 , LOGIS_PYMNT_DLVY_AMT
+			 , IMPSBLT_PROC_YN
+			 , IMPSBLT_PROC_ACCEPT_DTM
+			 , IMPSBLT_PROC_CMLPT_DTM
+			 , RGSTER_NO
+			 , RGST_DTM
+			 , MODER_NO
+			 , MOD_DTM
+			 )
+		VALUES
+			 (
+			   #{orderNo}					--주문번호
+			 , #{orderPrdtSeq}				--주문상품순번
+			 , #{orderDlvyHistSeq}			--주문배송이력순번
+			 , #{orderDlvyHistSeq}			--배송차수(주문배송이력순번과 동일)
+			 , #{stockGbnCode}				--재고구분코드
+			 , #{storeNo}					--매장번호
+			 , #{storeChngDgreCount}		--매장변경차수
+			 , #{dlvyProcDtm}				--배송처리일시
+			 , #{logisVndrCode}				--택배사코드
+			 , #{waybilNoText}				--운송장번호
+			 , #{dlvyDscntcYn}				--배송중단여부
+			 , #{dlvyDscntcRsnCode}			--배송중단사유코드
+			 , #{dlvyDscntcOpetrNo}			--배송중단처리자번호
+			 , #{dlvyDscntcAcceptDtm}		--배송중단접수일시
+			 , #{dlvyDscntcProcDtm}			--배송중단처리일시
+			 , #{pickupPrpareCmlptDtm}		--픽업준비완료일시
+			 , #{pickupPsbltYmd, jdbcType=DATE}			--픽업가능일
+			 , #{missProcYn}				--분실처리여부
+			 , #{missProcTypeCode}			--분실처리유형코드
+			 , #{insdMgmtInfoText}			--내부관리정보
+			 , #{wmsSendYn}					--WMS전송여부
+			 , #{dlvyTodoYmd, jdbcType=DATE}				--배송예정일
+			 , #{dlvyCmlptDtm}				--배송완료일시
+			 , #{rcvrName}					--수취인명
+			 , #{rcvrTelNoText}				--수취인전화번호
+			 , #{rcvrHdphnNoText}			--수취인핸드폰번호
+			 , #{rcvrPostCodeText}			--수취인우편번호
+			 , #{rcvrPostAddrText}			--수취인우편주소
+			 , #{rcvrDtlAddrText}			--수취인상세주소
+			 , #{clmNo}						--클레임번호
+			 , #{clmPrdtSeq}				--클레임상품순번
+			 , #{dlvyMemoText}				--배송메모
+			 , #{dlvyStatCode}				--배송상태코드
+			 , #{logisCnvrtSendDtm}			--택배전환발송일시
+			 , #{rsvDlvyDtm}				--예약출고일시
+			 , #{orderNo} + RIGHT('00' + CONVERT(NVARCHAR(2), #{orderPrdtSeq}), 2) + RIGHT('00' + CONVERT(NVARCHAR(2), #{orderDlvyHistSeq}), 2)		--배송ID
+			 , #{logisPymntPrdtAmt}			--택배사결제상품금액
+			 , #{logisPymntDlvyAmt}			--택배사결제배송비
+			 , #{impsbltProcYn}				--불가처리여부
+			 , #{impsbltProcAcceptDtm}		--불가처리접수일시
+			 , #{impsbltProcCmlptDtm}		--불가처리완료일시
+			 , #{rgsterNo}					--등록자번호
+			 , GETDATE()					--등록일시
+			 , #{moderNo}					--수정자번호
+			 , GETDATE()					--수정일시
+			 )
+	</insert>
+	
+	<select id="selectDeliveryByClmNoClmPrdtSeq" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory" resultType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+	
+		/*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.selectDeliveryByClmNoClmPrdtSeq [클레임 번호와 클레임상품순번으로 배송이력 조회] [이강수] */
+	
+		SELECT A.RCVR_NAME
+			 , A.RCVR_HDPHN_NO_TEXT
+			 , A.RCVR_POST_CODE_TEXT
+			 , A.RCVR_POST_ADDR_TEXT
+			 , A.RCVR_DTL_ADDR_TEXT
+			 , A.DLVY_MEMO_TEXT
+			 , A.DLVY_TODO_YMD
+			 , A.IMPSBLT_PROC_ACCEPT_DTM
+			 , A.IMPSBLT_PROC_CMLPT_DTM
+			 , A.RGSTER_NO
+			 , A.RGST_DTM
+			 , A.MODER_NO
+			 , A.MOD_DTM
+			 , B.LOGIN_ID
+			 , B.ADMIN_NAME
+		  FROM OC_ORDER_DELIVERY_HISTORY A WITH (NOLOCK)
+		  JOIN SY_ADMIN B WITH (NOLOCK) 
+			ON A.RGSTER_NO = B.ADMIN_NO
+		 WHERE A.CLM_NO       = #{clmNo}
+		   AND A.CLM_PRDT_SEQ = #{clmPrdtSeq}
+		   AND A.IMPSBLT_PROC_YN = #{impsbltProcYn}
+	</select>
+
+	<update id="updateDlvyPickupPsbltDate" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+		/*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.updateDlvyPickupPsbltDate [픽업가능일 연장]  */
+		UPDATE OC_ORDER_DELIVERY_HISTORY 
+		   SET PICKUP_PSBLT_YMD	 		= #{pickupPsbltYmd}
+			 , MODER_NO 				= #{moderNo, jdbcType=VARCHAR}
+			 , MOD_DTM 					= GETDATE()
+		 WHERE	ORDER_NO 				= #{orderNo, jdbcType=VARCHAR}
+		   AND	ORDER_PRDT_SEQ 			= #{orderPrdtSeq, jdbcType=INTEGER}
+		   AND	ORDER_DLVY_HIST_SEQ 	= #{orderDlvyHistSeq, jdbcType=TINYINT}
+
+	</update>	
+	
+	<update id="updateAddressDeliveryHistory" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+		/*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.updateAddressDeliveryHistory -  배송아이디 기준으로 Update */ 
+		UPDATE OC_ORDER_DELIVERY_HISTORY 
+		   SET RCVR_NAME 		   = #{rcvrName, jdbcType=VARCHAR}
+			 , RCVR_HDPHN_NO_TEXT  = #{rcvrHdphnNoText, jdbcType=VARCHAR}
+			 , RCVR_POST_CODE_TEXT = #{rcvrPostCodeText, jdbcType=VARCHAR}
+			 , RCVR_POST_ADDR_TEXT = #{rcvrPostAddrText, jdbcType=VARCHAR}
+			 , RCVR_DTL_ADDR_TEXT  = #{rcvrDtlAddrText, jdbcType=VARCHAR}
+			 , DLVY_MEMO_TEXT  	   = #{dlvyMemoText, jdbcType=VARCHAR}
+			 <if test="dlvyStatCode != null and dlvyStatCode != '' ">
+			 , DLVY_STAT_CODE      = #{dlvyStatCode, jdbcType=VARCHAR}  --  상태코드
+			 </if>
+			 <if test="stockGbnCode != null and stockGbnCode != '' ">
+  			 , STOCK_GBN_CODE 		    =  #{stockGbnCode, jdbcType=VARCHAR}--매장 픽업을 온라인 물류로 변경 처리
+			 , LOGIS_CNVRT_SEND_DTM = GETDATE()  -- 택배전환발송일시
+			</if> 
+			 , MOD_DTM = GETDATE()
+			 , MODER_NO = #{moderNo, jdbcType=VARCHAR} 
+		 WHERE DLVY_ID_TEXT = #{dlvyIdText, jdbcType=VARCHAR}
+	</update>	
+	
+	<select id="getOrderDeliveryHistoryDlvyId" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory" resultType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+		 /*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.getOrderDeliveryHistoryDlvyId - 주문배송이력   */
+		SELECT 
+				  OODH.ORDER_NO                          -- 주문번호
+				, OODH.ORDER_PRDT_SEQ                    -- 주문상품순번
+				, OODH.ORDER_DLVY_HIST_SEQ               -- 주문배송이력순번
+				, OODH.DLVY_DGRE_COUNT                   -- 배송차수
+				, OODH.STOCK_GBN_CODE                    -- 재고구분코드
+				, OODH.STORE_NO                          -- 매장번호
+				, OODH.STORE_CHNG_DGRE_COUNT			-- 매장변경차수
+				, OODH.DLVY_PROC_DTM                    -- 배송처리일시
+				, OODH.LOGIS_VNDR_CODE                  -- 택배사코드
+				, OODH.WAYBIL_NO_TEXT                   -- 운송장번호
+				, OODH.DLVY_DSCNTC_YN                   -- 배송중단여부
+				, OODH.DLVY_DSCNTC_RSN_CODE             -- 배송중단사유코드
+				, OODH.DLVY_DSCNTC_OPETR_NO             -- 배송중단처리자번호
+				, OODH.DLVY_DSCNTC_PROC_DTM             -- 배송중단처리일시
+				, OODH.PICKUP_PRPARE_CMLPT_DTM   		-- 픽업준비완료일시
+				, OODH.PICKUP_PSBLT_YMD                 -- 픽업가능일
+				, OODH.MISS_PROC_YN                     -- 분실처리여부
+				, OODH.MISS_PROC_TYPE_CODE              -- 분실처리유형코드
+				, OODH.INSD_MGMT_INFO_TEXT              -- 내부관리정보
+				, OODH.WMS_SEND_YN                      -- WMS전송여부
+				, OODH.DLVY_TODO_YMD                    -- 배송예정일
+				, OODH.RCVR_NAME                        -- 수취인명
+				, OODH.RCVR_TEL_NO_TEXT                 -- 수취인전화번호
+				, OODH.RCVR_HDPHN_NO_TEXT               -- 수취인핸드폰번호
+				, OODH.RCVR_POST_CODE_TEXT              -- 수취인우편번호
+				, OODH.RCVR_POST_ADDR_TEXT              -- 수취인우편주소
+				, OODH.RCVR_DTL_ADDR_TEXT               -- 수취인상세주소
+				, OODH.CLM_NO                           -- 클레임번호
+				, OODH.CLM_PRDT_SEQ                     -- 클레임상품순번
+				, OODH.DLVY_MEMO_TEXT                   -- 배송메모
+				, OODH.DLVY_STAT_CODE                   -- 배송상태코드
+				, OODH.LOGIS_CNVRT_SEND_DTM             -- 택배전환발송일시
+				, OODH.RSV_DLVY_DTM                     -- 예약출고일시
+				, OODH.DLVY_ID_TEXT                     -- 배송ID
+				, OODH.LOGIS_PYMNT_PRDT_AMT             -- 택배사결제상품금액
+				, OODH.LOGIS_PYMNT_DLVY_AMT             -- 택배사결제배송비
+		  FROM OC_ORDER_DELIVERY_HISTORY OODH WITH (NOLOCK)
+		 WHERE OODH.ORDER_NO = #{orderNo , jdbcType=VARCHAR}   -- 주문번호 
+		   AND OODH.DLVY_ID_TEXT = #{dlvyIdText, jdbcType=VARCHAR}  -- 배송아이디
+	</select>
+	
+	
+	<select id="selectOrderDlvyHistSeq" parameterType="Object" resultType="Integer">
+	 	/*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.selectOrderDlvyHistSeq -  배송이력 순번 추출 */ 
+		 SELECT 
+		 	  MAX(ORDER_DLVY_HIST_SEQ) + 1
+		  FROM  OC_ORDER_DELIVERY_HISTORY OODH
+		  WHERE  OODH.ORDER_NO = #{orderNo, jdbcType=VARCHAR} 
+		  AND OODH.ORDER_PRDT_SEQ = #{orderPrdtSeq, jdbcType=INTEGER}
+	</select>
+	
+	
+	<update id="updateDeliveryHistoryCancel" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+		/*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.updateAddressDeliveryHistory - 배송상태 변경 처리 */ 
+		UPDATE OC_ORDER_DELIVERY_HISTORY 
+		   SET DLVY_STAT_CODE 		   = #{dlvyStatCode, jdbcType=VARCHAR} 
+		     , DLVY_DSCNTC_OPETR_NO		= #{dlvyDscntcOpetrNo, jdbcType=VARCHAR}
+		  	 , DLVY_DSCNTC_PROC_DTM		=  GETDATE()
+			 , MOD_DTM = GETDATE()
+			 , MODER_NO = #{moderNo, jdbcType=VARCHAR}
+		 WHERE DLVY_ID_TEXT = #{dlvyIdText, jdbcType=VARCHAR}
+	</update>	
+	
+	<update id="updateDeliveryHistoryLogis" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+		/*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.updateAddressDeliveryHistory - 택배사 금액 변경 처리 */ 
+		UPDATE OC_ORDER_DELIVERY_HISTORY 
+		   SET LOGIS_PYMNT_DLVY_AMT		= #{logisPymntDlvyAmt, jdbcType=INTEGER}        -- 택배사 결제 배송비금액
+		  	 , LOGIS_PYMNT_PRDT_AMT		= #{logisPymntPrdtAmt, jdbcType=INTEGER}                     -- 택배사 결제 상품금액
+			 , MOD_DTM = GETDATE()
+			 , MODER_NO = #{moderNo, jdbcType=VARCHAR}
+		 WHERE DLVY_ID_TEXT = #{dlvyIdText, jdbcType=VARCHAR}
+	</update>
+	
+	<update id="updateDeliveryVendorStatCode" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+		/*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.updateDeliveryVendorStatCode - 배송상태 변경 처리 [NBK] */ 
+		UPDATE OC_ORDER_DELIVERY_HISTORY 
+		   SET DLVY_STAT_CODE 		= #{dlvyStatCode, jdbcType=VARCHAR} 
+		     , DLVY_PROC_DTM		=  CASE WHEN ( #{dlvyStatCode, jdbcType=VARCHAR} = '10003') THEN GETDATE() 
+	     								ELSE	DLVY_PROC_DTM 
+		     						   END  --배송처리일시 송장입력시
+		     <if test="logisVndrCode != null and logisVndrCode != '' ">
+			 , LOGIS_VNDR_CODE = #{logisVndrCode, jdbcType=VARCHAR}					--  택배사
+			 </if>
+			 
+			 <if test="waybilNoText != null and waybilNoText != '' ">
+			 , WAYBIL_NO_TEXT = #{waybilNoText, jdbcType=VARCHAR} 					--  송장번호
+			 </if>
+
+			 <if test="dlvyStatCode == '10005'"> 
+			 , DLVY_CMLPT_DTM = getdate()  -- 2020.05.26 : 배송완료상태로 바꿀때, 배송완료dtm이 안찍히던 문제 수정
+			 </if>
+  		     						   
+			 , MOD_DTM			= GETDATE()
+			 , MODER_NO = #{moderNo, jdbcType=VARCHAR}
+		 WHERE DLVY_ID_TEXT = #{dlvyIdText, jdbcType=VARCHAR}
+		 AND DLVY_STAT_CODE  = #{dlvyStatCodeBefore, jdbcType=VARCHAR} 
+	</update>	
+	
+	<update id="updateOrderDeliveryHistoryStat" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+     	/*+ kr.co.abcmart.bo.delivery.repository.master.OcOrderDeliveryHistoryDao.updateOrderDeliveryHistoryStat [배송상태 일괄/개별 update 쿼리] [KTH] */
+		UPDATE OC_ORDER_DELIVERY_HISTORY
+		   SET DLVY_STAT_CODE = #{dlvyStatCode, jdbcType=VARCHAR}
+			<if test="dlvyDscntcYn != null">
+		     , DLVY_DSCNTC_YN = #{dlvyDscntcYn , jdbcType=CHAR}
+			</if>
+			<if test="missProcYn != null">
+		     , MISS_PROC_YN = #{missProcYn, jdbcType=CHAR}
+			</if>
+			<if test="missProcTypeCode != null">
+		     , MISS_PROC_TYPE_CODE = #{missProcTypeCode, jdbcType=VARCHAR}
+			</if>
+		     , MODER_NO = #{moderNo, jdbcType=VARCHAR}
+   		     , MOD_DTM = GETDATE()
+		 WHERE ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+		<if test="orderPrdtSeq != null">
+		   AND ORDER_PRDT_SEQ = #{orderPrdtSeq, jdbcType=INTEGER}
+   		</if>
+		<if test="whereDlvyStatCode != null">
+		   AND DLVY_STAT_CODE = #{whereDlvyStatCode, jdbcType=VARCHAR}
+   		</if>
+	</update>
+	
+	<select id="getUpdatePsbltDlvyHistData" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory" resultType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+	/*+ kr.co.abcmart.web.order.repository.master.OcOrderDeliveryHistoryDao.getUpdatePsbltDlvyHistData [주문번호에 관련된 배송이력 상품 리스트]  */
+		SELECT DLVY_ID_TEXT , WMS_SEND_YN
+			 , CASE WHEN STOCK_GBN_CODE = '10000' THEN 'AI'
+					WHEN STOCK_GBN_CODE = '10001' THEN 'AW' 
+					WHEN STOCK_GBN_CODE = '10002' THEN 'AS'
+					WHEN STOCK_GBN_CODE = '10003' THEN 'VD'
+				END AS CBCD
+			 , INSD_MGMT_INFO_TEXT
+		  FROM OC_ORDER_DELIVERY_HISTORY  WITH (NOLOCK)
+		 WHERE ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+		   AND DLVY_DSCNTC_YN = #{dlvyDscntcYn , jdbcType=CHAR} -- 배송중단여부
+		   AND MISS_PROC_YN = #{missProcYn , jdbcType=CHAR} -- 분실처리여부
+		   AND IMPSBLT_PROC_YN = #{impsbltProcYn, jdbcType=CHAR} -- 불가처리여부
+	</select>
+	
+	<update id="updateOcOrderDeliveryHistoryModify" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+		/*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.updateOcOrderDeliveryHistoryModify -  주문기준으로  Update */ 
+		UPDATE OC_ORDER_DELIVERY_HISTORY 
+			<set>
+				<if test="rcvrName != null"> 
+					 RCVR_NAME 		   = #{rcvrName, jdbcType=VARCHAR}
+				</if>
+				<if test="rcvrTelNoText	 != null"> 
+					, RCVR_TEL_NO_TEXT	  = #{rcvrTelNoText	, jdbcType=VARCHAR}
+				</if>
+				<if test="rcvrHdphnNoText != null"> 
+					, RCVR_HDPHN_NO_TEXT  = #{rcvrHdphnNoText, jdbcType=VARCHAR}
+				</if>
+				<if test="rcvrPostCodeText != null"> 
+					, RCVR_POST_CODE_TEXT = #{rcvrPostCodeText, jdbcType=VARCHAR}
+				</if>
+				<if test="rcvrPostAddrText != null"> 
+					, RCVR_POST_ADDR_TEXT = #{rcvrPostAddrText, jdbcType=VARCHAR}
+				</if>
+				<if test="rcvrDtlAddrText != null"> 
+					, RCVR_DTL_ADDR_TEXT  = #{rcvrDtlAddrText, jdbcType=VARCHAR}
+				</if>
+				<if test="dlvyMemoText != null"> 
+					, DLVY_MEMO_TEXT  	   = #{dlvyMemoText, jdbcType=VARCHAR}
+				</if>
+			 , MOD_DTM = GETDATE()
+			 , MODER_NO = #{moderNo, jdbcType=VARCHAR}
+			</set>
+		 WHERE ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+	</update>
+	
+	 <select id="selectAfterServicePickup" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory" resultType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+	/*+ kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistoryDao.selectAfterServicePickup [AS에 배송히스토리 이력 조회 (단건)]  */
+		
+		SELECT DLVY_ID_TEXT
+			 , STOCK_GBN_CODE
+			 , INSD_MGMT_INFO_TEXT
+		  FROM OC_ORDER_DELIVERY_HISTORY WITH (NOLOCK)
+		 WHERE ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+		   AND ORDER_PRDT_SEQ = #{orderPrdtSeq, jdbcType=INTEGER }
+		   ------- 2020.02.07 조건 추가 --------
+		   AND DLVY_DSCNTC_YN  = 'N'
+		   AND MISS_PROC_YN    = 'N'
+		   AND IMPSBLT_PROC_YN = 'N'
+		   
+	</select>
+	
+	 <parameterMap id="paramMap" type="hashMap">
+		<parameter property="dlvyIdText" javaType="java.lang.String" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="errorCode" javaType="java.lang.String" jdbcType="VARCHAR" mode="OUT" />
+		<parameter property="errorMessage" javaType="java.lang.String" jdbcType="VARCHAR" mode="OUT" />
+	</parameterMap>
+
+	<select id="callProcedureForOrderChangeForDlvyType" statementType="CALLABLE" parameterMap="paramMap">
+	  		{ call dbo.PR_ORDER_CHANGE_FOR_DLVY_TYPE (?,?,?) }
+	</select>
+	
+	<update id="UpdateDeliveryMiss" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+		/*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.UpdateDeliveryMiss [분실처리여부]  */
+		UPDATE OC_ORDER_DELIVERY_HISTORY 
+		   SET	MISS_PROC_YN	 		= #{missProcYn, jdbcType=VARCHAR}
+			  , MISS_PROC_TYPE_CODE 	= #{missProcTypeCode, jdbcType=VARCHAR}
+			  
+			 <if test="wmsSendYn != null and wmsSendYn != '' ">
+			 , WMS_SEND_YN 				= #{wmsSendYn, jdbcType=VARCHAR}
+			 </if>
+			 <if test="dlvyStatCode != null and dlvyStatCode != '' ">
+			 , DLVY_STAT_CODE 			=  #{dlvyStatCode, jdbcType=VARCHAR} 
+			 </if>
+			 , MODER_NO 				= #{moderNo, jdbcType=VARCHAR}
+			 , MOD_DTM 					= GETDATE()
+		 WHERE	ORDER_NO 				= #{orderNo, jdbcType=VARCHAR}
+		  <if test="orderPrdtSeq != null and orderPrdtSeq != '' ">
+		   AND	ORDER_PRDT_SEQ 			= #{orderPrdtSeq, jdbcType=INTEGER}
+		  </if>
+		   <if test="orderDlvyHistSeq != null and orderDlvyHistSeq != '' ">
+		   AND	ORDER_DLVY_HIST_SEQ 	= #{orderDlvyHistSeq, jdbcType=TINYINT}
+		   </if>
+		   <if test="dlvyIdText != null and dlvyIdText != '' ">
+			AND	DLVY_ID_TEXT 			= #{dlvyIdText, jdbcType=TINYINT}
+		   </if>
+	</update>
+	
+	
+	<select id="getDeliveryForPrdtInfo" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory" resultType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+	/*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.getDeliveryForPrdtInfo [배송기준 상품 조회 사은품 상품 포함 ]  */
+		SELECT B.ORDER_NO 
+			 , B.ORDER_PRDT_SEQ 
+			 , B.UP_ORDER_PRDT_SEQ 
+			 , A.ORDER_DLVY_HIST_SEQ 
+			 , A.STOCK_GBN_CODE
+			 , A.WAYBIL_NO_TEXT
+			 , A.DLVY_DSCNTC_YN
+			 , A.DLVY_DSCNTC_RSN_CODE
+			 , A.PICKUP_PRPARE_CMLPT_DTM
+			 , A.PICKUP_PSBLT_YMD
+			 , A.MISS_PROC_YN
+			 , A.MISS_PROC_TYPE_CODE
+			 , A.RCVR_NAME		
+			 , A.RCVR_TEL_NO_TEXT	
+			 , A.RCVR_HDPHN_NO_TEXT	
+			 , A.RCVR_POST_CODE_TEXT	
+			 , A.RCVR_POST_ADDR_TEXT	
+			 , A.RCVR_DTL_ADDR_TEXT	
+			 , A.RSV_DLVY_DTM
+			 , A.DLVY_ID_TEXT
+			 , A.DLVY_STAT_CODE
+			 , A.WMS_SEND_YN
+			 , B.PRDT_NO
+			 , B.PRDT_OPTN_NO
+			 , B.PRDT_TYPE_CODE
+			 , B.PRDT_NAME
+			 , B.VNDR_PRDT_NO_TEXT
+			 , CASE WHEN A.STOCK_GBN_CODE = '10000' THEN 'AI'
+					WHEN A.STOCK_GBN_CODE = '10001' THEN 'AW'
+					WHEN A.STOCK_GBN_CODE = '10002' THEN 'AS'
+					ELSE 'VNDR'
+				END AS CBCD
+			 , B.INSD_MGMT_INFO_TEXT
+			 , B.ORDER_PRDT_STAT_CODE
+		  FROM OC_ORDER_DELIVERY_HISTORY A WITH (NOLOCK)
+		  JOIN OC_ORDER_PRODUCT B WITH (NOLOCK)
+			ON A.ORDER_NO = B.ORDER_NO 
+		  -- AND A.ORDER_PRDT_SEQ = ISNULL( B.UP_ORDER_PRDT_SEQ , B.ORDER_PRDT_SEQ)  -- 상품 사은품 포함
+		   AND A.ORDER_PRDT_SEQ = B.ORDER_PRDT_SEQ  -- 상품 만
+		 WHERE A.ORDER_NO 		= #{orderNo, jdbcType=VARCHAR}
+		   AND A.ORDER_PRDT_SEQ = #{orderPrdtSeq, jdbcType=INTEGER}
+		   AND A.DLVY_ID_TEXT 	= #{dlvyIdText, jdbcType=VARCHAR}  -- 배송아이디
+	</select>
+ 	
+	 <update id="updateOrderConfirm" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+     	/*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.updateOrderConfirm [배송상태 일괄 update 쿼리] [NKB] */
+		UPDATE 	OC_ORDER_DELIVERY_HISTORY
+		SET 	dlvy_stat_code = #{dlvyStatCode, jdbcType=VARCHAR}
+		       ,MODER_NO = #{moderNo, jdbcType=VARCHAR}
+   		       ,MOD_DTM = GETDATE()
+		WHERE 	order_no = #{orderNo, jdbcType=VARCHAR}
+		<if test="whereDlvyStatCode != null">
+   		AND	dlvy_stat_code = #{whereDlvyStatCode, jdbcType=VARCHAR}
+   		</if>
+	</update>
+	
+	<select id="selectLastMissOrderDelivery" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory" resultType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryHistory">
+		/*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.selectLastMissOrderDelivery [가장 마지막 차수의 배송 이전의 마지막으로 분실처리된 배송 조회] [이강수] */
+			   
+		SELECT ODH.ORDER_NO
+		     , ODH.ORDER_PRDT_SEQ
+			 , ODH.ORDER_DLVY_HIST_SEQ
+			 , ODH.MISS_PROC_YN
+			 , ODH.MISS_PROC_TYPE_CODE
+			 , dbo.FN_CODE_VALUE( 'MISS_PROC_TYPE_CODE' , ODH.MISS_PROC_TYPE_CODE ) AS MISS_PROC_TYPE_CODE_NAME
+          FROM OC_ORDER_DELIVERY_HISTORY ODH WITH (NOLOCK)
+		  JOIN OC_ORDER_PRODUCT          OOP WITH (NOLOCK)
+		    ON ODH.ORDER_NO       = OOP.ORDER_NO
+		   AND ODH.ORDER_PRDT_SEQ = OOP.ORDER_PRDT_SEQ 
+		 WHERE ODH.ORDER_NO 	  = #{orderNo, jdbcType=VARCHAR}
+		   AND ODH.ORDER_PRDT_SEQ = #{orderPrdtSeq, jdbcType=INTEGER}
+		   AND ODH.ORDER_DLVY_HIST_SEQ = (
+						SELECT MAX(ORDER_DLVY_HIST_SEQ)
+						  FROM OC_ORDER_DELIVERY_HISTORY WITH (NOLOCK)
+						 WHERE ORDER_NO 	  = ODH.ORDER_NO
+						   AND ORDER_PRDT_SEQ = ODH.ORDER_PRDT_SEQ
+						   AND MISS_PROC_YN   = 'Y'
+			   )
+		   AND PRDT_TYPE_CODE NOT IN ('10003','10004')
+		   
+	</select>
+	<update id="updateOrderDeliveryStat" parameterType="kr.co.abcmart.bo.delivery.vo.DeliveryPrdtVO">
+		/*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryHistoryDao.updateOrderDeliveryStat [배송중 => 배송완료 처리] [이동엽] */
+		
+		UPDATE OC_ORDER_DELIVERY_HISTORY
+		   SET DLVY_STAT_CODE ='10005'
+			 , DLVY_CMLPT_DTM = GETDATE()
+			 , MODER_NO = #{moderNo}
+			 , MOD_DTM = GETDATE()
+		 WHERE DLVY_ID_TEXT = #{dlvyIdText}
+	</update>
+	
+	
+</mapper>

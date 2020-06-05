@@ -1,0 +1,626 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.promotion.repository.master.PrPromotionDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.promotion.model.master.PrPromotion">
+
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			PR_PROMOTION
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <!-- <resultMap id="promotionResult" type="kr.co.abcmart.bo.promotion.model.master.PrPromotion">
+    	<id property="promoNo" column="PROMO_NO"/>
+    	<id property="promoName" column="PROMO_NAME"/>
+    	<id property="promoTypeCode" column="PROMO_TYPE_CODE"/>
+    	<id property="promoStartDtm" column="PROMO_START_DTM"/>
+    	<id property="promoEndDtm" column="PROMO_END_DTM"/>
+    	<id property="stockDdctType" column="STOCK_DDCT_TYPE"/>
+    	<id property="cpnSmtmApplyPsbltYn" column="CPN_SMTM_APPLY_PSBLT_YN"/>
+    	<id property="affltsCode" column="AFFLTS_CODE"/>
+    	<id property="imdtlDscntType" column="IMDTL_DSCNT_TYPE"/>
+    	<id property="imdtlDscntValue" column="IMDTL_DSCNT_VALUE"/>
+    	<id property="promoApplyType" column="PROMO_APPLY_TYPE"/>
+    	<id property="insdMgmtInfoText" column="INSD_MGMT_INFO_TEXT"/>
+    	<id property="useYn" column="USE_YN"/>
+    	<id property="noteText" column="NOTE_TEXT"/>
+    	<id property="rgsterNo" column="RGSTER_NO"/>
+    	<id property="rgstDtm" column="RGST_DTM"/>
+    	<id property="moderNo" column="MODER_NO"/>
+    	<id property="modDtm" column="MOD_DTM"/>
+    	<id property="promoProgressStatus" column="PROMO_PROGRESS_STATUS"/>
+    	<id property="promoTypeCodeName" column="PROMO_TYPE_CODE_NAME"/>
+    	<id property="deviceCodeName" column="DEVICE_CODE_NAME"/>
+    	<id property="chnnlName" column="CHNNL_NAME"/>
+    	<id property="rgsterName" column="RGSTER_NAME"/>
+    	<id property="rgsterId" column="RGSTER_ID"/>
+    	<id property="moderName" column="MODER_NAME"/>
+    	<id property="moderId" column="MODER_ID"/>
+		<collection property="prPromotionTargetGradeList" resultMap="targetGradeResult" columnPrefix="PPTG_" />
+	</resultMap>
+
+	<resultMap id="targetGradeResult" type="kr.co.abcmart.bo.promotion.model.master.PrPromotionTargetGrade">
+		<id property="promoNo" column="PROMO_NO"/>
+    	<result property="memberTypeCode" column="MEMBER_TYPE_CODE"/>
+    	<result property="mbshpGradeCode" column="MBSHP_GRADE_CODE"/>
+    	<result property="memberTypeCodeName" column="MEMBER_TYPE_CODE_NAME"/>
+     	<result property="mbshpGradeCodeName" column="MBSHP_GRADE_CODE_NAME"/>
+	</resultMap> -->
+
+    <select id="selectPrPromotionList" parameterType="pageable" resultType="kr.co.abcmart.bo.promotion.model.master.PrPromotion">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionDao.selectPrPromotionList [프로모션 리스트 조회 쿼리] [이지훈] */
+    	SELECT
+			PP.PROMO_NO
+			,PP.PROMO_NAME
+			,PP.PROMO_TYPE_CODE
+			,PP.PROMO_START_DTM
+			,PP.PROMO_END_DTM
+			,PP.STOCK_DDCT_TYPE
+			<!-- ,PP.PROMO_DUP_APPLY_PSBLT_YN -->
+			,PP.CPN_SMTM_APPLY_PSBLT_YN
+			,PP.AFFLTS_CODE
+			,PP.IMDTL_DSCNT_TYPE
+			,PP.IMDTL_DSCNT_VALUE
+			,PP.PROMO_APPLY_TYPE
+			<!-- ,PP.PROMO_APPLY_SCOPE_TYPE -->
+			,PP.INSD_MGMT_INFO_TEXT
+			,PP.USE_YN
+			,PP.NOTE_TEXT
+			,PP.RGSTER_NO
+			,PP.RGST_DTM
+			,PP.MODER_NO
+			,PP.MOD_DTM
+    	    ,CASE
+    	    	WHEN PP.PROMO_START_DTM <![CDATA[>]]> getDate() THEN 'wait'
+    	    	WHEN PP.PROMO_START_DTM <![CDATA[<=]]> getDate() AND PP.PROMO_END_DTM <![CDATA[>=]]> getDate() THEN 'ing'
+    	    	ELSE 'end'
+    	     END AS PROMO_PROGRESS_STATUS
+    	    ,DBO.FN_CODE_VALUE('PROMO_TYPE_CODE', PP.PROMO_TYPE_CODE) AS PROMO_TYPE_CODE_NAME
+    	    ,STUFF((SELECT CONCAT(',',DBO.FN_CODE_VALUE('DEVICE_CODE', PPTD.DEVICE_CODE)) FROM PR_PROMOTION_TARGET_DEVICE PPTD WITH(NOLOCK) WHERE PP.PROMO_NO = PPTD.PROMO_NO FOR XML PATH('')), 1, 1, '') AS DEVICE_CODE_NAME
+    	    ,STUFF((SELECT CONCAT(',', SSC.CHNNL_NAME) FROM PR_PROMOTION_TARGET_CHANNEL PPTC JOIN SY_SITE_CHNNL SSC ON PPTC.CHNNL_NO = SSC.CHNNL_NO AND SSC.USE_YN = 'Y' WHERE PPTC.PROMO_NO = PP.PROMO_NO FOR XML PATH('')), 1, 1, '') AS CHNNL_NAME
+			,B.ADMIN_NAME AS RGSTER_NAME
+			,B.LOGIN_ID AS RGSTER_ID
+    	    ,C.ADMIN_NAME AS MODER_NAME
+			,C.LOGIN_ID AS MODER_ID
+			<!-- ,PPTG.MEMBER_TYPE_CODE AS PPTG_MEMBER_TYPE_CODE
+			,PPTG.MBSHP_GRADE_CODE AS PPTG_MBSHP_GRADE_CODE
+			,DBO.FN_CODE_VALUE('MEMBER_TYPE_CODE', PPTG.MEMBER_TYPE_CODE) AS PPTG_MEMBER_TYPE_CODE_NAME
+			,DBO.FN_CODE_VALUE('MBSHP_GRADE_CODE', PPTG.MBSHP_GRADE_CODE) AS PPTG_MBSHP_GRADE_CODE_NAME -->
+			, 'L' AS pageType
+			,STUFF((SELECT CONCAT(',',
+				CASE
+	   				WHEN PPTG.EMP_YN != 'Y' THEN DBO.FN_CODE_VALUE('MEMBER_TYPE_CODE', PPTG.MEMBER_TYPE_CODE)
+	   				ELSE '임직원'
+	   			END
+			) FROM PR_PROMOTION_TARGET_GRADE PPTG WITH(NOLOCK) WHERE PP.PROMO_NO = PPTG.PROMO_NO FOR XML PATH('')), 1, 1, '') AS MEMBER_TYPE_CODE_NAME
+    	FROM
+    		PR_PROMOTION PP WITH(NOLOCK)
+		<!-- LEFT OUTER JOIN PR_PROMOTION_TARGET_GRADE PPTG WITH(NOLOCK)
+							ON PPTG.PROMO_NO = PP.PROMO_NO -->
+    	LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON PP.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON PP.MODER_NO = C.ADMIN_NO
+    	<include refid="whereSql" />
+    	<choose>
+			 <when test="sortColumn != null">
+			 	ORDER BY
+			 	<if test="sortColumn == 'promoName'.toString()">
+			 		PP.PROMO_NAME
+			 	</if>
+			 	<if test="sortColumn == 'promoStartDtm'.toString()">
+			 		PP.PROMO_START_DTM
+			 	</if>
+			 	<if test="sortColumn == 'promoEndDtm'.toString()">
+			 		PP.PROMO_END_DTM
+			 	</if>
+			 	<if test="sortColumn == 'rgstDtm'.toString()">
+			 		PP.RGST_DTM
+			 	</if>
+			 	<if test="sortColumn == 'modDtm'.toString()">
+			 		PP.MOD_DTM
+			 	</if>
+			 	<if test="sortType == 'DESC'.toString()">
+			 		DESC
+			 	</if>
+			 </when>
+			 <otherwise>
+			 	ORDER BY PP.RGST_DTM DESC
+			 </otherwise>
+		</choose>
+		<include refid="Paging.mssql" />
+    </select>
+
+    <select id="selectPrPromotionCount" parameterType="pageable" resultType="int">
+    	SELECT
+    		<include refid="Paging.totalCount" />
+    	FROM
+    		PR_PROMOTION PP WITH(NOLOCK)
+    	<include refid="whereSql" />
+    </select>
+
+    <select id="selectPrPromotion" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPromotion" resultType="kr.co.abcmart.bo.promotion.model.master.PrPromotion">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionDao.selectPrPromotion [프로모션 상세 조회 쿼리] [이지훈] */
+   	SELECT
+			PP.PROMO_NO
+			,PP.PROMO_NAME
+			,PP.PROMO_TYPE_CODE
+			,PP.PROMO_START_DTM
+			,PP.PROMO_END_DTM
+			,PP.STOCK_DDCT_TYPE
+			<!-- ,PP.PROMO_DUP_APPLY_PSBLT_YN -->
+			,PP.CPN_SMTM_APPLY_PSBLT_YN
+			,PP.AFFLTS_CODE
+			,PP.IMDTL_DSCNT_TYPE
+			,PP.IMDTL_DSCNT_VALUE
+			,PP.PROMO_APPLY_TYPE
+			<!-- ,PP.PROMO_APPLY_SCOPE_TYPE -->
+			,PP.INSD_MGMT_INFO_TEXT
+			,PP.USE_YN
+			,PP.NOTE_TEXT
+			,PP.RGSTER_NO
+			,PP.RGST_DTM
+			,PP.MODER_NO
+			,PP.MOD_DTM
+			,B.ADMIN_NAME AS RGSTER_NAME
+			,B.LOGIN_ID AS RGSTER_ID
+    	    ,C.ADMIN_NAME AS MODER_NAME
+			,C.LOGIN_ID AS MODER_ID
+			,CASE
+    	    	WHEN PP.PROMO_START_DTM <![CDATA[>]]> getDate() THEN 'wait'
+    	    	WHEN PP.PROMO_START_DTM <![CDATA[<=]]> getDate() AND PP.PROMO_END_DTM <![CDATA[>=]]> getDate() THEN 'ing'
+    	    	ELSE 'end'
+    	     END AS PROMO_PROGRESS_STATUS
+    	FROM
+    		PR_PROMOTION PP WITH(NOLOCK)
+    	LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON PP.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON PP.MODER_NO = C.ADMIN_NO
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectPromotionDuplCheck" parameterType="String" resultType="int">
+    	SELECT
+    		COUNT(*)
+    	FROM
+    		PR_PROMOTION PP WITH(NOLOCK)
+    	WHERE INSD_MGMT_INFO_TEXT = #{insdMgmtInfoText, jdbcType=VARCHAR}
+    </select>
+
+    <insert id="insertPrPromotion" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPromotion">
+    	/*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionDao.insertPrPromotion [프로모션 등록 쿼리] [이지훈] */
+    	<selectKey keyProperty="promoNo" resultType="String" order="BEFORE">
+			SELECT NEXT VALUE FOR SEQ_PR_PROMOTION_PROMO_NO
+		</selectKey>
+    	INSERT INTO
+				PR_PROMOTION
+			(
+				PROMO_NO
+				,PROMO_NAME
+				,PROMO_TYPE_CODE
+				,PROMO_START_DTM
+				,PROMO_END_DTM
+				<if test='stockDdctType != null and stockDdctType !=""'>
+				,STOCK_DDCT_TYPE
+				</if>
+				<!-- ,PROMO_DUP_APPLY_PSBLT_YN -->
+				<if test='cpnSmtmApplyPsbltYn !=null and cpnSmtmApplyPsbltYn !="" '>
+				,CPN_SMTM_APPLY_PSBLT_YN
+				</if>
+				,AFFLTS_CODE
+				,IMDTL_DSCNT_TYPE
+				<if test='imdtlDscntValue != null and imdtlDscntValue !=""'>
+				,IMDTL_DSCNT_VALUE
+				</if>
+				,PROMO_APPLY_TYPE
+				<!-- ,PROMO_APPLY_SCOPE_TYPE -->
+				,INSD_MGMT_INFO_TEXT
+				,USE_YN
+				,NOTE_TEXT
+				,RGSTER_NO
+				,RGST_DTM
+				,MODER_NO
+				,MOD_DTM
+			)
+		VALUES
+			(
+				#{promoNo, jdbcType = VARCHAR}
+				,#{promoName, jdbcType = VARCHAR}
+				,#{promoTypeCode, jdbcType = VARCHAR}
+				,#{promoStartDtm, jdbcType = TIMESTAMP}
+				,#{promoEndDtm, jdbcType = TIMESTAMP}
+				<if test='stockDdctType != null and stockDdctType !=""'>
+				,#{stockDdctType, jdbcType = CHAR}
+				</if>
+				<!-- ,#{promoDupApplyPsbltYn, jdbcType = CHAR} -->
+				<if test='cpnSmtmApplyPsbltYn !=null and cpnSmtmApplyPsbltYn !="" '>
+				,#{cpnSmtmApplyPsbltYn, jdbcType = CHAR}
+				</if>
+				,#{affltsCode, jdbcType = VARCHAR}
+				,#{imdtlDscntType, jdbcType = CHAR}
+				<if test='imdtlDscntValue != null and imdtlDscntValue !=""'>
+				,#{imdtlDscntValue, jdbcType = INTEGER}
+				</if>
+				,#{promoApplyType, jdbcType = CHAR}
+				<!-- ,#{promoApplyScopeType, jdbcType = CHAR} -->
+				,#{insdMgmtInfoText, jdbcType = VARCHAR}
+				,#{useYn, jdbcType = CHAR}
+				,#{noteText, jdbcType = VARCHAR}
+				,#{rgsterNo, jdbcType = VARCHAR}
+				,#{rgstDtm, jdbcType = TIMESTAMP}
+				,#{moderNo, jdbcType = VARCHAR}
+				,#{modDtm, jdbcType = TIMESTAMP}
+			)
+    </insert>
+
+    <select id="selectPromotionTotalStatus" parameterType="String" resultType="kr.co.abcmart.bo.promotion.model.master.PrPromotion">
+   		/*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionDao.selectPromotionTotalStatus [프로모션 현황 쿼리] [이지훈] */
+		   SELECT
+				  COUNT(*) AS TOTAL_ORD_COUNT
+				, SUM(OOP.ORDER_AMT) AS TOTAL_ORD_PAYMENT
+				, SUM(OOP.ORDER_QTY) AS TOTAL_ORD_QTY
+			FROM OC_ORDER OO WITH(NOLOCK)
+			INNER JOIN OC_ORDER_PRODUCT_APPLY_PROMOTION OOPAP WITH(NOLOCK) on  OO.ORDER_NO = OOPAP.ORDER_NO
+			INNER JOIN OC_ORDER_PRODUCT OOP WITH(NOLOCK) ON OOPAP.ORDER_NO = OOP.ORDER_NO and OOPAP.ORDER_PRDT_SEQ = OOP.ORDER_PRDT_SEQ
+			WHERE  OOPAP.PROMO_NO = #{promoNo, jdbcType = VARCHAR}
+			AND OOP.ORDER_PRDT_STAT_CODE in (
+												 '10001' -- 입금대기
+												,'10002'	--	결제완료
+												,'10003'	--	상품준비중
+												,'10004'	--	상품출고
+												,'10005'	--	배송중
+												,'10006'	--	픽업준비완료
+												,'10007'	--	배송완료
+												,'10008'	--	구매확정
+											 )
+
+    </select>
+
+    <select id="selectPromotionStatusList" parameterType="pageable" resultType="kr.co.abcmart.bo.promotion.model.master.PrPromotion">
+    	/*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionDao.selectPromotionStatusList [프로모션 현황 리스트 쿼리] [NKB] */
+	   SELECT
+				  OO.SITE_NO
+				, OO.ORDER_NO
+				, OO.DEVICE_CODE
+				, OOP.PRDT_NAME  			AS PRODUCT_NAME
+				, OOP.ORDER_QTY  			AS PRODUCT_COUNT
+				, OOP.PRDT_NORMAL_AMT 		AS ORD_NORMAL_AMT -- 정상가
+				, OOP.TOTAL_DSCNT_AMT 		AS ORD_DSCNT_AMT -- 할인가
+				, OOP.ORDER_AMT 			AS ORD_PAYMENT -- 결제금액
+				, OOP.ORDER_PRDT_STAT_CODE
+			FROM OC_ORDER OO WITH(NOLOCK)
+			INNER JOIN OC_ORDER_PRODUCT_APPLY_PROMOTION OOPAP WITH(NOLOCK) on  OO.ORDER_NO = OOPAP.ORDER_NO
+			INNER JOIN OC_ORDER_PRODUCT OOP WITH(NOLOCK) ON OOPAP.ORDER_NO = OOP.ORDER_NO and OOPAP.ORDER_PRDT_SEQ = OOP.ORDER_PRDT_SEQ
+			WHERE  OOPAP.PROMO_NO = #{bean.promoNo, jdbcType = VARCHAR}
+			AND OOP.ORDER_PRDT_STAT_CODE in (
+												 '10001' -- 입금대기
+												,'10002'	--	결제완료
+												,'10003'	--	상품준비중
+												,'10004'	--	상품출고
+												,'10005'	--	배송중
+												,'10006'	--	픽업준비완료
+												,'10007'	--	배송완료
+												,'10008'	--	구매확정
+											 )
+		    ORDER BY OO.ORDER_NO
+		<include refid="Paging.mssql" />
+    </select>
+
+    <select id="selectPromotionStatusCount" parameterType="pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionDao.selectPromotionStatusCount [프로모션 현황 카운트 쿼리] [이지훈] */
+	   SELECT
+	   		<include refid="Paging.totalCount" />
+		FROM
+		(
+			SELECT
+				OO.ORDER_NO
+			FROM OC_ORDER OO WITH(NOLOCK)
+			INNER JOIN OC_ORDER_PRODUCT_APPLY_PROMOTION OOPAP WITH(NOLOCK) on  OO.ORDER_NO = OOPAP.ORDER_NO
+			INNER JOIN OC_ORDER_PRODUCT OOP WITH(NOLOCK) on OOPAP.ORDER_NO = OOP.ORDER_NO and OOPAP.ORDER_PRDT_SEQ = OOP.ORDER_PRDT_SEQ
+			WHERE  OOPAP.PROMO_NO = #{bean.promoNo, jdbcType = VARCHAR}
+			AND OOP.ORDER_PRDT_STAT_CODE in (
+												 '10001' -- 입금대기
+												,'10002'	--	결제완료
+												,'10003'	--	상품준비중
+												,'10004'	--	상품출고
+												,'10005'	--	배송중
+												,'10006'	--	픽업준비완료
+												,'10007'	--	배송완료
+												,'10008'	--	구매확정
+											 )
+		) ORD
+    </select>
+
+	<select id="selectPromotionStatusListExcel" parameterType="pageable" resultType="kr.co.abcmart.bo.promotion.model.master.PrPromotion">
+    	/*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionDao.selectPromotionStatusListExcel [프로모션 현황 엑셀 쿼리] [방난기] */
+	   SELECT
+				  OO.SITE_NO  				AS SITE_NO
+				, (SELECT SITE_NAME
+						  FROM SY_SITE WITH(NOLOCK)
+						 WHERE SITE_NO = OO.SITE_NO) AS SITE_NAME
+				, OO.ORDER_NO
+				, DBO.FN_CODE_VALUE('DEVICE_CODE', OO.DEVICE_CODE) AS DEVICE_CODE_NAME
+				, OOP.PRDT_NAME  			AS PRODUCT_NAME
+				, OOP.ORDER_QTY  			AS PRODUCT_COUNT
+				, OOP.PRDT_NORMAL_AMT 		AS ORD_NORMAL_AMT -- 정상가
+				, OOP.TOTAL_DSCNT_AMT 		AS ORD_DSCNT_AMT -- 할인가
+				, OOP.ORDER_AMT 			AS ORD_PAYMENT -- 결제금액
+				, DBO.FN_CODE_VALUE('ORDER_PRDT_STAT_CODE', OOP.ORDER_PRDT_STAT_CODE) AS ORDER_STAT_CODE_NAME
+			FROM OC_ORDER OO WITH(NOLOCK)
+			INNER JOIN OC_ORDER_PRODUCT_APPLY_PROMOTION OOPAP WITH(NOLOCK) on  OO.ORDER_NO = OOPAP.ORDER_NO
+			INNER JOIN OC_ORDER_PRODUCT OOP WITH(NOLOCK) ON OOPAP.ORDER_NO = OOP.ORDER_NO and OOPAP.ORDER_PRDT_SEQ = OOP.ORDER_PRDT_SEQ
+			WHERE  OOPAP.PROMO_NO = #{bean.promoNo, jdbcType = VARCHAR}
+			AND OOP.ORDER_PRDT_STAT_CODE in (
+												 '10001' -- 입금대기
+												,'10002'	--	결제완료
+												,'10003'	--	상품준비중
+												,'10004'	--	상품출고
+												,'10005'	--	배송중
+												,'10006'	--	픽업준비완료
+												,'10007'	--	배송완료
+												,'10008'	--	구매확정
+											 )
+		    ORDER BY OO.ORDER_NO
+    </select>
+
+    <sql id="whereSql">
+    	<where>
+    		<if test='bean.dateType != null and bean.dateType != ""'>
+				<if test='bean.dateType == "promoStartYmd"'>
+					<if test='bean.startYmd != null and bean.startYmd != ""'>
+						AND CONVERT(DATETIME, PP.PROMO_START_DTM) >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})
+					</if>
+
+					<if test='bean.endYmd != null and bean.endYmd != ""'>
+						AND CONVERT(DATETIME, CONCAT(#{bean.endYmd, jdbcType=VARCHAR}, ' 23:59:59')) >= CONVERT(DATETIME, PP.PROMO_START_DTM)
+					</if>
+				</if>
+				<if test='bean.dateType == "promoEndYmd"'>
+					<if test='bean.startYmd != null and bean.startYmd != ""'>
+						AND CONVERT(DATETIME, PP.PROMO_END_DTM) >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})
+					</if>
+					<if test='bean.endYmd != null and bean.endYmd != ""'>
+						AND CONVERT(DATETIME, CONCAT(#{bean.endYmd, jdbcType=VARCHAR}, ' 23:59:59')) >= CONVERT(DATETIME, PP.PROMO_END_DTM)
+					</if>
+				</if>
+				<if test='bean.dateType == "rgster"'>
+					<if test='bean.startYmd != null and bean.startYmd != ""'>
+						AND PP.RGST_DTM >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})
+					</if>
+					<if test='bean.endYmd != null and bean.endYmd != ""'>
+						AND CONVERT(DATETIME, CONCAT(#{bean.endYmd, jdbcType=VARCHAR}, ' 23:59:59')) >= PP.RGST_DTM
+					</if>
+				</if>
+				<if test='bean.dateType == "moder"'>
+					<if test='bean.startYmd != null and bean.startYmd != ""'>
+						AND PP.MOD_DTM >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})
+					</if>
+					<if test='bean.endYmd != null and bean.endYmd != ""'>
+						AND CONVERT(DATETIME, CONCAT(#{bean.endYmd, jdbcType=VARCHAR}, ' 23:59:59')) >= PP.MOD_DTM
+					</if>
+				</if>
+			</if>
+			<if test='bean.promoTypeCode != null and bean.promoTypeCode != ""'>
+				AND PP.PROMO_TYPE_CODE = #{bean.promoTypeCode, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.useYn != null and bean.useYn != ""'>
+				AND PP.USE_YN = #{bean.useYn, jdbcType=CHAR}
+			</if>
+			<if test='bean.chnnlNos != null and bean.chnnlNos.length > 0'>
+				AND EXISTS
+				(
+					SELECT PPTC.PROMO_NO FROM PR_PROMOTION_TARGET_CHANNEL PPTC WITH(NOLOCK) WHERE PP.PROMO_NO = PPTC.PROMO_NO
+					AND PPTC.CHNNL_NO IN
+					<foreach collection="bean.chnnlNos" item="chnnlNo" open="(" close=")" separator=",">
+						#{chnnlNo}
+					</foreach>
+				)
+			</if>
+			<if test='bean.deviceCodes != null and bean.deviceCodes.length > 0'>
+				AND EXISTS
+				(
+					SELECT PPTD.PROMO_NO FROM PR_PROMOTION_TARGET_DEVICE PPTD WITH(NOLOCK) WHERE PP.PROMO_NO = PPTD.PROMO_NO
+					AND PPTD.DEVICE_CODE IN
+					<foreach collection="bean.deviceCodes" item="deviceCode" open="(" close=")" separator=",">
+						#{deviceCode}
+					</foreach>
+				)
+			</if>
+			<if test='bean.memberTypeCodes != null or bean.empYn != null'>
+				AND EXISTS
+				(
+					SELECT PPTG.PROMO_NO FROM PR_PROMOTION_TARGET_GRADE PPTG WITH(NOLOCK)
+					<where>
+						<if test='bean.memberTypeCodes != null'>
+							AND (PP.PROMO_NO = PPTG.PROMO_NO AND PPTG.MEMBER_TYPE_CODE IN
+							<foreach collection="bean.memberTypeCodes" item="memberTypeCode" open="(" close=")" separator=",">
+								#{memberTypeCode}
+							</foreach>
+							AND PPTG.EMP_YN = 'N')
+						</if>
+						<if test='bean.empYn != null and bean.empYn == "Y" '>
+							OR (PP.PROMO_NO = PPTG.PROMO_NO AND PPTG.EMP_YN = 'Y')
+						</if>
+					</where>
+					<!-- <if test='bean.mbshpGradeCodes != null'>
+						AND PPTG.MBSHP_GRADE_CODE IN
+						<foreach collection="bean.mbshpGradeCodes" item="mbshpGradeCode" open="(" close=")" separator=",">
+							#{mbshpGradeCode}
+						</foreach>
+					</if> -->
+				)
+			</if>
+			<if test='bean.promoProgressStatus != null and bean.promoProgressStatus != ""'>
+				<choose>
+					<when test='bean.promoProgressStatus == "wait"'>AND PP.PROMO_START_DTM <![CDATA[>]]> getDate()</when>
+					<when test='bean.promoProgressStatus == "ing"'>AND PP.PROMO_START_DTM <![CDATA[<=]]> getDate() AND PP.PROMO_END_DTM <![CDATA[>=]]> getDate()</when>
+					<otherwise>AND PP.PROMO_END_DTM <![CDATA[<]]> getDate()</otherwise>
+				</choose>
+			</if>
+			<if test='bean.prdtNo != null and bean.prdtNo != "" '>
+				AND EXISTS
+				(
+					SELECT PPTP.PROMO_NO FROM PR_PROMOTION_TARGET_PRODUCT PPTP WITH(NOLOCK) WHERE PP.PROMO_NO = PPTP.PROMO_NO
+					AND PPTP.PRDT_NO = #{bean.prdtNo, jdbcType=VARCHAR}
+				)
+			</if>
+			<if test='bean.keywordType != null and bean.keywordType != ""'>
+				<choose>
+					<when test='bean.keywordType == "promoNo"'>
+						AND PP.PROMO_NO LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+					</when>
+					<when test='bean.keywordType == "promoName"'>
+						AND PP.PROMO_NAME LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+					</when>
+				</choose>
+			</if>
+    	</where>
+    </sql>
+
+    <select id="selectTargetProductFreeGift" parameterType="kr.co.abcmart.bo.product.model.master.PdFreeGift" resultType="kr.co.abcmart.bo.product.model.master.PdFreeGift">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductDao.selectTargetProductFreeGift [프로모션에서 쓰일 사은품 목록 조회 쿼리] [황성준] */
+		SELECT
+			  A.prdt_no, A.prdt_name, A.disp_yn, A.mod_dtm
+			, C.admin_name AS moder_name
+			, C.login_id AS moder_id
+			, PO.use_yn, PO.total_stock_qty, PO.total_order_qty, PO.order_psblt_qty
+			, B.event_limit_qty ,B.cmsn_rate ,B.max_event_limit_qty
+		FROM
+			pd_product A WITH(NOLOCK)
+			JOIN PD_PRODUCT_OPTION PO WITH(NOLOCK)
+			ON A.prdt_no = PO.prdt_no
+			JOIN pr_promotion_target_product B WITH(NOLOCK)
+			ON A.prdt_no = B.prdt_no
+			AND B.prdt_type = 'G'
+			LEFT JOIN sy_admin C WITH(NOLOCK)
+			ON C.admin_no = A.moder_no
+		<where>
+			<!-- 사은품ID -->
+			<if test="promoNo != null and promoNo != ''">
+				AND B.promo_no = #{promoNo, jdbcType=VARCHAR}
+			</if>
+
+			<!-- 사은품ID -->
+			<if test="prdtNo != null and prdtNo != ''">
+				AND A.prdt_no = #{prdtNo, jdbcType=VARCHAR}
+			</if>
+			<!-- 사은품명 -->
+			<if test="prdtName != null and prdtName != ''">
+				AND A.prdt_name = #{prdtName, jdbcType=VARCHAR}
+			</if>
+			<!-- 전시여부 -->
+			<if test="dispYn != null and dispYn != ''">
+				AND A.disp_yn = #{dispYn, jdbcType=CHAR}
+			</if>
+				AND
+					A.prdt_type_code = '10003'
+				AND
+					PO.prdt_optn_no = '001'
+				AND
+					PO.optn_name = '사은품'
+				<!-- AND
+					PO.use_yn =  'Y' -->
+		</where>
+		ORDER BY
+			A.prdt_no DESC
+    </select>
+
+    <resultMap type="kr.co.abcmart.bo.promotion.model.master.PrPromotion" id="promotionOneToMany">
+    	<id property="promoNo" column="promo_no" />
+    	<collection property="prPromotionTargetGradeList" column="promo_no" ofType="java.lang.String" select="kr.co.abcmart.bo.promotion.repository.master.PrPromotionTargetGradeDao.selectPrPromotionTargetGradeListByPromoNo"/>
+    	<collection property="prPromotionTargetDeviceList" column="promo_no" ofType="java.lang.String" select="kr.co.abcmart.bo.promotion.repository.master.PrPromotionTargetDeviceDao.selectPrPromotionDeviceListByPromoNo"/>
+    </resultMap>
+
+    <select id="selectPromotionProductList" parameterType="Pageable" resultMap="promotionOneToMany">
+    	/*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionDao.selectPromotionProductList [프로모션 상품 목록 조회] [황성준] */
+    	SELECT PP.*
+    		 , B.prdt_type, B.event_limit_qty, B.cmsn_rate
+    		 , C.admin_name AS moder_name
+    		 , C.login_id AS moder_id
+    	FROM pr_promotion PP WITH(NOLOCK)
+    	JOIN pr_promotion_target_product B WITH(NOLOCK)
+    	ON PP.promo_no = B.promo_no
+    	AND B.prdt_no = #{bean.prdtNo, jdbcType=VARCHAR}
+    	AND B.prdt_type = #{bean.prdtType, jdbcType=VARCHAR}
+    	JOIN sy_admin C WITH(NOLOCK)
+    	ON PP.moder_no = C.admin_no
+    	<where>
+    		<if test='bean.promoTypeCode != null and bean.promoTypeCode != ""'>
+    			PP.promo_type_code = #{bean.promoTypeCode, jdbcType=VARCHAR}
+    		</if>
+    	</where>
+    	ORDER BY PP.promo_no
+		<include refid="Paging.mssql" />
+	</select>
+
+	<resultMap type="kr.co.abcmart.bo.promotion.model.master.PrPromotion" id="promotionProductOneToMany">
+    	<id property="promoNo" column="promo_no" />
+    	<collection property="prPromotionTargetProductList" column="promo_no" ofType="java.lang.String" select="kr.co.abcmart.bo.promotion.repository.master.PrPromotionTargetProductDao.selectByPromoNo"/>
+    </resultMap>
+
+	<select id="selectPromotionProduct" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPromotion" resultMap="promotionProductOneToMany">
+    	/*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionDao.selectPromotionProductList [프로모션 상품 목록 조회] [황성준] */
+    	SELECT PP.*
+    	FROM pr_promotion PP WITH(NOLOCK)
+    	<where>
+    		AND PP.promo_no = #{promoNo, jdbcType=VARCHAR}
+    	</where>
+	</select>
+
+	<select id="selectPromotionProductCount" parameterType="Pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionDao.selectPromotionProductCount [프로모션 상품 갯수 조회] [황성준] */
+    	SELECT
+    		<include refid="Paging.totalCount" />
+    	FROM pr_promotion PP WITH(NOLOCK)
+    	JOIN pr_promotion_target_product B WITH(NOLOCK)
+    	ON PP.promo_no = B.promo_no
+    	AND B.prdt_no = #{bean.prdtNo, jdbcType=VARCHAR}
+    	AND B.prdt_type = #{bean.prdtType, jdbcType=VARCHAR}
+    	JOIN sy_admin C WITH(NOLOCK)
+    	ON PP.moder_no = C.admin_no
+    	<where>
+    		<if test='bean.promoTypeCode != null and bean.promoTypeCode != ""'>
+    			PP.promo_type_code = #{bean.promoTypeCode, jdbcType=VARCHAR}
+    		</if>
+    	</where>
+	</select>
+
+	<select id="selectPrdtNoByPromoList" parameterType="String" resultType="kr.co.abcmart.bo.promotion.model.master.PrPromotion">
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionDao.selectPrdtNoByPromoList [상품번호에 의한 프로모션 조회] [이지훈] */
+		SELECT
+			PP.PROMO_NO
+			,PP.PROMO_NAME
+			,PP.PROMO_TYPE_CODE
+			,PP.PROMO_START_DTM
+			,PP.PROMO_END_DTM
+			,PP.STOCK_DDCT_TYPE
+			,PP.CPN_SMTM_APPLY_PSBLT_YN
+			,PP.IMDTL_DSCNT_TYPE
+			,PP.IMDTL_DSCNT_VALUE
+			,PP.PROMO_APPLY_TYPE
+			,PP.AFFLTS_CODE
+			,PP.INSD_MGMT_INFO_TEXT
+			,PP.USE_YN, NOTE_TEXT
+			,PP.RGSTER_NO
+			,PP.RGST_DTM
+			,PP.MODER_NO
+			,PP.MOD_DTM
+		FROM
+			PR_PROMOTION PP WITH(NOLOCK)
+		INNER JOIN PR_PROMOTION_TARGET_PRODUCT PPTP WITH(NOLOCK)
+					ON PP.PROMO_NO = PPTP.PROMO_NO
+				  AND PPTP.PRDT_NO = #{prdtNo, jdbcType=VARCHAR}
+		WHERE PP.USE_YN = 'Y'
+			AND GETDATE() BETWEEN PP.PROMO_START_DTM AND PP.PROMO_END_DTM
+    </select>
+
+</mapper>

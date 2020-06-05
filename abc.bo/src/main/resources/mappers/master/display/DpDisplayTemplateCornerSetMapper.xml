@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.display.repository.master.DpDisplayTemplateCornerSetDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.display.model.master.DpDisplayTemplateCornerSet">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayTemplateCornerSetDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			dp_display_template_corner_set
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <insert id="insertTemplateCornerSet" parameterType="kr.co.abcmart.bo.display.model.master.DpDisplayTemplateCornerSet">	
+
+     /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayTemplateCornerSetDao.insertTemplateCornerSet [전시템플릿코너셋 저장] [박민우] */
+		INSERT INTO DP_DISPLAY_TEMPLATE_CORNER_SET
+			 ( disp_tmpl_no, disp_tmpl_corner_seq, disp_tmpl_corner_set_seq, cont_type_code, disp_cont_count, sort_seq, rgster_no, rgst_dtm, moder_no, mod_dtm ) 
+
+		VALUES 
+			 ( #{dispTmplNo, jdbcType=VARCHAR}, #{dispTmplCornerSeq, jdbcType=INTEGER}, #{dispTmplCornerSetSeq, jdbcType=INTEGER}, #{contTypeCode, jdbcType=VARCHAR}, #{dispContCount, jdbcType=INTEGER}, #{sortSeq, jdbcType=INTEGER}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <select id="selectTemplateCornerSet" parameterType="kr.co.abcmart.bo.display.model.master.DpDisplayTemplateCornerSet" resultType="kr.co.abcmart.bo.display.model.master.DpDisplayTemplateCornerSet">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayTemplateCornerSetDao.selectTemplateCornerSet [전시템플릿코너 리스트 조회] [박민우] */
+    
+		SELECT 
+			 <include refid="select-columns" />,
+			 DBO.FN_CODE_VALUE('CONT_TYPE_CODE', cont_type_code) as CONT_TYPE_CODE_NAME
+		FROM 
+			dp_display_template_corner_set WITH(NOLOCK)
+		<where> 
+			<if test="dispTmplNo != null"> 
+				 disp_tmpl_no = #{dispTmplNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="dispTmplCornerSeq != null"> 
+				 AND disp_tmpl_corner_seq = #{dispTmplCornerSeq, jdbcType=INTEGER}
+			</if> 
+		</where>
+		ORDER BY sort_seq  
+    </select>
+    
+    <delete id="deleteCornerSetByDispTmplCornerSeqArr" parameterType="kr.co.abcmart.bo.display.model.master.DpDisplayTemplateCorner">
+     /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayTemplateCornerSetDao.deleteCornerSetByDispTmplCornerSeqArr [코너 세트 삭제] [박민우] */
+     
+		DELETE FROM dp_display_template_corner_set
+		WHERE 
+			 <if test="dispTmplCornerSeqArr != null and dispTmplCornerSeqArr.length > 0">
+			disp_tmpl_corner_seq in 
+			<foreach item="item" index="index" collection="dispTmplCornerSeqArr" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+			</if>  
+    </delete>
+
+</mapper>

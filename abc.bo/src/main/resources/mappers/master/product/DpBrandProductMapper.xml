@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.DpBrandProductDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.product.model.master.DpBrandProduct">
+
+     /*+ kr.co.abcmart.bo.product.repository.master.DpBrandProductDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			dp_brand_product WITH(NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+	<insert id="insertBrandProduct" parameterType="kr.co.abcmart.bo.product.model.master.DpBrandProduct">
+		/*+ kr.co.abcmart.bo.product.repository.master.DpBrandStyleProductDao.insertBrandStyleProduct [브랜드 스타일 대상 상품저장 쿼리] [백인천] */
+		INSERT INTO dp_brand_product
+			 ( brand_no, brand_style_seq, prdt_no, sort_seq, rgster_no, rgst_dtm )
+		VALUES
+			 ( #{brandNo, jdbcType=VARCHAR}, #{brandStyleSeq, jdbcType=INTEGER}, #{prdtNo, jdbcType=VARCHAR}, #{sortSeq, jdbcType=INTEGER}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )
+    </insert>
+
+
+
+    <select id="selectBrandProduct" parameterType="pageable" resultType="kr.co.abcmart.bo.product.model.master.DpBrandProduct">
+    	/*+ kr.co.abcmart.bo.product.repository.master.DpBrandProductDao.selectBrandProduct [브랜드 비주얼 대상상품 목록 조회 쿼리] [백인천] */
+    	SELECT
+			A.BRAND_NO,
+			A.BRAND_BANNER_SEQ,
+			A.prdt_no,
+			A.sort_seq,
+			B.prdt_no,
+			B.prdt_name,
+			B.vndr_prdt_no_text,
+			E.image_name as title_image_name,
+			E.image_path_text as title_image_path_text,
+			E.image_url as title_image_url,
+			B.std_ctgr_no,
+			C.std_ctgr_name,
+			D.chnnl_name,
+			B.sell_stat_code,
+			B.disp_yn
+		FROM dp_brand_product A with(nolock)
+			JOIN pd_product B with(nolock) ON A.prdt_no = B.prdt_no
+			LEFT JOIN sy_standard_category C with(nolock) ON B.std_ctgr_no = C.std_ctgr_no
+			JOIN sy_site_chnnl D with(nolock) ON B.chnnl_no = D.chnnl_no
+			JOIN pd_product_relation_file E with(nolock) ON B.prdt_no = E.prdt_no and E.prdt_rltn_file_seq = 1
+    	<where>
+			<if test='bean.brandNo != null and bean.brandNo != ""'>
+				AND A.brand_no = #{bean.brandNo, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.brandBannerSeq != null and bean.brandBannerSeq != ""'>
+				AND A.brand_banner_seq = #{bean.brandBannerSeq, jdbcType=VARCHAR}
+			</if>
+		</where>
+    	ORDER BY
+			A.brand_banner_seq ASC
+		<include refid="Paging.mssql" />
+
+    </select>
+
+    <select id="selectBrandProductCount" parameterType="pageable" resultType="java.lang.Integer">
+	    /*+ kr.co.abcmart.bo.product.repository.master.DpBrandProductDao.selectBrandProductCount [브랜드 비주얼 대상상품 목록 갯수 조회 쿼리] [백인천] */
+    	SELECT
+    		<include refid="Paging.totalCount" />
+    	FROM dp_brand_product A with(nolock)
+			JOIN pd_product B with(nolock) ON A.prdt_no = B.prdt_no
+			LEFT JOIN sy_standard_category C with(nolock) ON B.std_ctgr_no = C.std_ctgr_no
+			JOIN sy_site_chnnl D with(nolock) ON B.chnnl_no = D.chnnl_no
+			JOIN pd_product_relation_file E with(nolock) ON B.prdt_no = E.prdt_no and E.prdt_rltn_file_seq = 1
+    	<where>
+			<if test='bean.brandNo != null and bean.brandNo != ""'>
+				AND A.brand_no = #{bean.brandNo, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.brandBannerSeq != null and bean.brandBannerSeq != ""'>
+				AND A.brand_banner_seq = #{bean.brandBannerSeq, jdbcType=VARCHAR}
+			</if>
+		</where>
+
+    </select>
+
+	<delete id="deleteBrandProduct" parameterType="kr.co.abcmart.bo.product.model.master.DpBrandProduct">
+     /*+ kr.co.abcmart.bo.product.repository.master.DpBrandProductDao.deleteBrandProduct [비주얼 대상상품 삭제] [백인천] */
+
+		DELETE FROM dp_brand_product
+		WHERE
+			 brand_banner_seq = #{brandBannerSeq, jdbcType=INTEGER} AND brand_no = #{brandNo, jdbcType=VARCHAR}
+    </delete>
+    
+	<select id="selectDuplicateBannerCheckCount" parameterType="kr.co.abcmart.bo.product.model.master.DpBrandProduct" resultType="java.lang.Integer">
+     /*+ kr.co.abcmart.bo.product.repository.master.DpBrandProductDao.selectDuplicateBannerCheckCount [타 브랜드 배너 비주얼 대상상품 체크] [이지훈] */
+		SELECT 
+			COUNT(*) 
+		FROM dp_brand_product
+		WHERE brand_no = #{brandNo, jdbcType=VARCHAR}
+			AND brand_banner_seq != #{brandBannerSeq, jdbcType=INTEGER} <!-- 자기자신제외한 타 브랜드 상품 체크 -->
+			AND prdt_no = #{prdtNo, jdbcType=VARCHAR}
+    </select>
+</mapper>

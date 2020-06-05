@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyAdminDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	admin_no, login_id, admin_name, pswd_text, pswd_salt_text, vndr_no, vndr_mngr_no, store_no, tel_no_text, hdphn_no_text, email_addr_text, member_info_mgmt_yn, batch_error_alert_yn, last_login_dtm, last_login_ip_text, login_fail_count, pswd_chng_dtm, use_yn, pswd_init_yn, pswd_dscord_yn, long_unused_yn, ctlg_app_uid_text, session_id, rgster_no, rgst_dtm, moder_no, mod_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	admin_no = #{adminNo, jdbcType=VARCHAR}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.system.model.master.SyAdmin" resultType="kr.co.abcmart.bo.system.model.master.SyAdmin">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyAdminDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			sy_admin WITH (NOLOCK)
+
+		<where> 
+			<if test="adminNo != null"> 
+				 admin_no = #{adminNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="loginId != null"> 
+				 AND login_id = #{loginId, jdbcType=VARCHAR}
+			</if> 
+			<if test="adminName != null"> 
+				 AND admin_name = #{adminName, jdbcType=VARCHAR}
+			</if> 
+			<if test="pswdText != null"> 
+				 AND pswd_text = #{pswdText, jdbcType=VARCHAR}
+			</if> 
+			<if test="pswdSaltText != null"> 
+				 AND pswd_salt_text = #{pswdSaltText, jdbcType=VARCHAR}
+			</if> 
+			<if test="vndrNo != null"> 
+				 AND vndr_no = #{vndrNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="vndrMngrNo != null"> 
+				 AND vndr_mngr_no = #{vndrMngrNo, jdbcType=TINYINT}
+			</if> 
+			<if test="storeNo != null"> 
+				 AND store_no = #{storeNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="telNoText != null"> 
+				 AND tel_no_text = #{telNoText, jdbcType=VARCHAR}
+			</if> 
+			<if test="hdphnNoText != null"> 
+				 AND hdphn_no_text = #{hdphnNoText, jdbcType=VARCHAR}
+			</if> 
+			<if test="emailAddrText != null"> 
+				 AND email_addr_text = #{emailAddrText, jdbcType=VARCHAR}
+			</if> 
+			<if test="memberInfoMgmtYn != null"> 
+				 AND member_info_mgmt_yn = #{memberInfoMgmtYn, jdbcType=CHAR}
+			</if> 
+			<if test="batchErrorAlertYn != null"> 
+				 AND batch_error_alert_yn = #{batchErrorAlertYn, jdbcType=CHAR}
+			</if> 
+			<if test="lastLoginDtm != null"> 
+				 AND last_login_dtm = #{lastLoginDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="lastLoginIpText != null"> 
+				 AND last_login_ip_text = #{lastLoginIpText, jdbcType=VARCHAR}
+			</if> 
+			<if test="loginFailCount != null"> 
+				 AND login_fail_count = #{loginFailCount, jdbcType=TINYINT}
+			</if> 
+			<if test="pswdChngDtm != null"> 
+				 AND pswd_chng_dtm = #{pswdChngDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="useYn != null"> 
+				 AND use_yn = #{useYn, jdbcType=CHAR}
+			</if> 
+			<if test="pswdInitYn != null"> 
+				 AND pswd_init_yn = #{pswdInitYn, jdbcType=CHAR}
+			</if> 
+			<if test="pswdDscordYn != null"> 
+				 AND pswd_dscord_yn = #{pswdDscordYn, jdbcType=CHAR}
+			</if> 
+			<if test="longUnusedYn != null"> 
+				 AND long_unused_yn = #{longUnusedYn, jdbcType=CHAR}
+			</if> 
+			<if test="ctlgAppUidText != null"> 
+				 AND ctlg_app_uid_text = #{ctlgAppUidText, jdbcType=VARCHAR}
+			</if> 
+			<if test="sessionId != null"> 
+				 AND session_id = #{sessionId, jdbcType=VARCHAR}
+			</if> 
+			<if test="rgsterNo != null"> 
+				 AND rgster_no = #{rgsterNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="rgstDtm != null"> 
+				 AND rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="moderNo != null"> 
+				 AND moder_no = #{moderNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="modDtm != null"> 
+				 AND mod_dtm = #{modDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <insert id="insert" parameterType="kr.co.abcmart.bo.system.model.master.SyAdmin">	
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SyAdminDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO sy_admin
+			 ( admin_no, login_id, admin_name, pswd_text, pswd_salt_text, vndr_no, vndr_mngr_no, store_no, tel_no_text, hdphn_no_text, email_addr_text, member_info_mgmt_yn, batch_error_alert_yn, last_login_dtm, last_login_ip_text, login_fail_count, pswd_chng_dtm, use_yn, pswd_init_yn, pswd_dscord_yn, long_unused_yn, ctlg_app_uid_text, session_id, rgster_no, rgst_dtm, moder_no, mod_dtm ) 
+
+		VALUES 
+			 ( #{adminNo, jdbcType=VARCHAR}, #{loginId, jdbcType=VARCHAR}, #{adminName, jdbcType=VARCHAR}, #{pswdText, jdbcType=VARCHAR}, #{pswdSaltText, jdbcType=VARCHAR}, #{vndrNo, jdbcType=VARCHAR}, #{vndrMngrNo, jdbcType=TINYINT}, #{storeNo, jdbcType=VARCHAR}, #{telNoText, jdbcType=VARCHAR}, #{hdphnNoText, jdbcType=VARCHAR}, #{emailAddrText, jdbcType=VARCHAR}, #{memberInfoMgmtYn, jdbcType=CHAR}, #{batchErrorAlertYn, jdbcType=CHAR}, <choose><when test="lastLoginDtm != null">#{lastLoginDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{lastLoginIpText, jdbcType=VARCHAR}, #{loginFailCount, jdbcType=TINYINT}, <choose><when test="pswdChngDtm != null">#{pswdChngDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{useYn, jdbcType=CHAR}, #{pswdInitYn, jdbcType=CHAR}, #{pswdDscordYn, jdbcType=CHAR}, #{longUnusedYn, jdbcType=CHAR}, #{ctlgAppUidText, jdbcType=VARCHAR}, #{sessionId, jdbcType=VARCHAR}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.system.model.master.SyAdmin">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyAdminDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE sy_admin
+		<set> 
+			<if test="adminNo != null"> 
+				admin_no = #{adminNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="loginId != null"> 
+				login_id = #{loginId, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="adminName != null"> 
+				admin_name = #{adminName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="pswdText != null"> 
+				pswd_text = #{pswdText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="pswdSaltText != null"> 
+				pswd_salt_text = #{pswdSaltText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="vndrNo != null"> 
+				vndr_no = #{vndrNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="vndrMngrNo != null"> 
+				vndr_mngr_no = #{vndrMngrNo, jdbcType=TINYINT}, 
+			</if> 
+			<if test="storeNo != null"> 
+				store_no = #{storeNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="telNoText != null"> 
+				tel_no_text = #{telNoText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="hdphnNoText != null"> 
+				hdphn_no_text = #{hdphnNoText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="emailAddrText != null"> 
+				email_addr_text = #{emailAddrText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="memberInfoMgmtYn != null"> 
+				member_info_mgmt_yn = #{memberInfoMgmtYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="batchErrorAlertYn != null"> 
+				batch_error_alert_yn = #{batchErrorAlertYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="lastLoginDtm != null"> 
+				last_login_dtm = #{lastLoginDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="lastLoginIpText != null"> 
+				last_login_ip_text = #{lastLoginIpText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="loginFailCount != null"> 
+				login_fail_count = #{loginFailCount, jdbcType=TINYINT}, 
+			</if> 
+			<if test="pswdChngDtm != null"> 
+				pswd_chng_dtm = #{pswdChngDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="useYn != null"> 
+				use_yn = #{useYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="pswdInitYn != null"> 
+				pswd_init_yn = #{pswdInitYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="pswdDscordYn != null"> 
+				pswd_dscord_yn = #{pswdDscordYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="longUnusedYn != null"> 
+				long_unused_yn = #{longUnusedYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="ctlgAppUidText != null"> 
+				ctlg_app_uid_text = #{ctlgAppUidText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="sessionId != null"> 
+				session_id = #{sessionId, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgsterNo != null"> 
+				rgster_no = #{rgsterNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 admin_no = #{adminNo, jdbcType=VARCHAR}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.system.model.master.SyAdmin">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyAdminDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM sy_admin
+		WHERE 
+			 admin_no = #{adminNo, jdbcType=VARCHAR}  
+    </delete>
+</mapper>

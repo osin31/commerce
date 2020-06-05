@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.event.repository.master.EvEventRouletteBenefitDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.event.model.master.EvEventRouletteBenefit">
+
+     /*+ kr.co.abcmart.bo.event.repository.master.EvEventRouletteBenefitDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			EV_EVENT_ROULETTE_BENEFIT
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectEvEventRouletteBenefitListByEventNo" parameterType="String" resultType="kr.co.abcmart.bo.event.model.master.EvEventRouletteBenefit">
+	/*+ kr.co.abcmart.bo.event.repository.master.EvEventRouletteBenefitDao.selectEvEventRouletteBenefitListByEventNo [이벤트 룰렛 조회 쿼리] [이지훈] */
+
+		SELECT A.EVENT_NO
+			 , A.EVENT_RULET_BENEFIT_SEQ
+			 , A.BENEFIT_NAME
+			 , A.BENEFIT_GBN_CODE
+			 , A.BENEFIT_VALUE
+			 , A.IMAGE_NAME
+			 , A.IMAGE_PATH_TEXT
+			 , A.IMAGE_URL
+			 , A.ALTRN_TEXT
+			 , A.ISSUE_LIMIT_COUNT
+			 , ISNULL(B.ISSUE_COUNT, 0) AS ISSUE_COUNT
+			 , A.WIN_RATE_CODE
+			 , A.WIN_RATE_VALUE
+			 , A.WIN_RATE
+			 , CASE WHEN A.BENEFIT_GBN_CODE = '10000'
+						THEN (SELECT CPN_NAME FROM PR_COUPON WHERE CPN_NO = BENEFIT_VALUE)
+						ELSE '-'
+			   END AS CPN_NAME
+			 , DBO.FN_CODE_VALUE('BENEFIT_GBN_CODE', A.BENEFIT_GBN_CODE) AS BENEFIT_GBN_CODE_NAME
+		  FROM EV_EVENT_ROULETTE_BENEFIT A WITH(NOLOCK)
+		  LEFT OUTER JOIN (SELECT COUNT(*) AS ISSUE_COUNT, EVENT_RSLT_BENEFIT_SEQ
+							 FROM EV_EVENT_RESULT_BENEFIT_MEMBER B WITH(NOLOCK)
+							WHERE B.EVENT_NO = #{eventNo, jdbcType=VARCHAR}
+							GROUP BY B.EVENT_RSLT_BENEFIT_SEQ
+			)B
+			ON A.EVENT_RULET_BENEFIT_SEQ = B.EVENT_RSLT_BENEFIT_SEQ
+		 WHERE A.EVENT_NO = #{eventNo, jdbcType=VARCHAR}
+    </select>
+
+    <insert id="insertEvEventRouletteBenefit" parameterType="kr.co.abcmart.bo.event.model.master.EvEventRouletteBenefit">
+    /*+ kr.co.abcmart.bo.event.repository.master.EvEventRouletteBenefitDao.insertEvEventRouletteBenefit [이벤트 룰렛 등록 쿼리] [이지훈] */
+    	INSERT
+			INTO
+				EV_EVENT_ROULETTE_BENEFIT (
+				EVENT_NO
+				,EVENT_RULET_BENEFIT_SEQ
+				,BENEFIT_NAME
+				,BENEFIT_GBN_CODE
+				,BENEFIT_VALUE
+				,IMAGE_NAME
+				,IMAGE_PATH_TEXT
+				,IMAGE_URL
+				,ALTRN_TEXT
+			<if test='issueLimitCount != null and issueLimitCount != ""'>
+				,ISSUE_LIMIT_COUNT
+			</if>
+			<if test='issueCount != null and issueCount != ""'>
+				,ISSUE_COUNT
+			</if>
+				,WIN_RATE_CODE
+			<if test='winRateValue != null and winRateValue != ""'>
+				,WIN_RATE_VALUE
+			</if>
+			<if test='winRate != null and winRate != ""'>
+				,WIN_RATE
+			</if>
+			)
+			VALUES (
+				#{eventNo, jdbcType = VARCHAR}
+				,#{eventRuletBenefitSeq, jdbcType = TINYINT}
+				,#{benefitName, jdbcType = VARCHAR}
+				,#{benefitGbnCode, jdbcType = VARCHAR}
+				,#{benefitValue, jdbcType = VARCHAR}
+				,#{imageName, jdbcType = VARCHAR}
+				,#{imagePathText, jdbcType = VARCHAR}
+				,#{imageUrl, jdbcType = VARCHAR}
+				,#{altrnText, jdbcType = VARCHAR}
+			<if test='issueLimitCount != null and issueLimitCount != ""'>
+				,#{issueLimitCount, jdbcType = INTEGER}
+			</if>
+			<if test='issueCount != null and issueCount != ""'>
+				,#{issueCount, jdbcType = INTEGER}
+			</if>
+				,#{winRateCode, jdbcType = VARCHAR}
+			<if test='winRateValue != null and winRateValue != ""'>
+				,#{winRateValue, jdbcType = TINYINT}
+			</if>
+			<if test='winRate != null and winRate != ""'>
+				,#{winRate, jdbcType = TINYINT}
+			</if>
+			)
+    </insert>
+
+    <update id="updateEvEventRouletteBenefit" parameterType="kr.co.abcmart.bo.event.model.master.EvEventRouletteBenefit">
+     /*+ kr.co.abcmart.bo.event.repository.master.EvEventRouletteBenefitDao.updateEvEventRouletteBenefit [이벤트 룰렛 수정 쿼리] [이지훈] */
+		UPDATE EV_EVENT_ROULETTE_BENEFIT
+		<set>
+			<if test="benefitName != null">
+				benefit_name = #{benefitName, jdbcType=VARCHAR},
+			</if>
+			<if test="benefitGbnCode != null">
+				benefit_gbn_code = #{benefitGbnCode, jdbcType=VARCHAR},
+			</if>
+			<if test="issueLimitCount != null">
+				issue_limit_count = #{issueLimitCount, jdbcType=INTEGER},
+			</if>
+			<if test="issueCount != null">
+				issue_count = #{issueCount, jdbcType=INTEGER},
+			</if>
+			<if test="winRateCode != null">
+				win_rate_code = #{winRateCode, jdbcType=VARCHAR},
+			</if>
+			<if test="winRateValue != null">
+				win_rate_value = #{winRateValue, jdbcType=TINYINT},
+			</if>
+			<if test="winRate != null">
+				win_rate = #{winRate, jdbcType=TINYINT},
+			</if>
+			benefit_value = #{benefitValue, jdbcType=VARCHAR},
+			image_name = #{imageName, jdbcType=VARCHAR},
+			image_path_text = #{imagePathText, jdbcType=VARCHAR},
+			image_url = #{imageUrl, jdbcType=VARCHAR},
+			altrn_text = #{altrnText, jdbcType=VARCHAR}
+		</set>
+		WHERE
+			 event_no = #{eventNo, jdbcType=VARCHAR} AND event_rulet_benefit_seq = #{eventRuletBenefitSeq, jdbcType=TINYINT}
+    </update>
+</mapper>

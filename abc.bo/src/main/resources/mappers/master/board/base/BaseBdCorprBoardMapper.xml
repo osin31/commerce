@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.board.repository.master.BdCorprBoardDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	corpr_board_seq, inqry_gbn_type, inqry_dtm, inqrer_no, vndr_no, inqry_title_text, inqry_cont_text, aswr_title_text, aswr_cont_text, vndr_inqry_yn, clm_no, clm_prdt_seq, order_no, order_prdt_seq, aswr_stat_code, aswr_no, aswr_dtm, moder_no, mod_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	corpr_board_seq = #{corprBoardSeq, jdbcType=INTEGER}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.board.model.master.BdCorprBoard" resultType="kr.co.abcmart.bo.board.model.master.BdCorprBoard">
+    
+     /*+ kr.co.abcmart.bo.board.repository.master.BdCorprBoardDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			BD_CORPR_BOARD
+		<where> 
+			<if test="corprBoardSeq != null"> 
+				 corpr_board_seq = #{corprBoardSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="inqryGbnType != null"> 
+				 AND inqry_gbn_type = #{inqryGbnType, jdbcType=CHAR}
+			</if> 
+			<if test="inqryDtm != null"> 
+				 AND inqry_dtm = #{inqryDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="inqrerNo != null"> 
+				 AND inqrer_no = #{inqrerNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="vndrNo != null"> 
+				 AND vndr_no = #{vndrNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="inqryTitleText != null"> 
+				 AND inqry_title_text = #{inqryTitleText, jdbcType=VARCHAR}
+			</if> 
+			<if test="inqryContText != null"> 
+				 AND inqry_cont_text = #{inqryContText, jdbcType=VARCHAR}
+			</if> 
+			<if test="aswrTitleText != null"> 
+				 AND aswr_title_text = #{aswrTitleText, jdbcType=VARCHAR}
+			</if> 
+			<if test="aswrContText != null"> 
+				 AND aswr_cont_text = #{aswrContText, jdbcType=VARCHAR}
+			</if> 
+			<if test="vndrInqryYn != null"> 
+				 AND vndr_inqry_yn = #{vndrInqryYn, jdbcType=CHAR}
+			</if> 
+			<if test="clmNo != null"> 
+				 AND clm_no = #{clmNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="clmPrdtSeq != null"> 
+				 AND clm_prdt_seq = #{clmPrdtSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="orderNo != null"> 
+				 AND order_no = #{orderNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="orderPrdtSeq != null"> 
+				 AND order_prdt_seq = #{orderPrdtSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="aswrStatCode != null"> 
+				 AND aswr_stat_code = #{aswrStatCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="aswrNo != null"> 
+				 AND aswr_no = #{aswrNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="aswrDtm != null"> 
+				 AND aswr_dtm = #{aswrDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="moderNo != null"> 
+				 AND moder_no = #{moderNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="modDtm != null"> 
+				 AND mod_dtm = #{modDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+	<insert id="insert" useGeneratedKeys="true" keyProperty="corprBoardSeq">
+
+     /*+ kr.co.abcmart.bo.board.repository.master.BdCorprBoardDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO BD_CORPR_BOARD
+			 ( inqry_gbn_type, inqry_dtm, inqrer_no, vndr_no, inqry_title_text, inqry_cont_text, aswr_title_text, aswr_cont_text, vndr_inqry_yn, clm_no, clm_prdt_seq, order_no, order_prdt_seq, aswr_stat_code, aswr_no, aswr_dtm, moder_no, mod_dtm ) 
+
+		VALUES 
+			 ( #{inqryGbnType, jdbcType=CHAR}, <choose><when test="inqryDtm != null">#{inqryDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{inqrerNo, jdbcType=VARCHAR}, #{vndrNo, jdbcType=VARCHAR}, #{inqryTitleText, jdbcType=VARCHAR}, #{inqryContText, jdbcType=VARCHAR}, #{aswrTitleText, jdbcType=VARCHAR}, #{aswrContText, jdbcType=VARCHAR}, #{vndrInqryYn, jdbcType=CHAR}, #{clmNo, jdbcType=VARCHAR}, #{clmPrdtSeq, jdbcType=INTEGER}, #{orderNo, jdbcType=VARCHAR}, #{orderPrdtSeq, jdbcType=INTEGER}, #{aswrStatCode, jdbcType=VARCHAR}, #{aswrNo, jdbcType=VARCHAR}, <choose><when test="aswrDtm != null">#{aswrDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.board.model.master.BdCorprBoard">
+    
+     /*+ kr.co.abcmart.bo.board.repository.master.BdCorprBoardDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE BD_CORPR_BOARD
+		<set> 
+			<if test="corprBoardSeq != null"> 
+				corpr_board_seq = #{corprBoardSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="inqryGbnType != null"> 
+				inqry_gbn_type = #{inqryGbnType, jdbcType=CHAR}, 
+			</if> 
+			<if test="inqryDtm != null"> 
+				inqry_dtm = #{inqryDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="inqrerNo != null"> 
+				inqrer_no = #{inqrerNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="vndrNo != null"> 
+				vndr_no = #{vndrNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="inqryTitleText != null"> 
+				inqry_title_text = #{inqryTitleText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="inqryContText != null"> 
+				inqry_cont_text = #{inqryContText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="aswrTitleText != null"> 
+				aswr_title_text = #{aswrTitleText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="aswrContText != null"> 
+				aswr_cont_text = #{aswrContText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="vndrInqryYn != null"> 
+				vndr_inqry_yn = #{vndrInqryYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="clmNo != null"> 
+				clm_no = #{clmNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="clmPrdtSeq != null"> 
+				clm_prdt_seq = #{clmPrdtSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="orderNo != null"> 
+				order_no = #{orderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="orderPrdtSeq != null"> 
+				order_prdt_seq = #{orderPrdtSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="aswrStatCode != null"> 
+				aswr_stat_code = #{aswrStatCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="aswrNo != null"> 
+				aswr_no = #{aswrNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="aswrDtm != null"> 
+				aswr_dtm = #{aswrDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 corpr_board_seq = #{corprBoardSeq, jdbcType=INTEGER}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.board.model.master.BdCorprBoard">
+    
+     /*+ kr.co.abcmart.bo.board.repository.master.BdCorprBoardDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM BD_CORPR_BOARD
+		WHERE 
+			 corpr_board_seq = #{corprBoardSeq, jdbcType=INTEGER}  
+    </delete>
+</mapper>

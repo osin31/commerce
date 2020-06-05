@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.claim.repository.master.IfBankdaDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	bkcode, bkdate, bkjukyo, bkcontent, bketc, bkinput, bkoutput, bkjango, acctno, depositinfo, depositgubun, depositdtm, depositconfirm
+    </sql>
+    
+    <sql id="pk-columns">
+    	bkcode = #{bkcode, jdbcType=INTEGER}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.claim.model.master.IfBankda" resultType="kr.co.abcmart.bo.claim.model.master.IfBankda">
+    
+     /*+ kr.co.abcmart.bo.claim.repository.master.IfBankdaDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			if_bankda
+		<where> 
+			<if test="bkcode != null"> 
+				 bkcode = #{bkcode, jdbcType=INTEGER}
+			</if> 
+			<if test="bkdate != null"> 
+				 AND bkdate = #{bkdate, jdbcType=VARCHAR}
+			</if> 
+			<if test="bkjukyo != null"> 
+				 AND bkjukyo = #{bkjukyo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bkcontent != null"> 
+				 AND bkcontent = #{bkcontent, jdbcType=VARCHAR}
+			</if> 
+			<if test="bketc != null"> 
+				 AND bketc = #{bketc, jdbcType=VARCHAR}
+			</if> 
+			<if test="bkinput != null"> 
+				 AND bkinput = #{bkinput, jdbcType=BIGINT}
+			</if> 
+			<if test="bkoutput != null"> 
+				 AND bkoutput = #{bkoutput, jdbcType=BIGINT}
+			</if> 
+			<if test="bkjango != null"> 
+				 AND bkjango = #{bkjango, jdbcType=BIGINT}
+			</if> 
+			<if test="acctno != null"> 
+				 AND acctno = #{acctno, jdbcType=VARCHAR}
+			</if> 
+			<if test="depositinfo != null"> 
+				 AND depositinfo = #{depositinfo, jdbcType=VARCHAR}
+			</if> 
+			<if test="depositgubun != null"> 
+				 AND depositgubun = #{depositgubun, jdbcType=VARCHAR}
+			</if> 
+			<if test="depositdtm != null"> 
+				 AND depositdtm = #{depositdtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="depositconfirm != null"> 
+				 AND depositconfirm = #{depositconfirm, jdbcType=CHAR}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <insert id="insert" parameterType="kr.co.abcmart.bo.claim.model.master.IfBankda">	
+
+     /*+ kr.co.abcmart.bo.claim.repository.master.IfBankdaDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO if_bankda
+			 ( bkcode, bkdate, bkjukyo, bkcontent, bketc, bkinput, bkoutput, bkjango, acctno, depositinfo, depositgubun, depositdtm, depositconfirm ) 
+
+		VALUES 
+			 ( #{bkcode, jdbcType=INTEGER}, #{bkdate, jdbcType=VARCHAR}, #{bkjukyo, jdbcType=VARCHAR}, #{bkcontent, jdbcType=VARCHAR}, #{bketc, jdbcType=VARCHAR}, #{bkinput, jdbcType=BIGINT}, #{bkoutput, jdbcType=BIGINT}, #{bkjango, jdbcType=BIGINT}, #{acctno, jdbcType=VARCHAR}, #{depositinfo, jdbcType=VARCHAR}, #{depositgubun, jdbcType=VARCHAR}, <choose><when test="depositdtm != null">#{depositdtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{depositconfirm, jdbcType=CHAR} )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.claim.model.master.IfBankda">
+    
+     /*+ kr.co.abcmart.bo.claim.repository.master.IfBankdaDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE if_bankda
+		<set> 
+			<if test="bkcode != null"> 
+				bkcode = #{bkcode, jdbcType=INTEGER}, 
+			</if> 
+			<if test="bkdate != null"> 
+				bkdate = #{bkdate, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="bkjukyo != null"> 
+				bkjukyo = #{bkjukyo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="bkcontent != null"> 
+				bkcontent = #{bkcontent, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="bketc != null"> 
+				bketc = #{bketc, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="bkinput != null"> 
+				bkinput = #{bkinput, jdbcType=BIGINT}, 
+			</if> 
+			<if test="bkoutput != null"> 
+				bkoutput = #{bkoutput, jdbcType=BIGINT}, 
+			</if> 
+			<if test="bkjango != null"> 
+				bkjango = #{bkjango, jdbcType=BIGINT}, 
+			</if> 
+			<if test="acctno != null"> 
+				acctno = #{acctno, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="depositinfo != null"> 
+				depositinfo = #{depositinfo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="depositgubun != null"> 
+				depositgubun = #{depositgubun, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="depositdtm != null"> 
+				depositdtm = #{depositdtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="depositconfirm != null"> 
+				depositconfirm = #{depositconfirm, jdbcType=CHAR}, 
+			</if> 
+		</set> 
+		WHERE 
+			 bkcode = #{bkcode, jdbcType=INTEGER}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.claim.model.master.IfBankda">
+    
+     /*+ kr.co.abcmart.bo.claim.repository.master.IfBankdaDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM if_bankda
+		WHERE 
+			 bkcode = #{bkcode, jdbcType=INTEGER}  
+    </delete>
+</mapper>

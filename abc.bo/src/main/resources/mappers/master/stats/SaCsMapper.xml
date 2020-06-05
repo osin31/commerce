@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.stats.repository.master.SaCsStatusDao">
+
+    <sql id="dateConvert">
+		<if test="bean.choicePeriod == 'date'">
+ 		 	CONCAT( CONVERT(CHAR(10), A.INQRY_DTM, 23), '(' , DATENAME(WEEKDAY, A.INQRY_DTM), ')' )
+		</if>
+		<if test="bean.choicePeriod == 'month'">
+	 		 LEFT(CONVERT(CHAR(10), A.INQRY_DTM, 23), 7)
+		</if>
+		<if test="bean.choicePeriod == 'year'">
+	  		 LEFT(CONVERT(CHAR(10), A.INQRY_DTM, 23), 4)
+		</if>
+	</sql>
+
+	<sql id="review-stats-search">
+		<!-- 기간 -->
+   		<if test="bean.fromDate != null and bean.toDate != null">
+	   		AND A.WRITE_DTM
+	   		BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00'))
+	   			AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+   		</if>
+   		<!-- 구입처구분 -->
+   		<if test="bean.onlnBuyYn != null and bean.onlnBuyYn != ''">
+	   		AND A.ONLN_BUY_YN = #{bean.onlnBuyYn, jdbcType=VARCHAR}
+   		</if>
+   		<!-- 사이트 구분 -->
+   		<if test="bean.siteNo != null and bean.siteNo != ''">
+	   		AND A.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+   		</if>
+		<!-- 회원등급 -->
+		<if test='bean.memberTypeCodeArr != null and bean.memberTypeCodeArr != ""'>
+			<foreach collection="bean.memberTypeCodeArr" item="memberTypeCode" open="AND A.member_no IN (SELECT M.member_no FROM mb_member M WHERE M.member_type_code IN (" close="))" separator=",">
+    			#{memberTypeCode, jdbcType=VARCHAR}
+    		</foreach>
+		</if>
+		<!-- 디바이스 구분 -->
+    	<if test="bean.deviceCodeArr != null and bean.deviceCodeArr !=''">
+    		<foreach collection="bean.deviceCodeArr" item="deviceCode" open="AND B.DEVICE_CODE IN (" close=")" separator=",">
+    			#{deviceCode, jdbcType=VARCHAR}
+    		</foreach>
+    	</if>
+    </sql>
+
+	<sql id="inquiry-stats-search">
+    	<if test="bean.fromDate != null and bean.toDate != null">
+	   		AND A.INQRY_DTM
+	   		BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00'))
+	   			AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+   		</if>
+    	<if test="bean.deviceCodeArr != null and bean.deviceCodeArr !=''">
+    		<foreach collection="bean.deviceCodeArr" item="deviceCode" open="AND B.DEVICE_CODE IN (" close=")" separator=",">
+    			#{deviceCode, jdbcType=VARCHAR}
+    		</foreach>
+    	</if>
+    	<if test="bean.siteNo != null and bean.siteNo != ''">
+    		AND A.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+    	</if>
+    	<if test="bean.chnnlNo != null and bean.chnnlNo != ''">
+    		AND C.CHNNL_NO = #{bean.chnnlNo, jdbcType=VARCHAR}
+    	</if>
+		<if test='bean.mmnyPrdtYn != null and bean.mmnyPrdtYn != ""'>
+			 AND C.MMNY_PRDT_YN = #{bean.mmnyPrdtYn, jdbcType=VARCHAR}
+		</if>
+		<if test="bean.vndrNo != null and bean.vndrNo != ''">
+			AND A.VNDR_NO = #{bean.vndrNo, jdbcType=VARCHAR}
+		</if>
+    </sql>
+
+    <sql id="review-stats-from">
+		FROM BD_PRODUCT_REVIEW A WITH(NOLOCK)
+		JOIN MB_MEMBER B WITH(NOLOCK)
+		ON A.MEMBER_NO = B.MEMBER_NO
+ 	</sql>
+
+	<sql id="review-stats-select-columns">
+		, SUM(A.PAY_POINT_AMT) AS TOTAL_POINT
+		, SUM((CASE WHEN A.POINT_PAY_YN = 'Y' THEN 1 ELSE 0 END)) AS TOTAL_PAY_COUNT
+		, SUM((CASE WHEN A.POINT_PAY_YN = 'N' AND A.POINT_PAY_CNCL_YN = 'N' AND A.POINT_PAY_IMPSBLT_YN = 'N' THEN 1 ELSE 0 END)) AS TOTAL_PAY_NO
+		, SUM((CASE WHEN A.POINT_PAY_CNCL_YN = 'Y' THEN 1 ELSE 0 END)) AS TOTAL_PAY_CNCL
+		, SUM((CASE WHEN A.POINT_PAY_IMPSBLT_YN = 'Y' THEN 1 ELSE 0 END)) AS TOTAL_PAY_IMPSBLT
+
+		, SUM((CASE WHEN A.RVW_TYPE = 'G' AND A.POINT_PAY_YN = 'Y' THEN A.PAY_POINT_AMT ELSE 0 END)) AS GENERAL_POINT
+		, SUM((CASE WHEN A.RVW_TYPE = 'G' AND A.POINT_PAY_YN = 'Y' THEN 1 ELSE 0 END)) AS GENERAL_PAY_COUNT
+		, SUM((CASE WHEN A.RVW_TYPE = 'G' AND A.POINT_PAY_YN = 'N' AND A.POINT_PAY_CNCL_YN = 'N' AND A.POINT_PAY_IMPSBLT_YN = 'N' THEN 1 ELSE 0 END)) AS GENERAL_PAY_NO
+		, SUM((CASE WHEN A.RVW_TYPE = 'G' AND A.POINT_PAY_CNCL_YN = 'Y' THEN 1 ELSE 0 END)) AS GENERAL_PAY_CNCL
+		, SUM((CASE WHEN A.RVW_TYPE = 'G' AND A.POINT_PAY_IMPSBLT_YN = 'Y' THEN 1 ELSE 0 END)) AS GENERAL_PAY_IMPSBLT
+
+		, SUM((CASE WHEN A.RVW_TYPE = 'P' AND A.POINT_PAY_YN = 'Y' THEN A.PAY_POINT_AMT ELSE 0 END)) AS PHOTO_POINT
+		, SUM((CASE WHEN A.RVW_TYPE = 'P' AND A.POINT_PAY_YN = 'Y' THEN 1 ELSE 0 END)) AS PHOTO_PAY_COUNT
+		, SUM((CASE WHEN A.RVW_TYPE = 'P' AND A.POINT_PAY_YN = 'N' AND A.POINT_PAY_CNCL_YN = 'N' AND A.POINT_PAY_IMPSBLT_YN = 'N' THEN 1 ELSE 0 END)) AS PHOTO_PAY_NO
+		, SUM((CASE WHEN A.RVW_TYPE = 'P' AND A.POINT_PAY_CNCL_YN = 'Y' THEN 1 ELSE 0 END)) AS PHOTO_PAY_CNCL
+		, SUM((CASE WHEN A.RVW_TYPE = 'P' AND A.POINT_PAY_IMPSBLT_YN = 'Y' THEN 1 ELSE 0 END)) AS PHOTO_PAY_IMPSBLT
+ 	</sql>
+
+	<select id="reviewCount" parameterType="pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaCsStatusDao.reviewCount [상품 후기 통계 count] [변지은] */
+    	SELECT <include refid="Paging.totalCount"/>
+ 		<include refid="review-stats-from"/>
+ 		<where>
+    		<include refid="review-stats-search"/>
+ 		</where>
+    </select>
+
+    <select id="reviewStats" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaCsStatus" >
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaCsStatusDao.reviewStats [상품 후기 통계] [변지은] */
+   		SELECT
+			  A.WRITE_DTM AS REVIEW_DTM
+			, A.TOTAL_POINT
+			, A.TOTAL_PAY_COUNT
+			, A.TOTAL_PAY_NO
+			, A.TOTAL_PAY_CNCL
+			, A.TOTAL_PAY_IMPSBLT
+
+			, A.GENERAL_POINT				-- 지급 포인트
+			, A.GENERAL_PAY_COUNT			-- 지급
+			, A.GENERAL_PAY_NO				-- 미지급
+			, A.GENERAL_PAY_CNCL			-- 지급 취소 Y
+			, A.GENERAL_PAY_IMPSBLT			-- 지급 불가 Y
+
+			, A.PHOTO_POINT
+			, A.PHOTO_PAY_COUNT
+			, A.PHOTO_PAY_NO
+			, A.PHOTO_PAY_CNCL
+			, A.PHOTO_PAY_IMPSBLT
+   	  FROM (
+   	  		SELECT
+	   	  		'합계' AS WRITE_DTM
+	   	  		<include refid="review-stats-select-columns"/>
+		  	<include refid="review-stats-from"/>
+			<where>
+		  		<include refid="review-stats-search"/>
+			</where>
+			UNION ALL
+		  	SELECT
+				CONCAT(CONVERT(CHAR(10), A.WRITE_DTM, 23),'(', DATENAME(WEEKDAY,A.WRITE_DTM), ')') AS WRITE_DTM
+		    	<include refid="review-stats-select-columns"/>
+	  		<include refid="review-stats-from"/>
+		   	<where>
+			  <include refid="review-stats-search"/>
+		   	</where>
+			GROUP BY CONCAT(CONVERT(CHAR(10), A.WRITE_DTM, 23),'(', DATENAME(WEEKDAY,A.WRITE_DTM), ')')
+	 		<if test='bean.isExcel == null or bean.isExcel == ""'>
+				ORDER BY WRITE_DTM ${sortType}
+				<include refid="Paging.mssql" />
+			</if>
+		) A
+    </select>
+
+    <sql id="inquiry-stats-from">
+    	FROM BD_PRODUCT_INQUIRY A WITH(NOLOCK)
+ 		JOIN MB_MEMBER B WITH(NOLOCK)
+ 		ON A.MEMBER_NO = B.MEMBER_NO
+ 		JOIN PD_PRODUCT C WITH(NOLOCK)
+		ON A.PRDT_NO = C.PRDT_NO
+    </sql>
+
+    <sql id="inquiry-stats-select-columns">
+    	, SUM((CASE A.INQRY_DTM WHEN A.INQRY_DTM THEN 1 ELSE 0 END)) AS TOTAL_COUNT
+		, SUM((CASE WHEN A.ASWR_STAT_CODE='10001' THEN 1 ELSE 0 END)) AS ASWR_READY
+		, SUM((CASE WHEN A.ASWR_STAT_CODE='10000' THEN 1 ELSE 0 END)) AS ASWR_NO
+		, SUM((CASE WHEN A.ASWR_STAT_CODE='10002' THEN 1 ELSE 0 END)) AS ASWR_SUCCESS
+   		,
+   		<foreach collection="bean.cnslList" item="cnslCode" close=" AS CNSL_LIST" separator="+ '|' +">
+   			CONVERT(VARCHAR, SUM(CASE WHEN A.CNSL_TYPE_CODE = #{cnslCode, jdbcType=VARCHAR } THEN 1 ELSE 0 END))
+   		</foreach>
+    </sql>
+
+    <select id="inquiryCount" parameterType="pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaCsStatusDao.inquiryCount [상품 문의 통계 count] [변지은] */
+    	SELECT <include refid="Paging.totalCount"/>
+ 		<include refid="inquiry-stats-from"/>
+ 		<where>
+    		<include refid="inquiry-stats-search"/>
+ 		</where>
+    </select>
+
+    <select id="inquiryStats" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaCsStatus">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaCsStatusDao.inquiryStats [상품 문의 통계] [변지은] */
+		SELECT
+	    	  INQRY_DTM
+			, TOTAL_COUNT
+			, ASWR_READY
+			, ASWR_NO
+			, ASWR_SUCCESS
+    		, CNSL_LIST
+		FROM (
+			SELECT
+					'합계' AS INQRY_DTM
+					<include refid="inquiry-stats-select-columns"/>
+  			<include refid="inquiry-stats-from"/>
+		 	<where>
+   	    	  <include refid="inquiry-stats-search"/>
+			</where>
+			UNION ALL
+			SELECT
+		 			<include refid="dateConvert"/> AS INQRY_DTM
+				 	<include refid="inquiry-stats-select-columns"/>
+  			<include refid="inquiry-stats-from"/>
+		 	<where>
+   	    	  <include refid="inquiry-stats-search"/>
+			</where>
+			GROUP BY <include refid="dateConvert"/>
+	 		<if test='bean.isExcel == null or bean.isExcel == ""'>
+	 			ORDER BY INQRY_DTM ${sortType}
+   				<include refid="Paging.mssql" />
+   			</if>
+		) A
+    </select>
+
+	<select id="selectClmCntGroupbyModDtmCount" parameterType="pageable" resultType="int">
+		/*+ kr.co.abcmart.bo.stats.repository.master.SaCsStatusDao.selectClmCntGroupbyModDtmCount [클레임 일자별 통계 count] [이강수] */
+
+		SELECT <include refid="Paging.totalCount"/>
+		  FROM (
+				SELECT <include refid="Paging.totalCount"/>
+				  FROM OC_CLAIM		    A WITH (NOLOCK)
+				  JOIN OC_CLAIM_PRODUCT B WITH (NOLOCK) ON A.CLM_NO  = B.CLM_NO
+			     WHERE B.CLM_PRDT_STAT_CODE = #{bean.clmPrdtStatCode, jdbcType=VARCHAR} /* 교환완료 10016, 반품완료 10026 */
+			   	   AND B.PRDT_TYPE_CODE NOT IN ('10003', '10004') /* 사은품, 배송비 제외 */
+				   AND ISNULL(B.UP_CLM_PRDT_SEQ, '') = ''
+
+				 <include refid="clmSearchWhere"/>
+
+			<if test="bean.choicePeriod == 'date' and bean.choicePeriod != null">
+				GROUP BY CONCAT(CONVERT(CHAR(10), A.MOD_DTM, 23),' (', DATENAME(WEEKDAY,A.MOD_DTM), ')')
+			</if>
+			<if test="bean.choicePeriod == 'month' and bean.choicePeriod != null">
+				GROUP BY CONVERT(CHAR(7), A.MOD_DTM, 23)
+			</if>
+			<if test="bean.choicePeriod == 'year' and bean.choicePeriod != null">
+				GROUP BY CONVERT(CHAR(4), A.MOD_DTM, 23)
+			</if>
+
+		) CLM_DATE_CNT
+
+	</select>
+
+	<select id="selectClmCntGroupbyModDtmPaging" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.CurrentSaleStats">
+		/*+ kr.co.abcmart.bo.stats.repository.master.SaCsStatusDao.selectClmCntGroupbyModDtmPaging [클레임 일자별 통계 paging] [이강수] */
+
+	  SELECT DATE_GBN
+	       , RETURN_TOTAL_CNT
+		   , RETURN_RSN01
+		   , RETURN_RSN02
+		   , RETURN_RSN03
+		   , RETURN_RSN04
+		   , RETURN_RSN05
+		   , RETURN_RSN06
+		   , RETURN_RSN07
+		   , RETURN_RSN08
+		   , RETURN_RSN09
+		   , EXCHANGE_TOTAL_CNT
+		   , EXCHANGE_RSN01
+		   , EXCHANGE_RSN02
+		   , EXCHANGE_RSN03
+		   , EXCHANGE_RSN04
+		   , EXCHANGE_RSN05
+		FROM (
+				SELECT '합계'		AS DATE_GBN
+
+				<include refid="clmSearchColumn" />
+
+				  FROM OC_CLAIM		    A WITH (NOLOCK)
+				  JOIN OC_CLAIM_PRODUCT B WITH (NOLOCK) ON A.CLM_NO  = B.CLM_NO
+			     WHERE B.CLM_PRDT_STAT_CODE = #{bean.clmPrdtStatCode, jdbcType=VARCHAR} /* 교환완료 10016, 반품완료 10026 */
+			   	   AND B.PRDT_TYPE_CODE NOT IN ('10003', '10004') /* 사은품, 배송비 제외 */
+				   AND ISNULL(B.UP_CLM_PRDT_SEQ, '') = ''
+
+				<include refid="clmSearchWhere"/>
+
+		UNION
+			<if test="bean.choicePeriod == 'date' and bean.choicePeriod != null">
+				SELECT CONCAT(CONVERT(CHAR(10), A.MOD_DTM, 23),' (', DATENAME(WEEKDAY,A.MOD_DTM), ')')	AS DATE_GBN
+			</if>
+			<if test="bean.choicePeriod == 'month' and bean.choicePeriod != null">
+				SELECT CONVERT(CHAR(7), A.MOD_DTM, 23)													AS DATE_GBN
+			</if>
+			<if test="bean.choicePeriod == 'year' and bean.choicePeriod != null">
+				SELECT CONVERT(CHAR(4), A.MOD_DTM, 23)													AS DATE_GBN
+			</if>
+
+				<include refid="clmSearchColumn" />
+
+				  FROM OC_CLAIM		    A WITH (NOLOCK)
+				  JOIN OC_CLAIM_PRODUCT B WITH (NOLOCK) ON A.CLM_NO  = B.CLM_NO
+			     WHERE B.CLM_PRDT_STAT_CODE = #{bean.clmPrdtStatCode, jdbcType=VARCHAR} /* 교환완료 10016, 반품완료 10026 */
+			   	   AND B.PRDT_TYPE_CODE NOT IN ('10003', '10004') /* 사은품, 배송비 제외 */
+				   AND ISNULL(B.UP_CLM_PRDT_SEQ, '') = ''
+
+				<include refid="clmSearchWhere"/>
+
+			<if test="bean.choicePeriod == 'date' and bean.choicePeriod != null">
+				GROUP BY CONCAT(CONVERT(CHAR(10), A.MOD_DTM, 23),' (', DATENAME(WEEKDAY,A.MOD_DTM), ')')
+				<if test='bean.isExcel == null or bean.isExcel == ""'>
+					ORDER BY CONCAT(CONVERT(CHAR(10), A.MOD_DTM, 23),' (', DATENAME(WEEKDAY,A.MOD_DTM), ')') DESC
+				</if>
+			</if>
+			<if test="bean.choicePeriod == 'month' and bean.choicePeriod != null">
+				GROUP BY CONVERT(CHAR(7), A.MOD_DTM, 23)
+				<if test='bean.isExcel == null or bean.isExcel == ""'>
+					ORDER BY CONVERT(CHAR(7), A.MOD_DTM, 23) DESC
+				</if>
+			</if>
+			<if test="bean.choicePeriod == 'year' and bean.choicePeriod != null">
+				GROUP BY CONVERT(CHAR(4), A.MOD_DTM, 23)
+				<if test='bean.isExcel == null or bean.isExcel == ""'>
+					ORDER BY CONVERT(CHAR(4), A.MOD_DTM, 23) DESC
+				</if>
+			</if>
+			<if test='bean.isExcel == null or bean.isExcel == ""'>
+				<include refid="Paging.mssql" />
+			</if>
+
+		  ) CLM_STAT
+
+		<if test='bean.isExcel == null or bean.isExcel == ""'>
+			<choose>
+				<when test="sortColumn != null">
+					ORDER BY
+					<if test="sortColumn == 'dateGbn'.toString()">
+						DATE_GBN
+					</if>
+					<if test="sortColumn == 'returnTotalCnt'.toString()">
+						RETURN_TOTAL_CNT
+					</if>
+					<if test="sortColumn == 'exchangeTotalCnt'.toString()">
+						EXCHANGE_TOTAL_CNT
+					</if>
+					<if test="sortType == 'DESC'.toString()">
+						DESC
+					</if>
+				</when>
+				<otherwise>
+					ORDER BY DATE_GBN DESC
+				</otherwise>
+			</choose>
+		</if>
+		<if test='bean.isExcel != null and bean.isExcel == "Y"'>
+			<choose>
+				<when test="bean.sortColumn != null">
+					ORDER BY
+					<if test="bean.sortColumn == 'dateGbn'.toString()">
+						DATE_GBN
+					</if>
+					<if test="bean.sortColumn == 'returnTotalCnt'.toString()">
+						RETURN_TOTAL_CNT
+					</if>
+					<if test="bean.sortColumn == 'exchangeTotalCnt'.toString()">
+						EXCHANGE_TOTAL_CNT
+					</if>
+					<if test="bean.sortType == 'desc'.toString()">
+						DESC
+					</if>
+				</when>
+				<otherwise>
+					ORDER BY DATE_GBN DESC
+				</otherwise>
+			</choose>
+		</if>
+
+	</select>
+
+	<sql id="clmSearchColumn">
+		 ---------- 반품
+		 , SUM((CASE WHEN A.CLM_GBN_CODE = '10002' THEN 1 ELSE 0 END))	AS RETURN_TOTAL_CNT
+		 , SUM((CASE WHEN B.CLM_RSN_CODE = '10013' THEN 1 ELSE 0 END))	AS RETURN_RSN01 -- 불량
+		 , SUM((CASE WHEN B.CLM_RSN_CODE = '10014' THEN 1 ELSE 0 END))	AS RETURN_RSN02 -- 오배송
+		 , SUM((CASE WHEN B.CLM_RSN_CODE = '10015' THEN 1 ELSE 0 END))	AS RETURN_RSN03 -- 변심(소재)
+		 , SUM((CASE WHEN B.CLM_RSN_CODE = '10016' THEN 1 ELSE 0 END))	AS RETURN_RSN04 -- 변심(사이즈미스)
+		 , SUM((CASE WHEN B.CLM_RSN_CODE = '10017' THEN 1 ELSE 0 END))	AS RETURN_RSN05 -- 변심(화면과실물상이)
+		 , SUM((CASE WHEN B.CLM_RSN_CODE = '10018' THEN 1 ELSE 0 END))	AS RETURN_RSN06 -- 미출반품
+		 , SUM((CASE WHEN B.CLM_RSN_CODE = '10019' THEN 1 ELSE 0 END))	AS RETURN_RSN07 -- 오프라인반품
+		 , SUM((CASE WHEN B.CLM_RSN_CODE = '10020' THEN 1 ELSE 0 END))	AS RETURN_RSN08 -- 브랜드박스훼손
+		 , SUM((CASE WHEN B.CLM_RSN_CODE = '10021' THEN 1 ELSE 0 END))	AS RETURN_RSN09 -- 기타
+		 ---------- 교환
+		 , SUM((CASE WHEN A.CLM_GBN_CODE = '10001' THEN 1 ELSE 0 END))	AS EXCHANGE_TOTAL_CNT
+		 , SUM((CASE WHEN B.CLM_RSN_CODE = '10008' THEN 1 ELSE 0 END))	AS EXCHANGE_RSN01 -- 불량
+		 , SUM((CASE WHEN B.CLM_RSN_CODE = '10009' THEN 1 ELSE 0 END))	AS EXCHANGE_RSN02 -- 오배송
+		 , SUM((CASE WHEN B.CLM_RSN_CODE = '10010' THEN 1 ELSE 0 END))	AS EXCHANGE_RSN03 -- 옵션변경
+		 , SUM((CASE WHEN B.CLM_RSN_CODE = '10011' THEN 1 ELSE 0 END))	AS EXCHANGE_RSN04 -- 브랜드박스훼손
+		 , SUM((CASE WHEN B.CLM_RSN_CODE = '10012' THEN 1 ELSE 0 END))	AS EXCHANGE_RSN05 -- 기타
+	</sql>
+
+	<sql id="clmSearchWhere">
+		<if test="bean.choicePeriod == 'date' and bean.choicePeriod != null">
+ 		 	AND A.MOD_DTM BETWEEN CONVERT(DATE, #{bean.dayFromDate, jdbcType=VARCHAR}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.dayToDate, jdbcType=VARCHAR}))
+		</if>
+		<if test="bean.choicePeriod == 'month' and bean.choicePeriod != null">
+			AND CONVERT(CHAR(6), A.MOD_DTM, 112) BETWEEN REPLACE(#{bean.monthFromDate, jdbcType=VARCHAR},'.','') AND REPLACE(#{bean.monthToDate, jdbcType=VARCHAR},'.','')
+		</if>
+		<if test="bean.choicePeriod == 'year' and bean.choicePeriod != null">
+			AND CONVERT(CHAR(4), A.MOD_DTM, 112) BETWEEN REPLACE(#{bean.yearFromDate, jdbcType=VARCHAR},'.','') AND REPLACE(#{bean.yearToDate, jdbcType=VARCHAR},'.','')
+		</if>
+
+		<if test="bean.siteNo != null and bean.siteNo != '' "> <!-- 사이트 코드 -->
+		 	AND A.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+		</if>
+
+		<if test="bean.deviceCodes != null and bean.deviceCodes != '' "> <!-- 디바이스 코드 -->
+			AND A.DEVICE_CODE IN
+			<foreach item="item" index="index" collection="bean.deviceCodes" open="(" separator="," close=")">
+				#{item, jdbcType=VARCHAR}
+			</foreach>
+		</if>
+
+    	<if test="bean.stockGbnCodeArr != null">
+      		<if test="bean.stockGbnCodeArr.length > 0">
+		    	 AND EXISTS ( SELECT 1
+						   	    FROM OC_ORDER_DELIVERY_HISTORY Z WITH (NOLOCK)
+						       WHERE Z.ORDER_NO = A.ORG_ORDER_NO
+						    	 AND Z.STOCK_GBN_CODE IN
+				 <foreach collection="bean.stockGbnCodeArr" item="item" open="(" close=")" separator=",">
+					 #{item, jdbcType=VARCHAR}
+				 </foreach>
+				 )
+			 </if>
+		</if>
+
+		<if test="bean.mmnyPrdtYn != null and bean.mmnyPrdtYn != ''">
+      		AND B.MMNY_PRDT_YN = #{bean.mmnyPrdtYn, jdbcType=CHAR} --자사상품여부 조건 *
+    			<if test="bean.mmnyPrdtYn == 'Y' and (bean.ourChannel !=null and bean.ourChannel != '') ">
+    				AND B.CHNNL_NO = #{bean.ourChannel, jdbcType=VARCHAR}
+    			</if>
+    			<if test="bean.mmnyPrdtYn == 'N' and (bean.shoperSiteNo !=null and bean.shoperSiteNo != '') ">
+    				AND B.CHNNL_NO = #{bean.shoperSiteNo, jdbcType=VARCHAR}
+    			</if>
+      	</if>
+
+      	<if test="bean.vndrNo != null and bean.vndrNo != ''">
+     		AND B.VNDR_NO = #{bean.vndrNo, jdbcType=VARCHAR} -- 업체의 경우 이 조건으로 해당 업체건만 조회된다.
+     	</if>
+	</sql>
+
+</mapper>

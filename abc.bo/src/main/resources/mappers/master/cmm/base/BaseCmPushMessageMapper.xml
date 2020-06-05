@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.cmm.repository.master.CmPushMessageDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	push_mesg_no, push_title_text, site_no, cont_text, trgt_url, image_name, image_path_text, image_url, send_type, rsv_send_dtm, setup_dtm, send_dtm, send_gbn_type, push_send_trgt_code, send_trgt_member_count, push_send_count, push_ing_stat_code, rgster_no, rgst_dtm, moder_no, mod_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	push_mesg_no = #{pushMesgNo, jdbcType=VARCHAR}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.cmm.model.master.CmPushMessage" resultType="kr.co.abcmart.bo.cmm.model.master.CmPushMessage">
+    
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmPushMessageDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			artkr_dm.dbo.cm_push_message WITH (NOLOCK)
+
+		<where> 
+			<if test="pushMesgNo != null"> 
+				 push_mesg_no = #{pushMesgNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="pushTitleText != null"> 
+				 AND push_title_text = #{pushTitleText, jdbcType=VARCHAR}
+			</if> 
+			<if test="siteNo != null"> 
+				 AND site_no = #{siteNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="contText != null"> 
+				 AND cont_text = #{contText, jdbcType=VARCHAR}
+			</if> 
+			<if test="trgtUrl != null"> 
+				 AND trgt_url = #{trgtUrl, jdbcType=VARCHAR}
+			</if> 
+			<if test="imageName != null"> 
+				 AND image_name = #{imageName, jdbcType=VARCHAR}
+			</if> 
+			<if test="imagePathText != null"> 
+				 AND image_path_text = #{imagePathText, jdbcType=VARCHAR}
+			</if> 
+			<if test="imageUrl != null"> 
+				 AND image_url = #{imageUrl, jdbcType=VARCHAR}
+			</if> 
+			<if test="sendType != null"> 
+				 AND send_type = #{sendType, jdbcType=CHAR}
+			</if> 
+			<if test="rsvSendDtm != null"> 
+				 AND rsv_send_dtm = #{rsvSendDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="setupDtm != null"> 
+				 AND setup_dtm = #{setupDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="sendDtm != null"> 
+				 AND send_dtm = #{sendDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="sendGbnType != null"> 
+				 AND send_gbn_type = #{sendGbnType, jdbcType=CHAR}
+			</if> 
+			<if test="pushSendTrgtCode != null"> 
+				 AND push_send_trgt_code = #{pushSendTrgtCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="sendTrgtMemberCount != null"> 
+				 AND send_trgt_member_count = #{sendTrgtMemberCount, jdbcType=INTEGER}
+			</if> 
+			<if test="pushSendCount != null"> 
+				 AND push_send_count = #{pushSendCount, jdbcType=INTEGER}
+			</if> 
+			<if test="pushIngStatCode != null"> 
+				 AND push_ing_stat_code = #{pushIngStatCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="rgsterNo != null"> 
+				 AND rgster_no = #{rgsterNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="rgstDtm != null"> 
+				 AND rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="moderNo != null"> 
+				 AND moder_no = #{moderNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="modDtm != null"> 
+				 AND mod_dtm = #{modDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <insert id="insert" parameterType="kr.co.abcmart.bo.cmm.model.master.CmPushMessage">	
+
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmPushMessageDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO artkr_dm.dbo.cm_push_message
+			 ( push_mesg_no, push_title_text, site_no, cont_text, trgt_url, image_name, image_path_text, image_url, send_type, rsv_send_dtm, setup_dtm, send_dtm, send_gbn_type, push_send_trgt_code, send_trgt_member_count, push_send_count, push_ing_stat_code, rgster_no, rgst_dtm, moder_no, mod_dtm ) 
+
+		VALUES 
+			 ( #{pushMesgNo, jdbcType=VARCHAR}, #{pushTitleText, jdbcType=VARCHAR}, #{siteNo, jdbcType=VARCHAR}, #{contText, jdbcType=VARCHAR}, #{trgtUrl, jdbcType=VARCHAR}, #{imageName, jdbcType=VARCHAR}, #{imagePathText, jdbcType=VARCHAR}, #{imageUrl, jdbcType=VARCHAR}, #{sendType, jdbcType=CHAR}, <choose><when test="rsvSendDtm != null">#{rsvSendDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, <choose><when test="setupDtm != null">#{setupDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, <choose><when test="sendDtm != null">#{sendDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{sendGbnType, jdbcType=CHAR}, #{pushSendTrgtCode, jdbcType=VARCHAR}, #{sendTrgtMemberCount, jdbcType=INTEGER}, #{pushSendCount, jdbcType=INTEGER}, #{pushIngStatCode, jdbcType=VARCHAR}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.cmm.model.master.CmPushMessage">
+    
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmPushMessageDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE artkr_dm.dbo.cm_push_message
+		<set> 
+			<if test="pushMesgNo != null"> 
+				push_mesg_no = #{pushMesgNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="pushTitleText != null"> 
+				push_title_text = #{pushTitleText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="siteNo != null"> 
+				site_no = #{siteNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="contText != null"> 
+				cont_text = #{contText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="trgtUrl != null"> 
+				trgt_url = #{trgtUrl, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="imageName != null"> 
+				image_name = #{imageName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="imagePathText != null"> 
+				image_path_text = #{imagePathText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="imageUrl != null"> 
+				image_url = #{imageUrl, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="sendType != null"> 
+				send_type = #{sendType, jdbcType=CHAR}, 
+			</if> 
+			<if test="rsvSendDtm != null"> 
+				rsv_send_dtm = #{rsvSendDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="setupDtm != null"> 
+				setup_dtm = #{setupDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="sendDtm != null"> 
+				send_dtm = #{sendDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="sendGbnType != null"> 
+				send_gbn_type = #{sendGbnType, jdbcType=CHAR}, 
+			</if> 
+			<if test="pushSendTrgtCode != null"> 
+				push_send_trgt_code = #{pushSendTrgtCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="sendTrgtMemberCount != null"> 
+				send_trgt_member_count = #{sendTrgtMemberCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="pushSendCount != null"> 
+				push_send_count = #{pushSendCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="pushIngStatCode != null"> 
+				push_ing_stat_code = #{pushIngStatCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgsterNo != null"> 
+				rgster_no = #{rgsterNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 push_mesg_no = #{pushMesgNo, jdbcType=VARCHAR}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.cmm.model.master.CmPushMessage">
+    
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmPushMessageDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM artkr_dm.dbo.cm_push_message
+		WHERE 
+			 push_mesg_no = #{pushMesgNo, jdbcType=VARCHAR}  
+    </delete>
+</mapper>

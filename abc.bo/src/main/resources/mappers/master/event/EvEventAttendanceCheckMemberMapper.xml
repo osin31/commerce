@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.event.repository.master.EvEventAttendanceCheckMemberDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.event.model.master.EvEventAttendanceCheckMember">
+
+     /*+ kr.co.abcmart.bo.event.repository.master.EvEventAttendanceCheckMemberDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			EV_EVENT_ATTENDANCE_CHECK_MEMBER
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectEvEventAttendanceCheckMemberList" parameterType="Pageable" resultType="kr.co.abcmart.bo.event.vo.EvEventJoinResultVO">
+    /*+ kr.co.abcmart.bo.event.repository.master.EvEventAttendanceCheckMemberDao.selectEvEventAttendanceCheckMemberList [이벤트 참여(출석체크) 조회 쿼리] [이지훈] */
+    SELECT
+    	ATTEND_ALL.*
+    	,ATTEND_ALL.ATEND_DTM AS JOIN_DTM
+    	,(SELECT TOP(1) EEACM2.EVENT_ATEND_CHECK_MEMBER_SEQ FROM
+    		EV_EVENT_ATTENDANCE_CHECK_MEMBER EEACM2 WITH(NOLOCK)
+    			WHERE ATTEND_ALL.EVENT_NO = EEACM2.EVENT_NO
+    			AND ATTEND_ALL.MEMBER_NO = EEACM2.MEMBER_NO
+    			ORDER BY EEACM2.EVENT_ATEND_CHECK_MEMBER_SEQ ASC) AS EV_EVENT_JOIN_MEMBER_SEQ
+    	,DBO.FN_CODE_VALUE('MEMBER_TYPE_CODE', ATTEND_ALL.MEMBER_TYPE_CODE) AS MEMBER_TYPE_CODE_NAME
+    	,DBO.FN_CODE_VALUE('DEVICE_CODE', ATTEND_ALL.DEVICE_CODE) AS DEVICE_CODE_NAME
+    	,STUFF((
+			SELECT
+			CONCAT(' / ',CASE
+				WHEN EEACB.BENEFIT_TYPE = 'P' THEN EEACB.BENEFIT_VALUE + ' 포인트'
+				WHEN EEACB.BENEFIT_TYPE = 'C' THEN (
+					SELECT PC.CPN_NAME
+				FROM
+					PR_COUPON PC WITH(NOLOCK)
+				WHERE
+					EEACB.BENEFIT_VALUE = PC.CPN_NO)
+				ELSE '-'
+			END)
+		FROM
+			EV_EVENT_ATTENDANCE_CHECK_BENEFIT EEACB WITH(NOLOCK)
+		WHERE
+			EEACB.EVENT_NO = ATTEND_ALL.EVENT_NO
+		AND EEACB.ATEND_DAY_COUNT <![CDATA[<=]]> ATTEND_ALL.ATTEND_COUNT
+		ORDER BY
+			EEACB.ATEND_DAY_COUNT ASC
+			FOR XML PATH('')), 1, 3, '') AS BENEFIT_NAME
+    	,STUFF((
+			SELECT
+			CONCAT(' / ', EEACB.ATEND_DAY_COUNT)
+		FROM
+			EV_EVENT_ATTENDANCE_CHECK_BENEFIT EEACB WITH(NOLOCK)
+		WHERE
+			EEACB.EVENT_NO = ATTEND_ALL.EVENT_NO
+		AND EEACB.ATEND_DAY_COUNT <![CDATA[<=]]> ATTEND_ALL.ATTEND_COUNT
+		ORDER BY
+			EEACB.ATEND_DAY_COUNT ASC
+			FOR XML PATH('')), 1, 3, '') AS BENEFIT_ATEND_DAY_COUNT
+		,STUFF((SELECT CONCAT(',', SSC.CHNNL_NAME) FROM EV_EVENT_TARGET_CHANNEL EETC JOIN SY_SITE_CHNNL SSC ON EETC.CHNNL_NO = SSC.CHNNL_NO AND SSC.USE_YN = 'Y' WHERE EETC.EVENT_NO = ATTEND_ALL.EVENT_NO FOR XML PATH('')), 1, 1, '') AS CHNNL_NAME
+		,(SELECT COUNT(*) FROM EV_EVENT_RESULT_BENEFIT_MEMBER EERBM WITH(NOLOCK) WHERE ATTEND_ALL.EVENT_NO = EERBM.EVENT_NO AND ATTEND_ALL.MEMBER_NO = EERBM.MEMBER_NO) AS WIN_COUNT
+    FROM
+    (
+	    SELECT
+			ATTEND.EVENT_NO
+			,ATTEND.MEMBER_NO AS MEMBER_NO
+			,MAX(ATTEND.DEVICE_CODE) AS DEVICE_CODE
+			,MAX(ATTEND.LOGIN_ID) AS LOGIN_ID
+			,MAX(ATTEND.ATEND_DTM) AS ATEND_DTM
+			,COUNT(ATTEND.EVENT_NO) AS ATTEND_COUNT
+			,MAX(ATTEND.MEMBER_TYPE_CODE) AS MEMBER_TYPE_CODE
+		FROM (
+				SELECT
+					EEACM.EVENT_NO
+					,EEACM.MEMBER_NO
+					,EEACM.ATEND_DTM
+					,EEACM.DEVICE_CODE
+		    	    ,MM.MEMBER_TYPE_CODE
+		    	    ,MM.LOGIN_ID
+				FROM
+					EV_EVENT_ATTENDANCE_CHECK_MEMBER EEACM WITH(NOLOCK)
+				INNER JOIN MB_MEMBER MM WITH(NOLOCK)
+							ON EEACM.MEMBER_NO = MM.MEMBER_NO
+				<include refid="whereSql" />
+		) ATTEND
+		GROUP BY ATTEND.EVENT_NO, ATTEND.MEMBER_NO
+	) ATTEND_ALL
+	ORDER BY ATTEND_ALL.ATEND_DTM DESC
+	<include refid="Paging.mssql" />
+    </select>
+
+    <select id="selectEvEventAttendanceCheckMemberCount" parameterType="Pageable" resultType="int">
+	    SELECT
+	    	<include refid="Paging.totalCount" />
+	    FROM
+	    (
+		    SELECT
+				ATTEND.EVENT_NO
+				,ATTEND.MEMBER_NO AS MEMBER_NO
+				,COUNT(ATTEND.EVENT_NO) AS ATTEND_COUNT
+				,MAX(ATTEND.DEVICE_CODE) AS DEVICE_CODE
+				,MAX(ATTEND.LOGIN_ID) AS LOGIN_ID
+				,MAX(ATTEND.ATEND_DTM) AS ATEND_DTM
+				,MAX(ATTEND.MEMBER_TYPE_CODE) AS MEMBER_TYPE_CODE
+			FROM (
+					SELECT
+						EEACM.EVENT_NO
+						,EEACM.MEMBER_NO
+						,EEACM.ATEND_DTM
+						,EEACM.DEVICE_CODE
+			    	    ,MM.MEMBER_TYPE_CODE
+			    	    ,MM.LOGIN_ID
+					FROM
+						EV_EVENT_ATTENDANCE_CHECK_MEMBER EEACM WITH(NOLOCK)
+					INNER JOIN MB_MEMBER MM WITH(NOLOCK)
+								ON EEACM.MEMBER_NO = MM.MEMBER_NO
+					<include refid="whereSql" />
+			) ATTEND
+			GROUP BY ATTEND.EVENT_NO, ATTEND.MEMBER_NO
+		) ATTEND_ALL
+    </select>
+
+    <select id="selectEvEventAttendMemberCountByEventNo" parameterType="String" resultType="int">
+      /*+ kr.co.abcmart.bo.event.repository.master.EvEventJoinMemberDao.selectEvEventAttendMemberCountByEventNo [이벤트 참여 카운트 조회 쿼리] [이지훈] */
+   		SELECT
+    		COUNT(*)
+    	FROM
+    		EV_EVENT_ATTENDANCE_CHECK_MEMBER WITH(NOLOCK)
+    	WHERE EVENT_NO = #{eventNo, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectEvEventAttendanceCheckMemberSeq" parameterType="Map" resultType="Long">
+    /*+ kr.co.abcmart.bo.event.repository.master.EvEventJoinMemberDao.selectEvEventAttendanceCheckMemberSeq [이벤트 참여 seq 조회 쿼리] [이지훈] */
+    	SELECT
+    		 ISNULL(MIN(EEACM.EVENT_ATEND_CHECK_MEMBER_SEQ), 0)
+    	FROM
+    		EV_EVENT_ATTENDANCE_CHECK_MEMBER EEACM WITH(NOLOCK)
+    	WHERE EEACM.EVENT_NO = #{eventNo, jdbcType=VARCHAR}
+    		AND EEACM.MEMBER_NO = #{memberNo, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectMemberNoByLoginId" parameterType="Map" resultType="String">
+    	/*+ kr.co.abcmart.bo.event.repository.master.EvEventJoinMemberDao.selectMemberNoByLoginId [로그인 아이디에 의한 응모자 회원번호 조회] [이지훈] */
+		SELECT
+    		TOP(1) MM.MEMBER_NO
+    	FROM
+    		EV_EVENT_ATTENDANCE_CHECK_MEMBER EEACM WITH(NOLOCK)
+		INNER JOIN MB_MEMBER MM WITH(NOLOCK)
+					ON EEACM.MEMBER_NO = MM.MEMBER_NO
+		 		   AND MM.LOGIN_ID = #{loginId, jdbcType=VARCHAR}
+		WHERE EEACM.EVENT_NO = #{eventNo, jdbcType=VARCHAR}
+		ORDER BY EEACM.ATEND_DTM ASC
+    </select>
+
+    <select id="selectEvEventAttendanceReusltMemberList" parameterType="Pageable" resultType="kr.co.abcmart.bo.event.vo.EvEventJoinResultVO">
+    /*+ kr.co.abcmart.bo.event.repository.master.EvEventAttendanceCheckMemberDao.selectEvEventAttendanceReusltMemberList [이벤트 참여(출석체크) 조회 쿼리] [이지훈] */
+  		SELECT
+  			EEACM.EVENT_ATEND_CHECK_MEMBER_SEQ
+  			,EEACM.EVENT_NO
+  			,EEACM.MEMBER_NO
+  			,EEACM.ATEND_DTM AS JOIN_DTM
+  			,EE.EVENT_TYPE_CODE
+			,EE.EVENT_NAME
+			,DBO.FN_CODE_VALUE('EVENT_TYPE_CODE', EE.EVENT_TYPE_CODE) AS EVENT_TYPE_CODE_NAME
+			,STUFF((SELECT CONCAT(',',DBO.FN_CODE_VALUE('DEVICE_CODE', EETD.DEVICE_CODE)) FROM EV_EVENT_TARGET_DEVICE EETD WITH(NOLOCK) WHERE EE.EVENT_NO = EETD.EVENT_NO FOR XML PATH('')), 1, 1, '') AS DEVICE_CODE_NAME
+    	    ,STUFF((SELECT CONCAT(',', SSC.CHNNL_NAME) FROM EV_EVENT_TARGET_CHANNEL EETC JOIN SY_SITE_CHNNL SSC ON EETC.CHNNL_NO = SSC.CHNNL_NO AND SSC.USE_YN = 'Y' WHERE EETC.EVENT_NO = EE.EVENT_NO FOR XML PATH('')), 1, 1, '') AS CHNNL_NAME
+    	    ,DBO.FN_CODE_VALUE('MEMBER_TYPE_CODE', MM.MEMBER_TYPE_CODE) AS MEMBER_TYPE_CODE_NAME
+    	    ,MM.MEMBER_NAME AS ADD_INFO1
+			,MM.HDPHN_NO_TEXT AS ADD_INFO2
+			,MM.EMAIL_ADDR_TEXT AS ADD_INFO3
+  		FROM EV_EVENT_ATTENDANCE_CHECK_MEMBER EEACM WITH(NOLOCK)
+  		INNER JOIN EV_EVENT EE WITH(NOLOCK)
+					ON EEACM.EVENT_NO = EE.EVENT_NO
+		INNER JOIN MB_MEMBER MM WITH(NOLOCK)
+					ON EEACM.MEMBER_NO = MM.MEMBER_NO
+		INNER JOIN EV_EVENT_RESULT_BENEFIT_MEMBER EERBM WITH(NOLOCK)
+					ON EERBM.EVENT_NO = EEACM.EVENT_NO
+				  AND EERBM.EV_EVENT_JOIN_MEMBER_SEQ = EEACM.EVENT_ATEND_CHECK_MEMBER_SEQ
+				  AND EERBM.MEMBER_NO = MM.MEMBER_NO
+		<include refid="whereSql" />
+		ORDER BY EE.RGST_DTM DESC
+		<include refid="Paging.mssql" />
+    </select>
+
+    <select id="selectEvEventAttendanceResultMemberCount" parameterType="Pageable" resultType="int">
+	    SELECT
+	    	<include refid="Paging.totalCount" />
+	    FROM EV_EVENT_ATTENDANCE_CHECK_MEMBER EEACM WITH(NOLOCK)
+  		INNER JOIN EV_EVENT EE WITH(NOLOCK)
+					ON EEACM.EVENT_NO = EE.EVENT_NO
+		INNER JOIN MB_MEMBER MM WITH(NOLOCK)
+					ON EEACM.MEMBER_NO = MM.MEMBER_NO
+		INNER JOIN EV_EVENT_RESULT_BENEFIT_MEMBER EERBM WITH(NOLOCK)
+					ON EERBM.EVENT_NO = EEACM.EVENT_NO
+				  AND EERBM.EV_EVENT_JOIN_MEMBER_SEQ = EEACM.EVENT_ATEND_CHECK_MEMBER_SEQ
+				  AND EERBM.MEMBER_NO = MM.MEMBER_NO
+		<include refid="whereSql" />
+    </select>
+
+
+    <sql id="whereSql">
+    	<where>
+    		<if test='bean.eventNo != null and bean.eventNo != ""'>
+				AND EEACM.EVENT_NO = #{bean.eventNo, jdbcType=VARCHAR}
+			</if>
+    		<if test='bean.loginId != null and bean.loginId != ""'>
+				AND MM.LOGIN_ID = #{bean.loginId, jdbcType=VARCHAR}
+			</if>
+    		<if test='bean.memberTypeCodes != null and bean.memberTypeCodes != "" '>
+    			AND MM.MEMBER_TYPE_CODE IN
+				<foreach collection="bean.memberTypeCodes" item="memberTypeCode" open="(" close=")" separator=",">
+					#{memberTypeCode}
+				</foreach>
+    		</if>
+    		<if test='bean.deviceCodes != null and bean.deviceCodes.length > 0'>
+				AND EEACM.DEVICE_CODE IN
+				<foreach collection="bean.deviceCodes" item="deviceCode" open="(" close=")" separator=",">
+					#{deviceCode}
+				</foreach>
+			</if>
+    		<if test='bean.dateType != null and bean.dateType != ""'>
+				<if test='bean.startYmd != null and bean.startYmd != ""'>
+					AND CONVERT(DATETIME, EEACM.ATEND_DTM) >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})
+				</if>
+
+				<if test='bean.endYmd != null and bean.endYmd != ""'>
+					AND CONVERT(DATETIME, CONCAT(#{bean.endYmd, jdbcType=VARCHAR}, ' 23:59:59')) >= CONVERT(DATETIME, EEACM.ATEND_DTM)
+				</if>
+			</if>
+			<if test='bean.eventRsltBenefitSeq != null and bean.eventRsltBenefitSeq != ""'>
+				AND EERBM.EVENT_RSLT_BENEFIT_SEQ = #{bean.eventRsltBenefitSeq, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.winYn != null and bean.winYn !="" '>
+			AND
+				<choose>
+					<when test='bean.winYn == "Y"'>EXISTS</when>
+					<otherwise>NOT EXISTS</otherwise>
+				</choose>
+				(SELECT EERBM.EVENT_NO FROM EV_EVENT_RESULT_BENEFIT_MEMBER EERBM WITH(NOLOCK)
+				WHERE EEACM.EVENT_NO = EERBM.EVENT_NO
+				AND EEACM.MEMBER_NO = EERBM.MEMBER_NO )
+			</if>
+    	</where>
+    </sql>
+
+</mapper>

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.sample.repository.master.SampleDao">
+
+	<select id="selectMenuListCount" parameterType="pageable" resultType="int">
+		SELECT <include refid="Paging.totalCount" />
+		  FROM SY_MENU
+	</select>
+	
+	<select id="selectMenuList" parameterType="pageable" resultType="kr.co.abcmart.bo.system.model.master.SyMenu">
+		SELECT *
+		FROM SY_MENU
+		ORDER BY MENU_NO
+		<include refid="Paging.mssql" />
+	</select>
+    
+    <update id="updateSampleList" parameterType="kr.co.abcmart.bo.system.model.master.SyMenu">
+    	UPDATE SY_MENU
+    	<trim prefix="SET" prefixOverrides=",">
+    		 <if test="menuGbnType != null and menuGbnType != ''">
+    		 , MENU_GBN_TYPE = #{menuGbnType, jdbcType=VARCHAR}
+    		 </if>
+    		 <if test="menuName != null and menuName != ''">
+    		 , MENU_NAME = #{menuName, jdbcType=VARCHAR}
+    		 </if>
+    		 <if test="rsrcUrl != null and rsrcUrl != ''">
+    		 , RSRC_URL = #{rsrcUrl, jdbcType=VARCHAR}
+    		 </if>
+    	</trim>
+    	 WHERE MENU_NO = #{menuNo, jdbcType=VARCHAR}
+    </update>
+    
+	<insert id="insertMenu" parameterType="Map">
+		INSERT INTO SY_MENU ( MENU_LEVEL
+						    , MENU_NO
+						    , UP_MENU_NO
+						    , MENU_GBN_TYPE
+						    , MENU_NAME
+						    , MENU_URL
+						    , RSRC_URL
+						    , ALL_PATH_MENU_NO
+						    , ALL_PATH_MENU_NAME
+						    , MEMBER_INFO_MGMT_YN
+						    , SORT_SEQ
+						    , USE_YN
+						    , RGSTER_NO
+						    , RGSTER_NAME
+						    , RGST_DTM
+						    , NOTE_TEXT
+		) 	    	 VALUES ( #{menuLevel, jdbcType=INTEGER}
+				            , (SELECT MAX(MENU_NO) + 1 FROM (SELECT MENU_NO FROM SY_MENU) AS A) 
+				  		    , #{upMenuNo, jdbcType=VARCHAR}
+				  		    , #{menuGbnType, jdbcType=VARCHAR}
+		      			    , #{menuName, jdbcType=VARCHAR}
+		      			    , #{menuUrl, jdbcType=VARCHAR}
+		      			    , #{rsrcUrl, jdbcType=VARCHAR}
+		      			    , CONCAT(#{allPathMenuNo, jdbcType=VARCHAR}, '^', ((SELECT MAX(MENU_NO) FROM (SELECT MENU_NO FROM SY_MENU) AS A) + 1))
+		      			    , CONCAT(#{allPathMenuName, jdbcType=VARCHAR}, ' > ', #{menuName, jdbcType=VARCHAR})
+		      			    , #{memberInfoMgmtYn, jdbcType=VARCHAR}
+		      			    , #{sortSeq, jdbcType=INTEGER}
+		      			    , #{useYn, jdbcType=VARCHAR}
+		      			    , #{rgsterNo, jdbcType=VARCHAR}
+		      			    , #{rgsterName, jdbcType=VARCHAR}
+		      			    , GETDATE()
+		      			    , #{noteText, jdbcType=VARCHAR}
+		);
+	</insert>
+    
+    <select id="getMenuListCount" parameterType="Map" resultType="int">
+		SELECT COUNT(MENU_NO)
+		  FROM SY_MENU
+	</select>
+    
+    <select id="getMenuList" parameterType="Map" resultType="HashMap">
+    	WITH MENU_CTE(MENU_NO, UP_MENU_NO, MENU_NAME, MENU_GBN_TYPE, ALL_PATH_MENU_NO, ALL_PATH_MENU_NAME, MENU_URL, RSRC_URL, RSRC_TYPE, SORT_SEQ, DEPTH_SORT, MENU_LEVEL, RGSTER_NAME, RGST_DTM, MODER_NAME, MOD_DTM, USE_YN) AS (
+   			SELECT MENU_NO
+        		 , UP_MENU_NO
+				 , MENU_NAME
+				 , MENU_GBN_TYPE
+				 , ALL_PATH_MENU_NO
+				 , ALL_PATH_MENU_NAME
+				 , MENU_URL
+				 , RSRC_URL
+				 , RSRC_TYPE
+        		 , SORT_SEQ
+        		 , CONVERT(VARCHAR(255), RIGHT('000' + CONVERT(VARCHAR(3), SORT_SEQ), 3)) DEPTH_SORT
+        		 , MENU_LEVEL
+				 , RGSTER_NAME
+				 , RGST_DTM
+				 , MODER_NAME
+				 , MOD_DTM
+				 , USE_YN
+     		  FROM SY_MENU
+    	 UNION ALL
+   			SELECT A.MENU_NO
+				 , A.UP_MENU_NO
+				 , A.MENU_NAME
+				 , A.MENU_GBN_TYPE
+				 , A.ALL_PATH_MENU_NO
+				 , A.ALL_PATH_MENU_NAME
+				 , A.MENU_URL
+				 , A.RSRC_URL
+				 , A.RSRC_TYPE
+				 , A.SORT_SEQ
+				 , CONVERT(VARCHAR(255), B.DEPTH_SORT + ' > ' + RIGHT('000' + CONVERT(VARCHAR(3), A.SORT_SEQ), 3)) DEPTH_SORT
+				 , A.MENU_LEVEL
+				 , A.RGSTER_NAME
+				 , A.RGST_DTM
+				 , A.MODER_NAME
+				 , A.MOD_DTM
+				 , A.USE_YN
+   		 	  FROM SY_MENU A
+      			 , MENU_CTE B
+   			 WHERE A.UP_MENU_NO = B.MENU_NO
+		 )
+  		 SELECT MENU_NO 			menuNo
+       		  , UP_MENU_NO  		upMenuNo
+	   		  , MENU_GBN_TYPE		menuGbnType
+       		  , MENU_NAME			menuName
+			  , DEPTH_SORT			depthSort
+			  , ALL_PATH_MENU_NO	allPathMenuNo
+			  , ALL_PATH_MENU_NAME	allPathMenuName
+			  , MENU_URL			menuUrl
+	   		  , RSRC_URL			rsrcUrl
+	   		  , RSRC_TYPE			rsrcType
+       		  , SORT_SEQ			sortSeq
+       		  , MENU_LEVEL 			level	
+       		  , USE_YN				useYn
+	   		  , RGSTER_NAME			rgsterName
+	   		  , REPLACE(CONVERT(VARCHAR(30), RGST_DTM, 120), '-', '-')	rgstDtm	
+	  		  , MODER_NAME			moderName
+	   		  , REPLACE(CONVERT(VARCHAR(30), MOD_DTM, 120), '-', '-')	modDtm
+    	   FROM MENU_CTE
+   		  WHERE DEPTH_SORT LIKE '%000%'
+	   ORDER BY DEPTH_SORT
+    </select>
+	
+	<update id="updateMenu" parameterType="Map">
+    	UPDATE SY_MENU
+    	<trim prefix="SET" prefixOverrides=",">
+    		<if test="menuName != null and menuName != ''">
+    			, MENU_NAME = #{menuName, jdbcType=VARCHAR}
+    		</if>
+    		<if test="sortSeq != null and sortSeq != ''">
+    			, SORT_SEQ = #{sortSeq, jdbcType=INTEGER}
+    		</if>
+    		<if test="useYn != null and useYn !=''">
+    			, USE_YN = #{useYn, jdbcType=VARCHAR}
+    		</if>
+    			, MENU_URL = #{menuUrl, jdbcType=VARCHAR}
+    			, RSRC_URL = #{rsrcUrl, jdbcType=VARCHAR}
+    			, MOD_DTM = GETDATE()
+    	</trim>
+    	WHERE MENU_NO = #{menuNo, jdbcType=VARCHAR}
+    </update>
+    
+	 
+    
+</mapper>

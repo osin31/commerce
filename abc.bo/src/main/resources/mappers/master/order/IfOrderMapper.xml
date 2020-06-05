@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.order.repository.master.IfOrderDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.order.model.master.IfOrder">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.IfOrderDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			IF_ORDER
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    
+    <update id="updateRcvrInfoUdpate" parameterType="kr.co.abcmart.bo.order.model.master.IfOrder">
+	/*+ kr.co.abcmart.bo.order.repository.master.IfOrderDao.updateRcvrInfoUdpate [if order 배송지 변경 수정] */
+		UPDATE IF_ORDER
+		<trim prefix="SET" prefixOverrides=",">
+			, NAMERECEIVER 		= #{namereceiver, jdbcType=VARCHAR}
+			, MOBILERECEIVER 	= #{mobilereceiver, jdbcType=VARCHAR}
+			, PHONERECEIVER 	= #{phonereceiver, jdbcType=VARCHAR}
+			, ZIPCODE 			= #{zipcode, jdbcType=VARCHAR}
+			, ADDRESS 			= #{address, jdbcType=VARCHAR}
+			, ADDRESSDETAIL 	= #{addressdetail, jdbcType=VARCHAR}
+			
+		</trim>
+		 WHERE OLDORDNO 		= #{oldordno, jdbcType=VARCHAR}
+	</update>
+	
+    <update id="updateOrdStatusUdpate" parameterType="kr.co.abcmart.bo.order.model.master.IfOrder">
+	/*+ kr.co.abcmart.bo.order.repository.master.IfOrderDao.updateOrdStatusUdpate [if order 상태  변경 수정] */
+		UPDATE IF_ORDER
+		<trim prefix="SET" prefixOverrides=",">
+			, ORDSTATUS 		= #{ordstatus, jdbcType=VARCHAR}
+			
+		</trim>
+		 WHERE ORDNO 		= #{ordno, jdbcType=VARCHAR}
+		   AND OLDORDNO 	= #{oldordno, jdbcType=VARCHAR}
+	</update>
+	
+    <update id="updateOptionChange" parameterType="kr.co.abcmart.bo.order.model.master.IfOrder">
+	/*+ kr.co.abcmart.bo.order.repository.master.IfOrderDao.updateOptionChange [if order 옵션  변경 수정] */
+		UPDATE IF_ORDER
+		<trim prefix="SET" prefixOverrides=",">
+			, OPT1          = #{opt1, jdbcType=VARCHAR}
+			, SangPumFullCd = #{sangpumfullcd, jdbcType=VARCHAR}
+		</trim>
+		 WHERE ORDNO 		= #{ordno, jdbcType=VARCHAR}
+	</update>
+    
+
+</mapper>

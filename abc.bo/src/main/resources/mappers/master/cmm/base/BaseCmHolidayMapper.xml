@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.cmm.repository.master.CmHolidayDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	hldy_seq, hldy_ymd, hldy_name, hldy_gbn_type, vndr_no, hldy_yn, rgster_no, rgst_dtm, moder_no, mod_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	hldy_seq = #{hldySeq, jdbcType=BIGINT}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.cmm.model.master.CmHoliday" resultType="kr.co.abcmart.bo.cmm.model.master.CmHoliday">
+    
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmHolidayDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			cm_holiday WITH (NOLOCK)
+		<where> 
+			<if test="hldySeq != null"> 
+				 hldy_seq = #{hldySeq, jdbcType=BIGINT}
+			</if> 
+			<if test="hldyYmd != null"> 
+				 AND hldy_ymd = #{hldyYmd, jdbcType=DATE}
+			</if> 
+			<if test="hldyName != null"> 
+				 AND hldy_name = #{hldyName, jdbcType=VARCHAR}
+			</if> 
+			<if test="hldyGbnType != null"> 
+				 AND hldy_gbn_type = #{hldyGbnType, jdbcType=CHAR}
+			</if> 
+			<if test="vndrNo != null"> 
+				 AND vndr_no = #{vndrNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="hldyYn != null"> 
+				 AND hldy_yn = #{hldyYn, jdbcType=CHAR}
+			</if> 
+			<if test="rgsterNo != null"> 
+				 AND rgster_no = #{rgsterNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="rgstDtm != null"> 
+				 AND rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="moderNo != null"> 
+				 AND moder_no = #{moderNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="modDtm != null"> 
+				 AND mod_dtm = #{modDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+	<insert id="insert" useGeneratedKeys="true" keyProperty="hldySeq">
+
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmHolidayDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO cm_holiday
+			 ( hldy_ymd, hldy_name, hldy_gbn_type, vndr_no, hldy_yn, rgster_no, rgst_dtm, moder_no, mod_dtm ) 
+
+		VALUES 
+			 ( <choose><when test="hldyYmd != null">#{hldyYmd, jdbcType=DATE}</when><otherwise>getdate()</otherwise></choose>, #{hldyName, jdbcType=VARCHAR}, #{hldyGbnType, jdbcType=CHAR}, #{vndrNo, jdbcType=VARCHAR}, #{hldyYn, jdbcType=CHAR}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.cmm.model.master.CmHoliday">
+    
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmHolidayDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE cm_holiday
+		<set> 
+			<if test="hldySeq != null"> 
+				hldy_seq = #{hldySeq, jdbcType=BIGINT}, 
+			</if> 
+			<if test="hldyYmd != null"> 
+				hldy_ymd = #{hldyYmd, jdbcType=DATE}, 
+			</if> 
+			<if test="hldyName != null"> 
+				hldy_name = #{hldyName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="hldyGbnType != null"> 
+				hldy_gbn_type = #{hldyGbnType, jdbcType=CHAR}, 
+			</if> 
+			<if test="vndrNo != null"> 
+				vndr_no = #{vndrNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="hldyYn != null"> 
+				hldy_yn = #{hldyYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="rgsterNo != null"> 
+				rgster_no = #{rgsterNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 hldy_seq = #{hldySeq, jdbcType=BIGINT}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.cmm.model.master.CmHoliday">
+    
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmHolidayDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM cm_holiday
+		WHERE 
+			 hldy_seq = #{hldySeq, jdbcType=BIGINT}  
+    </delete>
+</mapper>

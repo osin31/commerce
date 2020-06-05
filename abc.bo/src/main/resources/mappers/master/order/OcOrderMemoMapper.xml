@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.order.repository.master.OcOrderMemoDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.order.model.master.OcOrderMemo">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOrderMemoDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			OC_ORDER_MEMO
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectByOrderNo" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderMemo" resultType="kr.co.abcmart.bo.order.model.master.OcOrderMemo">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOrderMemoDao.select [주문 목록 조회 쿼리] */
+   		SELECT 
+			M.ORDER_MEMO_SEQ, M.ORDER_MEMO_GBN_CODE, M.MEMO_TEXT, M.DEL_YN, M.RGSTER_NO, M.RGST_DTM, SA.LOGIN_ID AS ADMIN_ID, SA.ADMIN_NAME
+		FROM 
+			OC_ORDER_MEMO M WITH (NOLOCK)
+			, SY_ADMIN SA WITH (NOLOCK)
+	 	<where>
+	 		M.RGSTER_NO = SA.ADMIN_NO 
+			AND ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+			AND DEL_YN = 'N'
+			<if test="orderMemoGbnCode != null and orderMemoGbnCode != ''">
+				AND ORDER_MEMO_GBN_CODE = #{orderMemoGbnCode, jdbcType=VARCHAR}
+			</if>
+		</where>       		
+		ORDER BY RGST_DTM DESC
+    </select>
+    
+    <select id="countByOrderNo" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderMemo"  resultType="Integer">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOrderMemoDao.select [주문 목록 갯수 조회 쿼리] [Generator] */
+		SELECT 
+			COUNT(M.ORDER_NO)
+		FROM 
+			OC_ORDER_MEMO M WITH (NOLOCK)
+			, SY_ADMIN SA WITH (NOLOCK)
+	 	<where>
+	 		M.RGSTER_NO = SA.ADMIN_NO 
+			AND ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+			AND DEL_YN = 'N'
+			<if test="orderMemoGbnCode != null and orderMemoGbnCode != ''">
+				AND ORDER_MEMO_GBN_CODE = #{orderMemoGbnCode, jdbcType=VARCHAR}
+			</if>
+		</where> 
+    </select>
+	
+	<select id="selectAllByOrderNo" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderMemo" resultType="kr.co.abcmart.bo.order.model.master.OcOrderMemo">
+		WITH MEMO (ORDER_MEMO_SEQ, MEMO_GBN, ORDER_NO,ORDER_MEMO_GBN_CODE, MEMO_TEXT, DEL_YN, RGSTER_NO, RGST_DTM)
+		AS (
+  			SELECT 
+  				ORDER_MEMO_SEQ, 'ORDER' AS MEMO_GBN ,ORDER_NO,ORDER_MEMO_GBN_CODE, MEMO_TEXT, DEL_YN, RGSTER_NO, RGST_DTM
+  			FROM 
+  				OC_ORDER_MEMO WITH (NOLOCK)
+  		 	<where> 
+				 ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+				 AND DEL_YN = 'N'
+			</where> 
+       		UNION ALL     
+  			SELECT 
+  				CLM_MEMO_SEQ AS ORDER_MEMO_SEQ, 'CLAIM' AS MEMO_GBN ,CLM_NO AS ORDER_NO,CLM_GBN_CODE AS ORDER_MEMO_GBN_CODE, MEMO_TEXT, DEL_YN, RGSTER_NO, RGST_DTM
+  			FROM 
+  				OC_CLAIM_MEMO WITH (NOLOCK)
+  		 	<where>
+				ORG_ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+				AND DEL_YN = 'N'
+			</where>
+			  UNION ALL
+       		 SELECT 
+  					AS_MEMO_SEQ AS ORDER_MEMO_SEQ, 'AS' AS MEMO_GBN ,OAAM.AS_ACCEPT_NO AS ORDER_NO, OAA.AS_GBN_CODE AS ORDER_MEMO_GBN_CODE, OAAM.MEMO_TEXT, OAAM.DEL_YN, OAAM.RGSTER_NO, OAAM.RGST_DTM
+  			   FROM  OC_AS_ACCEPT_MEMO OAAM
+  			  INNER JOIN OC_AS_ACCEPT OAA ON OAAM.AS_ACCEPT_NO = OAA.AS_ACCEPT_NO  
+             <where>
+                    OAA.ORG_ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+				AND OAAM.DEL_YN = 'N'
+			</where> 
+  		) 
+		SELECT 
+			M.ORDER_MEMO_SEQ, M.MEMO_GBN, M.ORDER_NO,M.ORDER_MEMO_GBN_CODE, M.MEMO_TEXT, M.DEL_YN, M.RGSTER_NO, M.RGST_DTM, SA.LOGIN_ID AS ADMIN_ID, SA.ADMIN_NAME
+		FROM MEMO M WITH (NOLOCK)
+  			, SY_ADMIN SA WITH (NOLOCK)
+		<where>
+  			M.RGSTER_NO = SA.ADMIN_NO
+  		</where>
+		ORDER BY RGST_DTM DESC
+	</select>
+	
+	<select id="countAllByOrderNo" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderMemo" resultType="integer">
+		WITH MEMO_COUNT (ORDER_NO)
+		AS (
+			SELECT 
+  				ORDER_NO
+  			FROM 
+  				OC_ORDER_MEMO WITH (NOLOCK)
+  			<where> 
+				 ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+				 AND DEL_YN = 'N'
+			</where> 
+       		UNION ALL     
+  			SELECT 
+  				ORG_ORDER_NO AS ORDER_NO
+  			FROM 
+  				OC_CLAIM_MEMO WITH (NOLOCK)
+  		 	<where>
+				ORG_ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+				AND DEL_YN = 'N'
+			</where>
+			UNION ALL     
+  			SELECT 
+  				  OAAM.AS_ACCEPT_NO AS ORDER_NO
+  			FROM 
+  				  OC_AS_ACCEPT_MEMO OAAM WITH (NOLOCK) 
+  			  INNER JOIN OC_AS_ACCEPT OAA WITH (NOLOCK)  ON OAAM.AS_ACCEPT_NO = OAA.AS_ACCEPT_NO  
+             <where>
+                    OAA.ORG_ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+				AND OAAM.DEL_YN = 'N'
+			</where> 
+		) 
+		SELECT COUNT(M.ORDER_NO) FROM MEMO_COUNT M		
+	</select>
+	
+	 <insert id="insertOrdertMemo" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderMemo">
+    	/*+kr.co.abcmart.bo.order.model.master.OcOrderMemoDao.insertOrdertMemo [주문상세 메모 등록] [이상호] */
+    	
+    	<selectKey resultType="int" keyProperty="orderMemoSeq" order="BEFORE">
+			SELECT ISNULL(MAX(ORDER_MEMO_SEQ), 0)+1 
+			  FROM OC_ORDER_MEMO
+			 WHERE ORDER_NO = #{orderNo}
+		</selectKey>
+		INSERT INTO OC_ORDER_MEMO( 
+			order_no
+		  , order_memo_seq
+		  , order_prdt_seq
+		  , order_memo_gbn_code
+		  , memo_text
+		  , del_yn
+		  , rgster_no
+		  , rgst_dtm 
+		)VALUES ( 
+			#{orderNo, jdbcType=VARCHAR}
+		  , #{orderMemoSeq, jdbcType=INTEGER}
+		  , #{orderPrdtSeq, jdbcType=INTEGER}
+		  , #{orderMemoGbnCode, jdbcType=VARCHAR}
+		  , #{memoText, jdbcType=VARCHAR}
+		  , #{delYn, jdbcType=CHAR}
+		  , #{rgsterNo, jdbcType=VARCHAR}
+		  , <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> 
+		)  	
+    </insert>
+</mapper>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.vendor.repository.master.VdVendorDisplayChnnlDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.vendor.model.master.VdVendorDisplayChnnl">
+
+     /*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorDisplayChnnlDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			vd_vendor_display_chnnl WITH (NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+	<select id="getVndrDispChnnlSeq" parameterType="kr.co.abcmart.bo.vendor.model.master.VdVendorDisplayChnnl" resultType="int">
+	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorDisplayChnnlDao.getVndrDispChnnlSeq [업체전시채널순번 조회 쿼리] [유성민] */
+		SELECT ISNULL(MAX(VNDR_DISP_CHNNL_SEQ), 0) + 1
+		  FROM VD_VENDOR_DISPLAY_CHNNL
+		 WHERE VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+	</select>
+
+	<delete id="deleteDisplayChnnlByVndrNo" parameterType="String">
+	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorDisplayChnnlDao.deleteDisplayChnnlByVndrNo [업체전시채널삭제] [유성민] */
+		DELETE FROM VD_VENDOR_DISPLAY_CHNNL
+		 WHERE VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+	</delete>
+
+	<select id="selectVendorDisplayChnnlList" parameterType="kr.co.abcmart.bo.vendor.model.master.VdVendorDisplayChnnl" resultType="kr.co.abcmart.bo.vendor.model.master.VdVendorDisplayChnnl">
+	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorDisplayChnnlDao.selectVendorDisplayChnnlList [업체전시채널리스트] [유성민] */
+		SELECT A.VNDR_NO
+			 , A.CHNNL_NO
+			 , B.SITE_NO
+			 , B.CHNNL_NAME
+		  FROM VD_VENDOR_DISPLAY_CHNNL A WITH (NOLOCK)
+		 INNER JOIN SY_SITE_CHNNL B WITH (NOLOCK)
+			ON A.CHNNL_NO = B.CHNNL_NO
+		   AND B.USE_YN = 'Y'
+		 WHERE A.VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+	</select>
+</mapper>

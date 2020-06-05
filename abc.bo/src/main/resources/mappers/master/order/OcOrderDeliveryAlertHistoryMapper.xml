@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryAlertHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryAlertHistory">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryAlertHistoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			oc_order_delivery_alert_history
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <insert id="insertOcOrderDeliveryAlertHistory" parameterType="String">
+    	INSERT INTO OC_ORDER_DELIVERY_ALERT_HISTORY 
+    	(
+			  ORDER_NO					-- 주문번호
+			, ORDER_PRDT_SEQ			-- 주문상품순번
+			, ORDER_DLVY_HIST_SEQ		-- 주문배송이력순번
+			, DLVY_STAT_CODE			-- 배송상태코드
+			, DLVY_ID_TEXT				-- 배송ID
+			, SEND_YN					-- 전송여부
+			, RGST_DTM					-- 등록일시
+
+		)
+			select oo.order_no
+				 , oodh.ORDER_PRDT_SEQ
+				 , oodh.ORDER_DLVY_HIST_SEQ
+				 , '10005' AS DLVY_STAT_CODE
+				 , DLVY_ID_TEXT
+				 , 'N' AS SEND_YN
+				 , GETDATE() AS RGST_DTM
+			  from OC_ORDER oo WITH (NOLOCK)
+				 , OC_ORDER_DELIVERY_HISTORY oodh WITH (NOLOCK)
+			 where oo.ORDER_NO = oodh.ORDER_NO
+			   and oodh.DLVY_ID_TEXT = #{dlvyIdText}
+    </insert>
+
+</mapper>

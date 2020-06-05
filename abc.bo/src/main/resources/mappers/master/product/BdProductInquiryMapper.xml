@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.BdProductInquiryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.product.model.master.BdProductInquiry">
+    
+     /*+ kr.co.abcmart.bo.product.repository.master.BdProductInquiryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			bd_product_inquiry WITH(NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <sql id="select-columns-alias-a">
+    	A.prdt_inqry_seq, A.member_no, A.inqry_dtm, A.site_no, A.cnsl_type_code, A.cnsl_type_dtl_code, A.inqry_title_text, A.inqry_cont_text, A.prdt_no, A.vndr_no, A.pswd_yn, A.sms_send_yn, A.email_send_yn, A.aswr_cont_text, A.aswr_stat_code, A.disp_yn, A.aswr_no, A.aswr_dtm
+    </sql>
+    
+    <sql id="where-inquiry-search-vo-alias-a">
+    	<where>
+    		<!-- 검색어 -->
+    		<if test='bean.searchKeywordType != null and bean.searchKeywordType != ""'>
+    			<if test='bean.searchKeyword != null and bean.searchKeyword != ""'>
+	    			AND
+	    			<choose>
+	    				<!-- 상품명 -->
+		    			<when test='bean.searchKeywordType == "prdt-name"'>
+		    				B.prdt_name LIKE '%'+#{bean.searchKeyword, jdbcType=VARCHAR}+'%'
+		    			</when>
+		    			<!-- 스타일 -->
+		    			<when test='bean.searchKeywordType == "style-info"'>
+		    				B.style_info LIKE '%'+#{bean.searchKeyword, jdbcType=VARCHAR}+'%'
+		    			</when>
+		    			<!-- 제목+내용 -->
+		    			<when test='bean.searchKeywordType == "title-cont"'>
+		    				(
+		    				 A.inqry_title_text LIKE '%'+#{bean.searchKeyword, jdbcType=VARCHAR}+'%'
+		    				 OR
+		    				 A.inqry_cont_text LIKE '%'+#{bean.searchKeyword, jdbcType=VARCHAR}+'%'
+		    				) 
+		    			</when>
+		    		</choose>
+	    		</if>
+    		</if>
+    		<!-- 상품코드 검색 -->
+    		<if test="bean.prdtCodeType != null and bean.prdtCodeType != ''">
+    			<if test="bean.prdtCodeList != null">
+    				<choose>
+	    				<when test='bean.prdtCodeType == "prdt-code-online"'>
+	    					AND A.prdt_no IN
+				    		<foreach item="item" index="index" collection="bean.prdtCodeList" open="(" separator="," close=")">
+				    			#{item}
+				    		</foreach>
+	    				</when>
+	    				<when test='bean.prdtCodeType == "prdt-code-erp"'>
+	    					AND B.vndr_prdt_no_text IN
+				    		<foreach item="item" index="index" collection="bean.prdtCodeList" open="(" separator="," close=")">
+				    			#{item}
+				    		</foreach>
+	    				</when>
+	    			</choose>
+    			</if>
+    		</if>
+    		<!-- 회원 검색 -->
+    		<if test='bean.searchMemberType != null and bean.searchMemberType != ""'>
+    			<if test='bean.searchMember != null and bean.searchMember != ""'>
+	    			AND 
+		    			<choose>
+			    			<!-- 등록자 아이디 -->
+			    			<when test='bean.searchMemberType == "login-id"'>
+			    				D.login_id = #{bean.searchMember, jdbcType=VARCHAR}
+			    			</when>
+		    				<!-- 등록자명 -->
+			    			<when test='bean.searchMemberType == "member-name"'>
+			    				D.member_name = #{bean.searchMember, jdbcType=VARCHAR}
+			    				<if test="bean.hdphnBackNoText != null and bean.hdphnBackNoText != ''">
+					     		AND RIGHT(REPLACE(D.HDPHN_NO_TEXT, '-', ''), 4) = #{bean.hdphnBackNoText, jdbcType=VARCHAR}
+					     		</if>
+			    			</when>
+			    			<!-- 등록자 이메일 -->
+			    			<when test='bean.searchMemberType == "member-email"'>
+			    				D.email_addr_text = #{bean.searchMember, jdbcType=VARCHAR}
+			    			</when>
+		    			</choose>
+    			</if>
+    		</if>
+    		<!-- 관리자 검색 -->
+    		<if test='bean.searchAdminType != null and bean.searchAdminType != ""'>
+    			<if test='bean.searchAdmin != null and bean.searchAdmin != ""'>
+    				AND
+    					<choose>
+    						<!-- 관리자 ID -->
+			    			<when test='bean.searchAdminType == "login-id"'>
+			    				C.login_id LIKE '%'+#{bean.searchAdmin, jdbcType=VARCHAR}+'%'
+			    			</when>
+		    				<!-- 관리자명 -->
+			    			<when test='bean.searchAdminType == "admin-name"'>
+			    				C.admin_name LIKE '%'+#{bean.searchAdmin, jdbcType=VARCHAR}+'%' 
+			    			</when>
+    					</choose>
+    			</if>
+    		</if>
+    		<!-- 답변여부 -->
+    		<if test='bean.aswrStatCode != null and bean.aswrStatCode != ""'> 
+				AND A.aswr_stat_code = #{bean.aswrStatCode, jdbcType=VARCHAR}
+			</if>
+			<!-- 기간조회 (작성일자, 답변일자, 포인트지급일자, 포인트환수일자) -->
+    		<if test="bean.periodType != null and bean.periodType != ''">
+    			<choose>
+    				<!-- 문의일자 -->
+    				<when test="bean.periodType == 'inqry-dtm'">
+						AND A.inqry_dtm
+							BETWEEN CONVERT(DATETIME, CONCAT(#{bean.periodStartDate, jdbcType=VARCHAR}, ' 00:00:00')) 
+								AND CONVERT(DATETIME, CONCAT(#{bean.periodEndDate, jdbcType=VARCHAR}, ' 23:59:59'))
+					</when>
+					<!-- 답변일자 -->
+					<when test="bean.periodType == 'aswr-dtm'">
+						AND A.aswr_dtm
+							BETWEEN CONVERT(DATETIME, CONCAT(#{bean.periodStartDate, jdbcType=VARCHAR}, ' 00:00:00')) 
+								AND CONVERT(DATETIME, CONCAT(#{bean.periodEndDate, jdbcType=VARCHAR}, ' 23:59:59'))
+					</when>
+    			</choose>
+    		</if>
+			<!-- 브랜드 -->
+			<if test='bean.brandNo != null and bean.brandNo != ""'>
+				AND A.prdt_no IN ((SELECT P.prdt_no FROM pd_product P WHERE P.brand_no = #{bean.brandNo, jdbcType=VARCHAR}))
+			</if>
+			<if test='bean.brandName != null and bean.brandName != ""'>
+				AND B.brand_no IN ( SELECT brand_no FROM dp_brand WHERE brand_name like #{bean.brandName, jdbcType=VARCHAR} + '%' OR brand_en_name like #{bean.brandName, jdbcType=VARCHAR} + '%' )
+			</if>
+			<!-- 자사 / 입점 -->
+			<if test='bean.mmnyPrdtYn != null and bean.mmnyPrdtYn != ""'>
+				AND A.prdt_no IN ((SELECT P.prdt_no FROM pd_product P WHERE P.mmny_prdt_yn = #{bean.mmnyPrdtYn, jdbcType=VARCHAR}))
+			</if>
+			<!-- 문의유형 -->
+			<if test='bean.cnslTypeCode != null and bean.cnslTypeCode != ""'>
+				AND A.cnsl_type_code = #{bean.cnslTypeCode, jdbcType=VARCHAR}
+			</if>
+			<!-- 문의구분 -->
+			<if test='bean.cnslTypeDtlCode != null and bean.cnslTypeDtlCode != ""'>
+				AND A.cnsl_type_dtl_code = #{bean.cnslTypeDtlCode, jdbcType=VARCHAR}
+			</if>
+			<!-- 회원상세 속 조회 -->
+			<if test='bean.memberNo != null and bean.memberNo != ""'>
+				AND A.member_no = #{bean.memberNo, jdbcType=VARCHAR}
+			</if>
+			<!-- 회원상세 속 조회 -->
+			<if test='bean.dispYn != null and bean.dispYn != ""'>
+				AND A.disp_yn = #{bean.dispYn, jdbcType=VARCHAR}
+			</if>
+			
+			<!-- 업체번호  -->
+			<if test='bean.vndrNo != null and bean.vndrNo != ""'>
+			 	AND A.vndr_no = #{bean.vndrNo, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.vndrName != null and bean.vndrName != ""'>
+				AND A.vndr_no IN ( SELECT vndr_no FROM VD_VENDOR WHERE vndr_name Like #{bean.vndrName, jdbcType=VARCHAR}+'%' ) 
+			</if>
+			
+    	</where>
+    </sql>
+
+	<select id="selectProductInquiryCount" parameterType="pageable" resultType="Integer">
+      /*+ kr.co.abcmart.bo.product.repository.master.BdProductInquiryDao.selectProductInquiryCount [상품 Q and A 갯수 조회] [황성준] */
+    	SELECT 
+    		<include refid="Paging.totalCount" />
+    	FROM bd_product_inquiry A WITH(NOLOCK)
+    	JOIN pd_product B WITH(NOLOCK)
+    	ON A.prdt_no = B.prdt_no
+    	LEFT JOIN sy_admin C WITH(NOLOCK)
+    	ON A.aswr_no = C.admin_no
+    	JOIN mb_member D WITH(NOLOCK)
+    	ON A.member_no = D.member_no
+    	LEFT JOIN vd_vendor E WITH(NOLOCK)
+    	ON A.vndr_no = E.vndr_no
+    	LEFT JOIN pd_product_relation_file H WITH(NOLOCK)
+    	ON A.prdt_no = H.prdt_no
+    	AND H.prdt_rltn_file_seq = 1
+		AND H.disp_postn_type = 'P'
+		AND H.file_type = 'I'
+    		<include refid="where-inquiry-search-vo-alias-a" />
+    </select>
+    
+    <select id="selectProductInquiry" parameterType="pageable" resultType="kr.co.abcmart.bo.product.model.master.BdProductInquiry">
+      /*+ kr.co.abcmart.bo.product.repository.master.BdProductInquiryDao.selectProductInquiry [상품 Q and A 목록 조회] [황성준] */
+    	SELECT 
+    		<include refid="select-columns-alias-a" />
+    		, isnull('[' + (SELECT brand_name FROM DP_BRAND WHERE brand_no = B.brand_no) + '] ','') + B.prdt_name AS prdt_name
+    		, B.vndr_no
+    		, B.style_info
+    		, B.mmny_prdt_yn
+    		, C.login_id AS aswr_id
+    		, C.admin_name AS aswr_name
+    		, D.member_name
+	    	, D.login_id AS member_id
+			, E.vndr_name
+			, H.image_url AS product_image_url
+    		, H.altrn_text AS product_altrn_text
+    	FROM bd_product_inquiry A WITH(NOLOCK)
+    	JOIN pd_product B WITH(NOLOCK)
+    	ON A.prdt_no = B.prdt_no
+    	LEFT JOIN sy_admin C WITH(NOLOCK)
+    	ON A.aswr_no = C.admin_no
+    	JOIN mb_member D WITH(NOLOCK)
+    	ON A.member_no = D.member_no
+    	LEFT JOIN vd_vendor E WITH(NOLOCK)
+    	ON A.vndr_no = E.vndr_no
+    	LEFT JOIN pd_product_relation_file H WITH(NOLOCK)
+    	ON A.prdt_no = H.prdt_no
+    	AND H.prdt_rltn_file_seq = 1
+		AND H.disp_postn_type = 'P'
+		AND H.file_type = 'I'
+    	<include refid="where-inquiry-search-vo-alias-a" />
+		ORDER BY
+    	 <choose>
+			 <when test='sortColumn != null and sortColumn != ""'>
+			 	<if test='sortColumn == "prdtNo"'>
+			 		A.prdt_no
+			 	</if>
+			 	<if test='sortColumn == "prdtName"'>
+			 		B.prdt_name
+			 	</if>
+			 	<if test='sortColumn == "inqryTitleText"'>
+			 		A.inqry_title_text
+			 	</if>
+			 	<if test='sortColumn == "vndrName"'>
+			 		E.vndr_name
+			 	</if>
+			 	<if test='sortColumn == "inqryDtm"'>
+			 		A.inqry_dtm
+			 	</if>
+			 	<if test='sortColumn == "aswrDtm"'>
+			 		A.aswr_dtm
+			 	</if>
+			 	<if test='sortType == "DESC"'>
+			 		DESC
+			 	</if>
+			 </when>
+			 <otherwise>
+			 	A.inqry_dtm DESC
+			 </otherwise>
+		</choose>
+   		<include refid="Paging.mssql" />
+    </select>
+    
+     <select id="selectByPK" parameterType="kr.co.abcmart.bo.product.model.master.BdProductInquiry" resultType="kr.co.abcmart.bo.product.model.master.BdProductInquiry">
+      /*+ kr.co.abcmart.bo.product.repository.master.BdProductReviewDao.selectByPK [상품 후기 단건 조회] [황성준] */  
+		SELECT 
+			<include refid="select-columns-alias-a" />
+			, DBO.FN_CODE_VALUE('CNSL_TYPE_CODE', A.cnsl_type_code) AS cnsl_type_code_name
+			, DBO.FN_CODE_VALUE('CNSL_TYPE_DTL_CODE', A.cnsl_type_dtl_code) AS cnsl_type_dtl_code_name
+			, DBO.FN_CODE_VALUE('ASWR_STAT_CODE', A.aswr_stat_code) AS aswr_stat_code_name
+			, F.vndr_name
+			, B.login_id AS aswr_id
+			, B.admin_name AS aswr_name
+	    	, C.login_id AS member_id
+	    	, C.member_name AS member_name
+	    	, DBO.FN_CODE_VALUE('MEMBER_TYPE_CODE', C.member_type_code) + CASE WHEN C.mbshp_grade_code = '10001' THEN + ' (VIP)' ELSE '' END AS member_type_code_name
+	    	, D.style_info
+			, D.mmny_prdt_yn
+			, D.vndr_prdt_no_text
+			, D.prdt_name
+			, D.chnnl_no
+			, I.name AS std_ctgr_name
+			, E.brand_name
+			, G.site_name
+			, H.chnnl_name
+		FROM bd_product_inquiry A WITH(NOLOCK)
+		LEFT JOIN sy_admin B WITH(NOLOCK)
+    		ON A.aswr_no = B.admin_no
+		JOIN mb_member C WITH(NOLOCK)
+    		ON A.member_no = C.member_no
+    	JOIN pd_product D WITH(NOLOCK)
+    		ON A.prdt_no = D.prdt_no
+    	JOIN dp_brand E WITH(NOLOCK)
+    		ON D.brand_no = E.brand_no
+    	LEFT JOIN vd_vendor F WITH(NOLOCK)
+    		ON A.vndr_no = F.vndr_no
+    	JOIN sy_site G WITH(NOLOCK)
+    		ON D.site_no = G.site_no
+    	JOIN sy_site_chnnl H WITH(NOLOCK)
+    		ON D.site_no = H.site_no
+    		AND D.chnnl_no = H.chnnl_no
+		LEFT JOIN view_standard_category I WITH(NOLOCK)
+			ON D.std_ctgr_no = I.std_ctgr_no
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="getAswrCount" parameterType="hashMap" resultType="hashMap">
+      /*+ kr.co.abcmart.bo.product.repository.master.BdProductInquiryDao.getAswrCount [상품Q and A 답변, 미답변 상태별 건수(최근2개월 기준)] [황성준] */
+		SELECT 
+		  (SELECT COUNT(aswr_stat_code) FROM bd_product_inquiry WITH(NOLOCK)
+		   WHERE member_no = #{memberNo, jdbcType=VARCHAR} 
+		     AND inqry_dtm BETWEEN GETDATE()-60 AND GETDATE()
+		     AND aswr_stat_code = #{aswrStatCodeCm , jdbcType=VARCHAR}) AS aswrCount
+		, (SELECT COUNT(aswr_stat_code) FROM bd_product_inquiry WITH(NOLOCK)
+		   WHERE member_no = #{memberNo, jdbcType=VARCHAR} 
+		   	 AND inqry_dtm BETWEEN GETDATE()-60 AND GETDATE()
+		     AND aswr_stat_code = #{aswrStatCodeHd , jdbcType=VARCHAR}) AS hdAswrCount
+		, (SELECT COUNT(aswr_stat_code) FROM bd_product_inquiry WITH(NOLOCK)
+		   WHERE member_no = #{memberNo, jdbcType=VARCHAR} 
+		     AND inqry_dtm BETWEEN GETDATE()-60 AND GETDATE()
+		     AND aswr_stat_code = #{aswrStatCodeUn , jdbcType=VARCHAR}) AS unAswrCount
+	</select>
+	
+	  <update id="updateWithoutPK" parameterType="kr.co.abcmart.bo.product.model.master.BdProductInquiry">
+    
+     /*+ kr.co.abcmart.bo.product.repository.master.BdProductInquiryDao.updateWithoutPK [PK 제외한 update] [황성준] */
+    
+		UPDATE bd_product_inquiry
+		<set> 
+			<if test="memberNo != null"> 
+				member_no = #{memberNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="inqryDtm != null"> 
+				inqry_dtm = #{inqryDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="siteNo != null"> 
+				site_no = #{siteNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cnslTypeCode != null"> 
+				cnsl_type_code = #{cnslTypeCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cnslTypeDtlCode != null"> 
+				cnsl_type_dtl_code = #{cnslTypeDtlCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="inqryTitleText != null"> 
+				inqry_title_text = #{inqryTitleText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="inqryContText != null"> 
+				inqry_cont_text = #{inqryContText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="prdtNo != null"> 
+				prdt_no = #{prdtNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="vndrNo != null"> 
+				vndr_no = #{vndrNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="pswdYn != null"> 
+				pswd_yn = #{pswdYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="smsSendYn != null"> 
+				sms_send_yn = #{smsSendYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="emailSendYn != null"> 
+				email_send_yn = #{emailSendYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="aswrContText != null"> 
+				aswr_cont_text = #{aswrContText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="aswrStatCode != null"> 
+				aswr_stat_code = #{aswrStatCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="dispYn != null"> 
+				disp_yn = #{dispYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="aswrNo != null"> 
+				aswr_no = #{aswrNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="aswrDtm != null"> 
+				aswr_dtm = #{aswrDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		<where>
+			 AND prdt_inqry_seq = #{prdtInqrySeq, jdbcType=INTEGER}  
+			 AND member_no = #{memberNo, jdbcType=VARCHAR}
+			 AND prdt_no = #{prdtNo, jdbcType=VARCHAR}
+		</where> 
+    </update>
+    
+    <select id="selectProductInquiryGroupCount" resultType="hashMap">
+    	/*+ kr.co.abcmart.bo.product.repository.master.BdProductReviewDao.selectProductInquiryGroupCount [BO 상품문의 미답변 갯수 조회] [황성준] */
+    	SELECT mmny_prdt_yn, COUNT(*) AS [count]
+		  FROM bd_product_inquiry A WITH(NOLOCK)
+		  JOIN pd_product B WITH(NOLOCK)
+		    ON A.prdt_no = B.prdt_no
+	 	 WHERE A.aswr_stat_code = '10000'
+		   AND A.INQRY_DTM BETWEEN CONVERT(DATETIME, CONCAT(
+                                   CONVERT(CHAR(10), DATEADD(MM, -1, GETDATE()), 102), ' 00:00:00'))
+                               AND CONVERT(DATETIME, CONCAT(
+                                   CONVERT(CHAR(10), GETDATE(), 102), ' 23:59:59'))
+		<if test="vndrNo != null and vndrNo != '' and vndrNo != 'null'">
+		  AND A.VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+		</if>
+		GROUP BY B.mmny_prdt_yn
+    </select>
+    
+    <select id="selectMemberInquiryStats" parameterType="kr.co.abcmart.bo.product.model.master.BdProductInquiry" resultType="hashMap">
+    	/*+ kr.co.abcmart.bo.product.repository.master.BdProductReviewDao.selectMemberInquiryStats [BO 회원 상품문의 답변현황] [황성준] */
+    	SELECT
+    	    ISNULL(SUM(CASE WHEN A.ASWR_STAT_CODE = 10000 THEN 1 ELSE 0 END), 0) AS ASWR_STAT_CODE_10000
+		  , ISNULL(SUM(CASE WHEN A.ASWR_STAT_CODE = 10001 THEN 1 ELSE 0 END), 0) AS ASWR_STAT_CODE_10001
+		  , ISNULL(SUM(CASE WHEN A.ASWR_STAT_CODE = 10002 THEN 1 ELSE 0 END), 0) AS ASWR_STAT_CODE_10002
+    	FROM bd_product_inquiry A WITH(NOLOCK)
+    	<where>
+    		AND A.member_no = #{memberNo, jdbcType=VARCHAR}
+    	</where>
+    </select>
+    
+  
+</mapper>

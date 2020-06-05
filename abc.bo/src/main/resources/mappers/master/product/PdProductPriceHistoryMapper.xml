@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.PdProductPriceHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+
+    <sql id="select-columns-alias-a">
+    	A.prdt_no, A.prdt_price_hist_seq, A.apply_start_dtm, A.apply_end_dtm, A.normal_amt, A.sell_amt, A.onln_sell_amt, A.erp_sell_amt, A.erp_dscnt_rate, A.onln_dscnt_rate, A.emp_dscnt_rate, A.rgster_no, A.rgst_dtm, A.moder_no, A.mod_dtm
+    </sql>
+
+    <sql id="select-columns-admin-info">
+		, Y.login_id AS rgster_id
+		, Y.admin_name AS rgster_name
+		, Z.login_id AS moder_id
+		, Z.admin_name AS moder_name
+	</sql>
+
+	<sql id="from-tables-sy-admin">
+		LEFT OUTER JOIN sy_admin Y WITH(NOLOCK) ON A.rgster_no = Y.admin_no
+		LEFT OUTER JOIN sy_admin Z WITH(NOLOCK) ON A.moder_no = Z.admin_no
+	</sql>
+
+	<sql id="where-columns-alias-a">
+		<where>
+			<if test="bean.prdtNo != null">
+				 A.prdt_no = #{bean.prdtNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.prdtPriceHistSeq != null">
+				 AND A.prdt_price_hist_seq = #{bean.prdtPriceHistSeq, jdbcType=INTEGER}
+			</if>
+			<if test="bean.applyStartDtm != null">
+				 AND A.apply_start_dtm = #{bean.applyStartDtm, jdbcType=TIMESTAMP}
+			</if>
+			<if test="bean.applyEndDtm != null">
+				 AND A.apply_end_dtm = #{bean.applyEndDtm, jdbcType=TIMESTAMP}
+			</if>
+			<if test="bean.normalAmt != null">
+				 AND A.normal_amt = #{bean.normalAmt, jdbcType=INTEGER}
+			</if>
+			<if test="bean.sellAmt != null">
+				 AND A.sell_amt = #{bean.sellAmt, jdbcType=INTEGER}
+			</if>
+			<if test="bean.erpDscntRate != null">
+				 AND A.erp_dscnt_rate = #{bean.erpDscntRate, jdbcType=TINYINT}
+			</if>
+			<if test="bean.onlnDscntRate != null">
+				 AND A.onln_dscnt_rate = #{bean.onlnDscntRate, jdbcType=TINYINT}
+			</if>
+			<if test="bean.empDscntRate != null">
+				 AND A.emp_dscnt_rate = #{bean.empDscntRate, jdbcType=TINYINT}
+			</if>
+			<if test="bean.rgsterNo != null">
+				 AND A.rgster_no = #{bean.rgsterNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.rgstDtm != null">
+				 AND A.rgst_dtm = #{bean.rgstDtm, jdbcType=TIMESTAMP}
+			</if>
+			<if test="bean.moderNo != null">
+				 AND A.moder_no = #{bean.moderNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.modDtm != null">
+				 AND A.mod_dtm = #{bean.modDtm, jdbcType=TIMESTAMP}
+			</if>
+		</where>
+	</sql>
+
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.product.model.master.PdProductPriceHistory">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductPriceHistoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			pd_product_price_history WITH(NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+<!--     <select id="selectByPrdtNo" parameterType="pageable" resultType="kr.co.abcmart.bo.product.model.master.PdProductPriceHistory">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductPriceHistoryDao.selectByPrdtNo [상품 가격 이력 조회 쿼리] [김세훈] */
+		SELECT
+			 <include refid="select-columns-alias-a" />
+			 <include refid="select-columns-admin-info" />
+		FROM
+			pd_product_price_history A WITH(NOLOCK)
+			 <include refid="select-columns-admin-info" />
+		WHERE
+			A.prdt_no = #{bean.prdtNo, jdbcType=VARCHAR}
+		ORDER BY
+			A.prdt_price_hist_seq DESC
+    </select> -->
+
+    <insert id="insertWithSelectKey" parameterType="kr.co.abcmart.bo.product.model.master.PdProductPriceHistory">
+    	<selectKey resultType="java.lang.Integer" keyProperty="prdtPriceHistSeq" order="BEFORE">
+    		SELECT
+    			ISNULL(MAX(prdt_price_hist_seq) + 1, 1)
+    		FROM
+    			pd_product_price_history WITH(NOLOCK)
+    		WHERE
+    			prdt_no = #{prdtNo, jdbcType=VARCHAR}
+    	</selectKey>
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductPriceHistoryDao.insertWithSelectKey [상품 가격 이력 등록 쿼리] [김세훈] */
+		INSERT INTO pd_product_price_history
+			( prdt_no, prdt_price_hist_seq, apply_start_dtm, apply_end_dtm, normal_amt, sell_amt, onln_sell_amt, erp_sell_amt, erp_dscnt_rate, onln_dscnt_rate, emp_dscnt_rate, rgster_no, rgst_dtm, moder_no, mod_dtm )
+		VALUES
+			( #{prdtNo, jdbcType=VARCHAR}, #{prdtPriceHistSeq, jdbcType=INTEGER}, <choose><when test="applyStartDtm != null">#{applyStartDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, <choose><when test="applyEndDtm != null">#{applyEndDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{normalAmt, jdbcType=INTEGER}, #{sellAmt, jdbcType=INTEGER}, #{onlnSellAmt, jdbcType=INTEGER}, #{erpSellAmt, jdbcType=INTEGER}, #{erpDscntRate, jdbcType=TINYINT}, #{onlnDscntRate, jdbcType=TINYINT}, #{empDscntRate, jdbcType=TINYINT}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )
+    </insert>
+
+    <select id="selectApplyingPriceByPrdtNo" resultType="kr.co.abcmart.bo.product.model.master.PdProductPriceHistory">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductPriceHistoryDao.selectApplyingPriceByPrdtNo [현재 시간 기준 상품 가격 이력 조회] [김세훈] */
+		SELECT
+			TOP 1
+			<include refid="select-columns-alias-a" />,
+			<!-- 상품최저가격(프로모션가 포함) -->
+			CASE
+				WHEN INNER_PROMOTION.prdt_no IS NULL THEN A.sell_amt
+				ELSE INNER_PROMOTION.discount_amt
+			END AS display_product_price,
+			<!-- 상품최저가격에 대한 할인율 -->
+			CASE A.normal_amt WHEN 0
+				THEN 0
+				ELSE
+					FLOOR(
+						(
+							A.normal_amt -
+							CASE
+								WHEN INNER_PROMOTION.prdt_no IS NULL THEN A.sell_amt
+								ELSE INNER_PROMOTION.discount_amt
+							END
+						) / (A.normal_amt * 1.0) * 100.0
+					)
+			END AS display_discount_rate
+		FROM
+			pd_product_price_history A WITH(NOLOCK)
+			LEFT OUTER JOIN (
+				SELECT
+					B.prdt_no
+					, CASE WHEN A.imdtl_dscnt_type = 'R' THEN
+                                  CASE WHEN E.SELL_AMT > (E.NORMAL_AMT - CEILING(CAST((E.NORMAL_AMT * (A.IMDTL_DSCNT_VALUE * 0.01)) as float)/100)*100) THEN E.NORMAL_AMT - CEILING(CAST((E.NORMAL_AMT * (A.IMDTL_DSCNT_VALUE * 0.01)) as float)/100)*100 ELSE E.SELL_AMT END
+                             WHEN A.imdtl_dscnt_type = 'A' THEN
+                                  CASE WHEN E.sell_amt > (E.normal_amt - A.imdtl_dscnt_value) THEN (E.normal_amt - A.imdtl_dscnt_value) ELSE E.sell_amt END
+                             WHEN A.imdtl_dscnt_type = 'U' THEN
+                                  CASE WHEN E.sell_amt > A.imdtl_dscnt_value THEN A.imdtl_dscnt_value ELSE E.sell_amt END
+						END AS discount_amt
+					, ROW_NUMBER() OVER(PARTITION BY B.prdt_no ORDER BY
+										               CASE WHEN A.imdtl_dscnt_type = 'R' THEN
+							                                     CASE WHEN E.SELL_AMT > (E.NORMAL_AMT - CEILING(CAST((E.NORMAL_AMT * (A.IMDTL_DSCNT_VALUE * 0.01)) as float)/100)*100) THEN E.NORMAL_AMT - CEILING(CAST((E.NORMAL_AMT * (A.IMDTL_DSCNT_VALUE * 0.01)) as float)/100)*100 ELSE E.SELL_AMT END
+							                                WHEN A.imdtl_dscnt_type = 'A' THEN
+							                                     CASE WHEN E.sell_amt > (E.normal_amt - A.imdtl_dscnt_value) THEN (E.normal_amt - A.imdtl_dscnt_value) ELSE E.sell_amt END
+							                                WHEN A.imdtl_dscnt_type = 'U' THEN
+							                                     CASE WHEN E.sell_amt > A.imdtl_dscnt_value THEN A.imdtl_dscnt_value ELSE E.sell_amt END
+										               END
+					) AS RN
+				FROM
+					pr_promotion A WITH(NOLOCK)
+					INNER JOIN pr_promotion_target_product B WITH(NOLOCK) ON B.promo_no = A.promo_no AND B.prdt_no = #{prdtNo, jdbcType=VARCHAR}
+					INNER JOIN pr_promotion_target_channel C WITH(NOLOCK) ON C.promo_no = A.promo_no AND C.chnnl_no = #{chnnlNo, jdbcType=VARCHAR}
+					INNER JOIN pd_product_price_history E WITH(NOLOCK) ON E.prdt_no = B.prdt_no AND E.prdt_no = #{prdtNo, jdbcType=VARCHAR} AND GETDATE() &gt;= E.apply_start_dtm AND GETDATE() &lt;= E.apply_end_dtm
+				WHERE
+					A.promo_type_code IN ( '${@kr.co.abcmart.constant.CommonCode@PROMO_TYPE_CODE_DISCOUNT_IMMEDIATELY}',<!-- 프로모션코드. 즉시할인 --> '${@kr.co.abcmart.constant.CommonCode@PROMO_TYPE_CODE_DISCOUNT_IMMEDIATELY_AFFILIATES}',<!-- 프로모션코드. 제휴사즉시할인 --> '${@kr.co.abcmart.constant.CommonCode@PROMO_TYPE_CODE_SPECIAL_PRICE_TIME}'<!-- 프로모션코드. 타임특가 --> )
+                    AND A.imdtl_dscnt_type IN ('R', 'A', 'U')
+                    AND A.use_yn = 'Y'
+                    AND GETDATE() &gt;= A.promo_start_dtm
+                    AND GETDATE() &lt;= A.promo_end_dtm
+			) INNER_PROMOTION ON INNER_PROMOTION.prdt_no = A.prdt_no AND INNER_PROMOTION.rn = 1
+		WHERE
+			A.prdt_no = #{prdtNo}
+			AND GETDATE() &gt;= A.apply_start_dtm
+			AND GETDATE() &lt;= A.apply_end_dtm
+		ORDER BY
+			A.prdt_price_hist_seq DESC
+    </select>
+
+    <select id="selectByPrdtNo" parameterType="pageable" resultType="kr.co.abcmart.bo.product.model.master.PdProductPriceHistory">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductPriceHistoryDao.selectByPrdtNo [상품 가격 이력 조회 쿼리] [김세훈] */
+		<!-- 부가적인 정보를 조회함에 있어 외부조인을 사용함 -->
+		SELECT
+			<include refid="select-columns-alias-a" />
+			<include refid="select-columns-admin-info" />
+		FROM
+			pd_product_price_history A WITH(NOLOCK)
+			<include refid="from-tables-sy-admin" />
+		WHERE
+			A.prdt_no = #{bean.prdtNo, jdbcType=VARCHAR}
+		ORDER BY
+			prdt_price_hist_seq DESC
+    </select>
+
+    <select id="selectByPrdtNoTotalCount" parameterType="pageable" resultType="java.lang.Integer">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductPriceHistoryDao.selectByPrdtNoTotalCount [상품 가격 이력 전체 갯수 조회 쿼리] [김세훈] */
+		SELECT
+			<include refid="Paging.totalCount" />
+		FROM
+			pd_product_price_history A WITH(NOLOCK)
+		WHERE
+			A.prdt_no = #{bean.prdtNo, jdbcType=VARCHAR}
+    </select>
+
+    <delete id="deleteByPrdtNo" parameterType="java.lang.String">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductPriceHistoryDao.deleteByPrdtNo [상품번호로 상품상세 삭제 쿼리] [황성준] */
+		DELETE
+			FROM pd_product_price_history
+		WHERE
+			 prdt_no = #{prdtNo, jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

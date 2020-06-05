@@ -1,0 +1,2356 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder">
+    
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			sa_sales_order
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <sql id="dateConvert">
+    	<choose>
+	    	<when test="bean.typeStats == 'paymentType' ">
+				 <choose>
+					<when test="bean.choicePeriod == 'date' and bean.choicePeriod != null">
+				  		CONCAT(CONVERT(CHAR(10), ORDER_DTM, 23),'(', DATENAME(WEEKDAY, ORDER_DTM), ')')
+					</when>
+					<when test="bean.choicePeriod == 'month' and bean.choicePeriod != null">
+				 		LEFT(CONVERT(CHAR(10), ORDER_DTM, 23), 7)
+					</when>
+					<otherwise>
+				  		LEFT(CONVERT(CHAR(10), ORDER_DTM, 23), 4)
+					</otherwise>
+				</choose>
+			</when>
+			<otherwise>
+					 <choose>
+						<when test="bean.choicePeriod == 'date' and bean.choicePeriod != null">
+					 		 CONCAT(CONVERT(CHAR(10), SO.ORDER_DTM, 23),'(', DATENAME(WEEKDAY,SO.ORDER_DTM), ')')
+						</when>
+						<when test="bean.choicePeriod == 'month' and bean.choicePeriod != null">
+					 		 LEFT(CONVERT(CHAR(10), SO.ORDER_DTM, 23), 7)
+						</when>
+						<otherwise>
+					  		 LEFT(CONVERT(CHAR(10), SO.ORDER_DTM, 23), 4)
+						</otherwise>
+					</choose>
+			</otherwise>
+		</choose>
+	</sql>
+	
+	 <sql id="dateConvertForExcel">
+		 <choose>
+	    	<when test="typeStats == 'paymentType' ">
+				 <choose>
+					<when test="choicePeriod == 'date' and choicePeriod != null">
+				  		CONCAT(CONVERT(CHAR(10), ORDER_DTM, 23),'(', DATENAME(WEEKDAY, ORDER_DTM), ')')
+					</when>
+					<when test="choicePeriod == 'month' and choicePeriod != null">
+				  		LEFT(CONVERT(CHAR(10), ORDER_DTM, 23), 7)
+					</when>
+					<otherwise>
+				  		LEFT(CONVERT(CHAR(10), ORDER_DTM, 23), 4)
+					</otherwise>
+				</choose>
+			</when>
+			<otherwise>
+				 <choose>
+					<when test="choicePeriod == 'date' and choicePeriod != null">
+				  		CONCAT(CONVERT(CHAR(10), SO.ORDER_DTM, 23),'(', DATENAME(WEEKDAY,SO.ORDER_DTM), ')')
+					</when>
+					<when test="choicePeriod == 'month' and choicePeriod != null">
+				  		LEFT(CONVERT(CHAR(10), SO.ORDER_DTM, 23), 7)
+					</when>
+					<otherwise>
+				  		LEFT(CONVERT(CHAR(10), SO.ORDER_DTM, 23), 4)
+					</otherwise>
+				</choose>
+			</otherwise>
+		</choose>
+	</sql>
+	
+	<sql id="statsSearch">
+    	
+    	<where>
+    		<if test="(bean.fromDate != null or bean.fromDate != '') and (bean.toDate != null or bean.toDate != '') ">
+    			SO.ORDER_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) -- 기간
+		   			  AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+    		</if>
+	  		
+	    	<if test="bean.siteNo != null and bean.siteNo !='' ">
+	    		AND SO.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR} -- 사이트번호
+	    	</if>
+	    	<if test="bean.stockGbnCodeArr != null and bean.stockGbnCodeArr != '' ">
+	    		AND SO.STOCK_GBN_CODE IN
+	    		<foreach collection="bean.stockGbnCodeArr" item="stockGbnCode" open="(" close=")" separator=",">
+	    			#{stockGbnCode, jdbcType=VARCHAR} -- 발송처별
+	    		</foreach>
+	    	</if>
+	    	<if test="bean.deviceCodeArr != null and bean.deviceCodeArr !='' ">
+	    		AND SO.DEVICE_CODE IN
+	    		<foreach collection="bean.deviceCodeArr" item="deviceCode" open="(" close=")" separator=",">
+	    			#{deviceCode, jdbcType=VARCHAR} -- 디바이스별
+	    		</foreach>
+	    	</if>
+	    	<if test="bean.vndrGbnType != null and bean.vndrGbnType != '' ">
+	    		AND SO.VNDR_GBN_TYPE = #{bean.vndrGbnType, jdbcType=CHAR} -- 상품코드 구분
+	    	</if>
+	    	<if test="bean.vndrGbnType == 'V' and (bean.shoperSiteNo != null and bean.shoperSiteNo != '')">
+	    		AND SO.SITE_NO = #{bean.shoperSiteNo, jdbcType=VARCHAR}	-- 상품코드 구분을 입점으로 선택후 하위 사이트 선택시
+	    	</if>
+	    	<if test="bean.chnnlNo != null and bean.chnnlNo !='' ">
+	    		AND SO.CHNNL_NO = #{bean.chnnlNo, jdbcType=VARCHAR} -- 채널번호
+	    	</if>
+	    	<if test="bean.typeStats == 'timeType' or bean.typeStats == 'saleDetail' or bean.typeStats == 'vendorPop' ">
+	    		<choose>
+		    		<when test="(bean.fromHour != null and bean.fromHour != '') 
+		    			and (bean.toHour != null and bean.toHour != '' )" >
+		    				AND SO.ORDER_TIMESLOT_VALUE <![CDATA[>=]]> CONVERT(INT, #{bean.fromHour, jdbcType=VARCHAR})
+		    				AND SO.ORDER_TIMESLOT_VALUE <![CDATA[<]]> CONVERT(INT, #{bean.toHour, jdbcType=VARCHAR})   -- 시간대 검색조건시
+		    		</when>
+		    		<otherwise>
+		    			AND SO.ORDER_TIMESLOT_VALUE <![CDATA[>=]]> 00
+		    			AND SO.ORDER_TIMESLOT_VALUE <![CDATA[<]]> 24   -- 시간대 조건 미선택시
+		    		</otherwise>
+		    	</choose>
+	    	</if>
+	    	
+	    	<if test="bean.chkMember != null and bean.chkMember != '' ">
+	    		AND (SO.EMP_YN = 'N' AND SO.MEMBER_TYPE_CODE IN
+   				<foreach collection="bean.chkMember" item="memberCode" open="(" close=")" separator=",">
+	    			#{memberCode, jdbcType=VARCHAR} -- 회원구분
+	    		</foreach>
+	    			)
+	    	</if>
+	    	<if test="bean.empYn == 'Y' ">
+	    		AND SO.MEMBER_TYPE_CODE = '10001' AND SO.EMP_YN = #{bean.empYn, jdbcType=CHAR} -- 임직원 여부
+	    	</if>
+	    	<if test="bean.smallCategory != null and bean.smallCategory != '' ">
+	    		AND SO.STD_CTGR_NO = #{bean.smallCategory, jdbcType=VARCHAR} -- 카테고리 마지막 뎁스까지 선택하여 처리
+	    	</if>
+	    	<if test="bean.vndrBrandNo != null and bean.vndrBrandNo != '' ">
+	    		AND SO.BRAND_NO = #{bean.vndrBrandNo, jdbcType=VARCHAR} -- 브랜드 번호
+	    	</if>
+	    	<if test="bean.prdtName != null and bean.prdtName != '' ">
+	    		AND SO.PRDT_NAME LIKE CONCAT('%', #{bean.prdtName, jdbcType=VARCHAR}, '%') -- 상품명
+	    	</if>
+	    	<if test="bean.vndrNo != null and bean.vndrNo != '' ">
+	    		AND SO.VNDR_NO = #{bean.vndrNo, jdbcType=VARCHAR} -- 입점사번호
+	    	</if>
+	    	<if test="bean.reservePrdt != null and bean.reservePrdt != '' ">
+	    		AND SO.RSV_PRDT_YN = #{bean.reservePrdt, jdbcType=CHAR} -- 예약상품여부
+	    	</if>
+	    	<if test="bean.genderTheme != null and bean.genderTheme != '' ">
+	    		AND SO.GENDER_GBN_CODE = #{bean.genderTheme, jdbcType=VARCHAR} -- 성별구분코드
+	    	</if>
+	    	<if test="bean.typeStats == 'ageType'">
+	    		AND SO.MEMBER_TYPE_CODE = '10001'	-- 연령별(멤버십 회원만)
+	    	</if>
+	    	
+	    	AND SO.DLVY_AMT_YN = 'N' -- 배송비 여부
+	    	<if test="bean.typeStats == 'vendorType' ">
+	    		AND SO.VNDR_GBN_TYPE = 'V' -- 입점사 매출통계일때
+	    	</if>
+	    	
+	    	<if test="bean.pymntMeansCode != null and bean.pymntMeansCode !='' ">
+	    		AND EXISTS ( SELECT 1
+	
+	                  FROM OC_ORDER_PAYMENT WITH (NOLOCK)
+	
+	                 WHERE SO.ORDER_NO = ORDER_NO
+	                 AND
+                 	<foreach collection="bean.pymntMeansCode" item="pymntMeansCode" open="(" close=")" separator="or">
+							<if test="(pymntMeansCode != '10001' and pymntMeansCode != '10002') ">
+		             		 	PYMNT_MEANS_CODE = #{pymntMeansCode, jdbcType=VARCHAR}  -- 결제수단 구분
+		             		 </if>
+		             		<if test="pymntMeansCode == '10001' or pymntMeansCode == '10002' ">
+		             			<choose>
+		             				<when test="bean.chkEscroTrue == 'Y' and (bean.chkEscroFalse == null or bean.chkEscroFalse == '') ">
+		             					(PYMNT_MEANS_CODE = #{pymntMeansCode, jdbcType=VARCHAR} AND ESCR_APPLY_YN = #{bean.chkEscroTrue, jdbcType=CHAR}) -- 에스크로 적용여부 Y
+		             				</when>
+		             				<when test="bean.chkEscroFalse == 'N' and (bean.chkEscroTrue == null or bean.chkEscroTrue == '') ">
+		             					(PYMNT_MEANS_CODE = #{pymntMeansCode, jdbcType=VARCHAR} AND ESCR_APPLY_YN = #{bean.chkEscroFalse, jdbcType=CHAR}) -- 에스크로 미적용여부 N
+		             				</when>
+		             				<otherwise>
+		             					PYMNT_MEANS_CODE = #{pymntMeansCode, jdbcType=VARCHAR}  -- 결제수단 구분
+		             				</otherwise>
+		             			</choose> 
+				           	</if>  
+		            </foreach>
+		            )       
+	    	</if>
+    	</where>
+    </sql>
+    
+    <sql id="forEscro">
+    	<where>
+	    	<if test="bean.chkEscroTrue == 'Y' and bean.chkEscroFalse == '' ">
+	       		AND SOP.ESCR_APPLY_YN = #{bean.chkEscroTrue, jdbcType=CHAR} -- 에스크로 적용여부 Y
+	       	</if>
+	       	<if test="bean.chkEscroFalse == 'N' and bean.chkEscroTrue == '' ">
+	       		AND SOP.ESCR_APPLY_YN = #{bean.chkEscroFalse, jdbcType=CHAR} -- 에스크로 미적용여부 N
+	       	</if>
+       	</where>
+    </sql>
+    
+    <sql id="forEscroExcel">
+    	<where>
+	    	<if test="chkEscroTrue == 'Y' and chkEscroFalse == '' ">
+	       		AND SOP.ESCR_APPLY_YN = #{chkEscroTrue, jdbcType=CHAR} -- 에스크로 적용여부 Y
+	       	</if>
+	       	<if test="chkEscroFalse == 'N' and chkEscroTrue == '' ">
+	       		AND SOP.ESCR_APPLY_YN = #{chkEscroFalse, jdbcType=CHAR} -- 에스크로 미적용여부 N
+	       	</if>
+       	</where>
+    </sql>
+    
+    <sql id="statsSearchForExcel">
+    	
+    	<where>
+    		
+
+	  		SO.ORDER_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{fromDate, jdbcType=VARCHAR}, ' 00:00:00')) 
+			  AND CONVERT(DATETIME, CONCAT(#{toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+   			  	
+	    	<if test="siteNo != null and siteNo !='' ">
+	    		AND SO.SITE_NO = #{siteNo, jdbcType=VARCHAR} 
+	    	</if>
+	    	<if test="stockGbnCodeArr != null and stockGbnCodeArr != '' ">
+	    		AND
+	    		<foreach collection="stockGbnCodeArr" item="stockGbnCode" open="(" close=")" separator="or">
+	    			SO.STOCK_GBN_CODE = #{stockGbnCode, jdbcType=VARCHAR}
+	    		</foreach>
+	    	</if>
+	    	<if test="deviceCodeArr != null and deviceCodeArr !='' ">
+	    		AND
+	    		<foreach collection="deviceCodeArr" item="deviceCode" open="(" close=")" separator="or">
+	    			SO.DEVICE_CODE = #{deviceCode, jdbcType=VARCHAR}
+	    		</foreach>
+	    	</if>
+	    	<if test="vndrGbnType != null and vndrGbnType != '' ">
+	    		AND SO.VNDR_GBN_TYPE = #{vndrGbnType, jdbcType=CHAR}
+	    	</if>
+	    	<if test="chnnlNo != null and chnnlNo !='' ">
+	    		AND SO.CHNNL_NO = #{chnnlNo, jdbcType=VARCHAR}
+	    	</if>
+	    	<if test="typeStats == 'timeType' ">
+	    		<choose>
+	    		<when test="(fromHour != null and fromHour != '') 
+		    		and (toHour != null and toHour != '' )" >
+		    			AND SO.ORDER_TIMESLOT_VALUE <![CDATA[>=]]> CONVERT(INT, #{fromHour, jdbcType=VARCHAR})
+		    			AND SO.ORDER_TIMESLOT_VALUE <![CDATA[<]]> CONVERT(INT, #{toHour, jdbcType=VARCHAR})   -- 시간대 검색조건시
+	    		</when>
+	    		<otherwise>
+	    			AND SO.ORDER_TIMESLOT_VALUE BETWEEN 00 AND 24   -- 시간대 조건 미선택시
+	    		</otherwise>
+	    	</choose>
+	    	</if>
+	    	
+	    	<if test="chkMember != null and chkMember != '' ">
+	    		AND
+	    		<foreach collection="chkMember" item="memberCode" open="(" close=")" separator="or">
+	    			(SO.MEMBER_TYPE_CODE = #{memberCode, jdbcType=VARCHAR} AND SO.EMP_YN = 'N') -- 회원구분
+	    		</foreach>
+	    	</if>
+	    	<if test="empYn == 'Y' ">
+	    		AND SO.MEMBER_TYPE_CODE = '10001' AND SO.EMP_YN = #{empYn, jdbcType=CHAR} -- 임직원 여부
+	    	</if>
+	    	<if test="smallCategory != null and smallCategory != '' ">
+	    		AND SO.STD_CTGR_NO = #{smallCategory, jdbcType=VARCHAR} -- 카테고리 마지막 뎁스까지 선택하여 처리
+	    	</if>
+	    	<if test="vndrBrandNo != null and vndrBrandNo != '' ">
+	    		AND SO.PRDT_NO = #{vndrBrandNo, jdbcType=VARCHAR} -- 브랜드 번호
+	    	</if>
+	    	<if test="prdtName != null and prdtName != '' ">
+	    		AND SO.PRDT_NAME = #{prdtName, jdbcType=VARCHAR} -- 상품명
+	    	</if>
+	    	<if test="vndrNo != null and vndrNo != '' ">
+	    		AND SO.VNDR_NO = #{vndrNo, jdbcType=VARCHAR} -- 입점사번호
+	    	</if>
+	    	<if test="reservePrdt != null and reservePrdt != '' ">
+	    		AND SO.RSV_PRDT_YN = #{reservePrdt, jdbcType=CHAR} -- 예약상품여부
+	    	</if>
+	    	<if test="genderTheme != null and genderTheme != '' ">
+	    		AND SO.GENDER_GBN_CODE = #{genderTheme, jdbcType=VARCHAR} -- 성별구분코드
+	    	</if>
+	    	<if test="typeStats == 'ageType'">
+	    		AND SO.MEMBER_TYPE_CODE = '10001'	-- 연령별(멤버십 회원만)
+	    	</if>
+	    	
+	    	AND SO.DLVY_AMT_YN = 'N' -- 배송비여부
+	    	<if test="typeStats == 'vendorType' ">
+	    		AND SO.VNDR_GBN_TYPE = 'V' -- 입점사 매출통계일때
+	    	</if>
+	    	
+	    	<if test="pymntMeansCode != null and pymntMeansCode !='' ">
+	    		AND EXISTS ( SELECT 1
+	
+	                  FROM OC_ORDER_PAYMENT WITH (NOLOCK)
+	                 WHERE SO.ORDER_NO = ORDER_NO
+	                 AND
+                 	<foreach collection="pymntMeansCode" item="pymntMeansCode" open="(" close=")" separator="or">
+							<if test="(pymntMeansCode != '10001' and pymntMeansCode != '10002') ">
+		             		 	PYMNT_MEANS_CODE = #{pymntMeansCode, jdbcType=VARCHAR}  -- 결제수단 구분
+		             		 </if>
+		             		<if test="pymntMeansCode == '10001' or pymntMeansCode == '10002' ">
+		             			<choose>
+		             				<when test="chkEscroTrue == 'Y' and chkEscroFalse == '' ">
+		             					(PYMNT_MEANS_CODE = #{pymntMeansCode, jdbcType=VARCHAR} AND ESCR_APPLY_YN = #{bean.chkEscroTrue, jdbcType=CHAR}) -- 에스크로 적용여부 Y
+		             				</when>
+		             				<when test="chkEscroFalse == 'N' and chkEscroTrue == '' ">
+		             					(PYMNT_MEANS_CODE = #{pymntMeansCode, jdbcType=VARCHAR} AND ESCR_APPLY_YN = #{bean.chkEscroFalse, jdbcType=CHAR}) -- 에스크로 미적용여부 N
+		             				</when>
+		             				<otherwise>
+		             					PYMNT_MEANS_CODE = #{pymntMeansCode, jdbcType=VARCHAR}  -- 결제수단 구분
+		             				</otherwise>
+		             			</choose>
+				           	</if>
+		            </foreach>
+		            )
+	    	</if>
+    	</where>
+    </sql>
+    
+    <select id="selectBigCategory" parameterType="String" resultType="kr.co.abcmart.bo.display.model.master.DpCategory">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectBigCategory [대분류 표준카테고리 조회] [이재렬] */
+    		SELECT CTGR_NO
+    			 , UP_CTGR_NO
+    			 , CTGR_NAME
+    			 , CTGR_LEVEL
+    		FROM DP_CATEGORY WITH (NOLOCK)
+    			WHERE CTGR_LEVEL = 1
+    </select>
+    
+    <select id="selectMidCategory" parameterType="String" resultType="kr.co.abcmart.bo.display.model.master.DpCategory">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectMidCategory [중분류 표준카테고리 조회] [이재렬] */
+    		SELECT DISTINCT A.CTGR_NO
+    			 , A.UP_CTGR_NO
+    			 , A.CTGR_NAME
+    			 , A.CTGR_LEVEL
+    		FROM DP_CATEGORY A WITH (NOLOCK), DP_CATEGORY B WITH (NOLOCK)
+    			WHERE A.UP_CTGR_NO IS NOT NULL
+    			AND A.UP_CTGR_NO = #{ctgrNo, jdbcType=VARCHAR}
+    			AND A.CTGR_LEVEL = 2
+    </select>
+    
+    <select id="selectSmallCategory" parameterType="String" resultType="kr.co.abcmart.bo.display.model.master.DpCategory">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectSmallCategory [소분류 표준카테고리 조회] [이재렬] */
+    		SELECT DISTINCT A.CTGR_NO
+    			 , A.UP_CTGR_NO
+    			 , A.CTGR_NAME
+    			 , A.CTGR_LEVEL
+    		FROM DP_CATEGORY A WITH (NOLOCK), DP_CATEGORY B WITH (NOLOCK)
+    			WHERE A.UP_CTGR_NO IS NOT NULL
+    			AND A.UP_CTGR_NO = #{ctgrNo, jdbcType=VARCHAR}
+    			AND A.CTGR_LEVEL IN (3, 4)
+    </select>
+    
+   <select id="sendTypeCount" parameterType="pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.sendTypeCount [발송처별 매출통계 카운트] [이재렬] */
+    	SELECT <include refid="Paging.totalCount"/>
+    	  FROM (SELECT <include refid="Paging.totalCount"/>
+    	 		 FROM SA_SALES_ORDER SO WITH (NOLOCK)
+    	    	  <include refid="statsSearch"/>
+    	    	  GROUP BY <include refid="dateConvert"/>
+    	    ) A
+    
+    </select>
+    
+    <select id="selectSendTypeStats" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder" >
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectSendTypeStats [발송처별 매출통계] [이재렬] */
+    	SELECT A.ORDER_DTM AS HOUR_TITLE
+    		 , A.ORDER_QTY_ALL
+    		 , A.PRDT_NORMAL_AMT_ALL
+    		 , A.ORDER_AMT_ALL
+    		 , A.ORDER_QTY_10000
+    		 , A.PRDT_NORMAL_AMT_10000
+    		 , A.ORDER_AMT_10000
+    		 , A.ORDER_QTY_10001
+    		 , A.PRDT_NORMAL_AMT_10001
+    		 , A.ORDER_AMT_10001
+    		 , A.ORDER_QTY_10002
+    		 , A.PRDT_NORMAL_AMT_10002
+    		 , A.ORDER_AMT_10002
+    		 , A.ORDER_QTY_10003
+    		 , A.PRDT_NORMAL_AMT_10003
+    		 , A.ORDER_AMT_10003
+    	  FROM (
+	    	  		SELECT '합계' AS ORDER_DTM
+			     		 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+						 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)* SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+						 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)* SO.ORDER_AMT)) AS ORDER_AMT_ALL
+
+			     		 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+
+			     		 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+
+			     		 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+
+			     		 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10003
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10003
+
+			  		FROM SA_SALES_ORDER SO WITH (NOLOCK) 
+					  <include refid="statsSearch"/> 
+    	        UNION ALL
+			    	SELECT <include refid="dateConvert"/> AS ORDER_DTM
+			     		 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+						 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)* SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+						 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)* SO.ORDER_AMT)) AS ORDER_AMT_ALL
+
+			     		 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+
+			     		 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+
+			     		 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+
+			     		 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10003
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10003
+
+			  		FROM SA_SALES_ORDER SO WITH (NOLOCK)  
+					  <include refid="statsSearch"/>
+					GROUP BY <include refid="dateConvert"/>
+					ORDER BY ORDER_DTM DESC
+					   <include refid="Paging.mssql" />
+			) A
+		
+    </select>
+    
+     <select id="selectSendTypeStatsForExcel" parameterType="kr.co.abcmart.bo.stats.vo.SalesStatsSearchVO" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder" >
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectSendTypeStatsForExcel [발송처별 매출통계 엑셀다운로드] [이재렬] */
+    	SELECT A.ORDER_DTM AS HOUR_TITLE
+    		 , A.ORDER_QTY_ALL
+    		 , A.PRDT_NORMAL_AMT_ALL
+    		 , A.ORDER_AMT_ALL
+    		 , A.ORDER_QTY_10000
+    		 , A.PRDT_NORMAL_AMT_10000
+    		 , A.ORDER_AMT_10000
+    		 , A.ORDER_QTY_10001
+    		 , A.PRDT_NORMAL_AMT_10001
+    		 , A.ORDER_AMT_10001
+    		 , A.ORDER_QTY_10002
+    		 , A.PRDT_NORMAL_AMT_10002
+    		 , A.ORDER_AMT_10002
+    		 , A.ORDER_QTY_10003
+    		 , A.PRDT_NORMAL_AMT_10003
+    		 , A.ORDER_AMT_10003
+    	  FROM (
+		    	SELECT 
+		    		  '합계' AS ORDER_DTM
+		    		   
+		     		 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+						   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)* SO.PRDT_NORMAL_AMT)*1000) AS PRDT_NORMAL_AMT_ALL
+						   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)* SO.ORDER_AMT)*1000) AS ORDER_AMT_ALL
+
+			     		 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+
+			     		 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+
+			     		 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+
+			     		 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10003
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10003
+
+			  		FROM SA_SALES_ORDER SO WITH (NOLOCK) 
+				  <include refid="statsSearchForExcel"/>
+				UNION ALL
+			    	SELECT <include refid="dateConvertForExcel"/> AS ORDER_DTM
+			     		, SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+						   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)* SO.PRDT_NORMAL_AMT)*1000) AS PRDT_NORMAL_AMT_ALL
+						   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)* SO.ORDER_AMT)*1000) AS ORDER_AMT_ALL
+
+			     		 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+
+			     		 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+
+			     		 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+
+			     		 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10003
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003
+			     		 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10003
+
+			  		FROM SA_SALES_ORDER SO WITH (NOLOCK) 
+					  <include refid="statsSearchForExcel"/>
+				GROUP BY <include refid="dateConvertForExcel"/>
+				
+				) A
+	</select>
+    
+    
+    <select id="selectDeviceTypeCount" parameterType="pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectDeviceTypeCount [디바이스별 매출통계 카운트] [이재렬] */
+    	SELECT <include refid="Paging.totalCount"/>
+    	  FROM (SELECT <include refid="Paging.totalCount"/>
+    	 		 FROM SA_SALES_ORDER SO WITH (NOLOCK)
+    	    	  <include refid="statsSearch"/>
+    	    	  GROUP BY <include refid="dateConvert"/>
+    	    ) A
+    
+    </select>
+    
+    
+    <select id="selectDeviceTypeStats" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder" >
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectDeviceTypeStats [디바이스별 매출통계] [이재렬] */
+    	SELECT A.ORDER_DTM AS HOUR_TITLE
+    		 , A.ORDER_QTY_ALL
+    		 , A.PRDT_NORMAL_AMT_ALL
+    		 , A.ORDER_AMT_ALL
+    		 , A.ORDER_QTY_10000
+    		 , A.PRDT_NORMAL_AMT_10000
+    		 , A.ORDER_AMT_10000
+    		 , A.ORDER_QTY_10001
+    		 , A.PRDT_NORMAL_AMT_10001
+    		 , A.ORDER_AMT_10001
+    		 , A.ORDER_QTY_10002
+    		 , A.PRDT_NORMAL_AMT_10002
+    		 , A.ORDER_AMT_10002 
+    	  FROM (
+		    	 SELECT 
+					  '합계' AS ORDER_DTM
+					, SUM((CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+					
+					, SUM((CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END))			AS ORDER_QTY_10000
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END)))	AS PRDT_NORMAL_AMT_10000
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END)))			AS ORDER_AMT_10000
+					
+					, SUM((CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END))			AS ORDER_QTY_10001
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END)))	AS PRDT_NORMAL_AMT_10001
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END)))			AS ORDER_AMT_10001
+					
+					, SUM((CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END))			AS ORDER_QTY_10002
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END)))	AS PRDT_NORMAL_AMT_10002
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END)))			AS ORDER_AMT_10002
+				FROM SA_SALES_ORDER SO WITH (NOLOCK)
+					<include refid="statsSearch"/>
+				UNION ALL
+					SELECT 
+					  <include refid="dateConvert"/> AS ORDER_DTM
+					, SUM((CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+					
+					, SUM((CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END))			AS ORDER_QTY_10000
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END)))	AS PRDT_NORMAL_AMT_10000
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END)))			AS ORDER_AMT_10000
+					
+					, SUM((CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END))			AS ORDER_QTY_10001
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END)))	AS PRDT_NORMAL_AMT_10001
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END)))			AS ORDER_AMT_10001
+					
+					, SUM((CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END))			AS ORDER_QTY_10002
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END)))	AS PRDT_NORMAL_AMT_10002
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END)))			AS ORDER_AMT_10002
+				FROM SA_SALES_ORDER SO WITH (NOLOCK)
+					<include refid="statsSearch"/>
+					GROUP BY <include refid="dateConvert"/>
+				ORDER BY ORDER_DTM DESC
+				   <include refid="Paging.mssql" />
+			) A
+		
+    </select>
+    
+    
+    <select id="selectDeviceTypeStatsForExcel" parameterType="kr.co.abcmart.bo.stats.vo.SalesStatsSearchVO" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder" >
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectDeviceStatsForExcel [디바이스별 매출통계 엑셀다운로드] [이재렬] */
+    	SELECT A.ORDER_DTM AS HOUR_TITLE
+    		 , A.ORDER_QTY_ALL
+    		 , A.PRDT_NORMAL_AMT_ALL
+    		 , A.ORDER_AMT_ALL
+    		 , A.ORDER_QTY_10000
+    		 , A.PRDT_NORMAL_AMT_10000
+    		 , A.ORDER_AMT_10000
+    		 , A.ORDER_QTY_10001
+    		 , A.PRDT_NORMAL_AMT_10001
+    		 , A.ORDER_AMT_10001
+    		 , A.ORDER_QTY_10002
+    		 , A.PRDT_NORMAL_AMT_10002
+    		 , A.ORDER_AMT_10002 
+    	  FROM (
+		    	 SELECT 
+					  '합계' AS ORDER_DTM
+					, SUM((CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+					
+					, SUM((CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END))			AS ORDER_QTY_10000
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END)))	AS PRDT_NORMAL_AMT_10000
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END)))			AS ORDER_AMT_10000
+					
+					, SUM((CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END))			AS ORDER_QTY_10001
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END)))	AS PRDT_NORMAL_AMT_10001
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END)))			AS ORDER_AMT_10001
+					
+					, SUM((CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END))			AS ORDER_QTY_10002
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END)))	AS PRDT_NORMAL_AMT_10002
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END)))			AS ORDER_AMT_10002
+				FROM SA_SALES_ORDER SO WITH (NOLOCK)
+				  <include refid="statsSearchForExcel"/>
+				UNION ALL
+					 SELECT 
+					  <include refid="dateConvertForExcel"/> AS ORDER_DTM
+					, SUM((CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+					
+					, SUM((CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END))			AS ORDER_QTY_10000
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END)))	AS PRDT_NORMAL_AMT_10000
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END)))			AS ORDER_AMT_10000
+					
+					, SUM((CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END))			AS ORDER_QTY_10001
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END)))	AS PRDT_NORMAL_AMT_10001
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END)))			AS ORDER_AMT_10001
+					
+					, SUM((CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END))			AS ORDER_QTY_10002
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END)))	AS PRDT_NORMAL_AMT_10002
+					, SUM(CONVERT(BIGINT,(CASE WHEN SO.SALES_CNCL_GBN_TYPE ='C' OR SO.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END)))			AS ORDER_AMT_10002
+						FROM SA_SALES_ORDER SO WITH (NOLOCK)
+						  <include refid="statsSearchForExcel"/>
+						GROUP BY <include refid="dateConvertForExcel"/>
+			    
+				) A
+	</select>
+	
+    
+    <select id="selectPaymentTypeCount" parameterType="pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectPaymentTypeCount [결제수단별 매출통계 카운트] [이재렬] */
+    	SELECT <include refid="Paging.totalCount"/>
+    	  FROM (SELECT <include refid="Paging.totalCount"/>
+    	 		 FROM SA_SALES_ORDER SO WITH (NOLOCK)
+    	    	  <include refid="statsSearch"/>
+    	    	  GROUP BY <include refid="dateConvert"/>
+    	    ) A
+    
+    </select>
+    
+    
+    <select id="selectPaymentTypeStats" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder" >
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectPaymentTypeStats [결제수단별 매출통계] [이재렬] */
+    	SELECT A.ORDER_DTM AS HOUR_TITLE
+    		 , A.ORDER_QTY_ALL
+    		 , A.PRDT_NORMAL_AMT_ALL
+    		 , A.ORDER_AMT_ALL
+    		 , A.ORDER_QTY_10000
+    		 , A.PRDT_NORMAL_AMT_10000
+    		 , A.ORDER_AMT_10000
+    		 , A.ORDER_QTY_10001
+    		 , A.PRDT_NORMAL_AMT_10001
+    		 , A.ORDER_AMT_10001
+    		 , A.ORDER_QTY_10002
+    		 , A.PRDT_NORMAL_AMT_10002
+    		 , A.ORDER_AMT_10002
+    		 , A.ORDER_QTY_10003
+    		 , A.PRDT_NORMAL_AMT_10003
+    		 , A.ORDER_AMT_10003
+    		 , A.ORDER_QTY_10004
+    		 , A.PRDT_NORMAL_AMT_10004
+    		 , A.ORDER_AMT_10004
+    		 , A.ORDER_QTY_10005
+    		 , A.PRDT_NORMAL_AMT_10005
+    		 , A.ORDER_AMT_10005
+    		 , A.ORDER_QTY_10006
+    		 , A.PRDT_NORMAL_AMT_10006
+    		 , A.ORDER_AMT_10006
+    		 , A.ORDER_QTY_99999
+    		 , A.PRDT_NORMAL_AMT_99999
+    		 , A.ORDER_AMT_99999
+    	FROM (
+		    	SELECT '합계' AS ORDER_DTM
+		     , COUNT(*) AS ORDER_QTY_ALL
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SSO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SOP.PYMNT_AMT)) AS ORDER_AMT_ALL
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10000' THEN 1 ELSE 0 END)) AS ORDER_QTY_10000  -- 신용카드/체크카드 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10000' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000 -- 신용카드/체크카드 정상가 
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10000' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10000 -- 신용카드/체크카드
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10001' THEN 1 ELSE 0 END)) AS ORDER_QTY_10001  -- 무통장입금  Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10001' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001 -- 무통장입금 정상가 
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10001' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10001 -- 무통장입금
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10002' THEN 1 ELSE 0 END)) AS ORDER_QTY_10002  -- 실시간계좌이체 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10002' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002  -- 실시간계좌이체 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10002' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10002  -- 실시간계좌이체
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10003' THEN 1 ELSE 0 END)) AS ORDER_QTY_10003  -- 휴대폰결제 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10003' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003  -- 휴대폰결제 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10003' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10003  -- 휴대폰결제
+		    
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10004' THEN 1 ELSE 0 END)) AS ORDER_QTY_10004  -- 네이버페이 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10004' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10004  -- 네이버페이 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10004' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10004  -- 네이버페이
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10005' THEN 1 ELSE 0 END)) AS ORDER_QTY_10005  -- 카카오페이 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10005' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10005  -- 카카오페이 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10005' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10005  -- 카카오페이
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10006' THEN 1 ELSE 0 END)) AS ORDER_QTY_10006  -- 모바일상품권 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10006' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10006  -- 모바일상품권 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10006' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10006  -- 모바일상품권
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE IN ('10007','10008') THEN 1 ELSE 0 END)) AS ORDER_QTY_99999  -- 포인트
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE IN ('10007','10008') THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_99999  -- 포인트 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE IN ('10007','10008') THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_99999  -- 포인트
+			FROM (
+				  SELECT  SO.ORDER_NO
+				  		, max(SO.ORDER_DTM) AS ORDER_DTM
+				  		, MIN(SO.SALES_SEQ) AS SALES_SEQ
+				  		, max(SO.SALES_CNCL_GBN_TYPE) AS SALES_CNCL_GBN_TYPE
+				  		, SUM(CONVERT(BIGINT,SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT
+		           FROM SA_SALES_ORDER SO WITH (NOLOCK)
+		          <include refid="statsSearch"/>
+		          GROUP BY SO.ORDER_NO
+		       ) SSO
+		       INNER JOIN OC_ORDER_PAYMENT SOP WITH (NOLOCK)
+		       	ON SSO.ORDER_NO = SOP.ORDER_NO
+					 <include refid="forEscro"/>
+		    UNION ALL
+		    	SELECT <include refid="dateConvert"/> AS ORDER_DTM
+		     , COUNT(*) AS ORDER_QTY_ALL
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SSO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SOP.PYMNT_AMT)) AS ORDER_AMT_ALL
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10000' THEN 1 ELSE 0 END)) AS ORDER_QTY_10000  -- 신용카드/체크카드 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10000' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000 -- 신용카드/체크카드 정상가 
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10000' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10000 -- 신용카드/체크카드
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10001' THEN 1 ELSE 0 END)) AS ORDER_QTY_10001  -- 무통장입금  Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10001' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001 -- 무통장입금 정상가 
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10001' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10001 -- 무통장입금
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10002' THEN 1 ELSE 0 END)) AS ORDER_QTY_10002  -- 실시간계좌이체 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10002' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002  -- 실시간계좌이체 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10002' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10002  -- 실시간계좌이체
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10003' THEN 1 ELSE 0 END)) AS ORDER_QTY_10003  -- 휴대폰결제 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10003' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003  -- 휴대폰결제 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10003' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10003  -- 휴대폰결제
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10004' THEN 1 ELSE 0 END)) AS ORDER_QTY_10004  -- 네이버페이 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10004' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10004  -- 네이버페이 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10004' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10004  -- 네이버페이
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10005' THEN 1 ELSE 0 END)) AS ORDER_QTY_10005  -- 카카오페이 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10005' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10005  -- 카카오페이 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10005' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10005  -- 카카오페이
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10006' THEN 1 ELSE 0 END)) AS ORDER_QTY_10006  -- 모바일상품권 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10006' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10006  -- 모바일상품권 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10006' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10006  -- 모바일상품권
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE IN ('10007','10008') THEN 1 ELSE 0 END)) AS ORDER_QTY_99999  -- 포인트
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE IN ('10007','10008') THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_99999  -- 포인트 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE IN ('10007','10008') THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_99999  -- 포인트
+		    FROM ( 
+				  SELECT  SO.ORDER_NO
+				  		, max(SO.ORDER_DTM) AS ORDER_DTM
+				  		, MIN(SO.SALES_SEQ) AS SALES_SEQ
+				  		, max(SO.SALES_CNCL_GBN_TYPE) AS SALES_CNCL_GBN_TYPE
+				  		, SUM(CONVERT(BIGINT,SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT
+		           FROM SA_SALES_ORDER SO WITH (NOLOCK)
+		          <include refid="statsSearch"/> 
+		          GROUP BY SO.ORDER_NO
+		       ) SSO 
+				   INNER JOIN OC_ORDER_PAYMENT SOP WITH (NOLOCK)
+				   	ON SSO.ORDER_NO = SOP.ORDER_NO
+			 <include refid="forEscro"/>
+			 GROUP BY <include refid="dateConvert"/>
+			 ORDER BY ORDER_DTM DESC
+			  <include refid="Paging.mssql" />
+	  ) A
+		
+    </select>
+    
+    
+    
+    
+    <select id="selectPaymentTypeStatsForExcel" parameterType="kr.co.abcmart.bo.stats.vo.SalesStatsSearchVO" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder" >
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectPaymentTypeStatsForExcel [결제수단별 매출통계 엑셀다운로드] [이재렬] */
+    	SELECT A.ORDER_DTM AS HOUR_TITLE
+    		 , A.ORDER_QTY_ALL
+    		 , A.ORDER_AMT_ALL
+    		 , A.ORDER_QTY_10000
+    		 , A.ORDER_AMT_10000
+    		 , A.ORDER_QTY_10001
+    		 , A.ORDER_AMT_10001
+    		 , A.ORDER_QTY_10002
+    		 , A.ORDER_AMT_10002
+    		 , A.ORDER_QTY_10003
+    		 , A.ORDER_AMT_10003
+    		 , A.ORDER_QTY_10004
+    		 , A.ORDER_AMT_10004
+    		 , A.ORDER_QTY_10005
+    		 , A.ORDER_AMT_10005
+    		 , A.ORDER_QTY_10006
+    		 , A.ORDER_AMT_10006
+    		 , A.ORDER_QTY_99999
+    		 , A.ORDER_AMT_99999
+    	FROM (
+		    	SELECT '합계' AS ORDER_DTM
+		     , COUNT(*) AS ORDER_QTY_ALL
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SSO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SOP.PYMNT_AMT)) AS ORDER_AMT_ALL
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10000' THEN 1 ELSE 0 END)) AS ORDER_QTY_10000  -- 신용카드/체크카드 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10000' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000 -- 신용카드/체크카드 정상가 
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10000' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10000 -- 신용카드/체크카드
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10001' THEN 1 ELSE 0 END)) AS ORDER_QTY_10001  -- 무통장입금  Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10001' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001 -- 무통장입금 정상가 
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10001' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10001 -- 무통장입금
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10002' THEN 1 ELSE 0 END)) AS ORDER_QTY_10002  -- 실시간계좌이체 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10002' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002  -- 실시간계좌이체 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10002' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10002  -- 실시간계좌이체
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10003' THEN 1 ELSE 0 END)) AS ORDER_QTY_10003  -- 휴대폰결제 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10003' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003  -- 휴대폰결제 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10003' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10003  -- 휴대폰결제
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10004' THEN 1 ELSE 0 END)) AS ORDER_QTY_10004  -- 네이버페이 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10004' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10004  -- 네이버페이 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10004' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10004  -- 네이버페이
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10005' THEN 1 ELSE 0 END)) AS ORDER_QTY_10005  -- 카카오페이 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10005' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10005  -- 카카오페이 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10005' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10005  -- 카카오페이
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10006' THEN 1 ELSE 0 END)) AS ORDER_QTY_10006  -- 모바일상품권 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10006' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10006  -- 모바일상품권 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10006' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10006  -- 모바일상품권
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE IN ('10007','10008') THEN 1 ELSE 0 END)) AS ORDER_QTY_99999  -- 포인트
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE IN ('10007','10008') THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_99999  -- 포인트 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE IN ('10007','10008') THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_99999  -- 포인트
+			FROM (
+				  SELECT SO.ORDER_NO, MAX(SO.ORDER_DTM) AS ORDER_DTM , MIN(SO.SALES_SEQ) AS SALES_SEQ , max(SO.SALES_CNCL_GBN_TYPE) AS SALES_CNCL_GBN_TYPE, SUM(CONVERT(BIGINT,SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT
+		           FROM SA_SALES_ORDER SO WITH (NOLOCK)
+		          <include refid="statsSearchForExcel"/>
+		          GROUP BY SO.ORDER_NO
+		       ) SSO
+		       INNER JOIN OC_ORDER_PAYMENT SOP
+		       	ON SSO.ORDER_NO = SOP.ORDER_NO
+					 <include refid="forEscroExcel"/>
+		    UNION ALL
+		    	SELECT <include refid="dateConvertForExcel"/> AS ORDER_DTM
+		     , COUNT(*) AS ORDER_QTY_ALL
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SSO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SOP.PYMNT_AMT)) AS ORDER_AMT_ALL
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10000' THEN 1 ELSE 0 END)) AS ORDER_QTY_10000  -- 신용카드/체크카드 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10000' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000 -- 신용카드/체크카드 정상가 
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10000' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10000 -- 신용카드/체크카드
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10001' THEN 1 ELSE 0 END)) AS ORDER_QTY_10001  -- 무통장입금  Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10001' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001 -- 무통장입금 정상가 
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10001' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10001 -- 무통장입금
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10002' THEN 1 ELSE 0 END)) AS ORDER_QTY_10002  -- 실시간계좌이체 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10002' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002  -- 실시간계좌이체 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10002' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10002  -- 실시간계좌이체
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10003' THEN 1 ELSE 0 END)) AS ORDER_QTY_10003  -- 휴대폰결제 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10003' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003  -- 휴대폰결제 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10003' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10003  -- 휴대폰결제
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10004' THEN 1 ELSE 0 END)) AS ORDER_QTY_10004  -- 네이버페이 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10004' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10004  -- 네이버페이 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10004' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10004  -- 네이버페이
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10005' THEN 1 ELSE 0 END)) AS ORDER_QTY_10005  -- 카카오페이 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10005' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10005  -- 카카오페이 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10005' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10005  -- 카카오페이
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10006' THEN 1 ELSE 0 END)) AS ORDER_QTY_10006  -- 모바일상품권 Count
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10006' THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10006  -- 모바일상품권 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE = '10006' THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_10006  -- 모바일상품권
+		     
+		     , SUM((case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE IN ('10007','10008') THEN 1 ELSE 0 END)) AS ORDER_QTY_99999  -- 포인트
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE IN ('10007','10008') THEN SSO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_99999  -- 포인트 정상가
+		     , SUM(CONVERT(BIGINT,(case when sso.SALES_CNCL_GBN_TYPE ='C' or sso.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SOP.PYMNT_MEANS_CODE IN ('10007','10008') THEN SOP.PYMNT_AMT ELSE 0 END))) AS ORDER_AMT_99999  -- 포인트
+		    FROM ( 
+				  SELECT SO.ORDER_NO, MAX(SO.ORDER_DTM) AS ORDER_DTM , MIN(SO.SALES_SEQ) AS SALES_SEQ , max(SO.SALES_CNCL_GBN_TYPE) AS SALES_CNCL_GBN_TYPE, SUM(CONVERT(BIGINT,SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT
+		           FROM SA_SALES_ORDER SO WITH (NOLOCK)
+		          <include refid="statsSearchForExcel"/>
+		          GROUP BY SO.ORDER_NO, SO.ORDER_DTM
+		       ) SSO 
+				   INNER JOIN OC_ORDER_PAYMENT SOP
+				   	ON SSO.ORDER_NO = SOP.ORDER_NO
+			 <include refid="forEscroExcel"/>
+			 GROUP BY <include refid="dateConvertForExcel"/>
+
+		) A
+	</select>
+	
+	<select id="selectDlvyTypeCount" parameterType="pageable" resultType="int">
+	/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectDlvyTypeCount [배송수단별 매출통계 카운트] [이재렬] */
+		SELECT <include refid="Paging.totalCount"/>
+    	  FROM (SELECT <include refid="Paging.totalCount"/>
+    	 		 FROM SA_SALES_ORDER SO WITH (NOLOCK)
+    	    	  <include refid="statsSearch"/>
+    	    	  GROUP BY <include refid="dateConvert"/>
+    	    ) A
+		
+	</select>
+	
+	<select id="selectDlvyTypeList" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder">
+	/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectDlvyTypeList [배송수단별 매출통계 현황 조회] [이재렬] */
+		SELECT	A.ORDER_DTM AS HOUR_TITLE
+			  , A.ORDER_QTY_ALL
+			  , A.PRDT_NORMAL_AMT_ALL
+			  , A.ORDER_AMT_ALL
+			  , A.ORDER_QTY_10000
+			  , A.PRDT_NORMAL_AMT_10000
+			  , A.ORDER_AMT_10000
+			  , A.ORDER_QTY_10001
+			  , A.PRDT_NORMAL_AMT_10001
+			  , A.ORDER_AMT_10001
+			  , A.ORDER_QTY_10002
+			  , A.PRDT_NORMAL_AMT_10002
+			  , A.ORDER_AMT_10002
+		
+		FROM
+		(
+			SELECT '합계' AS ORDER_DTM
+	
+		        , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+		
+		        , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+		
+		        , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+		
+		        , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+	
+			FROM SA_SALES_ORDER SO WITH (NOLOCK)
+			<include refid="statsSearch"/>
+		UNION ALL
+			SELECT <include refid="dateConvert"/> AS ORDER_DTM
+	
+		        , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+		
+		        , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+		
+		        , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+		
+		        , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+	
+			FROM SA_SALES_ORDER SO WITH (NOLOCK)
+			<include refid="statsSearch"/>	
+			GROUP BY <include refid="dateConvert"/>
+			ORDER BY ORDER_DTM DESC
+				<include refid="Paging.mssql" />
+		) A
+	</select>
+	
+	<select id="selectDlvyTypeStatsForExcel" parameterType="kr.co.abcmart.bo.stats.vo.SalesStatsSearchVO" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder">
+	/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectDlvyTypeStatsForExcel [배송수단별 매출통계 현황 엑셀 다운로드] [이재렬] */
+		SELECT	A.ORDER_DTM AS HOUR_TITLE
+			  , A.ORDER_QTY_ALL
+			  , A.PRDT_NORMAL_AMT_ALL
+			  , A.ORDER_AMT_ALL
+			  , A.ORDER_QTY_10000
+			  , A.PRDT_NORMAL_AMT_10000
+			  , A.ORDER_AMT_10000
+			  , A.ORDER_QTY_10001
+			  , A.PRDT_NORMAL_AMT_10001
+			  , A.ORDER_AMT_10001
+			  , A.ORDER_QTY_10002
+			  , A.PRDT_NORMAL_AMT_10002
+			  , A.ORDER_AMT_10002
+		
+		FROM
+		(
+			SELECT '합계' AS ORDER_DTM
+	
+		        , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+		
+		        , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+		
+		        , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+		
+		        , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+	
+			FROM SA_SALES_ORDER SO WITH (NOLOCK)
+			<include refid="statsSearchForExcel"/>
+		UNION ALL
+			SELECT <include refid="dateConvertForExcel"/> AS ORDER_DTM
+	
+		        , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+		
+		        , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+		
+		        , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+		
+		        , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+		        , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DLVY_TYPE_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+	
+			FROM SA_SALES_ORDER SO WITH (NOLOCK)
+			<include refid="statsSearchForExcel"/>	
+			GROUP BY <include refid="dateConvertForExcel"/>
+		) A
+	</select>
+	
+	<select id="selectTimeTypeCount" parameterType="pageable" resultType="int">
+	/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectTimeTypeCount [시간별 매출통계 현황 카운트] [이재렬] */
+		SELECT <include refid="Paging.totalCount"/>
+    	  FROM (SELECT <include refid="Paging.totalCount"/>
+    	 		 FROM SA_SALES_ORDER SO WITH (NOLOCK)
+    	    	  <include refid="statsSearch"/>
+    	    	  GROUP BY SO.ORDER_TIMESLOT_VALUE
+    	    ) A
+	</select>
+	
+	<select id="selectTimeTypeList" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder">
+	/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectTimeTypeList [시간별 매출통계 현황 조회] [이재렬] */
+			WITH AllTime AS (
+	
+				SELECT 0 AS JOIN_DTM, CONCAT(FORMAT(0, '00'), '~', FORMAT(1, '00'), '시') AS HOUR_TITLE
+				 UNION ALL
+				SELECT JOIN_DTM + 1, CONCAT(FORMAT(JOIN_DTM+1, '00'), '~', FORMAT(JOIN_DTM+2, '00'), '시') AS HOUR_TITLE
+				  FROM AllTime
+				<choose>
+					<when test="(bean.fromHour == null or bean.fromHour == '') and (bean.toHour == null or bean.toHour == '')">
+						WHERE JOIN_DTM <![CDATA[<]]> 23	
+					</when>
+					<otherwise>
+						WHERE JOIN_DTM <![CDATA[<]]> CONVERT(INT, #{bean.toHour, jdbcType=VARCHAR}) -1
+					</otherwise>
+				</choose>
+			), SearchData AS (
+			       SELECT SO.ORDER_TIMESLOT_VALUE AS HOUR_TITLE
+			
+			           , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL		
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+			           
+			           , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+			           
+			           , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+			           
+			           , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+			           
+			           , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10003
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10003
+			
+			        FROM SA_SALES_ORDER SO WITH (NOLOCK)
+			
+			      <include refid="statsSearch"/>
+			       GROUP BY SO.ORDER_TIMESLOT_VALUE
+			
+			)
+			SELECT'합계' AS HOUR_TITLE
+
+		     , SUM(ISNULL(S.ORDER_QTY_ALL, 0)) AS ORDER_QTY_ALL
+		     , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_ALL, 0))) AS PRDT_NORMAL_AMT_ALL
+		     , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_ALL, 0))) AS ORDER_AMT_ALL
+
+		     , SUM(ISNULL(S.ORDER_QTY_10000, 0)) AS ORDER_QTY_10000
+		     , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10000, 0))) AS PRDT_NORMAL_AMT_10000
+		     , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_10000, 0))) AS ORDER_AMT_10000
+
+		     , SUM(ISNULL(S.ORDER_QTY_10001, 0)) AS ORDER_QTY_10001
+		     , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10001, 0))) AS PRDT_NORMAL_AMT_10001
+		     , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_10001, 0))) AS ORDER_AMT_10001
+
+		     , SUM(ISNULL(S.ORDER_QTY_10002, 0)) AS ORDER_QTY_10002
+		     , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10002, 0))) AS PRDT_NORMAL_AMT_10002
+		     , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_10002, 0))) AS ORDER_AMT_10002
+
+		     , SUM(ISNULL(S.ORDER_QTY_10003, 0)) AS ORDER_QTY_10003
+		     , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10003, 0))) AS PRDT_NORMAL_AMT_10003
+		     , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_10003, 0))) AS ORDER_AMT_10003
+
+		  FROM AllTime A WITH (NOLOCK)
+		  	LEFT OUTER JOIN SearchData S WITH (NOLOCK)
+		  		ON A.JOIN_DTM = S.HOUR_TITLE
+
+		  <if test="(bean.fromHour != null and bean.fromHour != '') 
+		  	and (bean.toHour != null and bean.toHour != '' ) " >
+		  		WHERE A.JOIN_DTM BETWEEN CONVERT(INT, #{bean.fromHour, jdbcType=VARCHAR})
+		  			AND CONVERT(INT, #{bean.toHour, jdbcType=VARCHAR}) -- 시간대 검색조건시
+		  </if>
+	  UNION ALL
+		
+		  SELECT A.HOUR_TITLE
+		
+		     , ISNULL(S.ORDER_QTY_ALL, 0) ORDER_QTY_ALL
+		     , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_ALL, 0)) PRDT_NORMAL_AMT_ALL
+		     , CONVERT(BIGINT,ISNULL(ORDER_AMT_ALL, 0)) ORDER_AMT_ALL
+		     
+		     , ISNULL(S.ORDER_QTY_10000, 0) ORDER_QTY_10000
+		     , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10000, 0)) PRDT_NORMAL_AMT_10000
+		     , CONVERT(BIGINT,ISNULL(ORDER_AMT_10000, 0)) ORDER_AMT_10000
+		     
+		     , ISNULL(S.ORDER_QTY_10001, 0) ORDER_QTY_10001
+		     , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10001, 0)) PRDT_NORMAL_AMT_10001
+		     , CONVERT(BIGINT,ISNULL(ORDER_AMT_10001, 0)) ORDER_AMT_10001
+		     
+		     , ISNULL(S.ORDER_QTY_10002, 0) ORDER_QTY_10002
+		     , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10002, 0)) PRDT_NORMAL_AMT_10002
+		     , CONVERT(BIGINT,ISNULL(ORDER_AMT_10002, 0)) ORDER_AMT_10002
+		     
+		     , ISNULL(S.ORDER_QTY_10003, 0) ORDER_QTY_10003
+		     , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10003, 0)) PRDT_NORMAL_AMT_10003
+		     , CONVERT(BIGINT,ISNULL(ORDER_AMT_10003, 0)) ORDER_AMT_10003
+		
+		  FROM AllTime A WITH (NOLOCK)
+		  	LEFT OUTER JOIN SearchData S WITH (NOLOCK)
+		  		ON A.JOIN_DTM = S.HOUR_TITLE
+		  <if test="(bean.fromHour != null and bean.fromHour != '') 
+		  	and (bean.toHour != null and bean.toHour != '' ) " >
+		  		WHERE A.JOIN_DTM BETWEEN CONVERT(INT, #{bean.fromHour, jdbcType=VARCHAR})
+		  			AND CONVERT(INT, #{bean.toHour, jdbcType=VARCHAR}) -- 시간대 검색조건시
+		  </if>
+	</select>
+	
+	<select id="selectTimeTypeStatsForExcel" parameterType="kr.co.abcmart.bo.stats.vo.SalesStatsSearchVO" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder">
+	/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectTimeTypeListForExcel [시간별 매출통계 현황 엑셀 다운로드] [이재렬] */
+			WITH AllTime AS (
+
+				SELECT 0 AS JOIN_DTM, CONCAT(FORMAT(0, '00'), '~', FORMAT(1, '00'), '시') AS HOUR_TITLE
+			UNION ALL
+				SELECT JOIN_DTM + 1, CONCAT(FORMAT(JOIN_DTM+1, '00'), '~', FORMAT(JOIN_DTM+2, '00'), '시') AS HOUR_TITLE
+				FROM AllTime
+				<choose>
+					<when test="(fromHour == null or fromHour == '') and (toHour == null or toHour == '')">
+						WHERE JOIN_DTM <![CDATA[<]]> 23	
+					</when>
+					<otherwise>
+						WHERE JOIN_DTM <![CDATA[<]]> CONVERT(INT, #{toHour, jdbcType=VARCHAR}) -1
+					</otherwise>
+				</choose>
+			
+			), SearchData AS (
+			       SELECT SO.ORDER_TIMESLOT_VALUE AS HOUR_TITLE
+			
+			           , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL		
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+			           
+			           , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+			           
+			           , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+			           
+			           , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+			           
+			           , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10003
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003
+			           , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10003
+			
+			        FROM SA_SALES_ORDER SO WITH (NOLOCK)
+			
+			      <include refid="statsSearchForExcel"/>
+			       GROUP BY SO.ORDER_TIMESLOT_VALUE
+			
+			)
+		
+		SELECT'합계' AS HOUR_TITLE
+
+		     , SUM(ISNULL(S.ORDER_QTY_ALL, 0)) AS ORDER_QTY_ALL
+		     , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_ALL, 0))) AS PRDT_NORMAL_AMT_ALL
+		     , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_ALL, 0))) AS ORDER_AMT_ALL
+
+		     , SUM(ISNULL(S.ORDER_QTY_10000, 0)) AS ORDER_QTY_10000
+		     , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10000, 0))) AS PRDT_NORMAL_AMT_10000
+		     , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_10000, 0))) AS ORDER_AMT_10000
+
+		     , SUM(ISNULL(S.ORDER_QTY_10001, 0)) AS ORDER_QTY_10001
+		     , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10001, 0))) AS PRDT_NORMAL_AMT_10001
+		     , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_10001, 0))) AS ORDER_AMT_10001
+
+		     , SUM(ISNULL(S.ORDER_QTY_10002, 0)) AS ORDER_QTY_10002
+		     , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10002, 0))) AS PRDT_NORMAL_AMT_10002
+		     , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_10002, 0))) AS ORDER_AMT_10002
+
+		     , SUM(ISNULL(S.ORDER_QTY_10003, 0)) AS ORDER_QTY_10003
+		     , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10003, 0))) AS PRDT_NORMAL_AMT_10003
+		     , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_10003, 0))) AS ORDER_AMT_10003
+
+		  FROM AllTime A LEFT OUTER JOIN SearchData S ON A.JOIN_DTM = S.HOUR_TITLE
+
+		  <if test="(fromHour != null and fromHour != '') 
+		  	and (toHour != null and toHour != '' ) " >
+		  		WHERE A.JOIN_DTM BETWEEN CONVERT(INT, #{fromHour, jdbcType=VARCHAR}) AND CONVERT(INT, #{toHour, jdbcType=VARCHAR}) -- 시간대 검색조건시
+		  </if>
+	  UNION ALL
+		SELECT A.HOUR_TITLE
+		
+		     , ISNULL(S.ORDER_QTY_ALL, 0) ORDER_QTY_ALL
+		     , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_ALL, 0)) PRDT_NORMAL_AMT_ALL
+		     , CONVERT(BIGINT,ISNULL(ORDER_AMT_ALL, 0)) ORDER_AMT_ALL
+		     
+		     , ISNULL(S.ORDER_QTY_10000, 0) ORDER_QTY_10000
+		     , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10000, 0)) PRDT_NORMAL_AMT_10000
+		     , CONVERT(BIGINT,ISNULL(ORDER_AMT_10000, 0)) ORDER_AMT_10000
+		     
+		     , ISNULL(S.ORDER_QTY_10001, 0) ORDER_QTY_10001
+		     , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10001, 0)) PRDT_NORMAL_AMT_10001
+		     , CONVERT(BIGINT,ISNULL(ORDER_AMT_10001, 0)) ORDER_AMT_10001
+		     
+		     , ISNULL(S.ORDER_QTY_10002, 0) ORDER_QTY_10002
+		     , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10002, 0)) PRDT_NORMAL_AMT_10002
+		     , CONVERT(BIGINT,ISNULL(ORDER_AMT_10002, 0)) ORDER_AMT_10002
+		     
+		     , ISNULL(S.ORDER_QTY_10003, 0) ORDER_QTY_10003
+		     , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10003, 0)) PRDT_NORMAL_AMT_10003
+		     , CONVERT(BIGINT,ISNULL(ORDER_AMT_10003, 0)) ORDER_AMT_10003
+		
+		  FROM AllTime A WITH (NOLOCK)
+		  	LEFT OUTER JOIN SearchData S WITH (NOLOCK)
+		  		ON A.JOIN_DTM = S.HOUR_TITLE
+		  <if test="(fromHour != null and fromHour != '') 
+		  	and (toHour != null and toHour != '' ) " >
+		  		WHERE A.JOIN_DTM BETWEEN CONVERT(INT, #{fromHour, jdbcType=VARCHAR})
+		  			AND CONVERT(INT, #{toHour, jdbcType=VARCHAR}) -- 시간대 검색조건시
+		  </if>
+	</select>
+	
+	<select id="selectAgeTypeCount" parameterType="pageable" resultType="int">
+		/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectTimeTypeListForExcel [연령별 매출통계 현황 카운트] [이재렬] */
+			SELECT <include refid="Paging.totalCount"/>
+    	  FROM (SELECT <include refid="Paging.totalCount"/>
+    	 		 FROM SA_SALES_ORDER SO WITH (NOLOCK)
+    	    	  <include refid="statsSearch"/>
+    	    	  GROUP BY <include refid="dateConvert"/>
+    	    	) A
+	</select>
+	
+	<select id="selectAgeTypeList" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder">
+		/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectTimeTypeListForExcel [연령별 매출통계 현황 조회] [이재렬] */
+		SELECT A.ORDER_DTM AS HOUR_TITLE
+			 , A.ORDER_QTY_ALL
+			 , A.PRDT_NORMAL_AMT_ALL
+			 , A.ORDER_AMT_ALL
+			 , A.ORDER_QTY_10000
+			 , A.PRDT_NORMAL_AMT_10000
+			 , A.ORDER_AMT_10000
+			 , A.ORDER_QTY_10001
+			 , A.PRDT_NORMAL_AMT_10001
+			 , A.ORDER_AMT_10001
+			 , A.ORDER_QTY_10002
+			 , A.PRDT_NORMAL_AMT_10002
+			 , A.ORDER_AMT_10002
+			 , A.ORDER_QTY_10003
+			 , A.PRDT_NORMAL_AMT_10003
+			 , A.ORDER_AMT_10003
+			 , A.ORDER_QTY_10004
+			 , A.PRDT_NORMAL_AMT_10004
+			 , A.ORDER_AMT_10004
+			 , A.ORDER_QTY_10005
+			 , A.PRDT_NORMAL_AMT_10005
+			 , A.ORDER_AMT_10005
+			 , A.ORDER_QTY_10006
+			 , A.PRDT_NORMAL_AMT_10006
+			 , A.ORDER_AMT_10006
+		FROM (
+			SELECT '합계' AS ORDER_DTM
+	
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+				 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+				 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 0 AND SO.AGE_COUNT <![CDATA[<]]> 20 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 0 AND SO.AGE_COUNT <![CDATA[<]]> 20 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 0 AND SO.AGE_COUNT <![CDATA[<]]> 20 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 20 AND SO.AGE_COUNT <![CDATA[<]]> 30 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 20 AND SO.AGE_COUNT <![CDATA[<]]> 30 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 20 AND SO.AGE_COUNT <![CDATA[<]]> 30 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 30 AND SO.AGE_COUNT <![CDATA[<]]> 40 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 30 AND SO.AGE_COUNT <![CDATA[<]]> 40 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 30 AND SO.AGE_COUNT <![CDATA[<]]> 40 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 40 AND SO.AGE_COUNT <![CDATA[<]]> 50 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10003
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 40 AND SO.AGE_COUNT <![CDATA[<]]> 50 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 40 AND SO.AGE_COUNT <![CDATA[<]]> 50 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10003
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 50 AND SO.AGE_COUNT <![CDATA[<]]> 60 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10004
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 50 AND SO.AGE_COUNT <![CDATA[<]]> 60 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10004
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 50 AND SO.AGE_COUNT <![CDATA[<]]> 60 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10004
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 60 AND SO.AGE_COUNT <![CDATA[<]]> 70 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10005
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 60 AND SO.AGE_COUNT <![CDATA[<]]> 70 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10005
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 60 AND SO.AGE_COUNT <![CDATA[<]]> 70 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10005
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 70 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10006
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 70 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10006
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 70 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10006
+		
+			  FROM SA_SALES_ORDER SO WITH (NOLOCK)
+			  <include refid="statsSearch"/>
+		UNION ALL
+		
+			SELECT <include refid="dateConvert"/> AS ORDER_DTM
+	
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+				 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+				 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 0 AND SO.AGE_COUNT <![CDATA[<]]> 20 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 0 AND SO.AGE_COUNT <![CDATA[<]]> 20 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 0 AND SO.AGE_COUNT <![CDATA[<]]> 20 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 20 AND SO.AGE_COUNT <![CDATA[<]]> 30 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 20 AND SO.AGE_COUNT <![CDATA[<]]> 30 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 20 AND SO.AGE_COUNT <![CDATA[<]]> 30 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 30 AND SO.AGE_COUNT <![CDATA[<]]> 40 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 30 AND SO.AGE_COUNT <![CDATA[<]]> 40 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 30 AND SO.AGE_COUNT <![CDATA[<]]> 40 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 40 AND SO.AGE_COUNT <![CDATA[<]]> 50 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10003
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 40 AND SO.AGE_COUNT <![CDATA[<]]> 50 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 40 AND SO.AGE_COUNT <![CDATA[<]]> 50 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10003
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 50 AND SO.AGE_COUNT <![CDATA[<]]> 60 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10004
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 50 AND SO.AGE_COUNT <![CDATA[<]]> 60 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10004
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 50 AND SO.AGE_COUNT <![CDATA[<]]> 60 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10004
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 60 AND SO.AGE_COUNT <![CDATA[<]]> 70 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10005
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 60 AND SO.AGE_COUNT <![CDATA[<]]> 70 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10005
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 60 AND SO.AGE_COUNT <![CDATA[<]]> 70 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10005
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 70 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10006
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 70 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10006
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 70 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10006
+		
+			  FROM SA_SALES_ORDER SO WITH (NOLOCK)
+			<include refid="statsSearch"/>
+			
+			GROUP BY <include refid="dateConvert"/>
+			ORDER BY ORDER_DTM DESC
+			  <include refid="Paging.mssql"/>
+		) A
+	</select>
+	
+	<select id="selectAgeTypeStatsForExcel" parameterType="kr.co.abcmart.bo.stats.vo.SalesStatsSearchVO" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder">
+		/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectTimeTypeListForExcel [연령별 매출통계 현황 엑셀 다운로드] [이재렬] */
+			SELECT A.ORDER_DTM AS HOUR_TITLE
+			 	 , A.ORDER_QTY_ALL
+				 , A.PRDT_NORMAL_AMT_ALL
+				 , A.ORDER_AMT_ALL
+				 , A.ORDER_QTY_10000
+				 , A.PRDT_NORMAL_AMT_10000
+				 , A.ORDER_AMT_10000
+				 , A.ORDER_QTY_10001
+				 , A.PRDT_NORMAL_AMT_10001
+				 , A.ORDER_AMT_10001
+				 , A.ORDER_QTY_10002
+				 , A.PRDT_NORMAL_AMT_10002
+				 , A.ORDER_AMT_10002
+				 , A.ORDER_QTY_10003
+				 , A.PRDT_NORMAL_AMT_10003
+				 , A.ORDER_AMT_10003
+				 , A.ORDER_QTY_10004
+				 , A.PRDT_NORMAL_AMT_10004
+				 , A.ORDER_AMT_10004
+				 , A.ORDER_QTY_10005
+				 , A.PRDT_NORMAL_AMT_10005
+				 , A.ORDER_AMT_10005
+				 , A.ORDER_QTY_10006
+				 , A.PRDT_NORMAL_AMT_10006
+				 , A.ORDER_AMT_10006
+		FROM (
+			SELECT '합계' AS ORDER_DTM
+	
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+				 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+				 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 0 AND SO.AGE_COUNT <![CDATA[<]]> 20 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 0 AND SO.AGE_COUNT <![CDATA[<]]> 20 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 0 AND SO.AGE_COUNT <![CDATA[<]]> 20 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 20 AND SO.AGE_COUNT <![CDATA[<]]> 30 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 20 AND SO.AGE_COUNT <![CDATA[<]]> 30 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 20 AND SO.AGE_COUNT <![CDATA[<]]> 30 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 30 AND SO.AGE_COUNT <![CDATA[<]]> 40 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 30 AND SO.AGE_COUNT <![CDATA[<]]> 40 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 30 AND SO.AGE_COUNT <![CDATA[<]]> 40 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 40 AND SO.AGE_COUNT <![CDATA[<]]> 50 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10003
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 40 AND SO.AGE_COUNT <![CDATA[<]]> 50 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 40 AND SO.AGE_COUNT <![CDATA[<]]> 50 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10003
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 50 AND SO.AGE_COUNT <![CDATA[<]]> 60 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10004
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 50 AND SO.AGE_COUNT <![CDATA[<]]> 60 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10004
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 50 AND SO.AGE_COUNT <![CDATA[<]]> 60 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10004
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 60 AND SO.AGE_COUNT <![CDATA[<]]> 70 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10005
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 60 AND SO.AGE_COUNT <![CDATA[<]]> 70 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10005
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 60 AND SO.AGE_COUNT <![CDATA[<]]> 70 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10005
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 70 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10006
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 70 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10006
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 70 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10006
+		
+			  FROM SA_SALES_ORDER SO WITH (NOLOCK)
+			  <include refid="statsSearchForExcel"/>
+		UNION ALL
+		
+			SELECT <include refid="dateConvertForExcel"/> AS ORDER_DTM
+	
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+				 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+				 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 0 AND SO.AGE_COUNT <![CDATA[<]]> 20 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 0 AND SO.AGE_COUNT <![CDATA[<]]> 20 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 0 AND SO.AGE_COUNT <![CDATA[<]]> 20 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 20 AND SO.AGE_COUNT <![CDATA[<]]> 30 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 20 AND SO.AGE_COUNT <![CDATA[<]]> 30 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 20 AND SO.AGE_COUNT <![CDATA[<]]> 30 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 30 AND SO.AGE_COUNT <![CDATA[<]]> 40 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 30 AND SO.AGE_COUNT <![CDATA[<]]> 40 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 30 AND SO.AGE_COUNT <![CDATA[<]]> 40 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 40 AND SO.AGE_COUNT <![CDATA[<]]> 50 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10003
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 40 AND SO.AGE_COUNT <![CDATA[<]]> 50 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 40 AND SO.AGE_COUNT <![CDATA[<]]> 50 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10003
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 50 AND SO.AGE_COUNT <![CDATA[<]]> 60 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10004
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 50 AND SO.AGE_COUNT <![CDATA[<]]> 60 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10004
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 50 AND SO.AGE_COUNT <![CDATA[<]]> 60 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10004
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 60 AND SO.AGE_COUNT <![CDATA[<]]> 70 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10005
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 60 AND SO.AGE_COUNT <![CDATA[<]]> 70 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10005
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 60 AND SO.AGE_COUNT <![CDATA[<]]> 70 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10005
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 70 THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10006
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 70 THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10006
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.AGE_COUNT <![CDATA[>=]]> 70 THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10006
+		
+			  FROM SA_SALES_ORDER SO WITH (NOLOCK)
+			<include refid="statsSearchForExcel"/>
+			
+			GROUP BY <include refid="dateConvertForExcel"/>
+		) A
+		
+	</select>
+	
+	<select id="selectGenderTypeCount" parameterType="pageable" resultType="int">
+		/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectGenderTypeCount [성별 매출통계 현황 카운트] [이재렬] */
+			SELECT <include refid="Paging.totalCount"/>
+    	  FROM (SELECT <include refid="Paging.totalCount"/>
+    	 		 FROM SA_SALES_ORDER SO WITH (NOLOCK)
+    	    	  <include refid="statsSearch"/>
+    	    	  GROUP BY <include refid="dateConvert"/>
+    	    	) A
+	</select>
+	
+	<select id="selectGenderTypeList" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder">
+		/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectGenderTypeList [성별 매출통계 현황 조회] [이재렬] */
+		SELECT A.ORDER_DTM AS HOUR_TITLE
+			 , A.ORDER_QTY_ALL
+			 , A.PRDT_NORMAL_AMT_ALL
+			 , A.ORDER_AMT_ALL
+			 , A.ORDER_QTY_10000
+			 , A.PRDT_NORMAL_AMT_10000
+			 , A.ORDER_AMT_10000
+			 , A.ORDER_QTY_10001
+			 , A.PRDT_NORMAL_AMT_10001
+			 , A.ORDER_AMT_10001
+			 , A.ORDER_QTY_10002
+			 , A.PRDT_NORMAL_AMT_10002
+			 , A.ORDER_AMT_10002
+			 , A.ORDER_QTY_10003
+			 , A.PRDT_NORMAL_AMT_10003
+			 , A.ORDER_AMT_10003
+			 , A.ORDER_QTY_10004
+			 , A.PRDT_NORMAL_AMT_10004
+			 , A.ORDER_AMT_10004
+			 , A.ORDER_QTY_10005
+			 , A.PRDT_NORMAL_AMT_10005
+			 , A.ORDER_AMT_10005
+		FROM (
+			SELECT '합계' AS ORDER_DTM
+
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+				 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'M' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'M' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'M' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'F' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'F' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'F' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE IS NULL THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE IS NULL THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE IS NULL THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'M' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10003
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'M' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'M' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10003
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'F' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10004
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'F' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10004
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'F' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10004
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10005
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10005
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10005
+
+		  FROM SA_SALES_ORDER SO WITH (NOLOCK)
+		   <include refid="statsSearch"/>
+		UNION ALL
+			SELECT <include refid="dateConvert"/> AS ORDER_DTM
+
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+				 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'M' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'M' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'M' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'F' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'F' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'F' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE IS NULL THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE IS NULL THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE IS NULL THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'M' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10003
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'M' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'M' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10003
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'F' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10004
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'F' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10004
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'F' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10004
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10005
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10005
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10005
+
+		  FROM SA_SALES_ORDER SO WITH (NOLOCK)
+		   <include refid="statsSearch"/>
+			
+			GROUP BY <include refid="dateConvert"/>
+			ORDER BY ORDER_DTM DESC
+			  <include refid="Paging.mssql"/>
+		) A
+	
+	</select>
+	
+	<select id="selectGenderTypeStatsForExcel" parameterType="kr.co.abcmart.bo.stats.vo.SalesStatsSearchVO" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder">
+		/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectGenderTypeStatsForExcel [성별 매출통계 현황 엑셀 다운로드] [이재렬] */
+		SELECT A.ORDER_DTM AS HOUR_TITLE
+			 , A.ORDER_QTY_ALL
+			 , A.PRDT_NORMAL_AMT_ALL
+			 , A.ORDER_AMT_ALL
+			 , A.ORDER_QTY_10000
+			 , A.PRDT_NORMAL_AMT_10000
+			 , A.ORDER_AMT_10000
+			 , A.ORDER_QTY_10001
+			 , A.PRDT_NORMAL_AMT_10001
+			 , A.ORDER_AMT_10001
+			 , A.ORDER_QTY_10002
+			 , A.PRDT_NORMAL_AMT_10002
+			 , A.ORDER_AMT_10002
+			 , A.ORDER_QTY_10003
+			 , A.PRDT_NORMAL_AMT_10003
+			 , A.ORDER_AMT_10003
+			 , A.ORDER_QTY_10004
+			 , A.PRDT_NORMAL_AMT_10004
+			 , A.ORDER_AMT_10004
+			 , A.ORDER_QTY_10005
+			 , A.PRDT_NORMAL_AMT_10005
+			 , A.ORDER_AMT_10005
+		FROM (
+			SELECT '합계' AS ORDER_DTM
+
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+				 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'M' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'M' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'M' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'F' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'F' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'F' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE IS NULL THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE IS NULL THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE IS NULL THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'M' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10003
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'M' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'M' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10003
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'F' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10004
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'F' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10004
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'F' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10004
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10005
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10005
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10005
+
+		  FROM SA_SALES_ORDER SO WITH (NOLOCK)
+		   <include refid="statsSearchForExcel"/>
+		UNION ALL
+			SELECT <include refid="dateConvertForExcel"/> AS ORDER_DTM
+
+			    , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+				 , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'M' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'M' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'M' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'F' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'F' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE = 'F' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE IS NULL THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE IS NULL THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10000' AND SO.GENDER_TYPE IS NULL THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'M' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10003
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'M' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'M' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10003
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'F' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10004
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'F' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10004
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10001' AND SO.GENDER_TYPE = 'F' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10004
+			
+			     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10005
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10005
+			     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.MEMBER_TYPE_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10005
+
+		  FROM SA_SALES_ORDER SO WITH (NOLOCK)
+		   <include refid="statsSearchForExcel"/>
+			
+			GROUP BY <include refid="dateConvertForExcel"/>
+			
+		) A
+	</select>
+	
+	<select id="selectPrdtTypeCount" parameterType="pageable" resultType="int">
+		/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectPrdtTypeCount [상품별 매출통계 현황 카운트] [이재렬] */
+			SELECT <include refid="Paging.totalCount"/>
+    	  FROM (SELECT <include refid="Paging.totalCount"/>
+    	 		 FROM SA_SALES_ORDER SO WITH (NOLOCK)
+    	    	  <include refid="statsSearch"/>
+    	    	  GROUP BY  SO.SITE_NO,SO.BRAND_NO, SO.PRDT_NO, SO.PRDT_NAME
+
+    	    ) A
+
+	</select>
+	
+	<select id="selectPrdtTypeList" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder">
+		/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectPrdtTypeList [상품별 매출통계 현황 조회] [이재렬] */
+			WITH SearchData AS (
+
+					      			 SELECT  SO.SITE_NO
+					                       , SO.BRAND_NO
+					                       , MAX(SO.STD_CTGR_NO ) AS STD_CTGR_NO
+					                       , MAX(SO.STYLE_INFO) AS STYLE_INFO
+<!-- 					                   , MAX(SO.PRDT_COLOR_CODE) AS PRDT_COLOR_CODE -->
+					                       , MAX(PP.PRDT_COLOR_INFO) AS PRDT_COLOR_CODE
+					                       , SO.PRDT_NO
+					                       , SO.PRDT_NAME AS PRDT_NAME
+					                       , MAX(DATEPART(HH, SO.ORDER_DTM) ) AS ORDER_TIMESLOT_VALUE
+					
+					           			   , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+					                       , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+					                  	   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+					
+					           			   , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+					           			   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+					           			   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+					
+					           			   , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+					           			   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+					           			   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+					
+					           			   , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+					           			   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+					           			   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+					
+					           			   , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10003
+					           			   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003
+					           			   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10003
+					
+					        		FROM SA_SALES_ORDER SO WITH (NOLOCK)
+					        	    JOIN PD_PRODUCT PP WITH (NOLOCK)
+                        	          ON SO.PRDT_NO = PP.PRDT_NO
+					       			  <include refid="statsSearch"/>
+					       		GROUP BY SO.SITE_NO,SO.BRAND_NO, SO.PRDT_NO, SO.PRDT_NAME
+								
+							)
+								SELECT A.BRAND_NO
+									 , A.SITE_NAME
+									 , A.BRAND_NAME
+									 , A.STD_CTGR_NO
+									 , A.STD_CTGR_NAME
+									 , A.STYLE_INFO
+									 , A.PRDT_COLOR_CODE
+									 , A.PRDT_COLOR_NAME
+									 , A.PRDT_NO_NAME
+									 , A.PRDT_NO
+									 , A.PRDT_NAME
+									 , A.ORDER_QTY_ALL
+									 , A.PRDT_NORMAL_AMT_ALL
+									 , A.ORDER_AMT_ALL
+									 , A.ORDER_QTY_10000
+									 , A.PRDT_NORMAL_AMT_10000
+									 , A.ORDER_AMT_10000
+									 , A.ORDER_QTY_10001
+									 , A.PRDT_NORMAL_AMT_10001
+									 , A.ORDER_AMT_10001
+									 , A.ORDER_QTY_10002
+									 , A.PRDT_NORMAL_AMT_10002
+									 , A.ORDER_AMT_10002
+									 , A.ORDER_QTY_10003
+									 , A.PRDT_NORMAL_AMT_10003
+									 , A.ORDER_AMT_10003
+								FROM (
+										SELECT    '합계' AS BRAND_NO   
+										         , '' AS SITE_NAME
+										         , '' AS  BRAND_NAME		
+										         , '' AS STD_CTGR_NO	
+										         , '' AS STD_CTGR_NAME
+										         , '' AS STYLE_INFO
+										         , '' AS PRDT_COLOR_CODE
+										         , '' AS PRDT_COLOR_NAME
+										         , '' AS PRDT_NO_NAME 
+										         , '' AS PRDT_NO
+												 , '' AS PRDT_NAME
+
+										         , SUM(ISNULL(S.ORDER_QTY_ALL, 0)) AS ORDER_QTY_ALL
+										         , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_ALL, 0))) AS PRDT_NORMAL_AMT_ALL
+										         , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_ALL, 0))) AS ORDER_AMT_ALL
+										
+										         , SUM(ISNULL(S.ORDER_QTY_10000, 0)) AS ORDER_QTY_10000
+										         , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10000, 0))) AS PRDT_NORMAL_AMT_10000
+										         , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_10000, 0))) AS ORDER_AMT_10000
+										
+										         , SUM(ISNULL(S.ORDER_QTY_10001, 0)) AS ORDER_QTY_10001
+										         , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10001, 0))) AS PRDT_NORMAL_AMT_10001
+										         , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_10001, 0))) AS ORDER_AMT_10001
+										
+										         , SUM(ISNULL(S.ORDER_QTY_10002, 0)) AS ORDER_QTY_10002
+										         , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10002, 0))) AS PRDT_NORMAL_AMT_10002
+										         , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_10002, 0))) AS ORDER_AMT_10002
+										
+										         , SUM(ISNULL(S.ORDER_QTY_10003, 0)) AS ORDER_QTY_10003
+										         , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10003, 0))) AS PRDT_NORMAL_AMT_10003
+										         , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_10003, 0))) AS ORDER_AMT_10003
+										
+										  FROM SearchData S LEFT OUTER JOIN DP_BRAND BR WITH (NOLOCK)
+										  	ON S.BRAND_NO = BR.BRAND_NO
+										  LEFT OUTER JOIN SY_STANDARD_CATEGORY SC WITH (NOLOCK)
+										  	ON S.STD_CTGR_NO = SC.STD_CTGR_NO
+									UNION ALL
+											SELECT    ISNULL(S.BRAND_NO,'기타') AS BRAND_NO
+											        , ISNULL((SELECT SITE_NAME
+											        			FROM SY_SITE WITH (NOLOCK)
+											        			WHERE SITE_NO = S.SITE_NO
+											        		 ), '기타') AS SITE_NAME
+											        , ISNULL(BR.BRAND_NAME,'기타') AS  BRAND_NAME
+											        , ISNULL(S.STD_CTGR_NO,'기타') as STD_CTGR_NO
+											        , ISNULL(SC.STD_CTGR_NAME,'기타') as STD_CTGR_NAME
+											        , ISNULL(S.STYLE_INFO,'기타') as STYLE_INFO
+											     	, ISNULL(S.PRDT_COLOR_CODE,'기타') as PRDT_COLOR_CODE
+<!-- 											     	, ISNULL(( -->
+<!-- 											                       SELECT CODE_DTL_NAME -->
+<!-- 											                       FROM SY_CODE_DETAIL WITH (NOLOCK) -->
+<!-- 											                         WHERE CODE_FIELD = 'PRDT_COLOR_CODE' -->
+<!-- 											                         AND CODE_DTL_NO = S.PRDT_COLOR_CODE -->
+<!-- 											               ),'기타') AS PRDT_COLOR_NAME -->
+													, ISNULL((S.PRDT_COLOR_CODE),'기타') AS PRDT_COLOR_NAME
+													, ISNULL(CONCAT(S.PRDT_NO, ' / ', S.PRDT_NAME), '기타') AS PRDT_NO_NAME
+													
+													, ISNULL(S.PRDT_NO, '기타') AS PRDT_NO
+													, ISNULL(S.PRDT_NAME , '기타') AS PRDT_NAME
+													
+											        
+											     	, ISNULL(S.ORDER_QTY_ALL, 0) AS ORDER_QTY_ALL
+											        , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_ALL, 0)) AS PRDT_NORMAL_AMT_ALL
+											        , CONVERT(BIGINT,ISNULL(ORDER_AMT_ALL, 0)) AS ORDER_AMT_ALL
+											
+											     	, ISNULL(S.ORDER_QTY_10000, 0) AS ORDER_QTY_10000
+											        , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10000, 0)) AS PRDT_NORMAL_AMT_10000
+											        , CONVERT(BIGINT,ISNULL(ORDER_AMT_10000, 0)) AS ORDER_AMT_10000
+											        
+											     	, ISNULL(S.ORDER_QTY_10001, 0) AS ORDER_QTY_10001
+											        , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10001, 0)) AS PRDT_NORMAL_AMT_10001
+											        , CONVERT(BIGINT,ISNULL(ORDER_AMT_10001, 0)) AS ORDER_AMT_10001
+											
+											     	, ISNULL(S.ORDER_QTY_10002, 0) AS ORDER_QTY_10002
+											        , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10002, 0)) AS PRDT_NORMAL_AMT_10002
+											        , CONVERT(BIGINT,ISNULL(ORDER_AMT_10002, 0)) AS ORDER_AMT_10002
+											
+											     	, ISNULL(S.ORDER_QTY_10003, 0) AS ORDER_QTY_10003
+											        , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10003, 0)) AS PRDT_NORMAL_AMT_10003
+											        , CONVERT(BIGINT,ISNULL(ORDER_AMT_10003, 0)) AS ORDER_AMT_10003
+											
+											  FROM SearchData S LEFT OUTER JOIN DP_BRAND BR WITH (NOLOCK)
+											  	ON S.BRAND_NO = BR.BRAND_NO
+											  LEFT OUTER JOIN SY_STANDARD_CATEGORY SC WITH (NOLOCK)
+											  	ON S.STD_CTGR_NO = SC.STD_CTGR_NO
+											  ORDER BY ORDER_QTY_ALL DESC, ORDER_AMT_ALL DESC
+												<include refid="Paging.mssql"/>
+									 ) A
+								
+	</select>
+	
+	<select id="selectPrdtTypeStatsForExcel" parameterType="kr.co.abcmart.bo.stats.vo.SalesStatsSearchVO" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder">
+		/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectPrdtTypeStatsForExcel [상품별 매출통계 현황 엑셀 다운로드] [이재렬] */
+			WITH SearchData AS (
+
+					      			 SELECT  SO.SITE_NO
+					                       , SO.BRAND_NO
+					                       , MAX(SO.STD_CTGR_NO ) AS STD_CTGR_NO
+					                       , MAX(SO.STYLE_INFO) AS STYLE_INFO
+<!-- 					                       , MAX(SO.PRDT_COLOR_CODE) AS PRDT_COLOR_CODE -->
+ 										   , MAX(PP.PRDT_COLOR_INFO) AS PRDT_COLOR_CODE
+					                       , SO.PRDT_NO
+					                       , SO.PRDT_NAME AS PRDT_NAME
+					
+					           			   , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+					                       , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+					                  	   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+					
+					           			   , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+					           			   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+					           			   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+					
+					           			   , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+					           			   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+					           			   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+					
+					           			   , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+					           			   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+					           			   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+					
+					           			   , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10003
+					           			   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10003
+					           			   , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.STOCK_GBN_CODE = '10003' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10003
+					
+					        		FROM SA_SALES_ORDER SO WITH (NOLOCK)
+					                JOIN PD_PRODUCT PP WITH (NOLOCK)
+                        	          ON SO.PRDT_NO = PP.PRDT_NO
+					       			  <include refid="statsSearchForExcel"/>
+					
+					       		GROUP BY SO.SITE_NO,SO.BRAND_NO,    SO.PRDT_NO, SO.PRDT_NAME
+					
+							)
+								SELECT A.BRAND_NO
+									 , A.SITE_NAME
+									 , A.BRAND_NAME
+									 , A.STD_CTGR_NO
+									 , A.STD_CTGR_NAME
+									 , A.STYLE_INFO
+									 , A.PRDT_COLOR_CODE
+									 , A.PRDT_COLOR_NAME
+									 , A.PRDT_NO_NAME
+									 , A.PRDT_NO
+									 , A.PRDT_NAME
+									 , A.ORDER_QTY_ALL
+									 , A.PRDT_NORMAL_AMT_ALL
+									 , A.ORDER_AMT_ALL
+									 , A.ORDER_QTY_10000
+									 , A.PRDT_NORMAL_AMT_10000
+									 , A.ORDER_AMT_10000
+									 , A.ORDER_QTY_10001
+									 , A.PRDT_NORMAL_AMT_10001
+									 , A.ORDER_AMT_10001
+									 , A.ORDER_QTY_10002
+									 , A.PRDT_NORMAL_AMT_10002
+									 , A.ORDER_AMT_10002
+									 , A.ORDER_QTY_10003
+									 , A.PRDT_NORMAL_AMT_10003
+									 , A.ORDER_AMT_10003
+								FROM (
+										SELECT	  '합계' AS BRAND_NO
+										         , '' AS SITE_NAME
+										         , '' AS  BRAND_NAME
+										         , '' AS STD_CTGR_NO
+										         , '' AS STD_CTGR_NAME
+										         , '' AS STYLE_INFO
+										         , '' AS PRDT_COLOR_CODE
+										         , '' AS PRDT_COLOR_NAME
+										         , '' AS PRDT_NO_NAME 
+										
+												 , '' AS PRDT_NO
+												 , '' AS PRDT_NAME
+													
+										         , SUM(ISNULL(S.ORDER_QTY_ALL, 0)) AS ORDER_QTY_ALL
+										         , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_ALL, 0))) AS PRDT_NORMAL_AMT_ALL
+										         , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_ALL, 0))) AS ORDER_AMT_ALL
+										
+										         , SUM(ISNULL(S.ORDER_QTY_10000, 0)) AS ORDER_QTY_10000
+										         , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10000, 0))) AS PRDT_NORMAL_AMT_10000
+										         , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_10000, 0))) AS ORDER_AMT_10000
+										
+										         , SUM(ISNULL(S.ORDER_QTY_10001, 0)) AS ORDER_QTY_10001
+										         , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10001, 0))) AS PRDT_NORMAL_AMT_10001
+										         , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_10001, 0))) AS ORDER_AMT_10001
+										
+										         , SUM(ISNULL(S.ORDER_QTY_10002, 0)) AS ORDER_QTY_10002
+										         , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10002, 0))) AS PRDT_NORMAL_AMT_10002
+										         , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_10002, 0))) AS ORDER_AMT_10002
+										
+										         , SUM(ISNULL(S.ORDER_QTY_10003, 0)) AS ORDER_QTY_10003
+										         , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10003, 0))) AS PRDT_NORMAL_AMT_10003
+										         , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_10003, 0))) AS ORDER_AMT_10003
+										
+										  FROM SearchData S LEFT OUTER JOIN DP_BRAND BR WITH (NOLOCK)
+										  	ON S.BRAND_NO = BR.BRAND_NO
+										  LEFT OUTER JOIN SY_STANDARD_CATEGORY SC WITH (NOLOCK)
+										  	ON S.STD_CTGR_NO = SC.STD_CTGR_NO
+									UNION ALL
+										 SELECT       ISNULL(S.BRAND_NO,'기타') AS BRAND_NO
+											        , ISNULL((SELECT SITE_NAME
+											        			FROM SY_SITE WITH (NOLOCK)
+											        			WHERE SITE_NO = S.SITE_NO
+											        		 ), '기타') AS SITE_NAME
+											        , ISNULL(BR.BRAND_NAME,'기타') AS  BRAND_NAME
+											        , ISNULL(S.STD_CTGR_NO,'기타') as STD_CTGR_NO
+											        , ISNULL(SC.STD_CTGR_NAME,'기타') as STD_CTGR_NAME
+											        , ISNULL(S.STYLE_INFO,'기타') as STYLE_INFO
+											     	, ISNULL(S.PRDT_COLOR_CODE,'기타') as PRDT_COLOR_CODE
+<!-- 											     	, ISNULL(( -->
+<!-- 											                       SELECT CODE_DTL_NAME -->
+<!-- 											                       FROM SY_CODE_DETAIL WITH (NOLOCK) -->
+<!-- 											                         WHERE CODE_FIELD = 'PRDT_COLOR_CODE' -->
+<!-- 											                         AND CODE_DTL_NO = S.PRDT_COLOR_CODE -->
+<!-- 											               ),'기타') AS PRDT_COLOR_NAME -->
+													, ISNULL((S.PRDT_COLOR_CODE),'기타') AS PRDT_COLOR_NAME
+													, ISNULL(CONCAT(S.PRDT_NO, ' / ', S.PRDT_NAME), '기타') AS PRDT_NO_NAME
+													
+													, ISNULL(S.PRDT_NO, '기타') AS PRDT_NO
+													, ISNULL(S.PRDT_NAME , '기타') AS PRDT_NAME
+													
+											     	, ISNULL(S.ORDER_QTY_ALL, 0) AS ORDER_QTY_ALL
+											        , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_ALL, 0)) AS PRDT_NORMAL_AMT_ALL
+											        , CONVERT(BIGINT,ISNULL(ORDER_AMT_ALL, 0)) AS ORDER_AMT_ALL
+											
+											     	, ISNULL(S.ORDER_QTY_10000, 0) AS ORDER_QTY_10000
+											        , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10000, 0)) AS PRDT_NORMAL_AMT_10000
+											        , CONVERT(BIGINT,ISNULL(ORDER_AMT_10000, 0)) AS ORDER_AMT_10000
+											        
+											     	, ISNULL(S.ORDER_QTY_10001, 0) AS ORDER_QTY_10001
+											        , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10001, 0)) AS PRDT_NORMAL_AMT_10001
+											        , CONVERT(BIGINT,ISNULL(ORDER_AMT_10001, 0)) AS ORDER_AMT_10001
+											
+											     	, ISNULL(S.ORDER_QTY_10002, 0) AS ORDER_QTY_10002
+											        , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10002, 0)) AS PRDT_NORMAL_AMT_10002
+											        , CONVERT(BIGINT,ISNULL(ORDER_AMT_10002, 0)) AS ORDER_AMT_10002
+											
+											     	, ISNULL(S.ORDER_QTY_10003, 0) AS ORDER_QTY_10003
+											        , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_10003, 0)) AS PRDT_NORMAL_AMT_10003
+											        , CONVERT(BIGINT,ISNULL(ORDER_AMT_10003, 0)) AS ORDER_AMT_10003
+											
+											  FROM SearchData S LEFT OUTER JOIN DP_BRAND BR WITH (NOLOCK)
+											  	ON S.BRAND_NO = BR.BRAND_NO
+											  LEFT OUTER JOIN SY_STANDARD_CATEGORY SC WITH (NOLOCK)
+											  	ON S.STD_CTGR_NO = SC.STD_CTGR_NO
+											  
+								) A  ORDER BY  A.ORDER_QTY_ALL DESC, A.ORDER_AMT_ALL DESC
+	</select>
+	
+	<select id="selectVendorTypeCount" parameterType="pageable" resultType="int">
+		/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectVendorTypeCount [입점사 매출통계 현황 카운트] [이재렬] */
+			SELECT <include refid="Paging.totalCount"/>
+    	  		FROM (SELECT <include refid="Paging.totalCount"/>
+	    	 		 FROM SA_SALES_ORDER SO WITH (NOLOCK)
+	    	    	  <include refid="statsSearch"/>
+	    	    	  GROUP BY SO.VNDR_NO, SO.VNDR_NAME
+    	    ) A
+	</select>
+
+	<select id="selectVendorTypeList" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder">
+		/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectVendorTypeList [입점사 매출통계 현황 조회] [이재렬] */
+			SELECT A.VNDR_NO
+				 , A.VNDR_NAME
+				 , A.ORDER_QTY_ALL
+				 , A.PRDT_NORMAL_AMT_ALL
+				 , A.ORDER_AMT_ALL
+				 , A.ORDER_QTY_10000
+				 , A.PRDT_NORMAL_AMT_10000
+				 , A.ORDER_AMT_10000
+				 , A.ORDER_QTY_10001
+				 , A.PRDT_NORMAL_AMT_10001
+				 , A.ORDER_AMT_10001
+				 , A.ORDER_QTY_10002
+				 , A.PRDT_NORMAL_AMT_10002
+				 , A.ORDER_AMT_10002
+			FROM (
+				SELECT '' AS VNDR_NO
+					 , '합계' AS VNDR_NAME
+					 
+					 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+				
+				     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+				
+				     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+				
+				     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+				
+				FROM SA_SALES_ORDER SO WITH (NOLOCK)
+					<include refid="statsSearch"/>
+			UNION ALL
+				SELECT VNDR_NO
+					 , VNDR_NAME
+				
+				     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+				
+				     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+				
+				     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+				
+				     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+				
+				FROM SA_SALES_ORDER SO WITH (NOLOCK)
+					<include refid="statsSearch"/>
+				GROUP BY SO.VNDR_NO, SO.VNDR_NAME
+				ORDER BY ORDER_AMT_ALL DESC
+				<include refid="Paging.mssql"/>
+			) A
+	</select>
+	
+	<select id="selectVendorTypeStatsForExcel" parameterType="kr.co.abcmart.bo.stats.vo.SalesStatsSearchVO" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder">
+		/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectVendorTypeStatsForExcel [입점사 매출통계 엑셀 다운로드] [이재렬] */
+			SELECT A.VNDR_NO
+				 , A.VNDR_NAME
+				 , A.ORDER_QTY_ALL
+				 , A.PRDT_NORMAL_AMT_ALL
+				 , A.ORDER_AMT_ALL
+				 , A.ORDER_QTY_10000
+				 , A.PRDT_NORMAL_AMT_10000
+				 , A.ORDER_AMT_10000
+				 , A.ORDER_QTY_10001
+				 , A.PRDT_NORMAL_AMT_10001
+				 , A.ORDER_AMT_10001
+				 , A.ORDER_QTY_10002
+				 , A.PRDT_NORMAL_AMT_10002
+				 , A.ORDER_AMT_10002
+			FROM (
+				SELECT '' AS VNDR_NO
+					 , '합계' AS VNDR_NAME
+					 
+					 , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+				
+				     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+				
+				     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+				
+				     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+				
+				FROM SA_SALES_ORDER SO WITH (NOLOCK)
+					<include refid="statsSearchForExcel"/>
+			UNION ALL
+				SELECT VNDR_NO
+					 , VNDR_NAME
+				
+				     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_QTY) AS ORDER_QTY_ALL
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*SO.ORDER_AMT)) AS ORDER_AMT_ALL
+				
+				     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10000
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10000' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10000
+				
+				     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10001
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10001' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10001
+				
+				     , SUM((case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.PRDT_NORMAL_AMT ELSE 0 END))) AS PRDT_NORMAL_AMT_10002
+				     , SUM(CONVERT(BIGINT,(case when so.SALES_CNCL_GBN_TYPE ='C' or so.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN SO.DEVICE_CODE = '10002' THEN SO.ORDER_AMT ELSE 0 END))) AS ORDER_AMT_10002
+				
+				FROM SA_SALES_ORDER SO WITH (NOLOCK)
+					<include refid="statsSearchForExcel"/>
+				GROUP BY SO.VNDR_NO, SO.VNDR_NAME
+			) A
+	</select>
+	
+	<select id="selectVendorPopCount" parameterType="pageable" resultType="int">
+		/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectVendorPopCount [입점사 매출통계 현황 팝업 카운트] [이재렬] */
+			SELECT <include refid="Paging.totalCount"/>
+    	  		FROM (SELECT <include refid="Paging.totalCount"/>
+	    	 		 FROM SA_SALES_ORDER SO WITH (NOLOCK)
+	    	    	  <include refid="statsSearch"/>
+	    	    	  GROUP BY SO.BRAND_NO, SO.STD_CTGR_NO, SO.STYLE_INFO, SO.PRDT_COLOR_CODE, SO.PRDT_NO, SO.PRDT_NAME
+    	    ) A
+	</select>
+
+	<select id="selectVendorPopList" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder">
+		/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectVendorPopList [입점사 매출통계 현황 팝업 조회] [이재렬] */
+			WITH SearchData AS (
+
+			      SELECT SO.BRAND_NO
+			      	   , SO.STD_CTGR_NO
+			      	   , SO.STYLE_INFO
+			      	   , SO.PRDT_COLOR_CODE
+			      	   , SO.PRDT_NO
+			      	   , SO.PRDT_NAME
+			           , SUM(SO.ORDER_QTY) AS ORDER_QTY_ALL
+			           , SUM(CONVERT(BIGINT,SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+			           , SUM(CONVERT(BIGINT,SO.ORDER_AMT)) AS ORDER_AMT_ALL
+			
+			        FROM SA_SALES_ORDER SO WITH (NOLOCK)
+			      <include refid="statsSearch"/>
+			
+			       GROUP BY SO.BRAND_NO, SO.STD_CTGR_NO, SO.STYLE_INFO, SO.PRDT_COLOR_CODE, SO.PRDT_NO, SO.PRDT_NAME
+			
+			)
+				SELECT A.BRAND_NO
+					 , A.BRAND_NAME
+					 , A.STD_CTGR_NO
+					 , A.STD_CTGR_NAME
+					 , A.STYLE_INFO
+					 , A.PRDT_COLOR_CODE
+					 , A.PRDT_COLOR_NAME
+					 , A.PRDT_NO_NAME
+					 , A.PRDT_NO
+					 , A.PRDT_NAME
+					 , A.ORDER_QTY_ALL
+					 , A.PRDT_NORMAL_AMT_ALL
+					 , A.ORDER_AMT_ALL
+				FROM (
+						SELECT '합계' AS BRAND_NO
+						 	 , '' AS BRAND_NAME
+							 , '' AS STD_CTGR_NO
+							 , '' AS STD_CTGR_NAME
+							 , '' AS STYLE_INFO
+						     , '' AS PRDT_COLOR_CODE
+							 , '' AS PRDT_COLOR_NAME
+							 , '' AS PRDT_NO_NAME
+							 , '' AS PRDT_NO
+							 , '' AS PRDT_NAME
+						     , SUM(ISNULL(S.ORDER_QTY_ALL, 0)) ORDER_QTY_ALL
+						     , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_ALL, 0))) PRDT_NORMAL_AMT_ALL
+						     , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_ALL, 0))) ORDER_AMT_ALL
+						
+						  FROM SearchData S WITH (NOLOCK) LEFT OUTER JOIN DP_BRAND BR WITH (NOLOCK)
+						  			ON S.BRAND_NO = BR.BRAND_NO
+						
+						  LEFT OUTER JOIN SY_STANDARD_CATEGORY SC WITH(NOLOCK)
+						       		ON S.STD_CTGR_NO = SC.STD_CTGR_NO
+						
+					UNION ALL
+						SELECT S.BRAND_NO
+							 , BR.BRAND_NAME
+							 , S.STD_CTGR_NO
+							 , SC.STD_CTGR_NAME
+							 , S.STYLE_INFO
+						     , S.PRDT_COLOR_CODE
+							 , (SELECT CODE_DTL_NAME FROM SY_CODE_DETAIL WHERE CODE_FIELD = 'PRDT_COLOR_CODE' AND CODE_DTL_NO = S.PRDT_COLOR_CODE) AS PRDT_COLOR_NAME
+							 , CONCAT(S.PRDT_NO, ' / ', S.PRDT_NAME) AS PRDT_NO_NAME
+							 , S.PRDT_NO
+							 , S.PRDT_NAME
+						     , ISNULL(S.ORDER_QTY_ALL, 0) ORDER_QTY_ALL
+						     , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_ALL, 0)) PRDT_NORMAL_AMT_ALL
+						     , CONVERT(BIGINT,ISNULL(ORDER_AMT_ALL, 0)) ORDER_AMT_ALL
+						
+						  FROM SearchData S WITH (NOLOCK) LEFT OUTER JOIN DP_BRAND BR WITH (NOLOCK)
+						  			ON S.BRAND_NO = BR.BRAND_NO
+						
+						  LEFT OUTER JOIN SY_STANDARD_CATEGORY SC WITH(NOLOCK)
+						       		ON S.STD_CTGR_NO = SC.STD_CTGR_NO
+						  ORDER BY S.BRAND_NO
+						  	<include refid="Paging.mssql"/>
+				) A
+	</select>
+	
+	<select id="selectVendorPopForExcel" parameterType="kr.co.abcmart.bo.stats.vo.SalesStatsSearchVO" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder">
+		/*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.selectVendorPopForExcel [입점사 매출통계 현황 팝업 엑셀 다운로드] [이재렬] */
+			WITH SearchData AS (
+
+			      SELECT SO.BRAND_NO
+			      	   , SO.STD_CTGR_NO
+			      	   , SO.STYLE_INFO
+			      	   , SO.PRDT_COLOR_CODE
+			      	   , SO.PRDT_NO
+			      	   , SO.PRDT_NAME
+			
+			           , SUM(SO.ORDER_QTY) AS ORDER_QTY_ALL
+			           , SUM(CONVERT(BIGINT,SO.PRDT_NORMAL_AMT)) AS PRDT_NORMAL_AMT_ALL
+			           , SUM(CONVERT(BIGINT,SO.ORDER_AMT)) AS ORDER_AMT_ALL
+			
+			        FROM SA_SALES_ORDER SO WITH (NOLOCK)
+			
+			      <include refid="statsSearchForExcel"/>
+			
+			       GROUP BY SO.BRAND_NO, SO.STD_CTGR_NO, SO.STYLE_INFO, SO.PRDT_COLOR_CODE, SO.PRDT_NO, SO.PRDT_NAME
+			
+			)
+				SELECT A.BRAND_NO
+						 , A.BRAND_NAME
+						 , A.STD_CTGR_NO
+						 , A.STD_CTGR_NAME
+						 , A.STYLE_INFO
+						 , A.PRDT_COLOR_CODE
+						 , A.PRDT_COLOR_NAME
+						 , A.PRDT_NO_NAME
+						 , A.PRDT_NO
+					 	 , A.PRDT_NAME
+						 , A.ORDER_QTY_ALL
+						 , A.PRDT_NORMAL_AMT_ALL
+						 , A.ORDER_AMT_ALL
+					FROM (
+							SELECT '합계' AS BRAND_NO
+							 	 , '' AS BRAND_NAME
+								 , '' AS STD_CTGR_NO
+								 , '' AS STD_CTGR_NAME
+								 , '' AS STYLE_INFO
+							     , '' AS PRDT_COLOR_CODE
+								 , '' AS PRDT_COLOR_NAME
+								 , '' AS PRDT_NO_NAME
+								 , '' AS PRDT_NO
+					 	 		 , '' AS PRDT_NAME
+							     , SUM(ISNULL(S.ORDER_QTY_ALL, 0)) ORDER_QTY_ALL
+							     , SUM(CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_ALL, 0))) PRDT_NORMAL_AMT_ALL
+							     , SUM(CONVERT(BIGINT,ISNULL(ORDER_AMT_ALL, 0))) ORDER_AMT_ALL
+							
+							  FROM SearchData S WITH (NOLOCK) LEFT OUTER JOIN DP_BRAND BR WITH (NOLOCK)
+							  			ON S.BRAND_NO = BR.BRAND_NO
+							
+							       LEFT OUTER JOIN SY_STANDARD_CATEGORY SC WITH(NOLOCK)
+							       		ON S.STD_CTGR_NO = SC.STD_CTGR_NO
+						UNION ALL
+							SELECT S.BRAND_NO
+								 , BR.BRAND_NAME
+								 , S.STD_CTGR_NO
+								 , SC.STD_CTGR_NAME
+								 , S.STYLE_INFO
+							     , S.PRDT_COLOR_CODE
+								 , (SELECT CODE_DTL_NAME FROM SY_CODE_DETAIL WHERE CODE_FIELD = 'PRDT_COLOR_CODE' AND CODE_DTL_NO = S.PRDT_COLOR_CODE) AS PRDT_COLOR_NAME
+								 , CONCAT(S.PRDT_NO, ' / ', S.PRDT_NAME) AS PRDT_NO_NAME
+								 , S.PRDT_NO
+					 	 		 , S.PRDT_NAME
+							     , ISNULL(S.ORDER_QTY_ALL, 0) ORDER_QTY_ALL
+							     , CONVERT(BIGINT,ISNULL(PRDT_NORMAL_AMT_ALL, 0)) PRDT_NORMAL_AMT_ALL
+							     , CONVERT(BIGINT,ISNULL(ORDER_AMT_ALL, 0)) ORDER_AMT_ALL
+							
+							  FROM SearchData S WITH (NOLOCK) LEFT OUTER JOIN DP_BRAND BR WITH (NOLOCK)
+							  			ON S.BRAND_NO = BR.BRAND_NO
+							
+							       LEFT OUTER JOIN SY_STANDARD_CATEGORY SC WITH(NOLOCK)
+							       		ON S.STD_CTGR_NO = SC.STD_CTGR_NO
+				   	) A
+	</select>
+
+</mapper>

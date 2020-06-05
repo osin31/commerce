@@ -1,0 +1,2624 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao">
+ 
+
+   <select id="selectDeliveryOrderList" parameterType="pageable" resultType="kr.co.abcmart.bo.delivery.model.master.OcDelivery">
+	   	 /*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDeliveryOrderList-배송관리 목록 자사 */  
+		 SELECT
+                   OO.ORDER_NO
+                 , OO.ORDER_DTM
+                 , OO.SITE_NO
+                 , OO.SITE_NO AS ORG_SITE_NO
+                 , OO.EMP_ORDER_YN
+                 , OO.MEMBER_NO
+                 , OO.MEMBER_TYPE_CODE               -- 회원유형코드
+                 , OO.MBSHP_GRADE_CODE               -- 멤버쉽등급코드
+                 , OO.EMP_YN                         -- 임직원여부
+                 , OO.OTS_VIP_YN                     -- OTS VIP 여부
+                 , OO.DEVICE_CODE                    -- 디바이스코드
+                 , OO.RSV_ORDER_YN                   -- 예약주문여부
+                 , OO.DLVY_TYPE_CODE                 -- 배송유형코드
+                 , OO.STORE_NO                       -- 매장번호
+                 , ( SELECT STORE_NAME
+	                       FROM CM_STORE WITH(NOLOCK)
+	                      WHERE STORE_NO = OODH.STORE_NO ) AS STORE_NAME
+                 , OO.STORE_ADD_INFO                 -- 매장추가정보
+                 , ( SELECT LOGIN_ID 
+	                   FROM MB_MEMBER WITH(NOLOCK)
+	                  WHERE MEMBER_NO = OO.MEMBER_NO ) AS BUYER_ID
+                 , OO.BUYER_NAME                     -- 주문자명
+                 , OO.BUYER_EMAIL_ADDR_TEXT          -- 주문자이메일주소
+                 , OO.BUYER_TEL_NO_TEXT              -- 주문자전화번호
+                 , OO.BUYER_HDPHN_NO_TEXT            -- 주문자핸드폰번호
+                 , OO.BUYER_POST_CODE_TEXT           -- 주문자우편번호
+                 , OO.BUYER_POST_ADDR_TEXT           -- 주문자우편주소
+                 , OO.BUYER_DTL_ADDR_TEXT            -- 주문자상세주소
+                 , OO.RCVR_NAME                      -- 수취인명
+                 , OO.RCVR_TEL_NO_TEXT               -- 수취인전화번호
+                 , OO.RCVR_HDPHN_NO_TEXT             -- 수취인핸드폰번호
+                 , OO.RCVR_POST_CODE_TEXT            -- 수취인우편번호
+                 , OO.RCVR_POST_ADDR_TEXT            -- 수취인우편주소
+                 , OO.RCVR_DTL_ADDR_TEXT             -- 수취인상세주소
+                 , OO.ORDER_PRDT_INFO                -- 주문상품정보
+                 , OO.TOTAL_NORMAL_AMT               -- 정상가총액
+                 , OO.TOTAL_SELL_AMT                 -- 판매가총액
+                 , OO.TOTAL_PROMO_DSCNT_AMT          -- 프로모션할인총액
+                 , OO.TOTAL_CPN_DSCNT_AMT            -- 쿠폰할인총액
+                 , OO.TOTAL_EMP_DSCNT_AMT            -- 임직원할인총액
+                 , OO.POINT_USE_AMT                  -- 포인트사용액
+                 , OO.EVENT_POINT_USE_AMT            -- 이벤트포인트사용액
+                 , OO.MMNY_DLVY_AMT                  -- 자사배송비
+                 , OO.TOTAL_VNDR_DLVY_AMT            -- 입점사배송비총액
+                 , OO.PYMNT_TODO_AMT                 -- 결제예정금액
+                 , OO.PYMNT_AMT                      -- 결제금액
+                 , OO.CNCL_AMT                       -- 취소금액
+                 , OO.CASH_RCPT_ISSUE_YN             -- 현금영수증발급여부
+                 , OO.TAX_BILL_ISSUE_STAT_CODE       -- 세금계산서발급상태코드
+                 , OO.DLVY_MEMO_TEXT                 -- 배송메모
+                 , OO.BANK_CODE                      -- 은행코드
+                 , OO.RFND_ACNT_TEXT                 -- 환불계좌
+                 , OO.ACNT_HLDR_NAME                 -- 예금주이름
+                 , OO.ORG_ORDER_NO                   -- 원주문번호
+                 , OO.UP_ORDER_NO                    -- 상위주문번호
+                 , OO.EXPOST_SAVE_MEMBER_NO          -- 사후적립회원번호
+                 , OO.EXPOST_SAVE_POINT_SEQ          -- 사후적립순번
+                 , OO.AFFLTS_CODE                    -- 제휴사코드
+                 , OO.AFFLTS_ORDER_NO                -- 제휴사주문번호
+--                 , OO.PUCHAS_SALES_GBN_TYPE          -- 매입매출구분
+                 , OO.ORDER_STAT_CODE                -- 주문상태코드
+                 , OOP.ORDER_PRDT_SEQ                -- 주문상품순번
+                 , OOP.UP_ORDER_PRDT_SEQ             -- 상위주문상품순번
+                 , OOP.PRDT_NO                       -- 상품번호
+                 , OOP.PRDT_OPTN_NO                  -- 상품옵션번호
+                 , OOP.PRDT_NAME                      -- 상품명
+                 , OOP.OPTN_NAME                      -- 옵션명
+                 , OOP.PRDT_TYPE_CODE                 -- 상품유형코드
+                 , OOP.STYLE_INFO                      -- 스타일정보
+                 , OOP.PRDT_COLOR_CODE                 -- 상품색상코드
+                 , OOP.SELL_AMT                        -- 판매가
+                 , OOP.ORDER_AMT                       -- 주문금액
+                 , OOP.VNDR_NAME                       -- 업체명
+                 , OOP.VNDR_NO                       -- 업체번호
+                 , OOP.VNDR_PRDT_NO_TEXT               -- 업체 상품코드
+		 		 , OOP.SELL_CNCL_REQ_YN		      -- 판매취소요청여부                 
+                 , OODH.ORDER_DLVY_HIST_SEQ           -- 주문배송이력순번
+				,  OODH.DLVY_DGRE_COUNT               -- 배송차수
+				,  OODH.STOCK_GBN_CODE               -- 재고구분코드
+				, DBO.FN_CODE_VALUE('STOCK_GBN_CODE', OODH.STOCK_GBN_CODE)			    AS STOCK_GBN_CODE_NAME
+				,  OODH.STORE_NO                     -- 매장번호
+				,  OODH.DLVY_PROC_DTM                -- 배송처리일시
+				, ISNULL(OODH.LOGIS_VNDR_CODE,'') AS LOGIS_VNDR_CODE              -- 택배사코드
+				,  OODH.WAYBIL_NO_TEXT               -- 운송장번호
+				,  OODH.DLVY_DSCNTC_YN               -- 배송중단여부
+				,  OODH.DLVY_DSCNTC_RSN_CODE         -- 배송중단사유코드
+				,  OODH.DLVY_DSCNTC_OPETR_NO         -- 배송중단처리자번호
+				,  OODH.DLVY_DSCNTC_PROC_DTM         -- 배송중단처리일시
+				,  OODH.PICKUP_PRPARE_CMLPT_DTM      -- 픽업준비완료일시
+				,  OODH.PICKUP_PSBLT_YMD             -- 픽업가능일
+				,  OODH.MISS_PROC_YN                 -- 분실처리여부
+				,  OODH.MISS_PROC_TYPE_CODE          -- 분실처리유형코드
+				,  OODH.INSD_MGMT_INFO_TEXT          -- 내부관리정보
+				,  OODH.DLVY_STAT_CODE               -- 배송상태코드
+				, (OO.ORDER_NO  
+						+  RIGHT(CAST( OODH.ORDER_PRDT_SEQ  + 1000 AS CHAR(4)), 2) 
+						+  RIGHT(CAST( OODH.ORDER_DLVY_HIST_SEQ  + 1000 AS CHAR(4)), 2)
+				  ) 	AS DLLVY_SEQ_ID
+				, OODH.DLVY_ID_TEXT 	 			-- 배송 ID
+         FROM OC_ORDER OO WITH (NOLOCK)
+             INNER JOIN  OC_ORDER_PRODUCT OOP WITH (NOLOCK) ON OO.ORDER_NO = OOP.ORDER_NO
+             INNER JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH (NOLOCK) ON OOP.ORDER_NO  = OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+         WHERE OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+         AND OOP.PRDT_TYPE_CODE IN ( '10000','10001','10002' ,'10003') -- 공용, 온라인전용, 매장전용, 사은품
+		
+		<!--  매장 발송처 -->
+		<if test=" ( bean.storeNo != null and bean.storeNo != '')  ">
+			AND OODH.STORE_NO     =   #{bean.storeNo , jdbcType=VARCHAR}       -- 매장 발송처 사유코드
+		</if>
+		
+		
+		<!-- 조건 -->
+		<include refid="whereOrderDelivery" />
+				
+     	 ORDER BY OO.ORDER_NO DESC , OO.ORDER_DTM DESC  
+  		 <include refid="Paging.mssql" />
+   </select>
+   
+   <select id="selectDeliveryOrderListExcel" parameterType="pageable" resultType="kr.co.abcmart.bo.delivery.vo.DeliveryOrderNotExcelVO">
+	   	 /*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDeliveryOrderListExcel [배송관리 목록 자사 엑셀 다운로드] [이강수] */  
+		    
+		    SELECT
+				   ( SELECT SITE_NAME
+				       FROM SY_SITE WITH(NOLOCK)
+				      WHERE SITE_NO = OO.SITE_NO ) AS SITE_NAME
+				 , REPLACE(CONVERT(CHAR(19), OO.ORDER_DTM, 20),'-','.')					AS STR_ORDER_DTM
+                 , OO.ORDER_NO
+                 , OOP.ORDER_PRDT_SEQ
+				 , OOP.PRDT_NO
+				 , OOP.PRDT_NAME
+				 , OOP.OPTN_NAME
+				 , REPLACE(CONVERT(VARCHAR, CONVERT(MONEY,OOP.ORDER_AMT),1),'.00','')	AS STR_ORDER_AMT
+                 , DBO.FN_CODE_VALUE('DLVY_TYPE_CODE', OO.DLVY_TYPE_CODE)				AS DLVY_TYPE_CODE_NAME
+				 , DBO.FN_CODE_VALUE('DLVY_STAT_CODE', OODH.DLVY_STAT_CODE)				AS DLVY_STAT_CODE_NAME
+				 , OODH.DLVY_ID_TEXT
+				 , DBO.FN_CODE_VALUE('LOGIS_VNDR_CODE', OODH.LOGIS_VNDR_CODE)			AS LOGIS_VNDR_CODE_NAME
+				 , OODH.WAYBIL_NO_TEXT
+                 , DBO.FN_CODE_VALUE('STOCK_GBN_CODE', OODH.STOCK_GBN_CODE)			    AS STOCK_GBN_CODE_NAME
+                 , ( SELECT LOGIN_ID 
+	                   FROM MB_MEMBER WITH(NOLOCK)
+	                  WHERE MEMBER_NO = OO.MEMBER_NO ) AS BUYER_ID
+                 , OO.BUYER_NAME                     -- 주문자명
+                 , OO.RCVR_NAME                      -- 수취인명
+                 , OO.RCVR_POST_ADDR_TEXT            -- 수취인우편주소
+                 , OO.RCVR_DTL_ADDR_TEXT             -- 수취인상세주소
+         	  FROM OC_ORDER 					OO WITH (NOLOCK)
+        INNER JOIN OC_ORDER_PRODUCT 			OOP WITH (NOLOCK)  ON OO.ORDER_NO  = OOP.ORDER_NO
+        INNER JOIN OC_ORDER_DELIVERY_HISTORY 	OODH WITH (NOLOCK) ON OOP.ORDER_NO = OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+             WHERE OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+               AND OOP.PRDT_TYPE_CODE IN ('10000','10001','10002','10003') -- 공용, 온라인전용, 매장전용, 사은품
+		
+		<!--  매장 발송처 -->
+		<if test=" ( bean.storeNo != null and bean.storeNo != '')  ">
+			AND OODH.STORE_NO     =   #{bean.storeNo , jdbcType=VARCHAR}       -- 매장 발송처 사유코드
+		</if>
+		
+		<!-- 조건 -->
+		<include refid="whereOrderDelivery" />
+				
+     	 ORDER BY OO.ORDER_NO DESC , OO.ORDER_DTM DESC  
+     	 
+   </select>   
+   
+	<select id="selectDeliveryOrderListCount" parameterType="pageable" resultType="Integer">
+	 /*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDeliveryOrderListCount-배송관리 목록 자사 Count */  
+	 SELECT 
+	 	<include refid="Paging.totalCount" />
+	 FROM OC_ORDER OO WITH (NOLOCK)
+             INNER JOIN  OC_ORDER_PRODUCT OOP WITH (NOLOCK) ON OO.ORDER_NO = OOP.ORDER_NO
+             INNER JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH (NOLOCK) ON OOP.ORDER_NO  = OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+         WHERE OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+          AND OOP.PRDT_TYPE_CODE IN ( '10000','10001','10002' ,'10003') -- 공용, 온라인전용, 매장전용, 사은품
+          
+          <!--  매장 발송처 -->
+		<if test=" ( bean.storeNo != null and bean.storeNo != '')  ">
+			AND OODH.STORE_NO     =   #{bean.storeNo , jdbcType=VARCHAR}       -- 매장 발송처 사유코드
+		</if>
+		
+	  <!-- 조건 -->
+			<include refid="whereOrderDelivery" />
+	</select>
+   
+	   
+	<select id="selectDeliveryOrderNotList" parameterType="pageable" resultType="kr.co.abcmart.bo.delivery.model.master.OcDelivery">
+	  /*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDeliveryOrderNotList - 미출고 현황 */  
+	 SELECT
+	                   OO.ORDER_NO
+	                 , OO.ORDER_DTM
+	                 , OO.SITE_NO
+	                 , OO.SITE_NO AS ORG_SITE_NO
+	                 , OO.EMP_ORDER_YN
+	                 , OO.MEMBER_NO
+	                 , OO.MEMBER_TYPE_CODE               -- 회원유형코드
+	                 , OO.MBSHP_GRADE_CODE               -- 멤버쉽등급코드
+	                 , OO.EMP_YN                         -- 임직원여부
+	                 , OO.OTS_VIP_YN                     -- OTS VIP 여부
+	                 , OO.DEVICE_CODE                    -- 디바이스코드
+	                 , OO.RSV_ORDER_YN                   -- 예약주문여부
+	                 , OO.DLVY_TYPE_CODE                 -- 배송유형코드
+	                 , OO.STORE_NO                       -- 매장번호
+	                 , ( SELECT STORE_NAME
+	                       FROM CM_STORE WITH(NOLOCK)
+	                      WHERE STORE_NO = OODH.STORE_NO ) AS STORE_NAME
+	                 , OO.STORE_ADD_INFO                 -- 매장추가정보
+	                 , ( SELECT LOGIN_ID 
+	                       FROM MB_MEMBER WITH(NOLOCK)
+	                      WHERE MEMBER_NO = OO.MEMBER_NO ) AS BUYER_ID
+	                 , OO.BUYER_NAME                     -- 주문자명
+	                 , OO.BUYER_EMAIL_ADDR_TEXT          -- 주문자이메일주소
+	                 , OO.BUYER_TEL_NO_TEXT              -- 주문자전화번호
+	                 , OO.BUYER_HDPHN_NO_TEXT            -- 주문자핸드폰번호
+	                 , OO.BUYER_POST_CODE_TEXT           -- 주문자우편번호
+	                 , OO.BUYER_POST_ADDR_TEXT           -- 주문자우편주소
+	                 , OO.BUYER_DTL_ADDR_TEXT            -- 주문자상세주소
+	                 , OO.RCVR_NAME                      -- 수취인명
+	                 , OO.RCVR_TEL_NO_TEXT               -- 수취인전화번호
+	                 , OO.RCVR_HDPHN_NO_TEXT             -- 수취인핸드폰번호
+	                 , OO.RCVR_POST_CODE_TEXT            -- 수취인우편번호
+	                 , OO.RCVR_POST_ADDR_TEXT            -- 수취인우편주소
+	                 , OO.RCVR_DTL_ADDR_TEXT             -- 수취인상세주소
+	                 , OO.ORDER_PRDT_INFO                -- 주문상품정보
+	                 , OO.TOTAL_NORMAL_AMT               -- 정상가총액
+	                 , OO.TOTAL_SELL_AMT                 -- 판매가총액
+	                 , OO.TOTAL_PROMO_DSCNT_AMT          -- 프로모션할인총액
+	                 , OO.TOTAL_CPN_DSCNT_AMT            -- 쿠폰할인총액
+	                 , OO.TOTAL_EMP_DSCNT_AMT            -- 임직원할인총액
+	                 , OO.POINT_USE_AMT                  -- 포인트사용액
+	                 , OO.EVENT_POINT_USE_AMT            -- 이벤트포인트사용액
+	                 , OO.MMNY_DLVY_AMT                  -- 자사배송비
+	                 , OO.TOTAL_VNDR_DLVY_AMT            -- 입점사배송비총액
+	                 , OO.PYMNT_TODO_AMT                 -- 결제예정금액
+	                 , OO.PYMNT_AMT                      -- 결제금액
+	                 , OO.CNCL_AMT                       -- 취소금액
+	                 , OO.CASH_RCPT_ISSUE_YN             -- 현금영수증발급여부
+	                 , OO.TAX_BILL_ISSUE_STAT_CODE       -- 세금계산서발급상태코드
+	                 , OO.DLVY_MEMO_TEXT                 -- 배송메모
+	                 , OO.BANK_CODE                      -- 은행코드
+	                 , OO.RFND_ACNT_TEXT                 -- 환불계좌
+	                 , OO.ACNT_HLDR_NAME                 -- 예금주이름
+	                 , OO.ORG_ORDER_NO                   -- 원주문번호
+	                 , OO.UP_ORDER_NO                    -- 상위주문번호
+	                 , OO.EXPOST_SAVE_MEMBER_NO          -- 사후적립회원번호
+	                 , OO.EXPOST_SAVE_POINT_SEQ          -- 사후적립순번
+	                 , OO.AFFLTS_CODE                    -- 제휴사코드
+	                 , OO.AFFLTS_ORDER_NO                -- 제휴사주문번호
+	                 , OO.ORDER_STAT_CODE                -- 주문상태코드
+	                 , OOP.ORDER_PRDT_SEQ                -- 주문상품순번
+	                 , OOP.UP_ORDER_PRDT_SEQ             -- 상위주문상품순번
+	                 , OOP.PRDT_NO                       -- 상품번호
+	                 , OOP.PRDT_OPTN_NO                  -- 상품옵션번호
+	                 , OOP.PRDT_NAME                      -- 상품명
+	                 , OOP.OPTN_NAME                      -- 옵션명
+	                 , OOP.PRDT_TYPE_CODE                 -- 상품유형코드
+	                 , OOP.STYLE_INFO                      -- 스타일정보
+	                 , OOP.PRDT_COLOR_CODE                 -- 상품색상코드
+	                 , OOP.SELL_AMT                        -- 판매가
+	                 , OOP.ORDER_AMT                       -- 주문금액
+	                 , OOP.VNDR_NAME                       -- 업체명
+	                 , OOP.VNDR_NO                       -- 업체번호
+	                 , OOP.VNDR_PRDT_NO_TEXT               -- 업체 상품코드
+	                 , ISNULL(OOP.LOGIS_CNVRT_RSN_CODE,'') AS LOGIS_CNVRT_RSN_CODE				--택배전환사유코드
+	                 , OODH.ORDER_DLVY_HIST_SEQ           -- 주문배송이력순번
+					, OODH.DLVY_DGRE_COUNT               -- 배송차수
+					, OODH.STOCK_GBN_CODE               -- 재고구분코드
+					, DBO.FN_CODE_VALUE('STOCK_GBN_CODE', OODH.STOCK_GBN_CODE)			    AS STOCK_GBN_CODE_NAME
+					, OODH.STORE_NO                     -- 매장번호
+					, OODH.DLVY_PROC_DTM                -- 배송처리일시
+					, ISNULL(OODH.LOGIS_VNDR_CODE,'') AS LOGIS_VNDR_CODE              -- 택배사코드					
+					, OODH.WAYBIL_NO_TEXT               -- 운송장번호
+					, OODH.DLVY_DSCNTC_YN               -- 배송중단여부
+					, OODH.DLVY_DSCNTC_RSN_CODE         -- 배송중단사유코드
+					, OODH.DLVY_DSCNTC_OPETR_NO         -- 배송중단처리자번호
+					, OODH.DLVY_DSCNTC_PROC_DTM         -- 배송중단처리일시 
+					, OODH.PICKUP_PRPARE_CMLPT_DTM      -- 픽업준비완료일시
+					, OODH.PICKUP_PSBLT_YMD             -- 픽업가능일
+					, OODH.MISS_PROC_YN                 -- 분실처리여부
+					, OODH.MISS_PROC_TYPE_CODE          -- 분실처리유형코드
+					, OODH.INSD_MGMT_INFO_TEXT          -- 내부관리정보
+					, OODH.DLVY_STAT_CODE               -- 배송상태코드
+					, OODH.DLVY_ID_TEXT 	 			-- 배송 ID
+	         FROM OC_ORDER OO WITH (NOLOCK)
+             INNER JOIN  OC_ORDER_PRODUCT OOP WITH (NOLOCK) ON OO.ORDER_NO = OOP.ORDER_NO
+             INNER JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH (NOLOCK) ON OOP.ORDER_NO  = OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+         	 WHERE OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+         	 AND OOP.PRDT_TYPE_CODE IN ( '10000','10001','10002' ,'10003') -- 공용, 온라인전용, 매장전용, 사은품
+			
+			<if test="bean.orderDlvOverDay != null">
+			-- 미출고 조회일수 Over데이 대량 데이타시 쿼리확인 필요
+			AND EXISTS (
+							SELECT   1
+							FROM OC_ORDER_DELIVERY_HISTORY OODHS WITH (NOLOCK)
+							WHERE 1=1
+							AND OODHS.ORDER_NO 				= OODH.ORDER_NO
+							and OODHS.ORDER_PRDT_SEQ 		= OODH.ORDER_PRDT_SEQ
+							and OODHS.ORDER_DLVY_HIST_SEQ 	= OODH.ORDER_DLVY_HIST_SEQ  -- 결제완료,상품 준비중
+							AND OODHS.DLVY_STAT_CODE IN	 (  '10000' ,'10001' ) 
+							AND OODHS.DLVY_DSCNTC_YN = #{bean.dlvyDscntcYn , jdbcType=VARCHAR}         -- 배송중단여부 Y -- 배송중단이 되면은 상품대기로됨
+							AND OODHS.MISS_PROC_YN =   #{bean.missProcYn , jdbcType=VARCHAR}           -- 분실처리여부 Y
+							AND OODHS.IMPSBLT_PROC_YN ='N' 	--  불가처리여부
+							AND DATEDIFF(DAY,OODHS.RGST_DTM,GETDATE())  <![CDATA[ >= ]]>  #{bean.orderDlvOverDay , jdbcType=INTEGER}    
+						) 
+			</if>	
+		
+			<!--  매장 발송처 -->
+			<if test=" ( bean.storeNo != null and bean.storeNo != '')  ">
+				AND OODH.STORE_NO     =   #{bean.storeNo , jdbcType=VARCHAR}       -- 매장 발송처 사유코드
+			</if>
+			
+			<!-- 조건 -->
+			<include refid="whereOrderDelivery" />
+					
+	     	 ORDER BY OO.ORDER_NO DESC , OO.ORDER_DTM DESC  
+	  		 <include refid="Paging.mssql" />
+	</select>
+	   
+	<select id="selectDeliveryOrderNotCount" parameterType="pageable" resultType="Integer">
+		 /*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDeliveryOrderNotCount - 미출고 현황 Count */  
+		 SELECT 
+		 	<include refid="Paging.totalCount" />
+		 FROM OC_ORDER OO WITH (NOLOCK)
+	       INNER JOIN  OC_ORDER_PRODUCT OOP WITH (NOLOCK) ON OO.ORDER_NO = OOP.ORDER_NO
+	       INNER JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH (NOLOCK) ON OOP.ORDER_NO  = OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+	   	 WHERE OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+	   	  AND OOP.PRDT_TYPE_CODE IN ( '10000','10001','10002' ,'10003') -- 공용, 온라인전용, 매장전용, 사은품
+	      <if test="bean.orderDlvOverDay != null">
+			-- 미출고 조회일수 Over데이 대량 데이타시 쿼리확인 필요
+			AND EXISTS (
+							SELECT   1
+							FROM OC_ORDER_DELIVERY_HISTORY OODHS WITH (NOLOCK)
+							WHERE 1=1
+							AND OODHS.ORDER_NO 				= OODH.ORDER_NO
+							and OODHS.ORDER_PRDT_SEQ 		= OODH.ORDER_PRDT_SEQ
+							and OODHS.ORDER_DLVY_HIST_SEQ 	= OODH.ORDER_DLVY_HIST_SEQ
+							AND OODHS.DLVY_STAT_CODE IN	 (  '10000' ,'10001' )  -- 결제완료,상품 준비중
+							AND OODHS.DLVY_DSCNTC_YN =  #{bean.dlvyDscntcYn , jdbcType=VARCHAR}   -- 배송중단여부 Y
+							AND OODHS.MISS_PROC_YN =   #{bean.missProcYn , jdbcType=VARCHAR}    -- 분실처리여부 Y
+							AND OODHS.IMPSBLT_PROC_YN ='N' 	--  불가처리여부
+							AND DATEDIFF(DAY,OODHS.RGST_DTM,GETDATE())  <![CDATA[ >= ]]>  #{bean.orderDlvOverDay , jdbcType=INTEGER}    
+						) 
+		</if>	
+		
+		<!--  매장 발송처 -->
+		<if test=" ( bean.storeNo != null and bean.storeNo != '')  ">
+			AND OODH.STORE_NO     =   #{bean.storeNo , jdbcType=VARCHAR}       -- 매장 발송처 사유코드
+		</if>
+	
+	  <!-- 조건 -->
+	  <include refid="whereOrderDelivery" />
+	  	
+	</select>
+	
+	<select id="selectDeliveryOrderNotAllExcel" parameterType="pageable" resultType="kr.co.abcmart.bo.delivery.vo.DeliveryOrderNotExcelVO">
+	  /*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDeliveryOrderNotAllExcel - [미출고 목록 모든 엑셀 다운로드][이강수] */  
+	            SELECT (SELECT SITE_NAME
+						  FROM SY_SITE WITH(NOLOCK)
+						 WHERE SITE_NO = OO.SITE_NO) AS SITE_NAME
+					 , REPLACE(CONVERT(CHAR(19), OO.ORDER_DTM, 20),'-','.')					AS STR_ORDER_DTM
+	                 , OO.ORDER_NO
+	                 , OOP.ORDER_PRDT_SEQ
+					 , OOP.PRDT_NO
+					 , OOP.PRDT_NAME
+	                 , OOP.OPTN_NAME
+					 , REPLACE(CONVERT(VARCHAR, CONVERT(MONEY,OOP.ORDER_AMT),1),'.00','')	AS STR_ORDER_AMT
+					 , DBO.FN_CODE_VALUE('DLVY_TYPE_CODE', OO.DLVY_TYPE_CODE)				AS DLVY_TYPE_CODE_NAME
+					 , DBO.FN_CODE_VALUE('DLVY_STAT_CODE', OODH.DLVY_STAT_CODE)				AS DLVY_STAT_CODE_NAME
+					 , OODH.DLVY_ID_TEXT
+					 , DBO.FN_CODE_VALUE('LOGIS_VNDR_CODE', OODH.LOGIS_VNDR_CODE)			AS LOGIS_VNDR_CODE_NAME
+					 , OODH.WAYBIL_NO_TEXT
+					 , OODH.STOCK_GBN_CODE
+					 , DBO.FN_CODE_VALUE('STOCK_GBN_CODE', OODH.STOCK_GBN_CODE)			    AS STOCK_GBN_CODE_NAME
+					 , ( SELECT STORE_NAME
+	                       FROM CM_STORE WITH(NOLOCK)
+	                      WHERE STORE_NO = OODH.STORE_NO ) AS STORE_NAME
+					 , OO.MEMBER_NO
+					 , ( SELECT LOGIN_ID 
+	                       FROM MB_MEMBER WITH(NOLOCK)
+	                      WHERE MEMBER_NO = OO.MEMBER_NO ) 									AS BUYER_ID
+                 FROM OC_ORDER OO					  WITH (NOLOCK)
+           INNER JOIN OC_ORDER_PRODUCT OOP			  WITH (NOLOCK) ON OO.ORDER_NO  = OOP.ORDER_NO
+           INNER JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH (NOLOCK) ON OOP.ORDER_NO = OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+        	     WHERE OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+        		   AND OOP.PRDT_TYPE_CODE IN ('10000','10001','10002' ,'10003') -- 공용, 온라인전용, 매장전용, 사은품
+			<if test="bean.orderDlvOverDay != null">
+				-- 미출고 조회일수 Over데이 대량 데이타시 쿼리확인 필요
+			   AND EXISTS (
+							SELECT   1
+							FROM OC_ORDER_DELIVERY_HISTORY OODHS WITH (NOLOCK)
+							WHERE 1=1
+							AND OODHS.ORDER_NO 				= OODH.ORDER_NO
+							and OODHS.ORDER_PRDT_SEQ 		= OODH.ORDER_PRDT_SEQ
+							and OODHS.ORDER_DLVY_HIST_SEQ 	= OODH.ORDER_DLVY_HIST_SEQ
+							AND OODHS.DLVY_STAT_CODE IN	 (  '10000' ,'10001' )  -- 결제완료,상품 준비중
+							AND OODHS.DLVY_DSCNTC_YN =  #{bean.dlvyDscntcYn , jdbcType=VARCHAR}   	-- 배송중단여부 Y
+							AND OODHS.MISS_PROC_YN =   #{bean.missProcYn , jdbcType=VARCHAR}    	-- 분실처리여부 Y
+							AND OODHS.IMPSBLT_PROC_YN ='N' 	--  불가처리여부
+							AND DATEDIFF(DAY,OODHS.RGST_DTM,GETDATE())  <![CDATA[ >= ]]>  #{bean.orderDlvOverDay , jdbcType=INTEGER}    
+				   ) 
+			</if>
+			<!--  매장 발송처 -->
+			<if test=" ( bean.storeNo != null and bean.storeNo != '')  ">
+			   AND OODH.STORE_NO = #{bean.storeNo , jdbcType=VARCHAR}       -- 매장 발송처 사유코드
+			</if>
+			<!-- 조건 -->
+			<include refid="whereOrderDelivery" />
+     		ORDER BY OO.ORDER_NO DESC , OO.ORDER_DTM DESC  
+			<include refid="Paging.mssql" />
+	</select>
+	 
+	<select id="selectStorePickDeliveryChangeCount" parameterType="pageable" resultType="Integer">
+	 /*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectStorePickDeliveryChangeCount-매장 픽업 택배전환  Count */  
+	 SELECT 
+	 	<include refid="Paging.totalCount" />
+	 FROM OC_ORDER OO WITH (NOLOCK)
+       INNER JOIN  OC_ORDER_PRODUCT OOP WITH (NOLOCK) ON OO.ORDER_NO = OOP.ORDER_NO
+       INNER JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH (NOLOCK) ON OOP.ORDER_NO  = OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+   	 WHERE OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+   	  AND OOP.PRDT_TYPE_CODE in ( '10000','10001','10002' ,'10003') -- 공용, 온라인전용, 매장전용, 사은품
+   	  	
+   	  	<!--  발송의 배송상태값 -->
+		<if test=" ( bean.dlvyStatCode != null and bean.dlvyStatCode != ''  )  ">
+			 AND OODH.DLVY_STAT_CODE     =   #{bean.dlvyStatCode , jdbcType=VARCHAR}       -- 10002-상품출고,10003-배송중,10005- 배송완료
+		</if>
+		
+   	  	<if test="bean.missProcYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.missProcYn)">
+			AND OODH.MISS_PROC_YN =   #{bean.missProcYn , jdbcType=VARCHAR}         -- 분실처리여부 Y
+		</if>
+		
+		<if test="bean.impsbltProcYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.impsbltProcYn)">
+			AND OODH.IMPSBLT_PROC_YN =   #{bean.impsbltProcYn , jdbcType=VARCHAR}         -- 불가처리여부 Y
+		</if>
+		
+		
+		<if test="(bean.dlvyDscntcYn != null and bean.dlvyDscntcYn != '' )">
+			AND OODH.DLVY_DSCNTC_YN =   #{bean.dlvyDscntcYn , jdbcType=VARCHAR}         -- 배송중단여부 Y
+		</if>
+		
+   	  	<if test="bean.logisCnvrtYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.logisCnvrtYn)">
+			AND OOP.LOGIS_CNVRT_YN =   #{bean.logisCnvrtYn , jdbcType=VARCHAR}         -- 택배전환 여부 Y,N
+		</if>
+		
+		<!--  택배전환  상태 - 신청/접수  -->
+		<if test="bean.deliveryAddressYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.deliveryAddressYn)">
+			<if test='bean.deliveryAddressYn == "Y"'>
+			    AND isnull(OODH.RCVR_POST_ADDR_TEXT,'') = '' -- 택배전환 신청   
+			</if>
+
+			<if test='bean.deliveryAddressYn == "N"'>
+				AND isnull(OODH.RCVR_POST_ADDR_TEXT,'') != '' -- 택배전환 접수 
+			</if> 
+		</if>  
+		
+		<!--  택배전환 사유 -->
+		<if test=' ( bean.logisCnvrtRsnCode != null and bean.logisCnvrtRsnCode != "")  '>
+			AND OOP.LOGIS_CNVRT_RSN_CODE     =   #{bean.logisCnvrtRsnCode , jdbcType=VARCHAR}       -- 택배전환 사유코드
+		</if>
+		
+		<!--  매장 발송처 -->
+		<if test=" ( bean.storeNo != null and bean.storeNo != '')  ">
+			AND EXISTS ( 
+							SELECT 1 FROM OC_ORDER_DELIVERY_HISTORY OODHS WITH (NOLOCK)
+							WHERE  OODHS.ORDER_NO  = OODH.ORDER_NO 
+							AND OODHS.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ 
+							AND OODHS.STORE_NO     =   #{bean.storeNo , jdbcType=VARCHAR}       -- 매장 발송처 사유코드
+					   )
+							
+		</if>
+		
+		<!-- 주문상품의 채널 -->
+		<if test="bean.chanList !=null and bean.chanList.size > 0">
+			-- 채널
+			AND OOP.CHNNL_NO IN
+			<foreach collection="bean.chanList" item="chnnlNo" index="index" separator="," open="(" close=")">
+			#{chnnlNo , jdbcType=VARCHAR}
+			</foreach>
+		</if>
+	
+		<!--  조회기간 -->
+		<if test="bean.searchOrderValue != null and bean.searchOrderValue != '' ">
+			<choose>
+				<when test="bean.searchOrderKey == 'buyerName'">
+				-- 주문자
+				AND  OO.BUYER_NAME like  #{bean.searchOrderValue, jdbcType=VARCHAR}  + '%'
+				</when>
+
+				<when test="bean.searchOrderKey == 'rcvrName'">
+				-- 수취인
+				AND  OO.RCVR_NAME like  #{bean.searchOrderValue, jdbcType=VARCHAR}  + '%'
+				</when>
+				<when test="bean.searchOrderKey == 'orderNo'">
+				-- 주문번호
+				AND  OO.ORDER_NO =  #{bean.searchOrderValue, jdbcType=VARCHAR}   
+				</when>
+				<when test="bean.searchOrderKey == 'buyerHdphnNoText'">
+				-- 주문자 휴대폰번호
+				AND  OO.BUYER_HDPHN_NO_TEXT =  #{bean.searchOrderValue, jdbcType=VARCHAR}   
+				</when>
+				<when test="bean.searchOrderKey == 'loginId'">
+				-- 주문자 id
+				AND EXISTS ( SELECT 1 FROM MB_MEMBER MM WHERE MM.MEMBER_NO = OO.MEMBER_NO 
+							  AND MM.LOGIN_ID = #{bean.searchOrderValue, jdbcType=VARCHAR}
+							)    
+				</when>
+			</choose>
+			<if test='bean.buyerHdphnBackNo != null and bean.buyerHdphnBackNo !=""'>
+				<choose>
+					<when test="bean.searchOrderKey == 'buyerName'">
+						AND RIGHT(REPLACE(OO.BUYER_HDPHN_NO_TEXT, '-', ''), 4) = #{bean.buyerHdphnBackNo, jdbcType=VARCHAR}
+					</when>
+					<when test="bean.searchOrderKey == 'rcvrName'">
+						AND RIGHT(REPLACE(OO.RCVR_HDPHN_NO_TEXT, '-', ''), 4) = #{bean.buyerHdphnBackNo, jdbcType=VARCHAR}
+					</when>
+				</choose>
+			</if>
+		</if>		
+
+
+		<!--  조회기간 -->
+		<if test="bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+			<choose>
+				 <when test="bean.searchDateKey == 'dlvyProcDtm'">
+				AND OODH.DLVY_PROC_DTM  BETWEEN CONVERT(DATETIME, '${bean.fromDate} 00:00:00') AND CONVERT(DATETIME, '${bean.toDate} 23:59:59') -- 발송일
+				</when>
+				
+				<when test="bean.searchDateKey == 'logisCnvrtReqDtm'">
+				AND OOP.LOGIS_CNVRT_REQ_DTM  BETWEEN CONVERT(DATETIME, '${bean.fromDate} 00:00:00') AND CONVERT(DATETIME, '${bean.toDate} 23:59:59') -- 신청접수일
+				</when>
+
+				<when test="bean.searchDateKey == 'dlvyDscntcProcDtm'">
+				AND OODH.DLVY_DSCNTC_PROC_DTM  BETWEEN CONVERT(DATETIME, '${bean.fromDate} 00:00:00') AND CONVERT(DATETIME, '${bean.toDate} 23:59:59') 	-- 배송중단 처리일시
+				</when>				
+			</choose>
+		</if>
+		
+	</select>
+
+	<select id="selectStorePickDeliveryChangeList" parameterType="pageable" resultType="kr.co.abcmart.bo.delivery.model.master.OcDelivery">
+ 		/*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectStorePickDeliveryChangeList - 매장 픽업 택배전환 */  
+			SELECT
+				  OO.ORDER_NO
+				, OO.ORDER_DTM
+				, OO.SITE_NO
+				, OO.SITE_NO AS ORG_SITE_NO
+				, OO.EMP_ORDER_YN
+				, OO.MEMBER_NO
+				, OO.MEMBER_TYPE_CODE               -- 회원유형코드
+				, OO.MBSHP_GRADE_CODE               -- 멤버쉽등급코드
+				, OO.EMP_YN                         -- 임직원여부
+				, OO.OTS_VIP_YN                     -- OTS VIP 여부
+				, OO.DEVICE_CODE                    -- 디바이스코드
+				, OO.RSV_ORDER_YN                   -- 예약주문여부
+				, OO.DLVY_TYPE_CODE                 -- 배송유형코드
+				, OO.STORE_NO                       -- 매장번호
+				, ( SELECT STORE_NAME
+	                       FROM CM_STORE WITH(NOLOCK)
+	                      WHERE STORE_NO = OODH.STORE_NO ) AS STORE_NAME
+				, OO.STORE_ADD_INFO                 -- 매장추가정보
+				, ( SELECT LOGIN_ID 
+				      FROM MB_MEMBER WITH(NOLOCK)
+				     WHERE MEMBER_NO = OO.MEMBER_NO ) AS BUYER_ID
+				, OO.BUYER_NAME                     -- 주문자명
+				, OO.BUYER_EMAIL_ADDR_TEXT          -- 주문자이메일주소
+				, OO.BUYER_TEL_NO_TEXT              -- 주문자전화번호
+				, OO.BUYER_HDPHN_NO_TEXT            -- 주문자핸드폰번호
+				, OO.BUYER_POST_CODE_TEXT           -- 주문자우편번호
+				, OO.BUYER_POST_ADDR_TEXT           -- 주문자우편주소
+				, OO.BUYER_DTL_ADDR_TEXT            -- 주문자상세주소
+				, OO.RCVR_NAME                      -- 수취인명
+				, OO.RCVR_TEL_NO_TEXT               -- 수취인전화번호
+				, OO.RCVR_HDPHN_NO_TEXT             -- 수취인핸드폰번호
+				, OO.RCVR_POST_CODE_TEXT            -- 수취인우편번호
+				, OO.RCVR_POST_ADDR_TEXT            -- 수취인우편주소
+				, OO.RCVR_DTL_ADDR_TEXT             -- 수취인상세주소
+				, OO.ORDER_PRDT_INFO                -- 주문상품정보
+				, OO.TOTAL_NORMAL_AMT               -- 정상가총액
+				, OO.TOTAL_SELL_AMT                 -- 판매가총액
+				, OO.TOTAL_PROMO_DSCNT_AMT          -- 프로모션할인총액
+				, OO.TOTAL_CPN_DSCNT_AMT            -- 쿠폰할인총액
+				, OO.TOTAL_EMP_DSCNT_AMT            -- 임직원할인총액
+				, OO.POINT_USE_AMT                  -- 포인트사용액
+				, OO.EVENT_POINT_USE_AMT            -- 이벤트포인트사용액
+				, OO.MMNY_DLVY_AMT                  -- 자사배송비
+				, OO.TOTAL_VNDR_DLVY_AMT            -- 입점사배송비총액
+				, OO.PYMNT_TODO_AMT                 -- 결제예정금액
+				, OO.PYMNT_AMT                      -- 결제금액
+				, OO.CNCL_AMT                       -- 취소금액
+				, OO.CASH_RCPT_ISSUE_YN             -- 현금영수증발급여부
+				, OO.TAX_BILL_ISSUE_STAT_CODE       -- 세금계산서발급상태코드
+				, OO.DLVY_MEMO_TEXT                 -- 배송메모
+				, OO.BANK_CODE                      -- 은행코드
+				, OO.RFND_ACNT_TEXT                 -- 환불계좌
+				, OO.ACNT_HLDR_NAME                 -- 예금주이름
+				, OO.ORG_ORDER_NO                   -- 원주문번호
+				, OO.UP_ORDER_NO                    -- 상위주문번호
+				, OO.EXPOST_SAVE_MEMBER_NO          -- 사후적립회원번호
+				, OO.EXPOST_SAVE_POINT_SEQ          -- 사후적립순번
+				, OO.AFFLTS_CODE                    -- 제휴사코드
+				, OO.AFFLTS_ORDER_NO                -- 제휴사주문번호
+				, OO.ORDER_STAT_CODE                -- 주문상태코드
+				, OOP.ORDER_PRDT_SEQ                -- 주문상품순번
+				, OOP.UP_ORDER_PRDT_SEQ             -- 상위주문상품순번
+				, OOP.PRDT_NO                       -- 상품번호
+				, OOP.PRDT_OPTN_NO                  -- 상품옵션번호
+				, OOP.PRDT_NAME                      -- 상품명
+				, OOP.OPTN_NAME                      -- 옵션명
+				, OOP.PRDT_TYPE_CODE                 -- 상품유형코드
+				, OOP.STYLE_INFO                      -- 스타일정보
+				, OOP.PRDT_COLOR_CODE                 -- 상품색상코드
+				, OOP.SELL_AMT                        -- 판매가
+				, OOP.ORDER_AMT                       -- 주문금액
+				, OOP.VNDR_NAME                       -- 업체명
+				, OOP.VNDR_NO                       -- 업체번호
+				, OOP.VNDR_PRDT_NO_TEXT               -- 업체 상품코드					
+				, OODH.ORDER_DLVY_HIST_SEQ           -- 주문배송이력순번
+				, OODH.DLVY_DGRE_COUNT               -- 배송차수
+				, OODH.STOCK_GBN_CODE               -- 재고구분코드
+				, DBO.FN_CODE_VALUE('STOCK_GBN_CODE', OODH.STOCK_GBN_CODE)			    AS STOCK_GBN_CODE_NAME
+				, OODH.STORE_NO                     -- 매장번호
+				, OODH.DLVY_PROC_DTM                -- 배송처리일시
+				, ISNULL(OODH.LOGIS_VNDR_CODE,'') AS LOGIS_VNDR_CODE              -- 택배사코드
+				, OODH.WAYBIL_NO_TEXT               -- 운송장번호
+				, OODH.DLVY_DSCNTC_YN               -- 배송중단여부
+				, OODH.DLVY_DSCNTC_RSN_CODE         -- 배송중단사유코드
+				, OODH.DLVY_DSCNTC_OPETR_NO         -- 배송중단처리자번호
+				, OODH.DLVY_DSCNTC_PROC_DTM         -- 배송중단처리일시
+				, OODH.PICKUP_PRPARE_CMLPT_DTM      -- 픽업준비완료일시
+				, OODH.PICKUP_PSBLT_YMD             -- 픽업가능일
+				, OODH.MISS_PROC_YN                 -- 분실처리여부
+				, OODH.MISS_PROC_TYPE_CODE          -- 분실처리유형코드
+				, OODH.INSD_MGMT_INFO_TEXT          -- 내부관리정보
+				,  CASE 
+					WHEN isnull(OODH.RCVR_NAME,'') != ''  THEN OODH.DLVY_STAT_CODE               -- 배송상태코드 
+					WHEN isnull(OODH.RCVR_NAME,'') = '' THEN '99' -- 신청
+				  END 	AS DLVY_STAT_CODE
+				, OODH.DLVY_ID_TEXT 	 			-- 배송 ID
+				, OOP.LOGIS_CNVRT_REQ_DTM				-- 택배전환신청일	
+				, OOP.LOGIS_CNVRT_YN					-- 택배전환여부
+				, OOP.LOGIS_CNVRT_RSN_CODE				--택배전환사유코드		
+				, SYA.ADMIN_NAME	AS MODER_NAME
+				, SYA.LOGIN_ID		AS MODER_ID
+				, OODH.MODER_NO	 -- 수정자번호
+				, OODH.MOD_DTM	  -- 수정일시
+				, CASE 
+					WHEN isnull(OODH.RCVR_NAME,'') != '' THEN 'Y' 
+					WHEN isnull(OODH.RCVR_NAME,'') = '' THEN 'N'
+				  END 						AS DELIVERY_ADDRESS_EMPTY_YN 			--주소 존재 여부
+			FROM OC_ORDER 					OO WITH (NOLOCK)
+			INNER JOIN OC_ORDER_PRODUCT 			OOP WITH (NOLOCK)  ON OO.ORDER_NO = OOP.ORDER_NO
+			INNER JOIN OC_ORDER_DELIVERY_HISTORY 	OODH WITH (NOLOCK) ON OOP.ORDER_NO  = OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+			LEFT OUTER JOIN SY_ADMIN					SYA WITH (NOLOCK)  ON OODH.MODER_NO = SYA.ADMIN_NO
+			WHERE OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+			AND OOP.PRDT_TYPE_CODE IN ( '10000','10001','10002' ,'10003') -- 공용, 온라인전용, 매장전용, 사은품
+
+			<if test="bean.missProcYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.missProcYn)">
+				AND OODH.MISS_PROC_YN =   #{bean.missProcYn , jdbcType=VARCHAR}         -- 분실처리여부 Y
+			</if>
+			
+			<if test="bean.impsbltProcYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.impsbltProcYn)">
+				AND OODH.IMPSBLT_PROC_YN =   #{bean.impsbltProcYn , jdbcType=VARCHAR}         -- 불가처리여부 Y
+			</if>
+			
+			 <if test="(bean.dlvyDscntcYn != null and bean.dlvyDscntcYn != '' )  ">
+				AND OODH.DLVY_DSCNTC_YN =   #{bean.dlvyDscntcYn , jdbcType=VARCHAR}         -- 배송중단여부 Y
+			</if>
+			
+			 <if test="bean.logisCnvrtYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.logisCnvrtYn)">
+				AND OOP.LOGIS_CNVRT_YN =   #{bean.logisCnvrtYn , jdbcType=VARCHAR}         -- 택배전환 여부 Y,N
+			</if>
+			
+			<!--  발송의 배송상태값 -->
+			<if test=" ( bean.dlvyStatCode != null and bean.dlvyStatCode != ''  )  ">
+				 AND OODH.DLVY_STAT_CODE = #{bean.dlvyStatCode , jdbcType=VARCHAR}       -- 10002-상품출고,10003-배송중,10005- 배송완료
+			</if>
+			
+			<!--  택배전환  상태 - 신청/접수  -->
+			<if test="bean.deliveryAddressYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.deliveryAddressYn)">
+				<if test='bean.deliveryAddressYn == "Y"'>
+				    AND isnull(OODH.RCVR_POST_ADDR_TEXT,'')  = '' -- 택배전환 신청
+				</if>
+	
+				<if test='bean.deliveryAddressYn == "N"'>
+					AND isnull(OODH.RCVR_POST_ADDR_TEXT,'') != '' -- 택배전환 접수
+				</if> 
+			</if>  
+			
+			<!--  택배전환 사유 -->
+			<if test=' ( bean.logisCnvrtRsnCode != null and bean.logisCnvrtRsnCode != "")'>
+				AND OOP.LOGIS_CNVRT_RSN_CODE     =   #{bean.logisCnvrtRsnCode , jdbcType=VARCHAR}       -- 택배전환 사유코드
+			</if>
+			
+			
+			
+			<!--  매장 발송처 -->
+			<if test=" ( bean.storeNo != null and bean.storeNo != '')  ">
+				AND EXISTS ( 
+								SELECT 1 FROM OC_ORDER_DELIVERY_HISTORY OODHS WITH (NOLOCK)
+								WHERE  OODHS.ORDER_NO  = OODH.ORDER_NO 
+								AND OODHS.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ 
+								AND OODHS.STORE_NO     =   #{bean.storeNo , jdbcType=VARCHAR}       -- 매장 발송처 사유코드
+						   )
+								
+			</if>
+			
+ 
+			<!-- 주문상품의 채널 -->
+			<if test="bean.chanList !=null and bean.chanList.size > 0">
+				-- 채널
+				AND OOP.CHNNL_NO IN
+				<foreach collection="bean.chanList" item="chnnlNo" index="index" separator="," open="(" close=")">
+				#{chnnlNo , jdbcType=VARCHAR}
+				</foreach>
+			</if>
+		
+			<!--  조회기간 -->
+			<if test="bean.searchOrderValue != null and bean.searchOrderValue != '' ">
+				<choose>
+					<when test="bean.searchOrderKey == 'buyerName'">
+					-- 주문자
+					AND  OO.BUYER_NAME like  #{bean.searchOrderValue, jdbcType=VARCHAR}  + '%'
+					</when>
+	
+					<when test="bean.searchOrderKey == 'rcvrName'">
+					-- 수취인
+					AND  OO.RCVR_NAME like  #{bean.searchOrderValue, jdbcType=VARCHAR}  + '%'
+					</when>
+					<when test="bean.searchOrderKey == 'orderNo'">
+					-- 주문번호
+					AND  OO.ORDER_NO =  #{bean.searchOrderValue, jdbcType=VARCHAR}   
+					</when>
+					<when test="bean.searchOrderKey == 'buyerHdphnNoText'">
+					-- 주문자 휴대폰번호
+					AND  OO.BUYER_HDPHN_NO_TEXT =  #{bean.searchOrderValue, jdbcType=VARCHAR}   
+					</when>
+					<when test="bean.searchOrderKey == 'loginId'">
+					-- 주문자 id
+					AND EXISTS ( SELECT 1 FROM MB_MEMBER MM WHERE MM.MEMBER_NO = OO.MEMBER_NO 
+								  AND MM.LOGIN_ID = #{bean.searchOrderValue, jdbcType=VARCHAR}
+								)    
+					</when>
+				</choose>
+				<if test='bean.buyerHdphnBackNo != null and bean.buyerHdphnBackNo !=""'>
+					<choose>
+						<when test="bean.searchOrderKey == 'buyerName'">
+							AND RIGHT(REPLACE(OO.BUYER_HDPHN_NO_TEXT, '-', ''), 4) = #{bean.buyerHdphnBackNo, jdbcType=VARCHAR}
+						</when>
+						<when test="bean.searchOrderKey == 'rcvrName'">
+							AND RIGHT(REPLACE(OO.RCVR_HDPHN_NO_TEXT, '-', ''), 4) = #{bean.buyerHdphnBackNo, jdbcType=VARCHAR}
+						</when>
+					</choose>
+				</if>
+			</if>		
+	
+	
+			<!--  조회기간 -->
+			<if test="bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+				<choose>
+					 <when test="bean.searchDateKey == 'dlvyProcDtm'">
+					AND OODH.DLVY_PROC_DTM  BETWEEN CONVERT(DATETIME, '${bean.fromDate} 00:00:00') AND CONVERT(DATETIME, '${bean.toDate} 23:59:59') -- 발송일
+					</when>
+					
+					<when test="bean.searchDateKey == 'logisCnvrtReqDtm'">
+					AND OOP.LOGIS_CNVRT_REQ_DTM  BETWEEN CONVERT(DATETIME, '${bean.fromDate} 00:00:00') AND CONVERT(DATETIME, '${bean.toDate} 23:59:59') -- 신청접수일
+					</when>
+	
+					<when test="bean.searchDateKey == 'dlvyDscntcProcDtm'">
+					AND OODH.DLVY_DSCNTC_PROC_DTM  BETWEEN CONVERT(DATETIME, '${bean.fromDate} 00:00:00') AND CONVERT(DATETIME, '${bean.toDate} 23:59:59') 					-- 배송중단 처리일시
+					</when>				
+				</choose>
+			</if>
+					
+	     	 ORDER BY OO.ORDER_DTM DESC , OO.ORDER_NO DESC
+	  		 <include refid="Paging.mssql" />
+	</select>
+
+
+	<sql id="select-columns">
+    OOP.ORDER_NO   , OOP.ORDER_PRDT_SEQ   , OOP.UP_ORDER_PRDT_SEQ   , OOP.PRDT_NO   , OOP.PRDT_OPTN_NO   , OOP.PRDT_NAME   , OOP.ENG_PRDT_NAME   , OOP.OPTN_NAME   , OOP.PRDT_TYPE_CODE   , OOP.STYLE_INFO   , OOP.PRDT_COLOR_CODE   , OOP.VNDR_NO   , OOP.VNDR_NAME   , OOP.VNDR_PRDT_NO_TEXT   , OOP.BRAND_NO   , OOP.CHNNL_NO   , OOP.STD_CTGR_NO   , OOP.CTGR_NO   , OOP.EVENT_NO   , OOP.PLNDP_NO   , OOP.MMNY_PRDT_YN   , OOP.EMP_DSCNT_YN   , OOP.ORDER_MNFCT_YN   , OOP.DPRC_EXCEPT_YN   , OOP.FREE_DLVY_YN   , OOP.ORDER_QTY   , OOP.PRDT_NORMAL_AMT   , OOP.PRDT_SELL_AMT   , OOP.OPTN_ADD_AMT   , OOP.SELL_AMT   , OOP.EMP_DSCNT_RATE   , OOP.EMP_AMT   , OOP.TOTAL_DSCNT_AMT   , OOP.CPN_DSCNT_AMT   , OOP.ORDER_AMT   , OOP.VNDR_CMSN_RATE   , OOP.AFFLTS_ORDER_NO   , OOP.AFFLTS_ORDER_PRDT_NO   , OOP.SELL_CNCL_REQ_YN   , OOP.SELL_CNCL_REQTR_NO   , OOP.SELL_CNCL_REQ_DTM   , OOP.SELL_CNCL_RSN_CODE   , OOP.SELL_CNCL_RSN_TEXT   , OOP.LOGIS_CNVRT_REQ_DTM   , OOP.LOGIS_CNVRT_YN   , OOP.LOGIS_CNVRT_RSN_CODE   , OOP.PICKUP_EXTSN_YN   , OOP.ORDER_PRDT_STAT_CODE   , OOP.SALES_DCSN_YMD   , OOP.RGSTER_NO   , OOP.RGST_DTM   , OOP.MODER_NO   , OOP.MOD_DTM
+    </sql>
+    
+	<select id="selectOrderProductList" parameterType="kr.co.abcmart.bo.delivery.model.master.OcDelivery" resultType="kr.co.abcmart.bo.order.model.master.OcOrderProduct">
+		 /*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectOrderProductList- 주문상품 목록 */
+		SELECT <include refid="select-columns" />
+		  FROM OC_ORDER_PRODUCT OOP WITH (NOLOCK)
+		 WHERE OOP.ORDER_NO =  #{orderNo}   -- 주문번호 
+		 ORDER BY OOP.ORDER_PRDT_SEQ 
+	</select>
+	
+	
+	<select id="selectOrderProductDeliveryList" parameterType="kr.co.abcmart.bo.delivery.model.master.OcDelivery" resultType="kr.co.abcmart.bo.delivery.model.master.OcDelivery">
+		/*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectOrderProductDeliveryList- 주문상품 목록 */
+		 SELECT 
+				OODH.ORDER_NO                          -- 주문번호
+				, OODH.ORDER_PRDT_SEQ                    -- 주문상품순번
+				, OODH.ORDER_DLVY_HIST_SEQ               -- 주문배송이력순번
+				, OODH.DLVY_DGRE_COUNT                   -- 배송차수
+				, OODH.STOCK_GBN_CODE                    -- 재고구분코드
+				, DBO.FN_CODE_VALUE('STOCK_GBN_CODE', OODH.STOCK_GBN_CODE)			    AS STOCK_GBN_CODE_NAME
+				, OODH.STORE_NO                          -- 매장번호
+				, OODH.STORE_CHNG_DGRE_COUNT			-- 매장변경차수
+				, OODH.DLVY_PROC_DTM                    -- 배송처리일시
+				, ISNULL(OODH.LOGIS_VNDR_CODE,'') AS LOGIS_VNDR_CODE              -- 택배사코드
+				, dbo.FN_CODE_VALUE ('LOGIS_VNDR_CODE' , OODH.LOGIS_VNDR_CODE ) LOGIS_VNDR_CODE_NM                       -- 택배사명		
+				, OODH.WAYBIL_NO_TEXT                   -- 운송장번호
+				, OODH.DLVY_DSCNTC_YN                   -- 배송중단여부
+				, OODH.MISS_PROC_YN                     -- 분실처리여부
+				, OODH.DLVY_MEMO_TEXT                   -- 배송메모
+				, OODH.DLVY_STAT_CODE                   -- 배송상태코드
+				, dbo.FN_CODE_VALUE ('DLVY_STAT_CODE' , OODH.DLVY_STAT_CODE ) DLVY_STAT_CODE_NM                  --배송상태 Name				
+				, OODH.LOGIS_CNVRT_SEND_DTM             -- 택배전환발송일시
+				, OODH.RSV_DLVY_DTM                     -- 예약출고일시
+				, OODH.DLVY_ID_TEXT                     -- 배송ID
+				, OODH.WMS_SEND_YN                      -- WMS전송여부
+				, OODH.DLVY_TODO_YMD                    -- 배송예정일
+				, OODH.RCVR_NAME						-- 수취인명			 
+				, OODH.RCVR_TEL_NO_TEXT					-- 수취인전화번호		 
+				, OODH.RCVR_HDPHN_NO_TEXT				-- 수취인핸드폰번호	 
+				, OODH.RCVR_POST_CODE_TEXT				-- 수취인우편번호		 
+				, OODH.RCVR_POST_ADDR_TEXT				-- 수취인우편주소		 
+				, OODH.RCVR_DTL_ADDR_TEXT				-- 수취인상세주소
+				, dbo.FN_CODE_VALUE ('ORDER_PRDT_STAT_CODE' , oop.ORDER_PRDT_STAT_CODE ) ORDER_PRDT_STAT_CODE_NM                  -- 상품 상태 Name		 
+				, OOP.PRDT_NO
+				, OOP.PRDT_NAME
+				, OOP.OPTN_NAME
+				, OOP.SELL_AMT
+				, OOP.VNDR_PRDT_NO_TEXT
+				, CASE WHEN OOP.LOGIS_CNVRT_YN ='Y' THEN 'Y' 
+					ELSE 'N'
+				   END AS DELIVERY_ADDRESS_EMPTY_YN  									-- 접수여부 확인값
+				, CASE WHEN OODH.LOGIS_CNVRT_SEND_DTM IS NOT NULL THEN 'Y' 
+					WHEN OODH.LOGIS_CNVRT_SEND_DTM IS  NULL THEN 'N'
+				   END AS DELIVERY_LOGIS_SEND_YN 										-- 발송 여부 확인값				   
+				 --------- S : 상품관련파일 --------------------
+				 , PRF.FILE_TYPE
+				 , PRF.IMAGE_NAME
+				 , PRF.IMAGE_PATH_TEXT
+				 , PRF.IMAGE_URL
+				 , PRF.ALTRN_TEXT
+				  --------- E : 상품관련파일 --------------------	 
+		 FROM OC_ORDER_PRODUCT OOP WITH (NOLOCK)
+		      INNER JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH (NOLOCK) 
+		      ON OOP.ORDER_NO  = OODH.ORDER_NO 
+		      AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+		      -- AND OODH.DLVY_DSCNTC_YN ='N' --  배송 중단여부
+		      AND OODH.MISS_PROC_YN ='N' -- 분실처리여부
+		      AND ISNULL(OODH.IMPSBLT_PROC_YN , 'N') ='N' -- 불가 처리 여부
+		        LEFT OUTER JOIN PD_PRODUCT_RELATION_FILE PRF WITH (NOLOCK) ON OOP.PRDT_NO = PRF.PRDT_NO  AND PRF.PRDT_RLTN_FILE_SEQ = 1 -- 대표이미지
+		 WHERE OOP.PRDT_TYPE_CODE IN ( '10000','10001','10002' ,'10003') -- 공용, 온라인전용, 매장전용, 사은품
+		
+		<!-- 주문번호 -->
+		<if test="orderNo != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(orderNo)">
+			  AND OOP.ORDER_NO = #{orderNo , jdbcType=VARCHAR}   -- 주문번호
+		</if>  
+		
+		 <!-- 주문상품순번 -->
+		<if test="orderPrdtSeqList !=null and orderPrdtSeqList.size > 0">
+			-- 주문상품순번
+			AND OOP.ORDER_PRDT_SEQ IN
+			<foreach collection="orderPrdtSeqList" item="orderPrdtSeq" index="index" separator="," open="(" close=")">
+			#{orderPrdtSeq , jdbcType=TINYINT}
+			</foreach>
+		</if>
+		 
+		 <!-- 배송아이디  -->
+		<if test="dlvyIdTextList !=null and dlvyIdTextList.size > 0">
+			-- 배송아이디
+			AND OODH.DLVY_ID_TEXT IN
+			<foreach collection="dlvyIdTextList" item="dlvyIdText" index="index" separator="," open="(" close=")">
+			#{dlvyIdText , jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		
+		
+		 ORDER BY OOP.ORDER_PRDT_SEQ 
+	</select>
+
+	<select id="selectDeliveryProdStandbyCount" parameterType="pageable" resultType="Integer">
+	 /*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDeliveryProdStandbyCount-상품대기조회  Count */  
+	 SELECT 
+	 	<include refid="Paging.totalCount" />
+	  FROM OC_ORDER OO
+      	INNER JOIN  OC_ORDER_PRODUCT OOP WITH (NOLOCK) ON OO.ORDER_NO = OOP.ORDER_NO
+      	INNER JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH (NOLOCK) ON OOP.ORDER_NO  = OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+       WHERE OOP.PRDT_TYPE_CODE IN ( '10000','10001','10002' ,'10003') -- 공용, 온라인전용, 매장전용, 사은품
+       AND OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+	   AND OODH.DLVY_DSCNTC_RSN_CODE not in ('10005', '10016') -- 사유가 매장픽업 택배전환이 아닌 대기주문만, 교환불가 도 추가
+	   <if test="bean.dlvyDscntcRsnCode != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.dlvyDscntcRsnCode)">
+			AND  OODH.DLVY_DSCNTC_RSN_CODE = #{bean.dlvyDscntcRsnCode , jdbcType=VARCHAR} 	-- 사유코드
+	  </if>
+	  	AND OODH.STOCK_GBN_CODE in ( '10000' , '10001' , '10002' ) -- 온라인 ,스마트 ,AS	
+		<choose>
+			<when test="bean.dlvyDscntcProc == '01'">
+			 AND OODH.DLVY_DSCNTC_PROC_DTM IS NULL		-- 처리상태  대기
+			 AND OOP.ORDER_PRDT_STAT_CODE NOT IN ('10000','10001','10009','10010','10011') --임시주문,임금대기,취소접수,환수/환불접수,취소완료 제외
+			</when>
+
+			<when test="bean.dlvyDscntcProc == '02'">
+			 AND OODH.DLVY_DSCNTC_PROC_DTM IS NOT NULL 			-- 처리상태  완료
+			</when>
+		</choose>
+		
+		<!--  매장 발송처 -->
+		<if test=" ( bean.storeNo != null and bean.storeNo != '')  ">
+			AND OODH.STORE_NO     =   #{bean.storeNo , jdbcType=VARCHAR}       -- 매장 발송처 사유코드
+		</if>			  			  
+	  <!-- 조건 -->
+			<include refid="whereOrderDelivery" />
+	</select>
+	
+	<select id="selectDeliveryProdStandbyList" parameterType="pageable" resultType="kr.co.abcmart.bo.delivery.model.master.OcDelivery">
+		/*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDeliveryProdStandbyList -  상품대기조회 List */
+		 SELECT DBO.FN_GET_IDXDATA_LIKE_SPLIT(INFO.STOCK_TOTAL, 1, '|') AS STOCK_QTY_AI
+			  , DBO.FN_GET_IDXDATA_LIKE_SPLIT(INFO.STOCK_TOTAL, 2, '|') AS STOCK_QTY_AW
+			  , DBO.FN_GET_IDXDATA_LIKE_SPLIT(INFO.STOCK_TOTAL, 3, '|') AS STOCK_QTY_AS
+			  , DBO.FN_GET_IDXDATA_LIKE_SPLIT(INFO.ORDER_COUNT_TOTAL, 1, '|') AS ORDER_QTY_AI
+			  , DBO.FN_GET_IDXDATA_LIKE_SPLIT(INFO.ORDER_COUNT_TOTAL, 2, '|') AS ORDER_QTY_AW
+			  , DBO.FN_GET_IDXDATA_LIKE_SPLIT(INFO.ORDER_COUNT_TOTAL, 3, '|') AS ORDER_QTY_AS
+			  , INFO.*	
+		   FROM (  
+	 			SELECT OO.ORDER_NO
+					 , OO.ORDER_DTM
+					 , OO.SITE_NO
+					 , OO.SITE_NO AS ORG_SITE_NO
+					 , OO.EMP_ORDER_YN
+					 , OO.MEMBER_NO
+					 , OO.MEMBER_TYPE_CODE               -- 회원유형코드
+					 , OO.MBSHP_GRADE_CODE               -- 멤버쉽등급코드
+					 , OO.EMP_YN                         -- 임직원여부
+					 , OO.OTS_VIP_YN                     -- OTS VIP 여부
+					 , OO.DEVICE_CODE                    -- 디바이스코드
+					 , OO.RSV_ORDER_YN                   -- 예약주문여부
+					 , OO.DLVY_TYPE_CODE                 -- 배송유형코드
+					 , (
+					 	SELECT STORE_NAME
+						  FROM CM_STORE WITH(NOLOCK)
+						 WHERE STORE_NO = OODH.STORE_NO
+					   ) AS STORE_NAME
+					 , OO.STORE_ADD_INFO                 -- 매장추가정보
+					 , ( 
+						SELECT LOGIN_ID 
+					      FROM MB_MEMBER WITH(NOLOCK)
+					     WHERE MEMBER_NO = OO.MEMBER_NO
+					   ) AS BUYER_ID
+					 , OO.BUYER_NAME                     -- 주문자명
+					 , OO.BUYER_EMAIL_ADDR_TEXT          -- 주문자이메일주소
+					 , OO.BUYER_TEL_NO_TEXT              -- 주문자전화번호
+					 , OO.BUYER_HDPHN_NO_TEXT            -- 주문자핸드폰번호
+					 , OO.BUYER_POST_CODE_TEXT           -- 주문자우편번호
+					 , OO.BUYER_POST_ADDR_TEXT           -- 주문자우편주소
+					 , OO.BUYER_DTL_ADDR_TEXT            -- 주문자상세주소
+					 , OO.RCVR_NAME                      -- 수취인명
+					 , OO.RCVR_TEL_NO_TEXT               -- 수취인전화번호
+					 , OO.RCVR_HDPHN_NO_TEXT             -- 수취인핸드폰번호
+					 , OO.RCVR_POST_CODE_TEXT            -- 수취인우편번호
+					 , OO.RCVR_POST_ADDR_TEXT            -- 수취인우편주소
+					 , OO.RCVR_DTL_ADDR_TEXT             -- 수취인상세주소
+					 , OO.ORDER_PRDT_INFO                -- 주문상품정보
+					 , OO.TOTAL_NORMAL_AMT               -- 정상가총액
+					 , OO.TOTAL_SELL_AMT                 -- 판매가총액
+					 , OO.TOTAL_PROMO_DSCNT_AMT          -- 프로모션할인총액
+					 , OO.TOTAL_CPN_DSCNT_AMT            -- 쿠폰할인총액
+					 , OO.TOTAL_EMP_DSCNT_AMT            -- 임직원할인총액
+					 , OO.POINT_USE_AMT                  -- 포인트사용액
+					 , OO.EVENT_POINT_USE_AMT            -- 이벤트포인트사용액
+					 , OO.MMNY_DLVY_AMT                  -- 자사배송비
+					 , OO.TOTAL_VNDR_DLVY_AMT            -- 입점사배송비총액
+					 , OO.PYMNT_TODO_AMT                 -- 결제예정금액
+					 , OO.PYMNT_AMT                      -- 결제금액
+					 , OO.CNCL_AMT                       -- 취소금액
+					 , OO.CASH_RCPT_ISSUE_YN             -- 현금영수증발급여부
+					 , OO.TAX_BILL_ISSUE_STAT_CODE       -- 세금계산서발급상태코드
+					 , OO.DLVY_MEMO_TEXT                 -- 배송메모
+					 , OO.BANK_CODE                      -- 은행코드
+					 , OO.RFND_ACNT_TEXT                 -- 환불계좌
+					 , OO.ACNT_HLDR_NAME                 -- 예금주이름
+					 , OO.ORG_ORDER_NO                   -- 원주문번호
+					 , OO.UP_ORDER_NO                    -- 상위주문번호
+					 , OO.EXPOST_SAVE_MEMBER_NO          -- 사후적립회원번호
+					 , OO.EXPOST_SAVE_POINT_SEQ          -- 사후적립순번
+					 , OO.AFFLTS_CODE                    -- 제휴사코드
+					 , OO.AFFLTS_ORDER_NO                -- 제휴사주문번호
+					 , OO.ORDER_STAT_CODE                -- 주문상태코드
+					 , OOP.ORDER_PRDT_SEQ                -- 주문상품순번
+					 , OOP.UP_ORDER_PRDT_SEQ             -- 상위주문상품순번
+					 , OOP.PRDT_NO                       -- 상품번호
+					 , OOP.PRDT_OPTN_NO                  -- 상품옵션번호
+					 , OOP.PRDT_NAME                      -- 상품명
+					 , OOP.OPTN_NAME                      -- 옵션명
+					 , OOP.PRDT_TYPE_CODE                 -- 상품유형코드
+					 , OOP.STYLE_INFO                      -- 스타일정보
+					 , OOP.PRDT_COLOR_CODE                 -- 상품색상코드
+					 , OOP.SELL_AMT                        -- 판매가
+					 , OOP.ORDER_AMT                       -- 주문금액
+					 , OOP.VNDR_NAME                       -- 업체명
+					 , OOP.VNDR_NO                       -- 업체번호
+					 , OOP.VNDR_PRDT_NO_TEXT               -- 업체 상품코드					
+					 , OODH.ORDER_DLVY_HIST_SEQ           -- 주문배송이력순번
+					 , OODH.DLVY_DGRE_COUNT               -- 배송차수
+					 , OODH.STOCK_GBN_CODE               -- 재고구분코드
+					 , DBO.FN_CODE_VALUE('STOCK_GBN_CODE', OODH.STOCK_GBN_CODE)			    AS STOCK_GBN_CODE_NAME
+					 , OODH.STORE_NO                     -- 매장번호
+					 , OODH.DLVY_PROC_DTM                -- 배송처리일시
+					 , ISNULL(OODH.LOGIS_VNDR_CODE,'') AS LOGIS_VNDR_CODE              -- 택배사코드
+					 , OODH.WAYBIL_NO_TEXT               -- 운송장번호
+					 , OODH.DLVY_DSCNTC_YN               -- 배송중단여부
+					 , OODH.DLVY_DSCNTC_RSN_CODE         -- 배송중단사유코드
+					 , OODH.DLVY_DSCNTC_OPETR_NO         -- 배송중단처리자번호
+					 , SYA.ADMIN_NAME				AS DLVY_DSCNTC_OPETR_NAME
+					 , SYA.LOGIN_ID					AS DLVY_DSCNTC_OPETR_ID
+					 , OODH.DLVY_DSCNTC_PROC_DTM         -- 배송중단처리일시
+					 , OODH.DLVY_DSCNTC_ACCEPT_DTM		-- 배송중단 접수일시
+					 , OODH.PICKUP_PRPARE_CMLPT_DTM      -- 픽업준비완료일시
+					 , OODH.PICKUP_PSBLT_YMD             -- 픽업가능일
+					 , OODH.MISS_PROC_YN                 -- 분실처리여부
+					 , OODH.MISS_PROC_TYPE_CODE          -- 분실처리유형코드
+					 , OODH.INSD_MGMT_INFO_TEXT          -- 내부관리정보
+					 , OODH.DLVY_STAT_CODE               -- 배송상태코드
+					 , DBO.FN_CODE_VALUE('DLVY_STAT_CODE', OODH.DLVY_STAT_CODE)			    AS DLVY_STAT_CODE_NAME
+					 , OODH.DLVY_ID_TEXT 	 			-- 배송 ID
+					 , OOP.LOGIS_CNVRT_REQ_DTM				-- 택배전환신청일	
+					 , OOP.LOGIS_CNVRT_YN					-- 택배전환여부
+					 , OOP.LOGIS_CNVRT_RSN_CODE				--택배전환사유코드		
+					 , OODH.MODER_NO  -- 수정자번호
+					 , OODH.MOD_DTM	  -- 수정일시
+					 , CASE	WHEN OODH.RCVR_NAME IS NOT NULL THEN 'Y' 
+						    WHEN OODH.RCVR_NAME IS NULL 	THEN 'N'
+					    END AS DELIVERY_ADDRESS_EMPTY_YN 			--주소 존재 여부
+					 , CASE WHEN OODH.DLVY_DSCNTC_PROC_DTM IS NULL 		THEN '01'
+					        WHEN OODH.DLVY_DSCNTC_PROC_DTM IS NOT NULL 	THEN '02'
+					    END AS DLVY_DSCNTC_PROC  					-- 진행상태
+					 , DBO.FN_CODE_VALUE('DLVY_DSCNTC_RSN_CODE', OODH.DLVY_DSCNTC_RSN_CODE) AS DLVY_DSCNTC_RSN_REASON -- 배송중단사유
+					 , DBO.FN_CODE_VALUE('DLVY_TYPE_CODE', OO.DLVY_TYPE_CODE) AS DLVY_TYPE_NAME
+					 , OOP.CHNNL_NO
+					 
+					 , OODH.PROC_GUBN_CODE				--처리구분 코드
+					 , DBO.FN_CODE_VALUE('PROC_GUBN_CODE', OODH.PROC_GUBN_CODE)			    AS PROC_GUBN_CODE_NAME
+					 , OODH.PROC_GUBN_DTM
+					 , STUFF((
+							SELECT CONCAT('|', X.STOCK_QTY)
+							  FROM PD_PRODUCT_OPTION_STOCK X WITH (NOLOCK)
+							 WHERE X.PRDT_NO = OOP.PRDT_NO
+							   AND X.PRDT_OPTN_NO = OOP.PRDT_OPTN_NO
+							   FOR XML PATH('')
+					   ), 1, 1, '') AS STOCK_TOTAL
+					 , STUFF((
+							SELECT CONCAT('|', X.ORDER_COUNT)
+							  FROM PD_PRODUCT_OPTION_STOCK X WITH (NOLOCK)
+							 WHERE X.PRDT_NO = OOP.PRDT_NO
+							   AND X.PRDT_OPTN_NO = OOP.PRDT_OPTN_NO
+							   FOR XML PATH('')
+					   ), 1, 1, '') AS ORDER_COUNT_TOTAL
+					 , (
+					 	SELECT Y.USE_YN
+					 	  FROM PD_PRODUCT_OPTION Y WITH(NOLOCK)
+					 	 WHERE Y.PRDT_NO = OOP.PRDT_NO
+					 	   AND Y.PRDT_OPTN_NO = OOP.PRDT_OPTN_NO
+					   ) AS OPTION_USE_YN
+					 
+				  FROM OC_ORDER 					OO WITH   (NOLOCK)
+		    INNER JOIN OC_ORDER_PRODUCT 			OOP WITH  (NOLOCK) ON OO.ORDER_NO   			= OOP.ORDER_NO
+		    INNER JOIN OC_ORDER_DELIVERY_HISTORY 	OODH WITH (NOLOCK) ON OOP.ORDER_NO  			= OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+	   LEFT OUTER JOIN SY_ADMIN						SYA WITH  (NOLOCK) ON OODH.DLVY_DSCNTC_OPETR_NO = SYA.ADMIN_NO
+	             WHERE OOP.PRDT_TYPE_CODE IN ( '10000','10001','10002' ,'10003') -- 공용, 온라인전용, 매장전용, 사은품
+			       AND OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+			       AND OODH.STOCK_GBN_CODE in ( '10000' , '10001' , '10002' ) -- 온라인 ,스마트 ,AS
+			       AND OODH.DLVY_DSCNTC_RSN_CODE not in ('10005', '10016') -- 사유가 매장픽업 택배전환이 아닌 대기주문만, 교환불가 도 추가
+			
+				<if test="bean.dlvyDscntcRsnCode != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.dlvyDscntcRsnCode)">
+				   AND  OODH.DLVY_DSCNTC_RSN_CODE = #{bean.dlvyDscntcRsnCode , jdbcType=VARCHAR} 	-- 사유코드
+				</if>
+				<choose>
+				  <when test="bean.dlvyDscntcProc == '01'">
+				   AND OODH.DLVY_DSCNTC_PROC_DTM IS NULL 				-- 처리상태  대기
+				   AND OOP.ORDER_PRDT_STAT_CODE NOT IN ('10000','10001','10005','10007','10008','10009','10010','10011') --임시주문,임금대기,취소접수,환수/환불접수,취소완료 제외
+				  </when>
+				  <when test="bean.dlvyDscntcProc == '02'">
+				   AND OODH.DLVY_DSCNTC_PROC_DTM IS NOT NULL 			-- 처리상태  완료
+				  </when>
+			</choose>
+		   <!-- 조건 -->
+		  <include refid="whereOrderDelivery" />
+		  <choose>
+			<when test="sortColumn != null">
+				ORDER BY
+			 	<if test="sortColumn == 'prdtNo'">
+			 		OOP.PRDT_NO
+			 	</if>
+			 	<if test="sortColumn == 'prdtName'">
+			 		OOP.PRDT_NAME
+			 	</if>
+			 	<if test="sortColumn == 'optnName'">
+			 		OOP.OPTN_NAME
+			 	</if>
+				<if test="sortType == 'DESC'">
+			 		DESC
+				</if>
+			</when>
+			<otherwise>
+				ORDER BY OO.ORDER_DTM DESC , OO.ORDER_NO DESC
+			</otherwise>
+		  </choose>
+  		 <include refid="Paging.mssql" />
+  		 )INFO
+	</select>
+
+	
+	<select id="selectDeliveryOrderLossCount" parameterType="pageable" resultType="Integer">
+	 /*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDeliveryOrderLossCount-분실배송조회  Count */  
+
+		  	   SELECT <include refid="Paging.totalCount" />
+		         FROM OC_ORDER 					OO
+		   INNER JOIN OC_ORDER_PRODUCT 			OOP  WITH (NOLOCK) ON OO.ORDER_NO  = OOP.ORDER_NO
+		   INNER JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH (NOLOCK) ON OOP.ORDER_NO = OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+	  LEFT OUTER JOIN SY_ADMIN 					SYA  WITH (NOLOCK) ON SYA.ADMIN_NO = OODH.MODER_NO
+		        WHERE OOP.PRDT_TYPE_CODE IN ('10000','10001','10002' ,'10003') -- 공용, 온라인전용, 매장전용, 사은품
+				  AND OO.ORDER_STAT_CODE NOT IN ('10000') -- 임시주문 제외
+	  	 
+		<choose>
+			<when test="bean.dlvyIdTextList != null">
+				-- 배송아이디
+				AND OODH.DLVY_ID_TEXT IN
+				<foreach collection="bean.dlvyIdTextList" item="item" index="index" separator="," open="(" close=")">
+					#{item, jdbcType=VARCHAR}
+				</foreach>
+			</when>
+			<otherwise>
+				<choose>
+					<when test="bean.missProcTypeCode == '' or bean.missProcTypeCode == null">
+					AND OODH.MISS_PROC_TYPE_CODE In ('10001','10002') 					 -- 분실 처리구분
+					</when>
+			
+					<when test="bean.missProcTypeCode != '' or bean.missProcTypeCode != null ">
+					AND OODH.MISS_PROC_TYPE_CODE = #{bean.missProcTypeCode , jdbcType=VARCHAR} 					 -- 분실 처리구분
+					</when>
+				</choose>
+				<choose>
+					<when test="bean.dlvyDscntcProc == '01'">
+					 AND OODH.DLVY_DSCNTC_PROC_DTM IS NULL 					-- 처리상태  대기
+					</when>
+		
+					<when test="bean.dlvyDscntcProc == '02'">
+					 AND OODH.DLVY_DSCNTC_PROC_DTM IS NOT NULL					-- 처리상태  완료
+					</when>
+				</choose>
+				<!-- 조건 -->
+				<include refid="whereOrderDelivery" />	
+			</otherwise>
+		</choose>
+		
+	</select>
+	
+	<select id="selectDeliveryOrderLossList" parameterType="pageable" resultType="kr.co.abcmart.bo.delivery.model.master.OcDelivery">
+		/*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDeliveryOrderLossList -  분실배송조회 List */  
+	 	SELECT
+	                   OO.ORDER_NO
+	                 , OO.ORDER_DTM
+	                 , OO.SITE_NO
+	                 , (SELECT SITE_NAME FROM SY_SITE WITH(NOLOCK) WHERE SITE_NO = OO.SITE_NO) AS SITE_NAME
+	                 , OO.EMP_ORDER_YN
+	                 , OO.MEMBER_NO
+	                 , OO.MEMBER_TYPE_CODE               -- 회원유형코드
+	                 , OO.MBSHP_GRADE_CODE               -- 멤버쉽등급코드
+	                 , OO.EMP_YN                         -- 임직원여부
+	                 , OO.OTS_VIP_YN                     -- OTS VIP 여부
+	                 , OO.DEVICE_CODE                    -- 디바이스코드
+	                 , OO.RSV_ORDER_YN                   -- 예약주문여부
+	                 , OO.DLVY_TYPE_CODE                 -- 배송유형코드
+	                 , OO.STORE_NO                       -- 매장번호
+	                 , ( SELECT STORE_NAME
+	                       FROM CM_STORE WITH(NOLOCK)
+	                      WHERE STORE_NO = OODH.STORE_NO ) AS STORE_NAME
+	                 , OO.STORE_ADD_INFO                 -- 매장추가정보
+	                 , ( SELECT LOGIN_ID 
+	                       FROM MB_MEMBER WITH(NOLOCK)
+	                      WHERE MEMBER_NO = OO.MEMBER_NO ) AS BUYER_ID	                 
+	                 , OO.BUYER_NAME                     -- 주문자명
+	                 , OO.BUYER_EMAIL_ADDR_TEXT          -- 주문자이메일주소
+	                 , OO.BUYER_TEL_NO_TEXT              -- 주문자전화번호
+	                 , OO.BUYER_HDPHN_NO_TEXT            -- 주문자핸드폰번호
+	                 , OO.BUYER_POST_CODE_TEXT           -- 주문자우편번호
+	                 , OO.BUYER_POST_ADDR_TEXT           -- 주문자우편주소
+	                 , OO.BUYER_DTL_ADDR_TEXT            -- 주문자상세주소
+	                 , OO.RCVR_NAME                      -- 수취인명
+	                 , OO.RCVR_TEL_NO_TEXT               -- 수취인전화번호
+	                 , OO.RCVR_HDPHN_NO_TEXT             -- 수취인핸드폰번호
+	                 , OO.RCVR_POST_CODE_TEXT            -- 수취인우편번호
+	                 , OO.RCVR_POST_ADDR_TEXT            -- 수취인우편주소
+	                 , OO.RCVR_DTL_ADDR_TEXT             -- 수취인상세주소
+	                 , OO.ORDER_PRDT_INFO                -- 주문상품정보
+	                 , OO.TOTAL_NORMAL_AMT               -- 정상가총액
+	                 , OO.TOTAL_SELL_AMT                 -- 판매가총액
+	                 , OO.TOTAL_PROMO_DSCNT_AMT          -- 프로모션할인총액
+	                 , OO.TOTAL_CPN_DSCNT_AMT            -- 쿠폰할인총액
+	                 , OO.TOTAL_EMP_DSCNT_AMT            -- 임직원할인총액
+	                 , OO.POINT_USE_AMT                  -- 포인트사용액
+	                 , OO.EVENT_POINT_USE_AMT            -- 이벤트포인트사용액
+	                 , OO.MMNY_DLVY_AMT                  -- 자사배송비
+	                 , OO.TOTAL_VNDR_DLVY_AMT            -- 입점사배송비총액
+	                 , OO.PYMNT_TODO_AMT                 -- 결제예정금액
+	                 , OO.PYMNT_AMT                      -- 결제금액
+	                 , OO.CNCL_AMT                       -- 취소금액
+	                 , OO.CASH_RCPT_ISSUE_YN             -- 현금영수증발급여부
+	                 , OO.TAX_BILL_ISSUE_STAT_CODE       -- 세금계산서발급상태코드
+	                 , OO.DLVY_MEMO_TEXT                 -- 배송메모
+	                 , OO.BANK_CODE                      -- 은행코드
+	                 , OO.RFND_ACNT_TEXT                 -- 환불계좌
+	                 , OO.ACNT_HLDR_NAME                 -- 예금주이름
+	                 , OO.ORG_ORDER_NO                   -- 원주문번호
+	                 , OO.UP_ORDER_NO                    -- 상위주문번호
+	                 , OO.EXPOST_SAVE_MEMBER_NO          -- 사후적립회원번호
+	                 , OO.EXPOST_SAVE_POINT_SEQ          -- 사후적립순번
+	                 , OO.AFFLTS_CODE                    -- 제휴사코드
+	                 , OO.AFFLTS_ORDER_NO                -- 제휴사주문번호
+--	                 , OO.PUCHAS_SALES_GBN_TYPE          -- 매입매출구분
+	                 , OO.ORDER_STAT_CODE                -- 주문상태코드
+	                 , OOP.ORDER_PRDT_SEQ                -- 주문상품순번
+	                 , OOP.UP_ORDER_PRDT_SEQ             -- 상위주문상품순번
+	                 , OOP.PRDT_NO                       -- 상품번호
+	                 , OOP.PRDT_OPTN_NO                  -- 상품옵션번호
+	                 , OOP.PRDT_NAME                      -- 상품명
+	                 , OOP.OPTN_NAME                      -- 옵션명
+	                 , OOP.PRDT_TYPE_CODE                 -- 상품유형코드
+	                 , OOP.STYLE_INFO                      -- 스타일정보
+	                 , OOP.PRDT_COLOR_CODE                 -- 상품색상코드
+	                 , OOP.SELL_AMT                        -- 판매가
+	                 , OOP.ORDER_AMT                       -- 주문금액
+	                 , OOP.VNDR_NAME                       -- 업체명
+	                 , OOP.VNDR_NO                       -- 업체번호
+	                 , OOP.VNDR_PRDT_NO_TEXT               -- 업체 상품코드					
+	                 , OODH.ORDER_DLVY_HIST_SEQ           -- 주문배송이력순번
+					, OODH.DLVY_DGRE_COUNT               -- 배송차수
+					, OODH.STOCK_GBN_CODE               -- 재고구분코드
+					, DBO.FN_CODE_VALUE ('STOCK_GBN_CODE', OODH.STOCK_GBN_CODE) AS STOCK_GBN_CODE_NAME
+					, OODH.STORE_NO                     -- 매장번호
+					, OODH.DLVY_PROC_DTM                -- 배송처리일시
+					, ISNULL(OODH.LOGIS_VNDR_CODE,'') AS LOGIS_VNDR_CODE              -- 택배사코드
+					, DBO.FN_CODE_VALUE ('LOGIS_VNDR_CODE', OODH.LOGIS_VNDR_CODE) AS LOGIS_VNDR_CODE_NAME
+					, OODH.WAYBIL_NO_TEXT               -- 운송장번호
+					, OODH.DLVY_DSCNTC_YN               -- 배송중단여부
+					, OODH.DLVY_DSCNTC_RSN_CODE         -- 배송중단사유코드
+					, OODH.DLVY_DSCNTC_OPETR_NO         -- 배송중단처리자번호
+					, OODH.DLVY_DSCNTC_PROC_DTM         -- 배송중단처리일시
+					, OODH.DLVY_DSCNTC_ACCEPT_DTM		-- 배송중단 접수일시
+					, OODH.PICKUP_PRPARE_CMLPT_DTM      -- 픽업준비완료일시
+					, OODH.PICKUP_PSBLT_YMD             -- 픽업가능일
+					, OODH.MISS_PROC_YN                 -- 분실처리여부
+					, OODH.MISS_PROC_TYPE_CODE          -- 분실처리유형코드
+					, DBO.FN_CODE_VALUE ('MISS_PROC_TYPE_CODE', OODH.MISS_PROC_TYPE_CODE) AS MISS_PROC_TYPE_CODE_NAME
+					, OODH.INSD_MGMT_INFO_TEXT          -- 내부관리정보
+					, OODH.DLVY_STAT_CODE               -- 배송상태코드
+					, OODH.DLVY_ID_TEXT 	 			-- 배송 ID
+					 , OOP.LOGIS_CNVRT_REQ_DTM				-- 택배전환신청일	
+					 , OOP.LOGIS_CNVRT_YN					-- 택배전환여부
+					 , OOP.LOGIS_CNVRT_RSN_CODE				--택배전환사유코드		
+					 , OODH.MODER_NO	 -- 수정자번호
+ 	                 , SYA.ADMIN_NAME	AS MODER_NAME
+	                 , SYA.LOGIN_ID		AS MODER_ID
+					 , OODH.MOD_DTM	  -- 수정일시
+					 , CASE 
+					 	WHEN OODH.RCVR_NAME IS NOT NULL THEN 'Y' 
+						WHEN OODH.RCVR_NAME IS  NULL 	THEN 'N'
+					   END 						AS DELIVERY_ADDRESS_EMPTY_YN 			--주소 존재 여부
+		 			 , CASE 
+					 	WHEN OODH.DLVY_DSCNTC_PROC_DTM IS NULL 		THEN '01'
+                        WHEN OODH.DLVY_DSCNTC_PROC_DTM IS NOT NULL 	THEN '02'
+                      END 						AS DLVY_DSCNTC_PROC  					-- 진행상태
+                    , OODH.LOGIS_PYMNT_PRDT_AMT             -- 택배사결제상품금액
+					, OODH.LOGIS_PYMNT_DLVY_AMT             -- 택배사결제배송비
+		         FROM OC_ORDER 					OO
+		   INNER JOIN OC_ORDER_PRODUCT 			OOP  WITH (NOLOCK) ON OO.ORDER_NO  = OOP.ORDER_NO
+		   INNER JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH (NOLOCK) ON OOP.ORDER_NO = OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+	  LEFT OUTER JOIN SY_ADMIN 					SYA  WITH (NOLOCK) ON SYA.ADMIN_NO = OODH.MODER_NO
+		        WHERE OOP.PRDT_TYPE_CODE IN ('10000','10001','10002' ,'10003') -- 공용, 온라인전용, 매장전용, 사은품
+				  AND OO.ORDER_STAT_CODE NOT IN ('10000') -- 임시주문 제외
+			
+		<choose>
+			<when test="bean.dlvyIdTextList != null">
+				-- 배송아이디
+				AND OODH.DLVY_ID_TEXT IN
+				<foreach collection="bean.dlvyIdTextList" item="item" index="index" separator="," open="(" close=")">
+					#{item, jdbcType=VARCHAR}
+				</foreach>
+		    	ORDER BY OO.ORDER_DTM DESC , OO.ORDER_NO DESC
+			</when>
+			<otherwise>
+				<choose>
+					<when test="bean.missProcTypeCode == '' or bean.missProcTypeCode == null">
+					AND OODH.MISS_PROC_TYPE_CODE In ('10001','10002')					 -- 분실 처리구분
+					</when>
+			
+					<when test="bean.missProcTypeCode != '' or bean.missProcTypeCode != null ">
+					AND OODH.MISS_PROC_TYPE_CODE = #{bean.missProcTypeCode , jdbcType=VARCHAR}					 -- 분실 처리구분
+					</when>
+				</choose>
+				<choose>
+					<when test="bean.dlvyDscntcProc == '01'">
+					 AND OODH.DLVY_DSCNTC_PROC_DTM IS NULL					-- 처리상태  대기
+					</when>
+		
+					<when test="bean.dlvyDscntcProc == '02'">
+					 AND OODH.DLVY_DSCNTC_PROC_DTM IS NOT NULL					-- 처리상태  완료
+					</when>
+				</choose>
+				<!-- 조건 -->
+				<include refid="whereOrderDelivery" />	
+				ORDER BY OODH.MOD_DTM DESC
+				<if test="bean.isExcel == null">
+					<include refid="Paging.mssql" />
+				</if>
+			</otherwise>
+		</choose>
+		
+	</select>
+	
+
+	<select id="selectDelveryOrderVendorPrdStatList" parameterType="Object" resultType="kr.co.abcmart.bo.delivery.model.master.OcDelivery">
+	  	 /*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDelveryOrderVendorPrdStatList- 업체별 배송 상태 Count List */  
+	 	 SELECT OO.ORDER_NO
+			,  OOP.ORDER_PRDT_STAT_CODE  
+			, OOP.VNDR_NO
+		 FROM OC_ORDER OO
+			INNER JOIN  OC_ORDER_PRODUCT OOP WITH (NOLOCK) ON OO.ORDER_NO = OOP.ORDER_NO
+	  		INNER JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH (NOLOCK) ON OOP.ORDER_NO  = OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+		WHERE OOP.PRDT_TYPE_CODE IN ( '10000','10001','10002' ,'10003') -- 공용, 온라인전용, 매장전용, 사은품
+		AND OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+		AND  OOP.MMNY_PRDT_YN =  'N' 
+		-- 최근 3개월 이내 
+		AND OO.ORDER_DTM BETWEEN  DATEADD(DD, -90, CONVERT(DATE,GETDATE()) )  AND DATEADD(DD, 1, CONVERT(DATE,  GETDATE() ))
+		<!-- 업체코드 / 업체검색  -->
+		<if test="vndrNo != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(vndrNo)">
+			AND  OOP.VNDR_NO = #{vndrNo , jdbcType=VARCHAR}			-- 업체코드
+		</if>
+		
+	  </select>
+
+
+
+	<select id="selectDeliveryOrderVendorCount" parameterType="pageable" resultType="Integer">
+	 /*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDeliveryOrderVendorCount-업체 주문 배송관리  Count */  
+	 SELECT 
+	 	<include refid="Paging.totalCount" />
+	  FROM OC_ORDER OO
+	  	INNER JOIN  OC_ORDER_PRODUCT OOP WITH (NOLOCK) ON OO.ORDER_NO = OOP.ORDER_NO
+	  	INNER JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH (NOLOCK) ON OOP.ORDER_NO  = OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+	  WHERE OOP.PRDT_TYPE_CODE IN ( '10000','10001','10002' ,'10003') -- 공용, 온라인전용, 매장전용, 사은품 
+	  AND OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+	 --AND OOP.MMNY_PRDT_YN  = 'N' -- 자사 상품 제외
+
+		<!-- 배송상태  상품 준비중인경우에만 송장번호 검색 -->
+		<if test="bean.dlvyStatCode != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.dlvyStatCode) and bean.dlvyStatCode == '10001'  ">
+		    <choose>
+				<when test='bean.waybilNoYn == "Y"'>
+			 		AND (OODH.WAYBIL_NO_TEXT IS NOT NULL AND OODH.WAYBIL_NO_TEXT != '')     -- 상품 준비중 - 배송송장번호 있는것만
+				</when> 
+				<otherwise>
+					AND (OODH.WAYBIL_NO_TEXT IS NULL OR OODH. WAYBIL_NO_TEXT = '')  -- 상품 준비중 - 배송 송장번호가 없는 것만
+				</otherwise>
+			</choose>
+		</if>
+		
+       <if test="bean.vndrNo != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.vndrNo)">
+		       AND OOP.VNDR_NO = #{bean.vndrNo, jdbcType=VARCHAR}  -- 업체 코드 필수
+		   </if>
+	   
+	    <if test="bean.rsvOrderYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.rsvOrderYn)">
+			AND OO.RSV_ORDER_YN =   #{bean.rsvOrderYn , jdbcType=VARCHAR}         -- 예약주문여부
+		</if>
+		
+		<!-- 쿠폰사용여부  -->
+		   <if test="bean.cpnDscntYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.cpnDscntYn)">
+				<choose>
+					<when test='bean.cpnDscntYn == "Y"'>
+					 AND  OOP.CPN_DSCNT_AMT  <![CDATA[ > ]]> 0				 		-- 쿠폰사용여부 사용
+					</when> 
+					<when test='bean.cpnDscntYn == "N"'>
+					 AND  OOP.CPN_DSCNT_AMT <![CDATA[ < ]]>  0						-- 쿠폰사용여부 미사용
+					</when>
+				</choose>
+			</if>		
+			
+			<!-- 발송지연여부  -->
+		   <if test="bean.delaySendYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.delaySendYn)">
+				<choose>
+					<when test='bean.delaySendYn == "Y"'>
+					 AND  OOP.DELAY_SEND_DAY IS NOT NULL -- 발송지연여부 예
+					</when> 
+					<when test='bean.delaySendYn == "N"'>
+					 AND  OOP.DELAY_SEND_DAY IS NULL  -- 발송지연여부 아니오
+					</when>
+				</choose>
+			</if> 
+			
+	  	<!-- 조건 -->
+		<include refid="whereOrderDelivery" />
+	</select>
+	
+	
+	<select id="selectDeliveryOrderVendorList" parameterType="pageable" resultType="kr.co.abcmart.bo.delivery.model.master.OcDelivery">
+		/*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDeliveryOrderVendorList -  업체 주문 배송관리 List */  
+	 	SELECT
+	                   OO.ORDER_NO
+	                 , OO.ORDER_DTM
+	                 , OO.SITE_NO
+	                 , OO.SITE_NO AS ORG_SITE_NO
+	                 , OO.EMP_ORDER_YN
+	                 , OO.MEMBER_NO
+	                 , OO.MEMBER_TYPE_CODE               -- 회원유형코드
+	                 , OO.MBSHP_GRADE_CODE               -- 멤버쉽등급코드
+	                 , OO.EMP_YN                         -- 임직원여부
+	                 , OO.OTS_VIP_YN                     -- OTS VIP 여부
+	                 , OO.DEVICE_CODE                    -- 디바이스코드
+	                 , OO.RSV_ORDER_YN                   -- 예약주문여부
+	                 , OO.DLVY_TYPE_CODE                 -- 배송유형코드
+	                 , OO.STORE_NO                       -- 매장번호
+	                 , ( SELECT STORE_NAME
+	                       FROM CM_STORE WITH(NOLOCK)
+	                      WHERE STORE_NO = OODH.STORE_NO ) AS STORE_NAME
+	                 , OO.STORE_ADD_INFO                 -- 매장추가정보
+	                 , ( SELECT LOGIN_ID 
+	                       FROM MB_MEMBER WITH(NOLOCK)
+	                      WHERE MEMBER_NO = OO.MEMBER_NO ) AS BUYER_ID
+	                 , OO.BUYER_NAME                     -- 주문자명
+	                 , OO.BUYER_EMAIL_ADDR_TEXT          -- 주문자이메일주소
+	                 , OO.BUYER_TEL_NO_TEXT              -- 주문자전화번호
+	                 , OO.BUYER_HDPHN_NO_TEXT            -- 주문자핸드폰번호
+	                 , OO.BUYER_POST_CODE_TEXT           -- 주문자우편번호
+	                 , OO.BUYER_POST_ADDR_TEXT           -- 주문자우편주소
+	                 , OO.BUYER_DTL_ADDR_TEXT            -- 주문자상세주소
+	                 , OO.RCVR_NAME                      -- 수취인명
+	                 , OO.RCVR_TEL_NO_TEXT               -- 수취인전화번호
+	                 , OO.RCVR_HDPHN_NO_TEXT             -- 수취인핸드폰번호
+	                 , OO.RCVR_POST_CODE_TEXT            -- 수취인우편번호
+	                 , OO.RCVR_POST_ADDR_TEXT            -- 수취인우편주소
+	                 , OO.RCVR_DTL_ADDR_TEXT             -- 수취인상세주소
+	                 , OO.ORDER_PRDT_INFO                -- 주문상품정보
+	                 , OO.TOTAL_NORMAL_AMT               -- 정상가총액
+	                 , OO.TOTAL_SELL_AMT                 -- 판매가총액
+	                 , OO.TOTAL_PROMO_DSCNT_AMT          -- 프로모션할인총액
+	                 , OO.TOTAL_CPN_DSCNT_AMT            -- 쿠폰할인총액
+	                 , OO.TOTAL_EMP_DSCNT_AMT            -- 임직원할인총액
+	                 , OO.POINT_USE_AMT                  -- 포인트사용액
+	                 , OO.EVENT_POINT_USE_AMT            -- 이벤트포인트사용액
+	                 , OO.MMNY_DLVY_AMT                  -- 자사배송비
+	                 , OO.TOTAL_VNDR_DLVY_AMT            -- 입점사배송비총액
+	                 , OO.PYMNT_TODO_AMT                 -- 결제예정금액
+	                 , OO.PYMNT_AMT                      -- 결제금액
+	                 , OO.CNCL_AMT                       -- 취소금액
+	                 , OO.CASH_RCPT_ISSUE_YN             -- 현금영수증발급여부
+	                 , OO.TAX_BILL_ISSUE_STAT_CODE       -- 세금계산서발급상태코드
+	                 , OO.DLVY_MEMO_TEXT                 -- 배송메모
+	                 , OO.BANK_CODE                      -- 은행코드
+	                 , OO.RFND_ACNT_TEXT                 -- 환불계좌
+	                 , OO.ACNT_HLDR_NAME                 -- 예금주이름
+	                 , OO.ORG_ORDER_NO                   -- 원주문번호
+	                 , OO.UP_ORDER_NO                    -- 상위주문번호
+	                 , OO.EXPOST_SAVE_MEMBER_NO          -- 사후적립회원번호
+	                 , OO.EXPOST_SAVE_POINT_SEQ          -- 사후적립순번
+	                 , OO.AFFLTS_CODE                    -- 제휴사코드
+	                 , OO.AFFLTS_ORDER_NO                -- 제휴사주문번호
+	                 , OO.ORDER_STAT_CODE                -- 주문상태코드
+	                 , OO.SALES_CNCL_GBN_TYPE			 -- 2020.05.25 : 매출취소구분
+	                 , OOP.ORDER_PRDT_SEQ                -- 주문상품순번
+	                 , OOP.UP_ORDER_PRDT_SEQ             -- 상위주문상품순번
+	                 , OOP.PRDT_NO                       -- 상품번호
+	                 , OOP.PRDT_OPTN_NO                  -- 상품옵션번호
+	                 , OOP.PRDT_NAME                      -- 상품명
+	                 , OOP.OPTN_NAME                      -- 옵션명
+	                 , OOP.PRDT_TYPE_CODE                 -- 상품유형코드
+	                 , OOP.STYLE_INFO                      -- 스타일정보
+	                 , OOP.PRDT_COLOR_CODE                 -- 상품색상코드
+	                 , OOP.SELL_AMT                        -- 판매가
+	                 , OOP.ORDER_AMT                       -- 주문금액
+	                 , OOP.VNDR_NAME                       -- 업체명
+	                 , OOP.VNDR_NO                       -- 업체번호
+	                 , OOP.VNDR_PRDT_NO_TEXT               -- 업체 상품코드
+	                 , OOP.BRAND_NO						-- 브랜드코드
+	                 , dbo.FN_BRAND_NAME(  OOP.BRAND_NO	) AS BRAND_NAME -- 브랜드 명
+	                 , OOP.TOTAL_DSCNT_AMT					-- 상품 총 할인금액
+	                 , OOP.CPN_DSCNT_AMT					-- 상품 쿠폰할인금액
+	                 , OOP.SELL_CNCL_REQ_YN		      -- 판매취소요청여부	
+					, OOP.SELL_CNCL_REQTR_NO	 		-- 판매취소요청자번호	 
+					, OOP.SELL_CNCL_REQ_DTM		 	-- 판매취소요청일		
+					, OOP.SELL_CNCL_RSN_CODE	   	-- 판매취소사유코드	
+					, OOP.SELL_CNCL_RSN_TEXT	   	-- 판매취소사유	
+	                 , OODH.ORDER_DLVY_HIST_SEQ           -- 주문배송이력순번
+					, OODH.DLVY_DGRE_COUNT               -- 배송차수
+					, OODH.STOCK_GBN_CODE               -- 재고구분코드
+					, DBO.FN_CODE_VALUE('STOCK_GBN_CODE', OODH.STOCK_GBN_CODE)			    AS STOCK_GBN_CODE_NAME
+					, OODH.STORE_NO                     -- 매장번호
+					, OODH.DLVY_PROC_DTM                -- 배송처리일시
+					, ISNULL(OODH.LOGIS_VNDR_CODE,'') AS LOGIS_VNDR_CODE              -- 택배사코드
+					, OODH.WAYBIL_NO_TEXT               -- 운송장번호
+					, OODH.DLVY_DSCNTC_YN               -- 배송중단여부
+					, OODH.DLVY_DSCNTC_RSN_CODE         -- 배송중단사유코드
+					, OODH.DLVY_DSCNTC_OPETR_NO         -- 배송중단처리자번호
+					, OODH.DLVY_DSCNTC_PROC_DTM         -- 배송중단처리일시
+					, OODH.DLVY_DSCNTC_ACCEPT_DTM		-- 배송중단 접수일시
+					, OODH.PICKUP_PRPARE_CMLPT_DTM      -- 픽업준비완료일시
+					, OODH.PICKUP_PSBLT_YMD             -- 픽업가능일
+					, OODH.MISS_PROC_YN                 -- 분실처리여부
+					, OODH.MISS_PROC_TYPE_CODE          -- 분실처리유형코드
+					, OODH.INSD_MGMT_INFO_TEXT          -- 내부관리정보
+					, OODH.DLVY_STAT_CODE               -- 배송상태코드
+					, OODH.DLVY_STAT_CODE   AS DLVY_STAT_CODE_BEFORE               -- 배송상태코드
+					, OODH.DLVY_ID_TEXT 	 			-- 배송 ID
+					 , OOP.LOGIS_CNVRT_REQ_DTM				-- 택배전환신청일	
+					 , OOP.LOGIS_CNVRT_YN					-- 택배전환여부
+					 , OOP.LOGIS_CNVRT_RSN_CODE				--택배전환사유코드		
+					 , OOP.ORDER_PRDT_STAT_CODE				-- 상품 배송상태					 
+					 , OOP.ORDER_PRDT_STAT_CODE	 AS ORDER_PRDT_STAT_CODE_BEFORE			-- 상품 배송상태					 
+					 , OODH.MODER_NO	 -- 수정자번호
+					 , OODH.MOD_DTM	  -- 수정일시
+					 , CASE 
+					 	WHEN OODH.RCVR_NAME IS NOT NULL THEN 'Y' 
+						WHEN OODH.RCVR_NAME IS  NULL 	THEN 'N'
+					   END 						AS DELIVERY_ADDRESS_EMPTY_YN 			--주소 존재 여부
+		 			 , CASE 
+					 	WHEN OODH.DLVY_DSCNTC_PROC_DTM IS NULL 		THEN '01'
+                        WHEN OODH.DLVY_DSCNTC_PROC_DTM IS NOT NULL 	THEN '02'
+                      END 						AS DLVY_DSCNTC_PROC  					-- 진행상태
+                    , OODH.LOGIS_PYMNT_PRDT_AMT             -- 택배사결제상품금액
+					, OODH.LOGIS_PYMNT_DLVY_AMT             -- 택배사결제배송비
+					, CASE WHEN OOP.DELAY_SEND_DAY IS NULL 		THEN 'N'
+					       WHEN OOP.DELAY_SEND_DAY IS NOT NULL	THEN 'Y'
+					  END						AS DELAY_SEND_YN	-- 배송지연 안내여부	
+	         	  FROM OC_ORDER 					OO
+	        INNER JOIN OC_ORDER_PRODUCT 			OOP WITH (NOLOCK)  ON OO.ORDER_NO 	= OOP.ORDER_NO
+	  		INNER JOIN OC_ORDER_DELIVERY_HISTORY 	OODH WITH (NOLOCK) ON OOP.ORDER_NO  = OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+	         	 WHERE OOP.PRDT_TYPE_CODE IN ( '10000','10001','10002','10003' ) -- 공용, 온라인전용, 매장전용, 사은품
+				   AND OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+				  --AND OOP.MMNY_PRDT_YN = 'N' -- 자사 상품 제외
+			  
+		  	<!-- 배송상태  상품 준비중인경우에만 송장번호 검색 -->
+			<if test="bean.dlvyStatCode != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.dlvyStatCode) and bean.dlvyStatCode == '10001'  ">
+			    <choose>
+					<when test='bean.waybilNoYn == "Y"'>
+				 		AND (OODH.WAYBIL_NO_TEXT IS NOT NULL AND OODH.WAYBIL_NO_TEXT != '')     -- 상품 준비중 - 배송송장번호 있는것만
+					</when> 
+					<otherwise>
+						AND (OODH.WAYBIL_NO_TEXT IS NULL OR OODH. WAYBIL_NO_TEXT = '')  -- 상품 준비중 - 배송 송장번호가 없는 것만
+					</otherwise>
+				</choose>
+			</if>
+				
+			<if test="bean.vndrNo != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.vndrNo)">
+		       AND OOP.VNDR_NO = #{bean.vndrNo, jdbcType=VARCHAR}  -- 업체 코드 필수
+		   </if>
+			 
+			 <if test="bean.rsvOrderYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.rsvOrderYn)">
+				AND OO.RSV_ORDER_YN =   #{bean.rsvOrderYn , jdbcType=VARCHAR}         -- 예약주문여부
+			</if>
+			
+			<!-- 쿠폰사용여부  -->
+		   <if test="bean.cpnDscntYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.cpnDscntYn)">
+				<choose>
+					<when test='bean.cpnDscntYn == "Y"'>
+					 AND  OOP.CPN_DSCNT_AMT  <![CDATA[ > ]]> 0				 		-- 쿠폰사용여부 사용
+					</when> 
+					<when test='bean.cpnDscntYn == "N"'>
+					 AND  OOP.CPN_DSCNT_AMT <![CDATA[ < ]]>  0						-- 쿠폰사용여부 미사용
+					</when>
+				</choose>
+			</if>
+			
+			<!-- 발송지연여부  -->
+		   <if test="bean.delaySendYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.delaySendYn)">
+				<choose>
+					<when test='bean.delaySendYn == "Y"'>
+					 AND  OOP.DELAY_SEND_DAY IS NOT NULL -- 발송지연여부 예
+					</when> 
+					<when test='bean.delaySendYn == "N"'>
+					 AND  OOP.DELAY_SEND_DAY IS NULL  -- 발송지연여부 아니오
+					</when>
+				</choose>
+			</if> 
+			
+		   <!-- 조건 -->
+		  <include refid="whereOrderDelivery" />
+					
+    	 ORDER BY OO.ORDER_DTM DESC , OO.ORDER_NO DESC
+  		 <include refid="Paging.mssql" />
+	</select>
+	
+	<select id="selectDeliveryOrderVendorAllExcelDownload" parameterType="pageable" resultType="kr.co.abcmart.bo.delivery.model.master.OcDelivery">
+		/*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDeliveryOrderVendorAllExcelDownload [업체 주문 배송관리 전체 엑셀 다운로드] [이강수] */  
+	
+	 		    SELECT OOP.VNDR_NAME
+	 		    	 , OOP.VNDR_NO 
+	 		    	 , ( SELECT SITE_NAME
+	 		    	 	   FROM SY_SITE WITH(NOLOCK)
+	 		    	 	  WHERE SITE_NO = OO.SITE_NO ) 										AS SITE_NAME
+	 		    	 , DBO.FN_CODE_VALUE('DEVICE_CODE', OO.DEVICE_CODE)						AS DEVICE_CODE_NAME
+	 		    	 , DBO.FN_CODE_VALUE('PRDT_TYPE_CODE', OOP.PRDT_TYPE_CODE)				AS PRDT_TYPE_CODE_NAME
+	 		    	 , OODH.DLVY_ID_TEXT 
+	 		    	 , OO.ORDER_NO
+	 		    	 , REPLACE(CONVERT(CHAR(19), OO.ORDER_DTM, 20),'-','.')					AS STR_ORDER_DTM
+	                 , DBO.FN_CODE_VALUE('DLVY_STAT_CODE', OODH.DLVY_STAT_CODE)				AS DLVY_STAT_CODE_NAME
+	                 , DBO.FN_CODE_VALUE('ORDER_PRDT_STAT_CODE', OOP.ORDER_PRDT_STAT_CODE)	AS ORDER_PRDT_STAT_CODE_NAME
+	                 , OOP.ORDER_PRDT_SEQ
+	                 , DBO.FN_CODE_VALUE('LOGIS_VNDR_CODE', OODH.LOGIS_VNDR_CODE)			AS LOGIS_VNDR_CODE_NAME
+	                 , OODH.WAYBIL_NO_TEXT
+	                 , REPLACE(CONVERT(CHAR(19), OODH.DLVY_PROC_DTM, 20),'-','.')			AS STR_DLVY_PROC_DTM
+	                 , OOP.VNDR_PRDT_NO_TEXT
+	                 , OOP.PRDT_NO
+	                 , OOP.PRDT_NAME
+	                 , OOP.OPTN_NAME
+	                 , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY,OOP.SELL_AMT),1),'.00','')	AS STR_SELL_AMT
+	                 , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY,OOP.ORDER_AMT),1),'.00','')	AS STR_ORDER_AMT
+	                 , OOP.SELL_CNCL_REQ_YN
+	                 , CASE WHEN OOP.DELAY_SEND_DAY IS NULL 		THEN 'N'
+					        WHEN OOP.DELAY_SEND_DAY IS NOT NULL		THEN 'Y'
+					   END																	AS DELAY_SEND_YN
+					 , OO.MEMBER_NO
+	                 , OO.BUYER_NAME
+   		 			 , ( SELECT LOGIN_ID 
+   		 				   FROM MB_MEMBER WITH (NOLOCK)
+   		 				  WHERE MEMBER_NO = OO.MEMBER_NO )									AS BUYER_ID
+   		 			 , OO.BUYER_HDPHN_NO_TEXT
+   		 			 , DBO.FN_BRAND_NAME( OOP.BRAND_NO ) 									AS BRAND_NAME  
+	                 , OOP.BRAND_NO
+	                 , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY, OODH.LOGIS_PYMNT_DLVY_AMT ),1),'.00','') 	AS STR_LOGIS_PYMNT_DLVY_AMT
+	                 , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY, OOP.TOTAL_DSCNT_AMT ),1),'.00','')			AS STR_TOTAL_DSCNT_AMT
+	                 , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY, OOP.CPN_DSCNT_AMT ),1),'.00','')			AS STR_CPN_DSCNT_AMT
+	                 , OO.RCVR_NAME                      -- 수취인명
+	                 , OO.RCVR_TEL_NO_TEXT               -- 수취인전화번호
+	                 , OO.RCVR_HDPHN_NO_TEXT             -- 수취인핸드폰번호
+	                 , OO.RCVR_POST_CODE_TEXT            -- 수취인우편번호
+	                 , OO.RCVR_POST_ADDR_TEXT            -- 수취인우편주소
+	                 , OO.RCVR_DTL_ADDR_TEXT             -- 수취인상세주소
+	         	  FROM OC_ORDER 					OO
+	        INNER JOIN OC_ORDER_PRODUCT 			OOP WITH (NOLOCK)  ON OO.ORDER_NO 	= OOP.ORDER_NO
+	  		INNER JOIN OC_ORDER_DELIVERY_HISTORY 	OODH WITH (NOLOCK) ON OOP.ORDER_NO  = OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+	         	 WHERE OOP.PRDT_TYPE_CODE IN ( '10000','10001','10002','10003' ) -- 공용, 온라인전용, 매장전용, 사은품
+				   AND OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+				   AND OOP.MMNY_PRDT_YN = 'N' -- 자사 상품 제외
+			  
+		  	<!-- 배송상태  상품 준비중인경우에만 송장번호 검색 -->
+			<if test="bean.dlvyStatCode != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.dlvyStatCode) and bean.dlvyStatCode == '10001'  ">
+			    <choose>
+					<when test='bean.waybilNoYn == "Y"'>
+				 		AND (OODH.WAYBIL_NO_TEXT IS NOT NULL AND OODH.WAYBIL_NO_TEXT != '')     -- 상품 준비중 - 배송송장번호 있는것만
+					</when> 
+					<otherwise>
+						AND (OODH.WAYBIL_NO_TEXT IS NULL OR OODH. WAYBIL_NO_TEXT = '')  -- 상품 준비중 - 배송 송장번호가 없는 것만
+					</otherwise>
+				</choose>
+			</if>
+				
+			<if test="bean.vndrNo != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.vndrNo)">
+		       AND OOP.VNDR_NO = #{bean.vndrNo, jdbcType=VARCHAR}  -- 업체 코드 필수
+		   </if>
+			 
+			 <if test="bean.rsvOrderYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.rsvOrderYn)">
+				AND OO.RSV_ORDER_YN =   #{bean.rsvOrderYn , jdbcType=VARCHAR}         -- 예약주문여부
+			</if>
+			
+			<!-- 쿠폰사용여부  -->
+		   <if test="bean.cpnDscntYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.cpnDscntYn)">
+				<choose>
+					<when test='bean.cpnDscntYn == "Y"'>
+					 AND  OOP.CPN_DSCNT_AMT  <![CDATA[ > ]]> 0				 		-- 쿠폰사용여부 사용
+					</when> 
+					<when test='bean.cpnDscntYn == "N"'>
+					 AND  OOP.CPN_DSCNT_AMT <![CDATA[ < ]]>  0						-- 쿠폰사용여부 미사용
+					</when>
+				</choose>
+			</if>
+			
+			<!-- 발송지연여부  -->
+		   <if test="bean.delaySendYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.delaySendYn)">
+				<choose>
+					<when test='bean.delaySendYn == "Y"'>
+					 AND  OOP.DELAY_SEND_DAY IS NOT NULL -- 발송지연여부 예
+					</when> 
+					<when test='bean.delaySendYn == "N"'>
+					 AND  OOP.DELAY_SEND_DAY IS NULL  -- 발송지연여부 아니오
+					</when>
+				</choose>
+			</if> 
+			
+		   <!-- 조건 -->
+		  <include refid="whereOrderDelivery" />
+					
+    	 ORDER BY OO.ORDER_DTM DESC , OO.ORDER_NO DESC	
+	
+	</select>
+	
+	<select id="selectDeliveryOrderVendorCancelCount" parameterType="pageable" resultType="Integer">
+	 /*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDeliveryOrderVendorCancelCount-판매 취소현황  Count */  
+	 SELECT 
+	 	<include refid="Paging.totalCount" />
+	         FROM OC_ORDER 					OO   WITH (NOLOCK)
+	   INNER JOIN OC_ORDER_PRODUCT 			OOP  WITH (NOLOCK) ON OO.ORDER_NO   			= OOP.ORDER_NO
+	   INNER JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH (NOLOCK) ON OOP.ORDER_NO  			= OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+  LEFT OUTER JOIN SY_ADMIN      			SYA  WITH (NOLOCK) ON OOP.SELL_CNCL_REQTR_NO	= SYA.ADMIN_NO
+	        WHERE OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+			  AND OOP.PRDT_TYPE_CODE IN ( '10000', '10001', '10002', '10003' ) -- 공용, 온라인전용, 매장전용, 사은품
+  		      AND OOP.SELL_CNCL_REQ_YN = 'Y'  --판매취소 요청 접수
+			   
+	    <if test="bean.rsvOrderYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.rsvOrderYn)">
+			AND OO.RSV_ORDER_YN =   #{bean.rsvOrderYn , jdbcType=VARCHAR}         -- 예약주문여부
+		</if>
+		
+		<if test="bean.sellCnclRsnCode != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.sellCnclRsnCode)">
+			AND OOP.SELL_CNCL_RSN_CODE =   #{bean.sellCnclRsnCode , jdbcType=VARCHAR}     -- 취소 요청 사유코드     
+		</if>
+		
+		<!-- 결제구분 -->
+		<if test="bean.deviceCodeList !=null and bean.deviceCodeList.size > 0">
+			-- 결제구분
+			AND OO.DEVICE_CODE IN
+			<foreach collection="bean.deviceCodeList" item="deviceCode" index="index" separator="," open="(" close=")">
+			#{deviceCode , jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		
+		   <!-- 조건 -->
+		  <include refid="whereOrderDelivery" />
+	</select>
+	 
+	<select id="selectSellCnclAllExcelDownload" parameterType="pageable" resultType="kr.co.abcmart.bo.delivery.model.master.OcDelivery">
+	/*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectSellCnclAllExcelDownload - [판매취소요청 주문 목록 엑셀 전체 다운로드] [이강수] */  
+	
+	 		  SELECT ( SELECT SITE_NAME
+	    		         FROM SY_SITE WITH (NOLOCK)  
+	    		        WHERE SITE_NO = OO.SITE_NO )										AS SITE_NAME
+	    		     , DBO.FN_CODE_VALUE('DEVICE_CODE', OO.DEVICE_CODE) 					AS DEVICE_CODE_NAME
+	 		   		 , OO.ORDER_NO															AS ORDER_NO
+	 		   		 , OO.MEMBER_NO															AS MEMBER_NO
+	 		   		 , OO.BUYER_NAME														AS BUYER_NAME
+   		 			 , ( SELECT LOGIN_ID 
+   		 				   FROM MB_MEMBER WITH (NOLOCK)
+   		 				  WHERE MEMBER_NO = OO.MEMBER_NO )									AS BUYER_ID
+	 		   		 , OO.BUYER_HDPHN_NO_TEXT												AS BUYER_HDPHN_NO_TEXT
+	 		   		 , OOP.VNDR_PRDT_NO_TEXT												AS VNDR_PRDT_NO_TEXT
+	 		   		 , OOP.PRDT_NO															AS PRDT_NO
+	 		   		 , OOP.PRDT_NAME														AS PRDT_NAME
+	                 , OOP.OPTN_NAME														AS OPTN_NAME
+	                 , OODH.DLVY_ID_TEXT													AS DLVY_ID_TEXT
+	                 , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY,OOP.SELL_AMT),1),'.00','')	AS STR_SELL_AMT
+	                 , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY,OOP.ORDER_AMT),1),'.00','')	AS STR_ORDER_AMT
+	                 , DBO.FN_CODE_VALUE('SELL_CNCL_RSN_CODE', OOP.SELL_CNCL_RSN_CODE) 		AS SELL_CNCL_RSN_CODE_NAME
+	                 , REPLACE(CONVERT(CHAR(19), OOP.SELL_CNCL_REQ_DTM, 20),'-','.')		AS STR_SELL_CNCL_REQ_DTM
+	                 , SYA.ADMIN_NAME														AS SELL_CNCL_REQTR_NAME
+	                 , SYA.LOGIN_ID															AS SELL_CNCL_REQTR_ID
+	                 , REPLACE(CONVERT(CHAR(19), OOP.MOD_DTM, 20),'-','.')					AS STR_MOD_DTM
+	         FROM OC_ORDER 					OO   WITH (NOLOCK)
+	   INNER JOIN OC_ORDER_PRODUCT 			OOP  WITH (NOLOCK) ON OO.ORDER_NO   			= OOP.ORDER_NO
+	   INNER JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH (NOLOCK) ON OOP.ORDER_NO  			= OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+  LEFT OUTER JOIN SY_ADMIN      			SYA  WITH (NOLOCK) ON OOP.SELL_CNCL_REQTR_NO	= SYA.ADMIN_NO
+	        WHERE OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+			  AND OOP.PRDT_TYPE_CODE IN ( '10000', '10001', '10002', '10003' ) -- 공용, 온라인전용, 매장전용, 사은품
+  		      AND OOP.SELL_CNCL_REQ_YN = 'Y'  --판매취소 요청 접수
+			   
+	    <if test="bean.rsvOrderYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.rsvOrderYn)">
+			AND OO.RSV_ORDER_YN =   #{bean.rsvOrderYn , jdbcType=VARCHAR}         -- 예약주문여부
+		</if>
+		
+		<if test="bean.sellCnclRsnCode != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.sellCnclRsnCode)">
+			AND OOP.SELL_CNCL_RSN_CODE =   #{bean.sellCnclRsnCode , jdbcType=VARCHAR}     -- 취소 요청 사유코드     
+		</if>
+		
+		<!-- 결제구분 -->
+		<if test="bean.deviceCodeList !=null and bean.deviceCodeList.size > 0">
+			-- 결제구분
+			AND OO.DEVICE_CODE IN
+			<foreach collection="bean.deviceCodeList" item="deviceCode" index="index" separator="," open="(" close=")">
+			#{deviceCode , jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		
+		   <!-- 조건 -->
+		  <include refid="whereOrderDelivery" />
+					
+    	 ORDER BY OO.ORDER_DTM DESC , OO.ORDER_NO DESC
+	
+	</select>
+	
+	<select id="selectDeliveryOrderVendorCancelList" parameterType="pageable" resultType="kr.co.abcmart.bo.delivery.model.master.OcDelivery">
+		/*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDeliveryOrderVendorCancelList -  판매 취소현황 List */  
+	 	SELECT
+	                   OO.ORDER_NO
+	                 , OO.ORDER_DTM
+	                 , OO.SITE_NO
+	                 , OO.SITE_NO AS ORG_SITE_NO
+	                 , OO.EMP_ORDER_YN
+	                 , OO.MEMBER_NO
+	                 , OO.MEMBER_TYPE_CODE               -- 회원유형코드
+	                 , OO.MBSHP_GRADE_CODE               -- 멤버쉽등급코드
+	                 , OO.EMP_YN                         -- 임직원여부
+	                 , OO.OTS_VIP_YN                     -- OTS VIP 여부
+	                 , OO.DEVICE_CODE                    -- 디바이스코드
+	                 , OO.RSV_ORDER_YN                   -- 예약주문여부
+	                 , OO.DLVY_TYPE_CODE                 -- 배송유형코드
+	                 , OO.STORE_NO                       -- 매장번호
+	                 , ( SELECT STORE_NAME
+	                       FROM CM_STORE WITH(NOLOCK)
+	                      WHERE STORE_NO = OODH.STORE_NO ) AS STORE_NAME
+	                 , OO.STORE_ADD_INFO                 -- 매장추가정보
+	                 , OO.BUYER_NAME                     -- 주문자명
+	                 , ( SELECT LOGIN_ID 
+	                       FROM MB_MEMBER WITH(NOLOCK)
+	                      WHERE MEMBER_NO = OO.MEMBER_NO ) AS BUYER_ID
+	                 , OO.BUYER_EMAIL_ADDR_TEXT          -- 주문자이메일주소
+	                 , OO.BUYER_TEL_NO_TEXT              -- 주문자전화번호
+	                 , OO.BUYER_HDPHN_NO_TEXT            -- 주문자핸드폰번호
+	                 , OO.BUYER_POST_CODE_TEXT           -- 주문자우편번호
+	                 , OO.BUYER_POST_ADDR_TEXT           -- 주문자우편주소
+	                 , OO.BUYER_DTL_ADDR_TEXT            -- 주문자상세주소
+	                 , OO.RCVR_NAME                      -- 수취인명
+	                 , OO.RCVR_TEL_NO_TEXT               -- 수취인전화번호
+	                 , OO.RCVR_HDPHN_NO_TEXT             -- 수취인핸드폰번호
+	                 , OO.RCVR_POST_CODE_TEXT            -- 수취인우편번호
+	                 , OO.RCVR_POST_ADDR_TEXT            -- 수취인우편주소
+	                 , OO.RCVR_DTL_ADDR_TEXT             -- 수취인상세주소
+	                 , OO.ORDER_PRDT_INFO                -- 주문상품정보
+	                 , OO.TOTAL_NORMAL_AMT               -- 정상가총액
+	                 , OO.TOTAL_SELL_AMT                 -- 판매가총액
+	                 , OO.TOTAL_PROMO_DSCNT_AMT          -- 프로모션할인총액
+	                 , OO.TOTAL_CPN_DSCNT_AMT            -- 쿠폰할인총액
+	                 , OO.TOTAL_EMP_DSCNT_AMT            -- 임직원할인총액
+	                 , OO.POINT_USE_AMT                  -- 포인트사용액
+	                 , OO.EVENT_POINT_USE_AMT            -- 이벤트포인트사용액
+	                 , OO.MMNY_DLVY_AMT                  -- 자사배송비
+	                 , OO.TOTAL_VNDR_DLVY_AMT            -- 입점사배송비총액
+	                 , OO.PYMNT_TODO_AMT                 -- 결제예정금액
+	                 , OO.PYMNT_AMT                      -- 결제금액
+	                 , OO.CNCL_AMT                       -- 취소금액
+	                 , OO.CASH_RCPT_ISSUE_YN             -- 현금영수증발급여부
+	                 , OO.TAX_BILL_ISSUE_STAT_CODE       -- 세금계산서발급상태코드
+	                 , OO.DLVY_MEMO_TEXT                 -- 배송메모
+	                 , OO.BANK_CODE                      -- 은행코드
+	                 , OO.RFND_ACNT_TEXT                 -- 환불계좌
+	                 , OO.ACNT_HLDR_NAME                 -- 예금주이름
+	                 , OO.ORG_ORDER_NO                   -- 원주문번호
+	                 , OO.UP_ORDER_NO                    -- 상위주문번호
+	                 , OO.EXPOST_SAVE_MEMBER_NO          -- 사후적립회원번호
+	                 , OO.EXPOST_SAVE_POINT_SEQ          -- 사후적립순번
+	                 , OO.AFFLTS_CODE                    -- 제휴사코드
+	                 , OO.AFFLTS_ORDER_NO                -- 제휴사주문번호
+	                 , OO.ORDER_STAT_CODE                -- 주문상태코드
+	                 , OOP.ORDER_PRDT_SEQ                -- 주문상품순번
+	                 , OOP.UP_ORDER_PRDT_SEQ             -- 상위주문상품순번
+	                 , OOP.PRDT_NO                       -- 상품번호
+	                 , OOP.PRDT_OPTN_NO                  -- 상품옵션번호
+	                 , OOP.PRDT_NAME                      -- 상품명
+	                 , OOP.OPTN_NAME                      -- 옵션명
+	                 , OOP.PRDT_TYPE_CODE                 -- 상품유형코드
+	                 , OOP.STYLE_INFO                      -- 스타일정보
+	                 , OOP.PRDT_COLOR_CODE                 -- 상품색상코드
+	                 , OOP.SELL_AMT                        -- 판매가
+	                 , OOP.ORDER_AMT                       -- 주문금액
+	                 , OOP.VNDR_NAME                       -- 업체명
+	                 , OOP.VNDR_NO                       -- 업체번호
+	                 , OOP.VNDR_PRDT_NO_TEXT               -- 업체 상품코드
+	                 , OOP.BRAND_NO						-- 브랜드코드
+	                 , dbo.FN_BRAND_NAME(  OOP.BRAND_NO	) AS BRAND_NAME -- 브랜드 명
+	                 , OOP.SELL_CNCL_REQ_YN		      -- 판매취소요청여부	
+					, OOP.SELL_CNCL_REQTR_NO	 		-- 판매취소요청자번호	 
+					, SYA.LOGIN_ID		AS SELL_CNCL_REQTR_ID   -- 판매취소요청자ID
+					, SYA.ADMIN_NAME	AS SELL_CNCL_REQTR_NAME -- 판매취소요청자이름
+					, OOP.SELL_CNCL_REQ_DTM		 	-- 판매취소요청일		
+					, OOP.SELL_CNCL_RSN_CODE	   	-- 판매취소사유코드	
+					, OOP.SELL_CNCL_RSN_TEXT	   	-- 판매취소사유	
+	                , OODH.ORDER_DLVY_HIST_SEQ           -- 주문배송이력순번
+					, OODH.DLVY_DGRE_COUNT               -- 배송차수
+					, OODH.STOCK_GBN_CODE               -- 재고구분코드
+					, DBO.FN_CODE_VALUE('STOCK_GBN_CODE', OODH.STOCK_GBN_CODE)			    AS STOCK_GBN_CODE_NAME
+					, OODH.STORE_NO                     -- 매장번호
+					, OODH.DLVY_PROC_DTM                -- 배송처리일시
+					, ISNULL(OODH.LOGIS_VNDR_CODE,'') AS LOGIS_VNDR_CODE              -- 택배사코드
+					, OODH.WAYBIL_NO_TEXT               -- 운송장번호
+					, OODH.DLVY_DSCNTC_YN               -- 배송중단여부
+					, OODH.DLVY_DSCNTC_RSN_CODE         -- 배송중단사유코드
+					, OODH.DLVY_DSCNTC_OPETR_NO         -- 배송중단처리자번호
+					, OODH.DLVY_DSCNTC_PROC_DTM         -- 배송중단처리일시
+					, OODH.DLVY_DSCNTC_ACCEPT_DTM		-- 배송중단 접수일시
+					, OODH.PICKUP_PRPARE_CMLPT_DTM      -- 픽업준비완료일시
+					, OODH.PICKUP_PSBLT_YMD             -- 픽업가능일
+					, OODH.MISS_PROC_YN                 -- 분실처리여부
+					, OODH.MISS_PROC_TYPE_CODE          -- 분실처리유형코드
+					, OODH.INSD_MGMT_INFO_TEXT          -- 내부관리정보
+					, OODH.DLVY_STAT_CODE               -- 배송상태코드
+					, OODH.DLVY_STAT_CODE   AS DLVY_STAT_CODE_BEFORE               -- 배송상태코드
+					, OODH.DLVY_ID_TEXT 	 			-- 배송 ID
+					, OOP.LOGIS_CNVRT_REQ_DTM				-- 택배전환신청일	
+					, OOP.LOGIS_CNVRT_YN					-- 택배전환여부
+					, OOP.LOGIS_CNVRT_RSN_CODE				--택배전환사유코드		
+					, OOP.ORDER_PRDT_STAT_CODE				-- 상품 배송상태					 
+					, OODH.MODER_NO	-- 수정자번호
+					, OODH.MOD_DTM	-- 수정일시
+					 , CASE 
+					 	WHEN OODH.RCVR_NAME IS NOT NULL THEN 'Y' 
+						WHEN OODH.RCVR_NAME IS  NULL 	THEN 'N'
+					   END 						AS DELIVERY_ADDRESS_EMPTY_YN 			--주소 존재 여부
+		 			 , CASE 
+					 	WHEN OODH.DLVY_DSCNTC_PROC_DTM IS NULL 		THEN '01'
+                        WHEN OODH.DLVY_DSCNTC_PROC_DTM IS NOT NULL 	THEN '02'
+                      END 						AS DLVY_DSCNTC_PROC  					-- 진행상태
+                    , OODH.LOGIS_PYMNT_PRDT_AMT             -- 택배사결제상품금액
+					, OODH.LOGIS_PYMNT_DLVY_AMT             -- 택배사결제배송비
+	         FROM OC_ORDER 					OO   WITH (NOLOCK)
+	   INNER JOIN OC_ORDER_PRODUCT 			OOP  WITH (NOLOCK) ON OO.ORDER_NO   			= OOP.ORDER_NO
+	   INNER JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH (NOLOCK) ON OOP.ORDER_NO  			= OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+  LEFT OUTER JOIN SY_ADMIN      			SYA  WITH (NOLOCK) ON OOP.SELL_CNCL_REQTR_NO	= SYA.ADMIN_NO
+	        WHERE OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+			  AND OOP.PRDT_TYPE_CODE IN ( '10000', '10001', '10002', '10003' ) -- 공용, 온라인전용, 매장전용, 사은품
+  		      AND OOP.SELL_CNCL_REQ_YN = 'Y'  --판매취소 요청 접수
+			   
+	    <if test="bean.rsvOrderYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.rsvOrderYn)">
+			AND OO.RSV_ORDER_YN =   #{bean.rsvOrderYn , jdbcType=VARCHAR}         -- 예약주문여부
+		</if>
+		
+		<if test="bean.sellCnclRsnCode != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.sellCnclRsnCode)">
+			AND OOP.SELL_CNCL_RSN_CODE =   #{bean.sellCnclRsnCode , jdbcType=VARCHAR}     -- 취소 요청 사유코드     
+		</if>
+		
+		<!-- 결제구분 -->
+		<if test="bean.deviceCodeList !=null and bean.deviceCodeList.size > 0">
+			-- 결제구분
+			AND OO.DEVICE_CODE IN
+			<foreach collection="bean.deviceCodeList" item="deviceCode" index="index" separator="," open="(" close=")">
+			#{deviceCode , jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		
+		   <!-- 조건 -->
+		  <include refid="whereOrderDelivery" />
+					
+    	 ORDER BY OO.ORDER_DTM DESC , OO.ORDER_NO DESC
+  		 <include refid="Paging.mssql" />
+	</select>
+	
+	
+	
+	<select id="selectDelveryOrderVendorClaimCount" parameterType="Object" resultType="kr.co.abcmart.bo.delivery.model.master.OcDelivery">
+	  	 /*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDelveryOrderVendorClaimCount - [업체별 클레임 건수 조회] [수정자 : 이강수] */  
+	 	SELECT	DISTINCT  OO.ORDER_NO
+				, OOP.ORDER_PRDT_STAT_CODE  
+				, OOP.VNDR_NO
+				, OC.CLM_NO
+				, OC.CLM_STAT_CODE
+		FROM  OC_ORDER OO
+			INNER JOIN  OC_ORDER_PRODUCT OOP WITH (NOLOCK) ON OO.ORDER_NO = OOP.ORDER_NO
+			INNER JOIN  OC_CLAIM OC WITH (NOLOCK) ON OO.ORDER_NO = OC.ORDER_NO
+			INNER JOIN  OC_CLAIM_PRODUCT OCP WITH (NOLOCK) ON OC.CLM_NO = OCP.CLM_NO  AND oop.PRDT_NO = OCP.PRDT_NO 
+														AND OOP.ORDER_PRDT_SEQ = OCP.ORDER_PRDT_SEQ
+		WHERE OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+		AND  OOP.PRDT_TYPE_CODE IN ( '10000','10001','10002' ,'10003') -- 공용, 온라인전용, 매장전용, 사은품
+		AND  OOP.MMNY_PRDT_YN =  'N'  -- 자사 상품 제외
+		<if test="vndrNo != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(vndrNo)">
+		       AND OOP.VNDR_NO = #{vndrNo, jdbcType=VARCHAR}  -- 업체 코드 필수
+		 </if>		
+		<choose>
+			<when test="fromDashYn != null and fromDashYn == 'Y'.toString()">
+			AND OO.ORDER_DTM BETWEEN  DATEADD(DD, -30, CONVERT(DATE,GETDATE()) )  AND DATEADD(DD, 1, CONVERT(DATE,  GETDATE() ))			-- PO dashboard 기본 1달 조회
+			</when>
+			<otherwise>
+			AND OO.ORDER_DTM BETWEEN  DATEADD(DD, -90, CONVERT(DATE,GETDATE()) )  AND DATEADD(DD, 1, CONVERT(DATE,  GETDATE() ))			-- 최근 3개월 이내
+			</otherwise>
+		</choose>
+		
+	  </select>
+	  
+	
+	<select id="selectDeliveryOrderVendorClaimCount" parameterType="pageable" resultType="Integer">
+	 /*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDeliveryOrderVendorClaimCount-업체 주문 배송관리  Count */  
+		SELECT 
+	 		<include refid="Paging.totalCount" />
+			  FROM OC_ORDER         OO
+	    INNER JOIN OC_ORDER_PRODUCT OOP WITH (NOLOCK) ON OO.ORDER_NO = OOP.ORDER_NO
+		INNER JOIN OC_CLAIM         OC  WITH (NOLOCK) ON OC.ORDER_NO = OOP.ORDER_NO
+		INNER JOIN OC_CLAIM_PRODUCT OCP WITH (NOLOCK) ON OC.CLM_NO = OCP.CLM_NO  AND OOP.ORDER_PRDT_SEQ = OCP.ORDER_PRDT_SEQ
+		LEFT OUTER JOIN ( -- 재배송상품 정보
+						   SELECT ODH.CLM_NO
+								, ODH.CLM_PRDT_SEQ
+								, ODH.LOGIS_VNDR_CODE
+								, DBO.FN_CODE_VALUE('LOGIS_VNDR_CODE', ODH.LOGIS_VNDR_CODE) AS LOGIS_VNDR_CODE_NAME
+								, DBO.FN_CODE_ADDINFO('LOGIS_VNDR_CODE', ODH.LOGIS_VNDR_CODE, 1) AS LOGIS_VNDR_CODE_ADD_INFO
+								, ODH.WAYBIL_NO_TEXT
+								, ODH.DLVY_PROC_DTM
+								, ODH.DLVY_STAT_CODE
+								, RANK( )OVER( PARTITION BY ODH.CLM_NO, ODH.CLM_PRDT_SEQ ORDER BY ODH.ORDER_DLVY_HIST_SEQ DESC ) AS RANK_SEQ
+								-- 2020.04.24 : 교환재배송상품을 주문상세에서 중단 후 재배송 계속하는 경우를 고려하여 추가
+						   FROM OC_ORDER_DELIVERY_HISTORY ODH WITH (NOLOCK)
+						) F
+					 ON OCP.CLM_NO		 = F.CLM_NO
+					AND OCP.CLM_PRDT_SEQ = F.CLM_PRDT_SEQ
+					AND F.RANK_SEQ       = 1 -- 2020.04.24 : 교환재배송상품을 주문상세에서 중단 후 재배송 계속하는 경우를 고려하여 추가
+		     WHERE OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+			   AND OOP.PRDT_TYPE_CODE IN ( '10000','10001','10002' ,'10003') -- 공용, 온라인전용, 매장전용, 사은품
+			   AND OOP.MMNY_PRDT_YN  = 'N' -- 자사 상품 제외
+			   AND ( 
+						(
+							OC.CLM_GBN_CODE IN ('10000','10002') AND OCP.UP_CLM_PRDT_SEQ IS NULL
+							-- 2020.05.28 : 취소,반품 클레임은 기존과 그대로
+						) 
+					 OR
+						(
+							OC.CLM_GBN_CODE IN ('10001') AND OCP.UP_CLM_PRDT_SEQ IS NOT NULL
+							-- 2020.05.28 : 교환 클레임은 교환재배송상품을 노출시킨다.
+						)
+			       )
+	  	<!-- 클레임상태 -->
+	  	<choose>
+	  		<when test="bean.clmGbnCode == 'ALL'">
+	  		</when>
+	  		<otherwise>
+				<if test="bean.clmPrdtStatList !=null and bean.clmPrdtStatList.size > 0">
+					-- 클레임상태
+					AND OCP.CLM_PRDT_STAT_CODE IN
+					<foreach collection="bean.clmPrdtStatList" item="clmPrdtStatList" index="index" separator="," open="(" close=")">
+					#{clmPrdtStatList , jdbcType=VARCHAR}
+					</foreach>
+				</if>
+	  		</otherwise>
+	  	</choose>
+
+	  	<!-- 조건 -->
+		<include refid="whereOrderDelivery" />
+	</select>
+	
+	
+	<select id="selectDeliveryOrderVendorClaimList" parameterType="pageable" resultType="kr.co.abcmart.bo.delivery.model.master.OcDelivery">
+		/*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDeliveryOrderVendorClaimList -  업체 주문 배송관리 List */  
+		 	SELECT  OO.SITE_NO
+			      , OO.ORDER_NO   --주문번호 
+				  , OOP.ORDER_PRDT_SEQ    --주문상품 순번
+				  , OOP.ORDER_PRDT_STAT_CODE  --상품배송상태
+				  , OOP.VNDR_PRDT_NO_TEXT  --업체 상품코드
+				  , OCP.PRDT_NO  --상품코드
+				  , OCP.PRDT_NAME  -- 상품명
+				  , OCP.OPTN_NAME  --옵션명
+				  , OCP.SELL_AMT  --판매가
+				  , OCP.ORDER_AMT  --결제금액
+				  , OOP.VNDR_NO  --업체번호
+				  , OOP.VNDR_NAME --업체명
+				  , OC.CLM_NO   --클레임 번호
+				  , OC.ADD_DLVY_AMT_PYMNT_TYPE --배송비 결제수단  S(환불금액차감), P(추가결제), C:무료쿠폰
+				  , OC.ADD_DLVY_AMT   -- 클레임 배송비
+				  , OC.CLM_GBN_CODE   -- 클레임구분코드
+				  , OC.CLM_GBN_CODE AS ORG_CLM_GBN_CODE  -- 클레임구분코드
+				  , OCP.CLM_PRDT_SEQ    --클레임상품순번
+				  , OCP.CLM_RSN_CODE  --클레임 사유
+				  , OCP.CLM_PRDT_STAT_CODE  -- 클레임 상태
+				  , OCP.CLM_PRDT_STAT_CODE  AS CLM_PRDT_STAT_CODE_BEFOR -- 클레임 상태
+	 			  , ISNULL(OCP.LOGIS_VNDR_CODE,'') AS LOGIS_VNDR_CODE              -- 택배사코드
+				  , OCP.WAYBIL_NO_TEXT  --송장번호
+				  , OC.RGST_DTM    --클레임 접수일자
+				  , DBO.FN_CODE_VALUE('CLM_RSN_CODE', OCP.CLM_RSN_CODE) AS CLM_RSN_NAME
+				  , DBO.FN_CODE_VALUE('CLM_GBN_CODE', OC.CLM_GBN_CODE) AS CLM_GBN_NAME
+				  , DBO.FN_CODE_VALUE('CLM_PRDT_STAT_CODE', OCP.CLM_PRDT_STAT_CODE) AS CLM_PRDT_STAT_NAME
+				  ------------------------- 교환 배송행
+				  , F.LOGIS_VNDR_CODE      AS CHANGE_LOGIS_VNDR_CODE
+				  , F.LOGIS_VNDR_CODE_NAME AS CHANGE_LOGIS_VNDR_CODE_NAME
+				  , F.WAYBIL_NO_TEXT       AS CHANGE_WAYBIL_NO_TEXT
+				  , F.DLVY_PROC_DTM        AS CHANGE_DLVY_PROC_DTM
+			  FROM OC_ORDER         OO
+	    INNER JOIN OC_ORDER_PRODUCT OOP WITH (NOLOCK) ON OO.ORDER_NO = OOP.ORDER_NO
+		INNER JOIN OC_CLAIM         OC  WITH (NOLOCK) ON OC.ORDER_NO = OOP.ORDER_NO
+		INNER JOIN OC_CLAIM_PRODUCT OCP WITH (NOLOCK) ON OC.CLM_NO = OCP.CLM_NO  AND OOP.ORDER_PRDT_SEQ = OCP.ORDER_PRDT_SEQ
+		LEFT OUTER JOIN ( -- 재배송상품 정보
+						   SELECT ODH.CLM_NO
+								, ODH.CLM_PRDT_SEQ
+								, ODH.LOGIS_VNDR_CODE
+								, DBO.FN_CODE_VALUE('LOGIS_VNDR_CODE', ODH.LOGIS_VNDR_CODE) AS LOGIS_VNDR_CODE_NAME
+								, DBO.FN_CODE_ADDINFO('LOGIS_VNDR_CODE', ODH.LOGIS_VNDR_CODE, 1) AS LOGIS_VNDR_CODE_ADD_INFO
+								, ODH.WAYBIL_NO_TEXT
+								, ODH.DLVY_PROC_DTM
+								, ODH.DLVY_STAT_CODE
+								, RANK( )OVER( PARTITION BY ODH.CLM_NO, ODH.CLM_PRDT_SEQ ORDER BY ODH.ORDER_DLVY_HIST_SEQ DESC ) AS RANK_SEQ
+								-- 2020.04.24 : 교환재배송상품을 주문상세에서 중단 후 재배송 계속하는 경우를 고려하여 추가
+						   FROM OC_ORDER_DELIVERY_HISTORY ODH WITH (NOLOCK)
+						) F
+					 ON OCP.CLM_NO		 = F.CLM_NO
+					AND OCP.CLM_PRDT_SEQ = F.CLM_PRDT_SEQ
+					AND F.RANK_SEQ       = 1 -- 2020.04.24 : 교환재배송상품을 주문상세에서 중단 후 재배송 계속하는 경우를 고려하여 추가
+	       	 WHERE OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+			   AND OOP.PRDT_TYPE_CODE IN ( '10000','10001','10002' ,'10003') -- 공용, 온라인전용, 매장전용, 사은품
+			   AND OOP.MMNY_PRDT_YN  = 'N' -- 자사 상품 제외
+			   AND ( 
+						(
+							OC.CLM_GBN_CODE IN ('10000','10002') AND OCP.UP_CLM_PRDT_SEQ IS NULL
+							-- 2020.05.28 : 취소,반품 클레임은 기존과 그대로
+						) 
+					 OR
+						(
+							OC.CLM_GBN_CODE IN ('10001') AND OCP.UP_CLM_PRDT_SEQ IS NOT NULL
+							-- 2020.05.28 : 교환 클레임은 교환재배송상품을 노출시킨다.
+						)
+			       )
+	  	<!-- 클레임상태 -->
+	  	<choose>
+	  		<when test="bean.clmGbnCode == 'ALL'">
+	  		</when>
+	  		<otherwise>
+				<if test="bean.clmPrdtStatList !=null and bean.clmPrdtStatList.size > 0">
+					-- 클레임상태
+					AND OCP.CLM_PRDT_STAT_CODE IN
+					<foreach collection="bean.clmPrdtStatList" item="clmPrdtStatList" index="index" separator="," open="(" close=")">
+					#{clmPrdtStatList , jdbcType=VARCHAR}
+					</foreach>
+				</if>
+	  		</otherwise>
+	  	</choose>
+		
+		   <!-- 조건 -->
+		  <include refid="whereOrderDelivery" />
+					
+    	 ORDER BY OO.ORDER_DTM DESC , OO.ORDER_NO DESC
+  		 <include refid="Paging.mssql" />
+	</select>
+	
+	<select id="selectDeliveryOrderVendorImpossibilityCount" parameterType="pageable" resultType="Integer">
+		 /*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDeliveryOrderVendorImpossibilityCount-클레임 불가 요청 현황  Count */  
+		 SELECT 
+		 	<include refid="Paging.totalCount" />
+		FROM OC_ORDER OO
+            INNER JOIN  OC_ORDER_PRODUCT OOP WITH (NOLOCK) ON OO.ORDER_NO = OOP.ORDER_NO
+	  		INNER JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH (NOLOCK) ON OOP.ORDER_NO  = OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+		   	INNER JOIN  OC_CLAIM OC WITH (NOLOCK) ON OC.ORDER_NO = OOP.ORDER_NO
+			INNER JOIN  OC_CLAIM_PRODUCT OCP WITH (NOLOCK) ON OC.CLM_NO = OCP.CLM_NO  AND OOP.ORDER_PRDT_SEQ = OCP.ORDER_PRDT_SEQ 
+       WHERE OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+	  	AND OOP.PRDT_TYPE_CODE IN ( '10000','10001','10002' ,'10003') -- 공용, 온라인전용, 매장전용, 사은품
+	  	AND OODH.IMPSBLT_PROC_YN ='Y' --  불가처리여부
+	 
+		 <if test="bean.clmImpsbltRsnCode != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.clmImpsbltRsnCode)">
+			AND OCP.CLM_IMPSBLT_RSN_CODE =   #{bean.clmImpsbltRsnCode , jdbcType=VARCHAR}			-- 클레임 불가 사유코드         
+		</if>
+		
+		<if test="bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+			<choose>
+				<when test="bean.searchDateKey == 'impsbltProcAcceptDtm'">
+				AND OODH.IMPSBLT_PROC_ACCEPT_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))				-- 클레임 불가 요청일
+				</when>
+				 
+				<when test="bean.searchDateKey == 'cRgstDtm'">
+				AND OC.RGST_DTM  BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))				-- 클레임 접수일시
+				</when>
+				
+			</choose>
+		</if>
+		
+		
+		<!-- 결제구분 -->
+			<if test="bean.deviceCodeList !=null and bean.deviceCodeList.size > 0">
+				-- 결제구분
+				AND OO.DEVICE_CODE IN
+				<foreach collection="bean.deviceCodeList" item="deviceCode" index="index" separator="," open="(" close=")">
+				#{deviceCode , jdbcType=VARCHAR}
+				</foreach>
+			</if>
+			
+			<if test="bean.rsvOrderYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.rsvOrderYn)">
+				AND OO.RSV_ORDER_YN =   #{bean.rsvOrderYn , jdbcType=VARCHAR}         -- 예약주문여부
+			</if>
+			
+			
+		  	<!-- 조건 -->
+			<include refid="whereOrderDelivery" />
+	</select>
+	 
+	
+	<select id="selectDeliveryOrderVendorImpossibilityList" parameterType="pageable" resultType="kr.co.abcmart.bo.delivery.model.master.OcDelivery">
+		/*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.selectDeliveryOrderVendorImpossibilityList - 클레임 불가 요청 현황 List */  
+	 	SELECT
+                   OO.ORDER_NO
+                 , OO.ORDER_DTM
+                 , OO.SITE_NO AS ORG_SITE_NO
+                 , OO.SITE_NO
+                 , OO.EMP_ORDER_YN
+                 , OO.MEMBER_NO
+                 , OO.MEMBER_TYPE_CODE               -- 회원유형코드
+                 , OO.MBSHP_GRADE_CODE               -- 멤버쉽등급코드
+                 , OO.EMP_YN                         -- 임직원여부
+                 , OO.OTS_VIP_YN                     -- OTS VIP 여부
+                 , OO.DEVICE_CODE                    -- 디바이스코드
+                 , OO.RSV_ORDER_YN                   -- 예약주문여부
+                 , OO.DLVY_TYPE_CODE                 -- 배송유형코드
+                 , OO.STORE_NO                       -- 매장번호
+                 , ( SELECT STORE_NAME
+	                       FROM CM_STORE WITH(NOLOCK)
+	                      WHERE STORE_NO = OODH.STORE_NO ) AS STORE_NAME
+                 , OO.STORE_ADD_INFO                 -- 매장추가정보
+                 , OO.BUYER_NAME                     -- 주문자명
+                 , OO.BUYER_EMAIL_ADDR_TEXT          -- 주문자이메일주소
+                 , OO.BUYER_TEL_NO_TEXT              -- 주문자전화번호
+                 , OO.BUYER_HDPHN_NO_TEXT            -- 주문자핸드폰번호
+                 , OO.BUYER_POST_CODE_TEXT           -- 주문자우편번호
+                 , OO.BUYER_POST_ADDR_TEXT           -- 주문자우편주소
+                 , OO.BUYER_DTL_ADDR_TEXT            -- 주문자상세주소
+                 , OO.RCVR_NAME                      -- 수취인명
+                 , OO.RCVR_TEL_NO_TEXT               -- 수취인전화번호
+                 , OO.RCVR_HDPHN_NO_TEXT             -- 수취인핸드폰번호
+                 , OO.RCVR_POST_CODE_TEXT            -- 수취인우편번호
+                 , OO.RCVR_POST_ADDR_TEXT            -- 수취인우편주소
+                 , OO.RCVR_DTL_ADDR_TEXT             -- 수취인상세주소
+                 , OO.ORDER_PRDT_INFO                -- 주문상품정보
+                 , OO.TOTAL_NORMAL_AMT               -- 정상가총액
+                 , OO.TOTAL_SELL_AMT                 -- 판매가총액
+                 , OO.TOTAL_PROMO_DSCNT_AMT          -- 프로모션할인총액
+                 , OO.TOTAL_CPN_DSCNT_AMT            -- 쿠폰할인총액
+                 , OO.TOTAL_EMP_DSCNT_AMT            -- 임직원할인총액
+                 , OO.POINT_USE_AMT                  -- 포인트사용액
+                 , OO.EVENT_POINT_USE_AMT            -- 이벤트포인트사용액
+                 , OO.MMNY_DLVY_AMT                  -- 자사배송비
+                 , OO.TOTAL_VNDR_DLVY_AMT            -- 입점사배송비총액
+                 , OO.PYMNT_TODO_AMT                 -- 결제예정금액
+                 , OO.PYMNT_AMT                      -- 결제금액
+                 , OO.CNCL_AMT                       -- 취소금액
+                 , OO.CASH_RCPT_ISSUE_YN             -- 현금영수증발급여부
+                 , OO.TAX_BILL_ISSUE_STAT_CODE       -- 세금계산서발급상태코드
+                 , OO.DLVY_MEMO_TEXT                 -- 배송메모
+                 , OO.BANK_CODE                      -- 은행코드
+                 , OO.RFND_ACNT_TEXT                 -- 환불계좌
+                 , OO.ACNT_HLDR_NAME                 -- 예금주이름
+                 , OO.ORG_ORDER_NO                   -- 원주문번호
+                 , OO.UP_ORDER_NO                    -- 상위주문번호
+                 , OO.EXPOST_SAVE_MEMBER_NO          -- 사후적립회원번호
+                 , OO.EXPOST_SAVE_POINT_SEQ          -- 사후적립순번
+                 , OO.AFFLTS_CODE                    -- 제휴사코드
+                 , OO.AFFLTS_ORDER_NO                -- 제휴사주문번호
+                 , OO.ORDER_STAT_CODE                -- 주문상태코드
+                 , OOP.ORDER_PRDT_SEQ                -- 주문상품순번
+                 , OOP.UP_ORDER_PRDT_SEQ             -- 상위주문상품순번
+                 , OOP.PRDT_NO                       -- 상품번호
+                 , OOP.PRDT_OPTN_NO                  -- 상품옵션번호
+                 , OOP.PRDT_NAME                      -- 상품명
+                 , OOP.OPTN_NAME                      -- 옵션명
+                 , OOP.PRDT_TYPE_CODE                 -- 상품유형코드
+                 , OOP.STYLE_INFO                      -- 스타일정보
+                 , OOP.PRDT_COLOR_CODE                 -- 상품색상코드
+                 , OOP.SELL_AMT                        -- 판매가
+                 , OOP.ORDER_AMT                       -- 주문금액
+                 , OOP.VNDR_NAME                       -- 업체명
+                 , OOP.VNDR_NO                       -- 업체번호
+                 , OOP.VNDR_PRDT_NO_TEXT               -- 업체 상품코드
+                 , OOP.BRAND_NO						-- 브랜드코드
+                 , dbo.FN_BRAND_NAME(  OOP.BRAND_NO	) AS BRAND_NAME -- 브랜드 명
+                 , OOP.SELL_CNCL_REQ_YN		      -- 판매취소요청여부	
+				, OOP.SELL_CNCL_REQTR_NO	 		-- 판매취소요청자번호	 
+				, OOP.SELL_CNCL_REQ_DTM		 	-- 판매취소요청일		
+				, OOP.SELL_CNCL_RSN_CODE	   	-- 판매취소사유코드	
+				, OOP.SELL_CNCL_RSN_TEXT	   	-- 판매취소사유	
+                 , OODH.ORDER_DLVY_HIST_SEQ           -- 주문배송이력순번
+				, OODH.DLVY_DGRE_COUNT               -- 배송차수
+				, OODH.STOCK_GBN_CODE               -- 재고구분코드
+				, DBO.FN_CODE_VALUE('STOCK_GBN_CODE', OODH.STOCK_GBN_CODE)			    AS STOCK_GBN_CODE_NAME
+				, OODH.STORE_NO                     -- 매장번호
+				, OODH.DLVY_PROC_DTM                -- 배송처리일시
+		  		, ISNULL(OODH.LOGIS_VNDR_CODE,'') AS LOGIS_VNDR_CODE              -- 택배사코드					
+				, OODH.WAYBIL_NO_TEXT               -- 운송장번호
+				, OODH.DLVY_DSCNTC_YN               -- 배송중단여부
+				, OODH.DLVY_DSCNTC_RSN_CODE         -- 배송중단사유코드
+				, OODH.DLVY_DSCNTC_OPETR_NO         -- 배송중단처리자번호
+				, OODH.DLVY_DSCNTC_PROC_DTM         -- 배송중단처리일시
+				, OODH.DLVY_DSCNTC_ACCEPT_DTM		-- 배송중단 접수일시
+				, OODH.PICKUP_PRPARE_CMLPT_DTM      -- 픽업준비완료일시
+				, OODH.PICKUP_PSBLT_YMD             -- 픽업가능일
+				, OODH.MISS_PROC_YN                 -- 분실처리여부
+				, OODH.MISS_PROC_TYPE_CODE          -- 분실처리유형코드
+				, OODH.INSD_MGMT_INFO_TEXT          -- 내부관리정보
+				, OODH.DLVY_STAT_CODE               -- 배송상태코드
+				, OODH.DLVY_STAT_CODE   AS DLVY_STAT_CODE_BEFORE               -- 배송상태코드
+				, OODH.DLVY_ID_TEXT 	 			-- 배송 ID
+				 , OOP.LOGIS_CNVRT_REQ_DTM				-- 택배전환신청일	
+				 , OOP.LOGIS_CNVRT_YN					-- 택배전환여부
+				 , OOP.LOGIS_CNVRT_RSN_CODE				--택배전환사유코드		
+				 , OOP.ORDER_PRDT_STAT_CODE				-- 상품 배송상태					 
+				 , OODH.MODER_NO	 -- 수정자번호
+				 , OODH.MOD_DTM	  -- 수정일시
+				 , CASE 
+				 	WHEN OODH.RCVR_NAME IS NOT NULL THEN 'Y' 
+					WHEN OODH.RCVR_NAME IS  NULL 	THEN 'N'
+				   END 						AS DELIVERY_ADDRESS_EMPTY_YN 			--주소 존재 여부
+	 			 , CASE 
+				 	WHEN OODH.DLVY_DSCNTC_PROC_DTM IS NULL 		THEN '01'
+                       WHEN OODH.DLVY_DSCNTC_PROC_DTM IS NOT NULL 	THEN '02'
+                     END 						AS DLVY_DSCNTC_PROC  					-- 진행상태
+                   , OODH.LOGIS_PYMNT_PRDT_AMT             -- 택배사결제상품금액
+				, OODH.LOGIS_PYMNT_DLVY_AMT             -- 택배사결제배송비
+				, OC.CLM_NO
+				, OC.CLM_GBN_CODE   -- 클레임구분코드
+				, OC.CLM_GBN_CODE   AS ORG_CLM_GBN_CODE -- 클레임구분코드
+				, OCP.CLM_IMPSBLT_RSN_CODE  -- 클레임불가사유코드
+        	FROM OC_ORDER OO
+		        INNER JOIN  OC_ORDER_PRODUCT OOP WITH (NOLOCK) ON OO.ORDER_NO = OOP.ORDER_NO
+		  		INNER JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH (NOLOCK) ON OOP.ORDER_NO  = OODH.ORDER_NO AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+			   	INNER JOIN  OC_CLAIM OC WITH (NOLOCK) ON OC.ORDER_NO = OOP.ORDER_NO
+				INNER JOIN  OC_CLAIM_PRODUCT OCP WITH (NOLOCK) ON OC.CLM_NO = OCP.CLM_NO  AND OOP.ORDER_PRDT_SEQ = OCP.ORDER_PRDT_SEQ
+	       WHERE OO.ORDER_STAT_CODE NOT IN ( '10000' ) -- 임시주문 제외
+		  	AND OOP.PRDT_TYPE_CODE IN ( '10000','10001','10002' ,'10003') -- 공용, 온라인전용, 매장전용, 사은품
+		  	AND OODH.IMPSBLT_PROC_YN ='Y' --  불가처리여부
+ 
+		 <if test="bean.clmImpsbltRsnCode != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.clmImpsbltRsnCode)">
+			AND OCP.CLM_IMPSBLT_RSN_CODE =   #{bean.clmImpsbltRsnCode , jdbcType=VARCHAR}			-- 클레임 불가 사유코드         
+		</if>
+		
+	     
+		<!-- 결제구분 -->
+		<if test="bean.deviceCodeList !=null and bean.deviceCodeList.size > 0">
+			-- 결제구분
+			AND OO.DEVICE_CODE IN
+			<foreach collection="bean.deviceCodeList" item="deviceCode" index="index" separator="," open="(" close=")">
+			#{deviceCode , jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		
+		<if test="bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+			<choose>
+				<when test="bean.searchDateKey == 'impsbltProcAcceptDtm'">
+				AND OODH.IMPSBLT_PROC_ACCEPT_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))				-- 클레임 불가 요청일
+				</when>
+				 
+				<when test="bean.searchDateKey == 'cRgstDtm'">
+				AND OC.RGST_DTM  BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))				-- 클레임 접수일시
+				</when>
+				
+			</choose>
+		</if>
+		
+		<if test="bean.rsvOrderYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.rsvOrderYn)">
+			AND OO.RSV_ORDER_YN =   #{bean.rsvOrderYn , jdbcType=VARCHAR}         -- 예약주문여부
+		</if>
+		
+		   <!-- 조건 -->
+		  <include refid="whereOrderDelivery" />
+					
+    	 ORDER BY OO.ORDER_DTM DESC , OO.ORDER_NO DESC
+  		 <include refid="Paging.mssql" />
+	</select>
+	
+	
+	<sql id="whereOrderDelivery">
+		<if test="bean.searchOrderValue != null and bean.searchOrderValue != '' ">
+		-- 자사여부
+		</if>
+		<!--  조회기간 -->
+		<if test="bean.searchOrderValue != null and bean.searchOrderValue != '' ">
+			<choose>
+				<when test="bean.searchOrderKey == 'buyerName'">
+				AND  OO.BUYER_NAME like  #{bean.searchOrderValue, jdbcType=VARCHAR}  + '%'				-- 주문자
+				</when>
+
+				<when test="bean.searchOrderKey == 'rcvrName'">
+				AND  OO.RCVR_NAME like  #{bean.searchOrderValue, jdbcType=VARCHAR}  + '%'				-- 수취인
+				</when>
+				<when test="bean.searchOrderKey == 'orderNo'">
+				AND  OO.ORDER_NO =  #{bean.searchOrderValue, jdbcType=VARCHAR}				-- 주문번호   
+				</when>
+				<when test="bean.searchOrderKey == 'buyerHdphnNoText'">
+				AND  OO.BUYER_HDPHN_NO_TEXT =  #{bean.searchOrderValue, jdbcType=VARCHAR}				-- 주문자 휴대폰번호   
+				</when>
+				<when test="bean.searchOrderKey == 'loginId'">
+				-- 주문자 id
+				AND EXISTS ( SELECT 1 FROM MB_MEMBER MM WHERE MM.MEMBER_NO = OO.MEMBER_NO 
+							  AND MM.LOGIN_ID = #{bean.searchOrderValue, jdbcType=VARCHAR}
+							)    
+				</when>
+			</choose>
+			<if test='bean.buyerHdphnBackNo != null and bean.buyerHdphnBackNo !=""'>
+				<choose>
+					<when test="bean.searchOrderKey == 'buyerName'">
+						AND RIGHT(REPLACE(OO.BUYER_HDPHN_NO_TEXT, '-', ''), 4) = #{bean.buyerHdphnBackNo, jdbcType=VARCHAR}
+					</when>
+					<when test="bean.searchOrderKey == 'rcvrName'">
+						AND RIGHT(REPLACE(OO.RCVR_HDPHN_NO_TEXT, '-', ''), 4) = #{bean.buyerHdphnBackNo, jdbcType=VARCHAR}
+					</when>
+				</choose>
+			</if>
+		</if>		
+	
+		<!--  조회기간 -->
+		<if test="bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+			<choose>
+				<when test="bean.searchDateKey == 'orderDtm'">
+				AND OO.ORDER_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))				-- 주문일
+				</when>
+				
+				<when test="bean.searchDateKey == 'dlvyProcEndDtm'">
+				AND OODH.DLVY_CMLPT_DTM  BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))				-- 배송완료일 확인필요 
+				</when>
+				<when test="bean.searchDateKey == 'logisCnvrtReqDtm'">
+				AND OOP.LOGIS_CNVRT_REQ_DTM  BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))				-- 신청접수일
+				</when>
+				<when test="bean.searchDateKey == 'dlvyProcDtm'">
+				AND OODH.DLVY_PROC_DTM  BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))				-- 발송일
+				</when>
+				<when test="bean.searchDateKey == 'dlvyCmlptDtm'">
+				AND OODH.DLVY_CMLPT_DTM  BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))				-- 배송처리 완료일 배송처리 수정일로 기준으로 잡는다 - 확인필요
+				</when>
+				<when test="bean.searchDateKey == 'dlvyDscntcAcceptDtm'">
+				AND OODH.DLVY_DSCNTC_ACCEPT_DTM  BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))				-- 배송중단 접수일자
+				</when>
+				<when test="bean.searchDateKey == 'dlvyDscntcProcDtm'">
+				AND OODH.DLVY_DSCNTC_PROC_DTM  BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))				-- 배송중단 처리일시
+				</when>
+				
+				<when test="bean.searchDateKey == 'cRgstDtm'">
+				AND OC.RGST_DTM  BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))				-- 클레임 접수일시
+				</when>
+				
+			</choose>
+		</if>
+	
+		<!--  운송장 정보 / 택배사 코드 -->
+		<if test=" (bean.waybilNoText != null and bean.waybilNoText != '') and (bean.logisVndrCode != null and bean.logisVndrCode !='') ">
+			AND OODH.LOGIS_VNDR_CODE     =   #{bean.logisVndrCode , jdbcType=VARCHAR}       -- 택배사코드
+			AND OODH.WAYBIL_NO_TEXT      =  #{bean.waybilNoText , jdbcType=VARCHAR}        -- 운송장번호
+		</if>
+		
+		<!--  상푸관련 조회  -->
+		<if test="bean.searchOrderProdValue != null and bean.searchOrderProdValue != ''">
+			<choose>
+				<when test="bean.searchOrderProdKey == 'prdtName'">
+				AND  OOP.PRDT_NAME like #{bean.searchOrderProdValue, jdbcType=VARCHAR}  + '%'				-- 상품명
+				</when>
+	
+				<when test="bean.searchOrderProdKey == 'prdtNo'">
+				AND  OOP.PRDT_NO = #{bean.searchOrderProdValue, jdbcType=VARCHAR}				-- 상품코드 
+				</when>
+				<when test="bean.searchOrderProdKey == 'styleInfo'">
+				AND  OOP.STYLE_INFO = #{bean.searchOrderProdValue, jdbcType=VARCHAR}				-- 스타일코드 
+				</when>
+			</choose>
+		</if>
+	
+		<!-- 사이트 -->
+		<if test="bean.siteNoList!=null and bean.siteNoList.size > 0">
+			--사이트
+			AND OO.SITE_NO IN
+			<foreach collection="bean.siteNoList" item="siteNo" index="index" separator="," open="(" close=")">
+			#{siteNo , jdbcType=VARCHAR}
+			</foreach>
+		</if>
+	
+		<!-- 배송유형 -->
+		<if test="bean.dlvyTypeCodeList !=null and bean.dlvyTypeCodeList.size > 0">
+			-- 배송유형
+			AND OO.DLVY_TYPE_CODE IN
+			<foreach collection="bean.dlvyTypeCodeList" item="dlvyTypeCode" index="index" separator="," open="(" close=")">
+			#{dlvyTypeCode , jdbcType=VARCHAR}
+			</foreach>
+		</if>
+	
+		<!-- 배송상태 -->
+		<if test="bean.dlvyStatCodeList !=null and bean.dlvyStatCodeList.size > 0">
+			-- 배송상태
+			AND OODH.DLVY_STAT_CODE IN
+			<foreach collection="bean.dlvyStatCodeList" item="dlvyStatCode" index="index" separator="," open="(" close=")">
+			#{dlvyStatCode , jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		
+		
+		<!-- 배송상태  -->
+		<if test="bean.dlvyStatCode != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.dlvyStatCode)">
+			AND  OODH.DLVY_STAT_CODE = #{bean.dlvyStatCode , jdbcType=VARCHAR}			-- 배송상태
+		</if>
+		
+		
+		<!-- 주문상품상태 -->
+		<if test="bean.dlvyPrdtStatCodeList !=null and bean.dlvyPrdtStatCodeList.size > 0">
+			-- 주문상품상태
+			AND OOP.ORDER_PRDT_STAT_CODE IN
+			<foreach collection="bean.dlvyPrdtStatCodeList" item="dlvyPrdtStatCode" index="index" separator="," open="(" close=")">
+			#{dlvyPrdtStatCode , jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		
+		<!-- 주문상품상태 -->
+		<if test="bean.dlvyPrdtStatCodeList !=null and bean.dlvyPrdtStatCodeList.size > 0">
+			-- 주문상품상태
+			AND OOP.ORDER_PRDT_STAT_CODE IN
+			<foreach collection="bean.dlvyPrdtStatCodeList" item="dlvyPrdtStatCode" index="index" separator="," open="(" close=")">
+			#{dlvyPrdtStatCode , jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		 
+	
+		<!-- 
+		발송처
+		<if test="bean.stockGbnCodeList !=null and bean.stockGbnCodeList.size > 0">
+			AND EXISTS (	SELECT 1 FROM OC_ORDER_DELIVERY_HISTORY OODH
+							WHERE OOP.ORDER_NO  = OODH.ORDER_NO
+							AND OOP.ORDER_PRDT_SEQ  = OODH.ORDER_PRDT_SEQ
+							AND OODH.DLVY_DSCNTC_YN = 'N'          # 배송중단여부
+							AND OODH.STOCK_GBN_CODE IN
+							<foreach collection="bean.stockGbnCodeList" item="stockGbnCode" index="index" separator="," open="(" close=")">
+							#{stockGbnCode , jdbcType=VARCHAR}
+							</foreach>
+						) 
+		</if>
+		-->
+	
+		<!-- 발송처 -->
+		<if test="bean.stockGbnCodeList !=null and bean.stockGbnCodeList.size > 0">
+			-- 발송처
+			AND OODH.STOCK_GBN_CODE IN
+			<foreach collection="bean.stockGbnCodeList" item="stockGbnCode" index="index" separator="," open="(" close=")">
+			#{stockGbnCode , jdbcType=VARCHAR}
+			</foreach>
+		</if>
+	
+		<!-- 주문상품의 채널 -->
+		<if test="bean.chanList !=null and bean.chanList.size > 0">
+			--사이트
+			AND OOP.CHNNL_NO IN
+			<foreach collection="bean.chanList" item="chnnlNo" index="index" separator="," open="(" close=")">
+			#{chnnlNo , jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		
+		<!-- 결제 수단 -->
+		<if test="bean.pymntMeansCodeList !=null and bean.pymntMeansCodeList.size > 0">
+			-- 결제 수단
+			AND EXISTS ( SELECT 1 FROM OC_ORDER_PAYMENT OOP WHERE OOP.ORDER_NO = OO.ORDER_NO 
+							AND OOP.PYMNT_MEANS_CODE IN
+							<foreach collection="bean.pymntMeansCodeList" item="pymntMeansCode" index="index" separator="," open="(" close=")">
+							#{pymntMeansCode , jdbcType=VARCHAR}
+							</foreach>
+						)  -- 결제 수단    
+		</if>
+		
+		<!-- 업체코드 / 업체검색  -->
+		<if test="bean.vndrNo != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.vndrNo)">
+			-- 업체코드
+			AND  OOP.VNDR_NO = #{bean.vndrNo , jdbcType=VARCHAR}
+		</if>
+		
+		<!--    [OC_ORDER_DELIVERY_HISTORY] define : [상품대기] dlvy_dscntc_yn : 상품대기는
+		          상품준비중인 상태에서 배송중단 데이타 기준 [분실대기] miss_proc_yn : 분실대기 클레임에서 분실 재배송 접수된 상품기준의 데이타
+		  -->
+		<if test="bean.dlvyDscntcYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.dlvyDscntcYn)">
+			-- 배송중단이 되면은 상품대기로됨
+			AND OODH.DLVY_DSCNTC_YN =   #{bean.dlvyDscntcYn , jdbcType=VARCHAR}         -- 배송중단여부 Y
+		</if>
+		
+		<if test="bean.missProcYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.missProcYn)">
+			-- 분실처리 
+			AND OODH.MISS_PROC_YN =   #{bean.missProcYn , jdbcType=VARCHAR}         -- 분실처리여부 Y
+		</if>
+		
+		<if test="bean.impsbltProcYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.impsbltProcYn)">
+			-- 불가처리여부 where
+			AND OODH.IMPSBLT_PROC_YN =   #{bean.impsbltProcYn , jdbcType=VARCHAR}         -- 불가처리여부 Y
+		</if>
+		
+		<if test="bean.sellCnclReqYn != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.sellCnclReqYn)">
+			-- 판매취소  여부 
+			AND OOP.SELL_CNCL_REQ_YN =   #{bean.sellCnclReqYn , jdbcType=VARCHAR}         -- 판매취소 여부 Y,N
+		</if>
+		
+		<if test="bean.deviceCode != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.deviceCode)">
+			-- 결제구분
+			AND OO.DEVICE_CODE =   #{bean.deviceCode , jdbcType=VARCHAR}         -- 결제구분
+		</if>
+		
+		
+		<if test="bean.brandNo != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.brandNo)">
+			-- 브랜드 번호
+			AND OOP.BRAND_NO =   #{bean.brandNo , jdbcType=VARCHAR}         -- 브랜드 번호
+		</if>
+		<!-- 자사/입점 체크박스 -->
+		<if test="bean.mmnyPrdtYnList!=null and bean.mmnyPrdtYnList.size > 0">
+			--자사/입점 체크박스
+			AND OOP.MMNY_PRDT_YN IN
+			<foreach collection="bean.mmnyPrdtYnList" item="mmnyPrdtYn" index="index" separator="," open="(" close=")">
+			#{mmnyPrdtYn , jdbcType=CHAR}
+			</foreach>
+		</if>
+		
+		<if test='bean.dlvyDscntcProc == "01" and bean.procGubnCodeArr !=null and bean.procGubnCodeArr.length > 0'>
+			-- 처리구분
+			AND OODH.PROC_GUBN_CODE IN
+			<foreach collection="bean.procGubnCodeArr" item="procGubnCodeArr" index="index" separator="," open="(" close=")">
+			  <if test='procGubnCodeArr != ""'>
+			#{procGubnCodeArr , jdbcType=VARCHAR}
+			  </if>
+			</foreach>
+		</if>
+		
+	</sql>
+	
+	<select id="selectDeliveryPrdt" parameterType="kr.co.abcmart.bo.delivery.vo.DeliveryPrdtVO" resultType="kr.co.abcmart.bo.delivery.vo.DeliveryPrdtVO">
+		SELECT OO.ORDER_NO
+			 , OODH.ORDER_PRDT_SEQ
+			 , OODH.DLVY_ID_TEXT
+		  FROM OC_ORDER OO WITH (NOLOCK)
+	INNER JOIN  OC_ORDER_PRODUCT OOP WITH (NOLOCK)
+			ON OO.ORDER_NO = OOP.ORDER_NO
+	INNER JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH (NOLOCK)
+			ON OOP.ORDER_NO = OODH.ORDER_NO
+		   AND OOP.ORDER_PRDT_SEQ = OODH.ORDER_PRDT_SEQ
+		 WHERE OODH.DLVY_STAT_CODE = '10003' -- 배송중
+		   AND OO.SALES_CNCL_GBN_TYPE IN ('S','D')
+		   AND OO.ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+		   AND OOP.ORDER_PRDT_SEQ = #{orderPrdtSeq, jdbcType=INTEGER}
+		   AND OODH.DLVY_DSCNTC_YN ='N'
+		   AND OODH.MISS_PROC_YN ='N'
+		   AND OODH.IMPSBLT_PROC_YN ='N'
+		   AND OODH.WMS_SEND_YN ='Y'
+		   AND OOP.SELL_CNCL_REQ_YN ='N'
+		   AND OOP.MMNY_PRDT_YN ='Y'
+	</select>
+	
+	<update id="updateConfirmStandbyProc" parameterType="kr.co.abcmart.bo.delivery.model.master.OcDelivery" >
+	/*+ kr.co.abcmart.bo.delivery.repository.master.OcDeliveryDao.updateConfirmStandbyProc-*/
+		UPDATE OC_ORDER_DELIVERY_HISTORY
+		   SET PROC_GUBN_CODE = #{procGubnSelect, jdbcType=VARCHAR}
+			 , PROC_GUBN_DTM = GETDATE()
+		 WHERE ORDER_NO = #{orgOrderNo, jdbcType=VARCHAR}
+		   AND DLVY_ID_TEXT = #{dlvyIdText, jdbcType=VARCHAR}
+		
+	</update>
+	
+	
+</mapper>

@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.display.repository.master.BdPopupDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.display.model.master.BdPopup">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.BdPopupDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			bd_popup
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectBdPopupList" parameterType="pageable" resultType="kr.co.abcmart.bo.display.model.master.BdPopup">
+    /*+ kr.co.abcmart.bo.display.repository.master.BdPopupDao.selectBdPopupList [팝업 리스트 조회 쿼리] [이지훈] */
+    	SELECT
+    		BP.POPUP_SEQ
+			,BP.SITE_NO
+			,BP.POPUP_TITLE_TEXT
+			,BP.DISP_YN
+			,BP.DISP_START_DTM
+			,BP.DISP_END_DTM
+			,BP.DISP_DAY_SETUP_YN
+			,BP.MON_YN
+			,BP.TUE_YN
+			,BP.WED_YN
+			,BP.THU_YN
+			,BP.FRI_YN
+			,BP.SAT_YN
+			,BP.SUN_YN
+			,BP.DISP_DAY_START_TIME
+			,BP.DISP_DAY_END_TIME
+			,BP.PRIOR_SEQ
+			,BP.DISP_LIMIT_TYPE
+			,BP.USE_YN
+			,BP.RGSTER_NO
+			,BP.RGST_DTM
+			,BP.MODER_NO
+			,BP.MOD_DTM
+			,BP.POPUP_TYPE
+			,CASE
+				WHEN BP.DEVICE_CODE IS NULL THEN '전체'
+				ELSE DBO.FN_CODE_VALUE('DEVICE_CODE', BP.DEVICE_CODE) 
+			END AS DEVICE_CODE_NAME
+    	    ,(SELECT TOP 1 BPD.POPUP_TYPE FROM BD_POPUP_DEVICE BPD WHERE BPD.DEVICE_CODE = '10000' AND BP.POPUP_SEQ = BPD.POPUP_SEQ
+    	    	ORDER BY POPUP_SEQ
+    	    ) AS DEVICE_POPUP_TYPE
+    	    ,B.ADMIN_NAME AS RGSTER_NAME
+			,B.LOGIN_ID AS RGSTER_ID
+			,B.ADMIN_NO AS RGSTER_NO
+    	    ,C.ADMIN_NAME AS MODER_NAME
+			,C.LOGIN_ID AS MODER_ID
+			,C.ADMIN_NO AS MODER_NO
+			,'L' AS pageType
+			,(SELECT image_url FROM bd_popup_device X WHERE BP.popup_seq = X.popup_seq and X.device_code = '10000') AS pc_image_url
+			,(SELECT image_url FROM bd_popup_device X WHERE BP.popup_seq = X.popup_seq and X.device_code = '10001') AS mobile_image_url
+    	FROM  
+    		BD_POPUP BP WITH(NOLOCK)
+    	LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON BP.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON BP.MODER_NO = C.ADMIN_NO 
+    	<include refid="whereSql" />
+		ORDER BY BP.RGST_DTM DESC 
+		<include refid="Paging.mssql" />
+    </select>
+    
+    <select id="selectBdPopupCount" parameterType="pageable" resultType="int">
+    /*+ kr.co.abcmart.bo.display.repository.master.BdPopupDao.selectBdPopupCount [팝업 리스트 카운트 조회 쿼리] [이지훈] */
+    	SELECT
+    		<include refid="Paging.totalCount" /> 
+    	FROM  
+    		BD_POPUP BP WITH(NOLOCK)
+    	LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON BP.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON BP.MODER_NO = C.ADMIN_NO 
+    	<include refid="whereSql" />
+    </select>
+    
+    <select id="selectBdPopup" parameterType="Integer" resultType="kr.co.abcmart.bo.display.model.master.BdPopup">
+    	/*+ kr.co.abcmart.bo.display.repository.master.BdPopupDao.selectBdPopup [팝업 상세 쿼리] [이지훈] */
+    	SELECT
+    		BP.POPUP_SEQ
+			,BP.SITE_NO
+			,BP.POPUP_TITLE_TEXT
+			,BP.DISP_YN
+			,BP.DISP_START_DTM
+			,BP.DISP_END_DTM
+			,BP.DISP_DAY_SETUP_YN
+			,BP.MON_YN
+			,BP.TUE_YN
+			,BP.WED_YN
+			,BP.THU_YN
+			,BP.FRI_YN
+			,BP.SAT_YN
+			,BP.SUN_YN
+			,BP.DISP_DAY_START_TIME
+			,BP.DISP_DAY_END_TIME
+			,BP.PRIOR_SEQ
+			,BP.DISP_LIMIT_TYPE
+			,BP.USE_YN
+			,BP.RGSTER_NO
+			,BP.RGST_DTM
+			,BP.MODER_NO
+			,BP.MOD_DTM
+			,BP.DEVICE_CODE
+			,BP.POPUP_TYPE
+			,DBO.FN_CODE_VALUE('DEVICE_CODE', BP.DEVICE_CODE) AS DEVICE_CODE_NAME
+			,B.ADMIN_NAME AS RGSTER_NAME
+			,B.LOGIN_ID AS RGSTER_ID
+    	    ,C.ADMIN_NAME AS MODER_NAME
+			,C.LOGIN_ID AS MODER_ID
+			, 'D' AS pageType
+    	FROM  
+    		BD_POPUP BP WITH(NOLOCK)
+    	LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON BP.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON BP.MODER_NO = C.ADMIN_NO
+		WHERE POPUP_SEQ = #{popupSeq, jdbcType=INTEGER}
+    </select>
+    
+    <insert id="insertBdPopup" parameterType="kr.co.abcmart.bo.display.model.master.BdPopup" keyProperty="popupSeq">
+    	 /*+ kr.co.abcmart.bo.display.repository.master.BdPopupDao.insertBdPopup [팝업 insert 쿼리] [이지훈] */
+    	 INSERT INTO BD_POPUP 
+			(   
+				 SITE_NO
+				,POPUP_TITLE_TEXT
+				,DISP_YN
+				,DISP_START_DTM
+				,DISP_END_DTM
+				<if test='dispDaySetupYn != null and priorSeq != "" '>
+				,DISP_DAY_SETUP_YN
+				</if>
+				,MON_YN
+				,TUE_YN
+				,WED_YN
+				,THU_YN
+				,FRI_YN
+				,SAT_YN
+				,SUN_YN
+				,POPUP_TYPE
+				,DISP_DAY_START_TIME
+				,DISP_DAY_END_TIME
+				<if test='priorSeq != null and priorSeq != "" '>
+				,PRIOR_SEQ
+				</if>
+				<if test='dispLimitType != null and dispLimitType != "" '>
+				,DISP_LIMIT_TYPE
+				</if>
+				,DEVICE_CODE
+				,USE_YN
+				,RGSTER_NO
+				,RGST_DTM
+				,MODER_NO
+				,MOD_DTM
+			 )
+			VALUES 
+			(
+				 #{siteNo, jdbcType = VARCHAR}
+				,#{popupTitleText, jdbcType = VARCHAR}
+				,#{dispYn, jdbcType = CHAR}
+				,#{dispStartDtm, jdbcType = TIMESTAMP}
+				,#{dispEndDtm, jdbcType = TIMESTAMP}
+				<if test='dispDaySetupYn != null and priorSeq != "" '>
+				,#{dispDaySetupYn, jdbcType = CHAR}
+				</if>
+				,#{monYn, jdbcType = CHAR}
+				,#{tueYn, jdbcType = CHAR}
+				,#{wedYn, jdbcType = CHAR}
+				,#{thuYn, jdbcType = CHAR}
+				,#{friYn, jdbcType = CHAR}
+				,#{satYn, jdbcType = CHAR}
+				,#{sunYn, jdbcType = CHAR}
+				,#{popupType, jdbcType = CHAR}
+				,#{dispDayStartTime, jdbcType = CHAR}
+				,#{dispDayEndTime, jdbcType = CHAR}
+				<if test='priorSeq != null and priorSeq != "" '>
+				,#{priorSeq, jdbcType = INTEGER}
+				</if>
+				<if test='dispLimitType != null and dispLimitType != "" '>
+				,#{dispLimitType, jdbcType = CHAR}
+				</if>
+				,#{deviceCode, jdbcType = VARCHAR}
+				,#{useYn, jdbcType = CHAR}
+				,#{rgsterNo, jdbcType = VARCHAR}
+				,#{rgstDtm, jdbcType = TIMESTAMP}
+				,#{moderNo, jdbcType = VARCHAR}
+				,#{modDtm, jdbcType = TIMESTAMP}
+			)
+    </insert>
+    
+    
+     <update id="updateBdPopup" parameterType="kr.co.abcmart.bo.display.model.master.BdPopup">
+     	/*+ kr.co.abcmart.bo.display.repository.master.BdPopupDao.updateBdPopup [팝업 update 쿼리] [이지훈] */
+    
+		UPDATE BD_POPUP
+		<set> 
+			<if test="siteNo != null"> 
+				SITE_NO = #{siteNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="popupTitleText != null"> 
+				POPUP_TITLE_TEXT = #{popupTitleText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="dispYn != null"> 
+				DISP_YN = #{dispYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="dispStartDtm != null"> 
+				DISP_START_DTM = #{dispStartDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="dispEndDtm != null"> 
+				DISP_END_DTM = #{dispEndDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="dispDaySetupYn != null"> 
+				DISP_DAY_SETUP_YN = #{dispDaySetupYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="monYn != null"> 
+				MON_YN = #{monYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="tueYn != null"> 
+				TUE_YN = #{tueYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="wedYn != null"> 
+				WED_YN = #{wedYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="thuYn != null"> 
+				THU_YN = #{thuYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="friYn != null"> 
+				FRI_YN = #{friYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="satYn != null"> 
+				SAT_YN = #{satYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="sunYn != null"> 
+				SUN_YN = #{sunYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="popupType != null"> 
+				POPUP_TYPE = #{popupType, jdbcType=CHAR}, 
+			</if> 
+			<if test="dispDayStartTime != null"> 
+				DISP_DAY_START_TIME = #{dispDayStartTime, jdbcType=CHAR}, 
+			</if> 
+			<if test="dispDayEndTime != null"> 
+				DISP_DAY_END_TIME = #{dispDayEndTime, jdbcType=CHAR}, 
+			</if> 
+			<if test="priorSeq != null"> 
+				PRIOR_SEQ = #{priorSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="dispLimitType != null"> 
+				DISP_LIMIT_TYPE = #{dispLimitType, jdbcType=CHAR}, 
+			</if> 
+			<if test="deviceCode != null"> 
+				DEVICE_CODE = #{deviceCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="useYn != null"> 
+				USE_YN = #{useYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="moderNo != null"> 
+				MODER_NO = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				MOD_DTM = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 POPUP_SEQ = #{popupSeq, jdbcType=INTEGER}   
+    </update>
+    
+    <sql id="whereSql">
+    	<where>
+	    	<if test='bean.useYn != null and bean.useYn != ""'> 
+				AND BP.USE_YN = #{bean.useYn, jdbcType=CHAR}
+			</if>
+	    	<if test='bean.dispYn != null and bean.dispYn != ""'> 
+				AND BP.DISP_YN = #{bean.dispYn, jdbcType=CHAR}
+			</if>
+			<if test='bean.siteNo != null and bean.siteNo != ""'> 
+				AND BP.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+			</if>
+	    	<if test='bean.deviceCode != null and bean.deviceCode != ""'> 
+				AND BP.DEVICE_CODE = #{bean.deviceCode, jdbcType=VARCHAR}
+			</if>
+	    	<if test='bean.popupTypes != null and bean.popupTypes != ""'> 
+				AND BP.POPUP_TYPE IN 
+				<foreach collection="bean.popupTypes" item="popupType" open="(" close=")" separator=",">
+					#{popupType}
+				</foreach>
+			</if>
+	    	<if test='bean.devicePopupType != null and bean.devicePopupType != ""'> 
+				AND EXISTS (SELECT * FROM BD_POPUP_DEVICE BPD WITH(NOLOCK) WHERE BP.POPUP_SEQ = BPD.POPUP_SEQ AND BPD.POPUP_TYPE = #{bean.devicePopupType, jdbcType=CHAR}) 
+			</if>
+			<if test='bean.dispDaySetupYn != null and bean.dispDaySetupYn != ""'>
+				AND BP.DISP_DAY_SETUP_YN = #{bean.dispDaySetupYn, jdbcType=CHAR}
+			</if>
+			<if test='bean.keywordType != null and bean.keywordType != ""'>
+				<choose>
+					<when test='bean.keywordType == "title"'>
+						AND BP.POPUP_TITLE_TEXT LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+					</when>
+					<when test='bean.keywordType == "rgster"'>
+						AND B.ADMIN_NAME LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+					</when>
+					<when test='bean.keywordType == "moder"'>
+						AND C.ADMIN_NAME LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+					</when>
+					<when test='bean.keywordType == "rgsterId"'>
+						AND B.LOGIN_ID LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+					</when>
+					<when test='bean.keywordType == "moderId"'>
+						AND C.LOGIN_ID LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+					</when>
+				</choose>	
+			</if>
+			<if test='bean.dateType != null and bean.dateType != ""'>
+				<if test='bean.dateType == "dispStartDtm"'>
+					<if test='bean.startYmd != null and bean.startYmd != ""'>
+						AND CONVERT(DATETIME, BP.DISP_START_DTM) >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})  
+					</if>
+					
+					<if test='bean.endYmd != null and bean.endYmd != ""'>
+						AND CONVERT(DATETIME, CONCAT(#{bean.endYmd, jdbcType=VARCHAR}, ' 23:59:59')) >= CONVERT(DATETIME, BP.DISP_START_DTM)   
+					</if>
+				</if>
+				<if test='bean.dateType == "dispEndDtm"'>
+					<if test='bean.startYmd != null and bean.startYmd != ""'>
+						AND CONVERT(DATETIME, BP.DISP_END_DTM) >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})   
+					</if>
+					<if test='bean.endYmd != null and bean.endYmd != ""'>
+						AND CONVERT(DATETIME, CONCAT(#{bean.endYmd, jdbcType=VARCHAR}, ' 23:59:59')) >= CONVERT(DATETIME, BP.DISP_END_DTM)       
+					</if>
+				</if>
+				<if test='bean.dateType == "rgster"'>
+					<if test='bean.startYmd != null and bean.startYmd != ""'>
+						AND BP.RGST_DTM >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR}) 
+					</if>
+					<if test='bean.endYmd != null and bean.endYmd != ""'>
+						AND CONVERT(DATETIME, CONCAT(#{bean.endYmd, jdbcType=VARCHAR}, ' 23:59:59')) >= BP.RGST_DTM  
+					</if>
+				</if>
+				<if test='bean.dateType == "moder"'>
+					<if test='bean.startYmd != null and bean.startYmd != ""'>
+						AND BP.MOD_DTM >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR}) 
+					</if>
+					<if test='bean.endYmd != null and bean.endYmd != ""'>
+						AND CONVERT(DATETIME, CONCAT(#{bean.endYmd, jdbcType=VARCHAR}, ' 23:59:59')) >= BP.MOD_DTM  
+					</if>
+				</if>
+			</if>
+		</where>
+    </sql>
+
+</mapper>

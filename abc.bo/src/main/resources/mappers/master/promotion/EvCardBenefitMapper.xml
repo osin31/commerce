@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.promotion.repository.master.EvCardBenefitDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.promotion.model.master.EvCardBenefit">
+    
+     /*+ kr.co.abcmart.bo.promotion.repository.master.EvCardBenefitDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			EV_CARD_BENEFIT
+		WHERE 
+			<include refid="pk-columns" />
+    </select>
+    
+    <select id="selectCardBenefitCount" parameterType="pageable" resultType="Integer">    
+    	/*+ kr.co.abcmart.bo.promotion.repository.master.EvCardBenefitDao.selectCardBenefitCount [카드사 혜택 카운트 조회] [이가영] */
+    	
+		SELECT
+    		count(card_benefit_seq)
+		FROM
+			EV_CARD_BENEFIT WITH (NOLOCK)
+		<where> 
+			<if test="bean.cardBenefitSeq != null and bean.cardBenefitSeq != ''"> 
+				 card_benefit_seq = #{bean.cardBenefitSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="bean.cardBenefitName != null and bean.cardBenefitName != ''"> 
+				 AND card_benefit_name like '%' + #{bean.cardBenefitName, jdbcType=VARCHAR} + '%'
+			</if>
+			<if test="bean.dispStartYmd != null and bean.dispStartYmd != ''"> 
+				 AND disp_start_ymd = #{bean.dispStartYmd, jdbcType=CHAR}
+			</if> 
+			<if test="bean.dispEndYmd != null and bean.dispEndYmd != ''"> 
+				 AND disp_end_ymd = #{bean.dispEndYmd, jdbcType=CHAR}
+			</if> 
+			<if test="bean.eventCardText != null and bean.eventCardText != ''"> 
+				 AND event_card_text = #{bean.eventCardText, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.eventTrgtText != null and bean.eventTrgtText != ''"> 
+				 AND event_trgt_text = #{bean.eventTrgtText, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.cardBenefitImageName != null and bean.cardBenefitImageName != ''"> 
+				 AND card_benefit_image_name = #{bean.cardBenefitImageName, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.cardBenefitImagePathText != null and bean.cardBenefitImagePathText != ''"> 
+				 AND card_benefit_image_path_text = #{bean.cardBenefitImagePathText, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.cardBenefitImageUrl != null and bean.cardBenefitImageUrl != ''"> 
+				 AND card_benefit_image_url = #{bean.cardBenefitImageUrl, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.cardBenefitAltrnText != null and bean.cardBenefitAltrnText != ''"> 
+				 AND card_benefit_altrn_text = #{bean.cardBenefitAltrnText, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.dispYn != null and bean.dispYn != ''"> 
+				 AND disp_yn = #{bean.dispYn, jdbcType=CHAR}
+			</if> 
+			<if test="bean.rgsterNo != null and bean.rgsterNo != ''"> 
+				 AND rgster_no = #{bean.rgsterNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.rgstDtm != null and bean.rgstDtm != ''"> 
+				 AND rgst_dtm = #{bean.rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="bean.moderNo != null and bean.moderNo != ''"> 
+				 AND moder_no = #{bean.moderNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.modDtm != null and bean.modDtm != ''"> 
+				 AND mod_dtm = #{bean.modDtm, jdbcType=TIMESTAMP}
+			</if>			
+			<if test='bean.startYmd != null and bean.startYmd != ""'>
+				<if test='bean.condition == "S"'>
+					AND CONVERT(DATETIME, disp_start_ymd, 112) >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})
+				</if>
+				<if test='bean.condition == "E"'>
+					AND CONVERT(DATETIME, disp_end_ymd, 112) >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})
+				</if>
+				<if test='bean.condition == "R"'>
+					AND rgst_dtm >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})
+				</if>				 
+			</if>			
+			<if test='bean.endYmd != null and bean.endYmd != ""'>
+				<if test='bean.condition == "S"'>
+					AND CONVERT(DATETIME, #{bean.endYmd, jdbcType=VARCHAR}) >= CONVERT(DATETIME, disp_start_ymd, 112)
+				</if>
+				<if test='bean.condition == "E"'>
+					AND CONVERT(DATETIME, #{bean.endYmd, jdbcType=VARCHAR}) >= CONVERT(DATETIME, disp_end_ymd, 112)
+				</if>
+				<if test='bean.condition == "R"'>
+					AND CONVERT(DATETIME, #{bean.endYmd, jdbcType=VARCHAR}) >= rgst_dtm
+				</if>  
+			</if>
+		</where>
+    </select>
+    
+    <select id="selectCardBenefitList" parameterType="pageable" resultType="kr.co.abcmart.bo.promotion.model.master.EvCardBenefit">
+    	/*+ kr.co.abcmart.bo.promotion.repository.master.EvCardBenefitDao.selectCardBenefitList [카드사 혜택 목록 조회] [이가영] */
+    
+    	SELECT
+    		A.card_benefit_seq,
+    		A.card_benefit_name,
+    		A.disp_start_ymd,
+    		A.disp_end_ymd,
+    		A.event_card_text,
+    		A.event_trgt_text,
+    		A.card_benefit_image_name,
+    		A.card_benefit_image_path_text,
+    		A.card_benefit_image_url,
+    		A.card_benefit_altrn_text,
+    		A.banner_image_name,
+    		A.banner_image_path_text,
+    		A.banner_image_url,
+    		A.banner_altrn_text,
+    		A.event_page_url,
+    		A.disp_yn,
+    		A.rgster_no,
+    		A.rgst_dtm,
+    		A.moder_no,
+    		A.mod_dtm
+    	FROM
+    		EV_CARD_BENEFIT A WITH (NOLOCK)
+    	<where>
+			<if test="bean.cardBenefitSeq != null and bean.cardBenefitSeq != ''"> 
+				 card_benefit_seq = #{bean.cardBenefitSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="bean.cardBenefitName != null and bean.cardBenefitName != ''"> 
+				 AND card_benefit_name like '%' + #{bean.cardBenefitName, jdbcType=VARCHAR} + '%'
+			</if>
+			<if test="bean.dispStartYmd != null and bean.dispStartYmd != ''"> 
+				 AND disp_start_ymd = #{bean.dispStartYmd, jdbcType=CHAR}
+			</if> 
+			<if test="bean.dispEndYmd != null and bean.dispEndYmd != ''"> 
+				 AND disp_end_ymd = #{bean.dispEndYmd, jdbcType=CHAR}
+			</if> 
+			<if test="bean.eventCardText != null and bean.eventCardText != ''"> 
+				 AND event_card_text = #{bean.eventCardText, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.eventTrgtText != null and bean.eventTrgtText != ''"> 
+				 AND event_trgt_text = #{bean.eventTrgtText, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.cardBenefitImageName != null and bean.cardBenefitImageName != ''"> 
+				 AND card_benefit_image_name = #{bean.cardBenefitImageName, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.cardBenefitImagePathText != null and bean.cardBenefitImagePathText != ''"> 
+				 AND card_benefit_image_path_text = #{bean.cardBenefitImagePathText, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.cardBenefitImageUrl != null and bean.cardBenefitImageUrl != ''"> 
+				 AND card_benefit_image_url = #{bean.cardBenefitImageUrl, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.cardBenefitAltrnText != null and bean.cardBenefitAltrnText != ''"> 
+				 AND card_benefit_altrn_text = #{bean.cardBenefitAltrnText, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.dispYn != null and bean.dispYn != ''"> 
+				 AND disp_yn = #{bean.dispYn, jdbcType=CHAR}
+			</if> 
+			<if test="bean.rgsterNo != null and bean.rgsterNo != ''"> 
+				 AND rgster_no = #{bean.rgsterNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.rgstDtm != null and bean.rgstDtm != ''"> 
+				 AND rgst_dtm = #{bean.rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="bean.moderNo != null and bean.moderNo != ''"> 
+				 AND moder_no = #{bean.moderNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.modDtm != null and bean.modDtm != ''"> 
+				 AND mod_dtm = #{bean.modDtm, jdbcType=TIMESTAMP}
+			</if>
+			<if test='bean.startYmd != null and bean.startYmd != ""'>
+				<if test='bean.condition == "S"'>
+					AND CONVERT(DATETIME, disp_start_ymd, 112) >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})
+				</if>
+				<if test='bean.condition == "E"'>
+					AND CONVERT(DATETIME, disp_end_ymd, 112) >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})
+				</if>
+				<if test='bean.condition == "M"'>
+					AND mod_dtm >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})
+				</if>				  
+			</if>			
+			<if test='bean.endYmd != null and bean.endYmd != ""'>
+				<if test='bean.condition == "S"'>
+					AND CONVERT(DATETIME, #{bean.endYmd, jdbcType=VARCHAR}) >= CONVERT(DATETIME, disp_start_ymd, 112)
+				</if>
+				<if test='bean.condition == "E"'>
+					AND CONVERT(DATETIME, #{bean.endYmd, jdbcType=VARCHAR}) >= CONVERT(DATETIME, disp_end_ymd, 112)
+				</if>
+				<if test='bean.condition == "M"'>
+					AND CONVERT(DATETIME, #{bean.endYmd, jdbcType=VARCHAR}) >= mod_dtm
+				</if>  
+			</if>
+		</where>
+		ORDER BY
+			<choose>
+    			<when test="sortColumn != null">
+    				<if test="sortColumn == 'cardBenefitName'.toString()">
+    					A.card_benefit_name 
+    				</if>
+    				<if test="sortColumn == 'modDtm'.toString()">
+    					A.mod_dtm
+    				</if>
+    				<if test="sortType == 'DESC'.toString()">
+				 		DESC
+				 	</if>
+    			</when>
+    			<otherwise>A.rgst_dtm DESC</otherwise>
+    		</choose>		
+		<include refid="Paging.mssql" />
+    </select>
+    
+    <select id="selectCardBenefitDetail" parameterType="kr.co.abcmart.bo.promotion.model.master.EvCardBenefit" resultType="kr.co.abcmart.bo.promotion.model.master.EvCardBenefit">
+    	/*+ kr.co.abcmart.bo.promotion.repository.master.EvCardBenefitDao.selectCardBenefitDetail [카드사 혜택 상세 조회] [이가영] */
+    
+    	SELECT
+    		A.card_benefit_seq,
+    		A.card_benefit_name,
+    		A.disp_start_ymd,
+    		A.disp_end_ymd,
+    		A.event_card_text,
+    		A.event_trgt_text,
+    		A.card_benefit_image_name,
+    		A.card_benefit_image_path_text,
+    		A.card_benefit_image_url,
+    		A.card_benefit_altrn_text,
+    		A.banner_image_name,
+    		A.banner_image_path_text,
+    		A.banner_image_url,
+    		A.banner_altrn_text,
+    		A.event_page_url,
+    		A.disp_yn,
+    		A.rgster_no,
+    		A.rgst_dtm,
+    		A.moder_no,
+    		A.mod_dtm,
+    		B.ADMIN_NAME AS RGSTER_NAME,
+    		B.LOGIN_ID AS RGSTER_ID,
+    		C.ADMIN_NAME AS MODER_NAME,
+    		C.LOGIN_ID AS MODER_ID
+    	FROM
+    		EV_CARD_BENEFIT A WITH (NOLOCK)
+    	LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON A.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON A.MODER_NO = C.ADMIN_NO
+		WHERE
+			A.card_benefit_seq = #{cardBenefitSeq, jdbcType=INTEGER}
+    </select>
+    
+    <update id="updateCardBenefitDetail" parameterType="kr.co.abcmart.bo.promotion.model.master.EvCardBenefit">    
+		/*+ kr.co.abcmart.bo.promotion.repository.master.EvCardBenefitDao.updateCardBenefit [카드사 혜택 수정] [이가영] */
+    
+		UPDATE EV_CARD_BENEFIT
+		<set>
+			<if test="cardBenefitName != null"> 
+				card_benefit_name = #{cardBenefitName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="startYmd != null"> 
+				disp_start_ymd = #{startYmd, jdbcType=DATE}, 
+			</if> 
+			<if test="endYmd != null"> 
+				disp_end_ymd = #{endYmd, jdbcType=DATE}, 
+			</if> 
+			event_card_text = #{eventCardText, jdbcType=VARCHAR}, 
+			event_trgt_text = #{eventTrgtText, jdbcType=VARCHAR},
+			<if test="cardBenefitImageName != null"> 
+				card_benefit_image_name = #{cardBenefitImageName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cardBenefitImagePathText != null"> 
+				card_benefit_image_path_text = #{cardBenefitImagePathText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cardBenefitImageUrl != null"> 
+				card_benefit_image_url = #{cardBenefitImageUrl, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cardBenefitAltrnText != null"> 
+				card_benefit_altrn_text = #{cardBenefitAltrnText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="bannerImageName != null"> 
+				banner_image_name = #{bannerImageName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="bannerImagePathText != null"> 
+				banner_image_path_text = #{bannerImagePathText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="bannerImageUrl != null"> 
+				banner_image_url = #{bannerImageUrl, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="bannerAltrnText != null"> 
+				banner_altrn_text = #{bannerAltrnText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="eventPageUrl != null"> 
+				event_page_url = #{eventPageUrl, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="dispYn != null"> 
+				disp_yn = #{dispYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="rgsterNo != null"> 
+				rgster_no = #{rgsterNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set>
+		WHERE 
+			 card_benefit_seq = #{cardBenefitSeq, jdbcType=INTEGER}   
+    </update>
+    
+    <select id="selectCardBenefitCountByDate" parameterType="kr.co.abcmart.bo.promotion.model.master.EvCardBenefit" resultType="kr.co.abcmart.bo.promotion.model.master.EvCardBenefit">
+    	/*+ kr.co.abcmart.bo.promotion.repository.master.EvCardBenefitDao.selectCardBenefitCountByDate [카드사 혜택 전시기간 중복 체크] [이가영] */
+    	
+    	SELECT
+			A.card_benefit_seq,
+    		A.card_benefit_name,
+    		A.disp_start_ymd,
+    		A.disp_end_ymd,
+    		A.event_card_text,
+    		A.event_trgt_text,
+    		A.card_benefit_image_name,
+    		A.card_benefit_image_path_text,
+    		A.card_benefit_image_url,
+    		A.card_benefit_altrn_text,
+    		A.banner_image_name,
+    		A.banner_image_path_text,
+    		A.banner_image_url,
+    		A.banner_altrn_text,
+    		A.event_page_url,
+    		A.disp_yn,
+    		A.rgster_no,
+    		A.rgst_dtm,
+    		A.moder_no,
+    		A.mod_dtm
+		FROM
+			EV_CARD_BENEFIT A with (nolock)
+		WHERE
+			1=1			
+			<if test="cardBenefitSeq != null and cardBenefitSeq != ''"> 
+				AND CARD_BENEFIT_SEQ != #{cardBenefitSeq, jdbcType=INTEGER}
+			</if>
+			AND DISP_YN = 'Y' 
+			AND ((CONVERT(DATETIME, DISP_START_YMD) >= CONVERT(DATETIME, #{startYmd, jdbcType=VARCHAR}) AND CONVERT(DATETIME, DISP_START_YMD ) &lt;= CONVERT(DATETIME,  #{endYmd, jdbcType=VARCHAR}))
+			OR (CONVERT(DATETIME, DISP_END_YMD) >= CONVERT(DATETIME, #{startYmd, jdbcType=VARCHAR}) AND CONVERT(DATETIME, DISP_END_YMD ) &lt;= CONVERT(DATETIME,  #{endYmd, jdbcType=VARCHAR}))
+			OR (CONVERT(DATETIME, DISP_START_YMD) &lt;= CONVERT(DATETIME, #{startYmd, jdbcType=VARCHAR}) AND CONVERT(DATETIME, DISP_END_YMD) >= CONVERT(DATETIME,  #{endYmd, jdbcType=VARCHAR})))
+    </select>
+    
+    <update id="updateCardBenefit" parameterType="kr.co.abcmart.bo.promotion.model.master.EvCardBenefit">
+     	/*+ kr.co.abcmart.bo.promotion.repository.master.EvCardBenefitDao.updateCardBenefit [기본 update 쿼리] [이가영] */
+    
+		UPDATE EV_CARD_BENEFIT
+		<set>			
+			<if test="dispYn != null"> 
+				disp_yn = #{dispYn, jdbcType=CHAR}, 
+			</if>
+		</set>
+		WHERE 
+			 CARD_BENEFIT_SEQ = #{cardBenefitSeq, jdbcType=INTEGER}
+    </update>
+
+</mapper>

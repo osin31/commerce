@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyAuthorityDao">
+
+	<!--
+		※ 경고
+			이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+	 	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+	-->
+	<select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.system.model.master.SyAuthority" resultType="kr.co.abcmart.bo.system.model.master.SyAuthority">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAuthorityDao.selectByPrimaryKey */
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			sy_authority with (nolock)
+		WHERE
+			 auth_no = #{authNo, jdbcType=VARCHAR}
+	</select>
+
+	<!--
+		권한 정보를 모두 불러온다.
+	 -->
+	<select id="getAllRoles" parameterType="string" resultType="string">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAuthorityDao.getAllRoles */
+		SELECT sy.auth_no FROM sy_authority sy with (nolock)
+	</select>
+
+	<select id="selectAuthorytyList" parameterType="kr.co.abcmart.bo.system.model.master.SyAuthority" resultType="kr.co.abcmart.bo.system.model.master.SyAuthority">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAuthorityDao.selectAuthorytyList [권한그룹 조회] [이동엽, 유성민]*/
+		SELECT AUTH_NO
+			 , UP_AUTH_NO
+			 , AUTH_NAME
+			 , AUTH_GBN_TYPE
+			 , AUTH_APPLY_SYSTEM_TYPE
+			 , USE_YN
+			 , NOTE_TEXT
+		  FROM SY_AUTHORITY with (nolock)
+		 WHERE AUTH_GBN_TYPE = 'R'
+		<if test="authNo != null and authNo != ''">
+		   AND AUTH_NO = #{authNo, jdbcType=VARCHAR}
+		</if>
+		<if test="useYn != null and useYn !=''">
+		   AND USE_YN = #{useYn, jdbcType=CHAR}
+		</if>
+		<if test="authApplySystemType != null and authApplySystemType !=''">
+		   AND AUTH_APPLY_SYSTEM_TYPE = #{authApplySystemType, jdbcType=CHAR}
+		</if>
+	</select>
+
+	<select id="selectAuthorityGroupListCount" parameterType="pageable" resultType="int">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAuthorityDao.selectAuthorityGroupListCount [권한그룹 카운트] [유성민]*/
+		SELECT <include refid="Paging.totalCount" />
+		  FROM SY_AUTHORITY with (nolock)
+		 WHERE AUTH_GBN_TYPE = 'R'
+		<if test="bean.authName != null and bean.authName != ''">
+			 AND AUTH_NAME LIKE CONCAT(#{bean.authName, jdbcType=VARCHAR}, '%')
+		</if>
+		<if test="bean.authGbnType != null and bean.authGbnType != ''">
+			 AND AUTH_GBN_TYPE = #{bean.authGbnType, jdbcType=CHAR}
+		</if>
+		<if test="bean.authApplySystemType != null and bean.authApplySystemType != ''">
+			 AND AUTH_APPLY_SYSTEM_TYPE = #{bean.authApplySystemType, jdbcType=CHAR}
+		</if>
+		<if test="bean.useYn != null and bean.useYn != ''">
+			 AND USE_YN = #{bean.useYn, jdbcType=CHAR}
+		</if>
+
+	</select>
+
+	<select id="selectAuthorityGroupList" parameterType="pageable" resultType="kr.co.abcmart.bo.system.model.master.SyAuthority">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAuthorityDao.selectAuthorityGroupList [권한그룹 목록조회] [유성민]*/
+		SELECT A.AUTH_NO
+			 , A.UP_AUTH_NO
+			 , A.AUTH_NAME
+			 , A.AUTH_GBN_TYPE
+			 , A.AUTH_APPLY_SYSTEM_TYPE
+			 , A.USE_YN
+			 , A.NOTE_TEXT
+			 , A.RGSTER_NO
+			 , A.RGST_DTM
+			 , A.MODER_NO
+			 , A.MOD_DTM
+			 , B.LOGIN_ID
+			 , B.ADMIN_NAME AS RGSTER_NAME
+			 , CONCAT((SELECT COUNT(*) FROM SY_ADMIN_AUTHORITY C WHERE A.AUTH_NO = C.AUTH_NO), '명') AS ADMIN_COUNT
+			 , (SELECT COUNT(*) FROM SY_AUTHORITY_MENU D WHERE  A.AUTH_NO = D.AUTH_NO) AS AUTH_MENU_COUNT
+		  FROM SY_AUTHORITY A with (nolock)
+		  LEFT OUTER JOIN SY_ADMIN B with (nolock)
+			ON A.RGSTER_NO = B.ADMIN_NO
+		WHERE A.AUTH_GBN_TYPE = 'R'
+		<if test="bean.authName != null and bean.authName != ''">
+			 AND A.AUTH_NAME LIKE CONCAT(#{bean.authName, jdbcType=VARCHAR}, '%')
+		</if>
+		<if test="bean.authGbnType != null and bean.authGbnType != ''">
+			 AND A.AUTH_GBN_TYPE = #{bean.authGbnType, jdbcType=CHAR}
+		</if>
+		<if test="bean.authApplySystemType != null and bean.authApplySystemType != ''">
+			 AND A.AUTH_APPLY_SYSTEM_TYPE = #{bean.authApplySystemType, jdbcType=CHAR}
+		</if>
+		<if test="bean.useYn != null and bean.useYn != ''">
+			 AND A.USE_YN = #{bean.useYn, jdbcType=CHAR}
+		</if>
+		<choose>
+		 <when test="sortColumn != null">
+		 	ORDER BY
+		 	<choose>
+		 		<when test="sortColumn == 'adminCount'.toString()">
+		 			AUTH_MENU_COUNT
+		 		</when>
+		 		<when test="sortColumn == 'rgstDtm'.toString()">
+		 			A.RGST_DTM
+		 		</when>
+		 		<otherwise>
+		 			A.AUTH_NO
+		 		</otherwise>
+		 	</choose>
+		 	<if test="sortType == 'DESC'.toString()">
+		 		DESC
+		 	</if>
+		 </when>
+		 <otherwise>
+		 	ORDER BY A.MOD_DTM DESC
+		 </otherwise>
+		</choose>
+		<include refid="Paging.mssql" />
+	</select>
+
+	<insert id="insertAuthorityGroup" parameterType="kr.co.abcmart.bo.system.model.master.SyAuthority">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAuthorityDao.insertAuthorityGroup [권한그룹 등록] [유성민]*/
+		<selectKey keyProperty="authNo,upAuthNo" resultType="hashmap" order="BEFORE">
+			SELECT CONCAT('ROLE_', MAX(RIGHT(AUTH_NO, 5)) + 1) as authNo
+				 , MAX(UP_AUTH_NO) as upAuthNo
+			  FROM SY_AUTHORITY
+			 WHERE AUTH_APPLY_SYSTEM_TYPE = #{authApplySystemType, jdbcType=CHAR}
+		</selectKey>
+		INSERT INTO SY_AUTHORITY(
+			   AUTH_NO
+			 , UP_AUTH_NO
+			 , AUTH_NAME
+			 , AUTH_GBN_TYPE
+			 , AUTH_APPLY_SYSTEM_TYPE
+			 , USE_YN
+			 , NOTE_TEXT
+			 , RGSTER_NO
+			 , RGST_DTM
+			 , MODER_NO
+			 , MOD_DTM
+		)VALUES(
+			   #{authNo, jdbcType=VARCHAR}
+			 , #{upAuthNo, jdbcType=VARCHAR}
+			 , #{authName, jdbcType=VARCHAR}
+			 , 'R'
+			 , #{authApplySystemType, jdbcType=CHAR}
+			 , #{useYn, jdbcType=CHAR}
+			 , #{noteText, jdbcType=VARCHAR}
+			 , #{rgsterNo, jdbcType=VARCHAR}
+			 , GETDATE()
+			 , #{moderNo, jdbcType=VARCHAR}
+			 , GETDATE()
+		)
+	</insert>
+
+	<update id="updateAuthorityGroup" parameterType="kr.co.abcmart.bo.system.model.master.SyAuthority">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAuthorityDao.updateAuthorityGroup [권한그룹 수정] [유성민]*/
+		UPDATE SY_AUTHORITY
+		<trim prefix="SET" prefixOverrides=",">
+			<if test="authName != null and authName != ''">
+			, AUTH_NAME = #{authName, jdbcType=VARCHAR}
+			</if>
+			<if test="authApplySystemType != null and authApplySystemType != ''">
+			, AUTH_APPLY_SYSTEM_TYPE = #{authApplySystemType, jdbcType=CHAR}
+			</if>
+			<if test="noteText != null">
+			, NOTE_TEXT = #{noteText, jdbcType=CHAR}
+			</if>
+			<if test="useYn != null and useYn != ''">
+			, USE_YN = #{useYn, jdbcType=CHAR}
+			</if>
+			, MODER_NO = #{moderNo, jdbcType=VARCHAR}
+			, MOD_DTM = GETDATE()
+		</trim>
+		 WHERE AUTH_NO = #{authNo, jdbcType=VARCHAR}
+	</update>
+
+	<select id="selectAdminCount" parameterType="kr.co.abcmart.bo.system.model.master.SyAuthority" resultType="int">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAuthorityDao.selectAdminCount [권한그룹별 관리자수 조회] [유성민]*/
+		SELECT COUNT(*)
+		  FROM SY_ADMIN_AUTHORITY with (nolock)
+		 WHERE AUTH_NO = #{authNo, jdbcType=VARCHAR}
+	</select>
+
+</mapper>

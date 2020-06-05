@@ -1,0 +1,23 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" name="abc.bo:war exploded">
+    <output-path>$PROJECT_DIR$/abc.bo/target/abc.bo</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <exploded>true</exploded>
+        <module>abc.bo</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
+    <root id="root">
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="abc.bo" />
+        </element>
+      </element>
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/abc.bo/target/abc.bo/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="javaee-facet-resources" facet="abc.bo/web/Web" />
+    </root>
+  </artifact>
+</component>

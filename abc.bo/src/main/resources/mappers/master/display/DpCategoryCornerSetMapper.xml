@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.display.repository.master.DpCategoryCornerSetDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.display.model.master.DpCategoryCornerSet">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpCategoryCornerSetDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			DP_CATEGORY_CORNER_SET
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <insert id="insertSet" parameterType="kr.co.abcmart.bo.display.model.master.DpCategoryCornerSet">	
+     /*+ kr.co.abcmart.bo.display.repository.master.DpCategoryCornerSetDao.insertSet  [전시카테고리 코너 셋 등록] [박민우] */
+     	<selectKey resultType="int" keyProperty="contTypeSeq" order="BEFORE">
+			SELECT ISNULL(MAX(CONT_TYPE_SEQ)+1, 1) 
+			FROM DP_CATEGORY_CORNER_SET 
+			WHERE ctgr_no =  #{ctgrNo, jdbcType=VARCHAR}
+			AND disp_tmpl_no = #{dispTmplNo, jdbcType=VARCHAR}
+			AND disp_tmpl_corner_seq =  #{dispTmplCornerSeq, jdbcType=INTEGER}
+			AND disp_tmpl_corner_set_seq = #{dispTmplCornerSetSeq, jdbcType=INTEGER}
+			AND cont_type_code = #{contTypeCode, jdbcType=INTEGER}
+		</selectKey>
+    
+		INSERT INTO DP_CATEGORY_CORNER_SET
+			 ( ctgr_no, disp_tmpl_no, disp_tmpl_corner_seq, disp_tmpl_corner_set_seq, cont_type_code, cont_type_seq, add_info1, add_info2, add_info3, add_info4, add_info5, add_info6, add_info7, add_info8, add_info9, add_info10, altrn_text, sort_seq, disp_start_ymd, disp_end_ymd, disp_yn, rgster_no, rgst_dtm, moder_no, mod_dtm ) 
+
+		VALUES 
+			 ( #{ctgrNo, jdbcType=VARCHAR}, #{dispTmplNo, jdbcType=VARCHAR}, #{dispTmplCornerSeq, jdbcType=INTEGER}, #{dispTmplCornerSetSeq, jdbcType=INTEGER}, #{contTypeCode, jdbcType=VARCHAR}, #{contTypeSeq, jdbcType=INTEGER}, #{addInfo1, jdbcType=VARCHAR}, #{addInfo2, jdbcType=VARCHAR}, #{addInfo3, jdbcType=VARCHAR}, #{addInfo4, jdbcType=VARCHAR}, #{addInfo5, jdbcType=VARCHAR}, #{addInfo6, jdbcType=VARCHAR}, #{addInfo7, jdbcType=VARCHAR}, #{addInfo8, jdbcType=VARCHAR}, #{addInfo9, jdbcType=VARCHAR}, #{addInfo10, jdbcType=VARCHAR}, #{altrnText, jdbcType=VARCHAR}, #{sortSeq, jdbcType=INTEGER}, #{dispStartYmd, jdbcType=CHAR}, #{dispEndYmd, jdbcType=CHAR}, #{dispYn, jdbcType=CHAR}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    
+    <update id="updateSet" parameterType="kr.co.abcmart.bo.display.model.master.DpCategoryCornerSet">
+     /*+ kr.co.abcmart.bo.display.repository.master.DpCategoryCornerSetDao.updateSet [전시카테고리 코너 셋 수정] [박민우] */
+    
+		UPDATE DP_CATEGORY_CORNER_SET
+		<set> 
+			<if test='addInfo1 != null and contTypeSeq != "" '> 
+				add_info1 = #{addInfo1, jdbcType=VARCHAR}, 
+			</if> 
+			<if test='addInfo2 != null and contTypeSeq != "" '> 
+				add_info2 = #{addInfo2, jdbcType=VARCHAR}, 
+			</if> 
+			<if test='addInfo3 != null and contTypeSeq != "" '> 
+				add_info3 = #{addInfo3, jdbcType=VARCHAR}, 
+			</if> 
+			<if test='addInfo4 != null and contTypeSeq != "" '> 
+				add_info4 = #{addInfo4, jdbcType=VARCHAR}, 
+			</if> 
+			<if test='addInfo5 != null and contTypeSeq != "" '> 
+				add_info5 = #{addInfo5, jdbcType=VARCHAR}, 
+			</if> 
+			<if test='addInfo6 != null and contTypeSeq != "" '> 
+				add_info6 = #{addInfo6, jdbcType=VARCHAR}, 
+			</if> 
+			<if test='addInfo7 != null and contTypeSeq != "" '> 
+				add_info7 = #{addInfo7, jdbcType=VARCHAR}, 
+			</if> 
+			<if test='addInfo8 != null and contTypeSeq != "" '> 
+				add_info8 = #{addInfo8, jdbcType=VARCHAR}, 
+			</if> 
+			<if test='addInfo9 != null and contTypeSeq != "" '> 
+				add_info9 = #{addInfo9, jdbcType=VARCHAR}, 
+			</if> 
+			<if test='addInfo10 != null and contTypeSeq != "" '> 
+				add_info10 = #{addInfo10, jdbcType=VARCHAR}, 
+			</if> 
+			<if test='altrnText != null and contTypeSeq != "" '> 
+				altrn_text = #{altrnText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test='sortSeq != null and contTypeSeq != "" '> 
+				sort_seq = #{sortSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test='dispStartYmd != null'> 
+				disp_start_ymd = #{dispStartYmd, jdbcType=CHAR}, 
+			</if> 
+			<if test='dispEndYmd != null'> 
+				disp_end_ymd = #{dispEndYmd, jdbcType=CHAR}, 
+			</if> 
+			<if test='dispYn != null and contTypeSeq != "" '> 
+				disp_yn = #{dispYn, jdbcType=CHAR}, 
+			</if> 
+			<if test='moderNo != null'> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test='modDtm != null'> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 cont_type_code = #{contTypeCode, jdbcType=VARCHAR} AND cont_type_seq = #{contTypeSeq, jdbcType=INTEGER} AND ctgr_no = #{ctgrNo, jdbcType=VARCHAR} AND disp_tmpl_corner_seq = #{dispTmplCornerSeq, jdbcType=INTEGER} AND disp_tmpl_corner_set_seq = #{dispTmplCornerSetSeq, jdbcType=INTEGER} AND disp_tmpl_no = #{dispTmplNo, jdbcType=VARCHAR}   
+    </update>
+    
+    <select id="selectDisplayCategoryCornerSetList" parameterType="pageable" resultType="kr.co.abcmart.bo.display.model.master.DpCategoryCornerSet">
+     /*+ kr.co.abcmart.bo.display.repository.master.DpCategoryCornerSetDao.selectDisplayCategoryCornerSetList [전시 카테고리 코너 셋 리스트 조회] [박민우] */
+    
+		SELECT 
+			 <include refid="select-columns" />,
+			 add_info4 AS imageUrl
+		FROM 
+			DP_CATEGORY_CORNER_SET WITH(NOLOCK)
+		<where> 
+			<if test="bean.ctgrNo != null"> 
+				 ctgr_no = #{bean.ctgrNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.dispTmplNo != null"> 
+				 AND disp_tmpl_no = #{bean.dispTmplNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.dispTmplCornerSeq != null"> 
+				 AND disp_tmpl_corner_seq = #{bean.dispTmplCornerSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="bean.dispTmplCornerSetSeq != null"> 
+				 AND disp_tmpl_corner_set_seq = #{bean.dispTmplCornerSetSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="bean.contTypeCode != null"> 
+				 AND cont_type_code = #{bean.contTypeCode, jdbcType=VARCHAR}
+			</if> 
+		</where>
+		order by sort_seq
+		<include refid="Paging.mssql" />   
+    </select>
+    
+    <select id="selectDisplayCategoryCornerSetListCount" parameterType="pageable" resultType="int">
+     /*+ kr.co.abcmart.bo.display.repository.master.DpCategoryCornerSetDao.selectDisplayCategoryCornerSetListCount [전시 카테고리 코너 셋 리스트 갯수 조회] [박민우] */
+    
+		SELECT 
+			 <include refid="Paging.totalCount" /> 
+		FROM 
+			DP_CATEGORY_CORNER_SET WITH(NOLOCK)
+		<where> 
+			<if test="bean.ctgrNo != null"> 
+				 ctgr_no = #{bean.ctgrNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.dispTmplNo != null"> 
+				 AND disp_tmpl_no = #{bean.dispTmplNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="bean.dispTmplCornerSeq != null"> 
+				 AND disp_tmpl_corner_seq = #{bean.dispTmplCornerSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="bean.dispTmplCornerSetSeq != null"> 
+				 AND disp_tmpl_corner_set_seq = #{bean.dispTmplCornerSetSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="bean.contTypeCode != null"> 
+				 AND cont_type_code = #{bean.contTypeCode, jdbcType=VARCHAR}
+			</if> 
+		</where>
+    </select>
+    
+    <select id="selectDisplayCategoryCornerSet" parameterType="kr.co.abcmart.bo.display.vo.DisplayContentsPopupVO" resultType="kr.co.abcmart.bo.display.model.master.DpCategoryCornerSet">
+     /*+ kr.co.abcmart.bo.display.repository.master.DpCategoryCornerSetDao.selectDisplayCategoryCornerSet [전시카테고리 코너셋 조회] [박민우] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			DP_CATEGORY_CORNER_SET WITH(NOLOCK)
+		<where> 
+			<if test="ctgrNo != null"> 
+				 ctgr_no = #{ctgrNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="dispTmplNo != null"> 
+				 AND disp_tmpl_no = #{dispTmplNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="dispTmplCornerSeq != null"> 
+				 AND disp_tmpl_corner_seq = #{dispTmplCornerSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="dispTmplCornerSetSeq != null"> 
+				 AND disp_tmpl_corner_set_seq = #{dispTmplCornerSetSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="contTypeCode != null"> 
+				 AND cont_type_code = #{contTypeCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="contTypeSeq != null"> 
+				 AND cont_type_seq = #{contTypeSeq, jdbcType=INTEGER}
+			</if> 
+		</where>  
+    </select>
+    
+    <delete id="deleteDisplayCategoryCornerSet" parameterType="kr.co.abcmart.bo.display.vo.DisplayContentsPopupVO">
+     /*+ kr.co.abcmart.bo.display.repository.master.DpCategoryCornerSetDao.deleteDisplayCategoryCornerSet [전시카테고리 코너 셋 삭제] [박민우] */
+		DELETE FROM DP_CATEGORY_CORNER_SET
+		WHERE 
+			ctgr_no = #{ctgrNo, jdbcType=VARCHAR}
+			<if test='contTypeCode != null and contTypeCode != ""'>
+			AND cont_type_code = #{contTypeCode, jdbcType=VARCHAR}
+			</if> 
+			<if test='dispTmplCornerSeq != null and dispTmplCornerSeq != ""'> 
+			AND disp_tmpl_corner_seq = #{dispTmplCornerSeq, jdbcType=INTEGER}
+			</if> 
+			<if test='dispTmplNo != null and dispTmplNo != ""'> 
+			AND disp_tmpl_no = #{dispTmplNo, jdbcType=VARCHAR}
+			</if>
+			<if test='dispTmplCornerSetSeq != null and dispTmplCornerSetSeq != ""'> 
+			AND disp_tmpl_corner_set_seq = #{dispTmplCornerSetSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="delSeq != null and delSeq.length > 0">
+			AND cont_type_seq in
+			<foreach item="item" index="index" collection="delSeq" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+			</if>
+    </delete>
+</mapper>

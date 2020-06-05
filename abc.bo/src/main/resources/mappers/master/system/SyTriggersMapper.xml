@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyTriggersDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.system.model.master.SyTriggers">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SyTriggersDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			sy_triggers with (nolock)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectTriggerJoinForPaging" parameterType="pageable" resultType="kr.co.abcmart.bo.system.model.master.SyTriggers">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyTriggersDao.selectTriggerJoinForPaging [페이징 조회 쿼리] [김영현] */
+		SELECT
+			st.sched_name
+			, st.trigger_name
+			, st.trigger_group
+			, st.job_name
+			, st.job_group
+			, st.description
+			, sct.cron_expression
+			, st.next_fire_time
+			, st.prev_fire_time
+			, st.priority
+			, st.trigger_state
+			, st.start_time
+			, st.end_time
+			, st.job_data
+			, scp.site_id
+			, scp.parameters
+			, scp.reg_user_id
+			, scp.reg_dtime
+			, scp.modify_user_id
+			, scp.modify_dtime
+			, reg.login_id as reg_login_id
+			, reg.admin_name as reg_user_name
+			, mod.login_id as modify_login_id
+			, mod.admin_name as modify_user_name
+		FROM (
+			SELECT
+				<include refid="select-columns" />
+			FROM
+				sy_triggers a with (nolock)
+			ORDER BY
+				sched_name, a.job_group, a.job_name
+			<include refid="Paging.mssql" />
+		) st
+		LEFT OUTER JOIN
+			sy_cron_triggers sct with (nolock)
+			ON st.sched_name = sct.sched_name
+		    AND sct.trigger_group = st.trigger_group
+		    AND sct.trigger_name  = st.trigger_name
+		LEFT OUTER JOIN
+			sy_scheduler_params scp with (nolock)
+			ON scp.trigger_group = st.trigger_group
+		    AND scp.trigger_name  = st.trigger_name
+		LEFT OUTER JOIN
+	   		sy_admin reg with (nolock)
+	   		ON scp.reg_user_id = reg.admin_no
+	   	LEFT OUTER JOIN
+	   		sy_admin mod with (nolock)
+	   		ON scp.modify_user_id = mod.admin_no
+	</select>
+
+	<select id="selectTriggerJoinForPagingCount" parameterType="pageable" resultType="Integer">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyTriggersDao.selectTriggerJoinForPagingCount [페이징 조회 쿼리] [김영현] */
+		SELECT
+			<include refid="Paging.totalCount" />
+		FROM
+			sy_triggers st with (nolock)
+	</select>
+
+</mapper>

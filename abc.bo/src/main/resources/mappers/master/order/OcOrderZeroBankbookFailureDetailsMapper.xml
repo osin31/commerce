@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.order.repository.master.OcOrderZeroBankbookFailureDetailsDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.order.model.master.OcOrderZeroBankbookFailureDetails">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOrderZeroBankbookFailureDetailsDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			OC_ORDER_ZERO_BANKBOOK_FAILURE_DETAILS
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+	
+	 <sql id="searchWhere">
+	 	<trim prefix="WHERE" prefixOverrides="AND|OR">
+	    	<if test="bean.orderNo != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.orderNo) ">
+				AND A.ORDER_NO = #{bean.orderNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.orderNo == null or !@kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.orderNo)">
+				<if test="bean.siteNo != null and bean.siteNo != 'all'">
+					AND B.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+				</if>
+				<if test="bean.searchText != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.searchText)">
+					<if test="bean.searchKey == 'buyerName'">
+						AND B.BUYER_NAME LIKE CONCAT(  #{bean.searchText, jdbcType=VARCHAR}, '%')
+					</if>
+					<if test="bean.searchKey == 'recieverName'">
+						AND B.RCVR_NAME LIKE CONCAT(  #{bean.searchText, jdbcType=VARCHAR}, '%')
+					</if>
+					<if test="bean.searchKey == 'loginId'">
+						AND D.LOGIN_ID LIKE CONCAT(  #{bean.searchText, jdbcType=VARCHAR}, '%')
+					</if>
+					<if test="bean.searchKey == 'hdphnNo'">
+						AND B.BUYER_HDPHN_NO_TEXT LIKE CONCAT(  #{bean.searchText, jdbcType=VARCHAR}, '%')
+					</if>
+				</if>
+				<if test="bean.procYn != null and bean.procYn != 'all'">
+					AND A.PROC_YN= #{bean.procYn, jdbcType=VARCHAR}
+				</if>
+				<if test='bean.searchRefundAccount != null and bean.searchRefundAccount == "Y"'>
+					AND A.PYMNT_ORGAN_NO_TEXT IS NOT NULL
+				</if>
+				<if test='bean.searchRefundAccount != null and bean.searchRefundAccount == "N"'>
+					AND A.PYMNT_ORGAN_NO_TEXT IS NULL
+				</if>
+				<if test="bean.fromDate != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.fromDate) and bean.toDate != null and @kr.co.abcmart.common.util.UtilsText@isNotBlank(bean.toDate)">
+					<if test="bean.searchDateType != null and bean.searchDateType =='orderDtm' ">
+						AND B.ORDER_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+					</if>
+					<if test="bean.searchDateType != null and bean.searchDateType =='procDtm' ">
+						AND A.PROC_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+					</if>
+				</if>
+			</if>
+		</trim>
+    </sql>
+	
+	
+	<select id="selectList" parameterType="pageable" resultType="kr.co.abcmart.bo.order.model.master.OcOrderZeroBankbookFailureDetails">
+		/*+ kr.co.abcmart.bo.order.model.master.OcOrderZeroBankbookFailureDetailsDao.selectList [무통장입금 실패 목록 조회][이재영] */
+		SELECT 	
+			A.ORDER_NO, A.ORDER_PYMNT_SEQ, B.ORDER_DTM, B.ORDER_PRDT_INFO, B.MEMBER_NO
+		  , B.BUYER_NAME, D.LOGIN_ID AS BUYER_ID, A.PYMNT_AMT, A.PROC_YN, A.PYMNT_ORGAN_NAME
+		  , A.PYMNT_ORGAN_NO_TEXT, A.ACNT_HLDR_NAME, A.MOD_DTM, A.MODER_NO, C.ADMIN_NAME AS MODER_NAME, C.LOGIN_ID AS MODER_ID  
+		FROM 	
+		  OC_ORDER_ZERO_BANKBOOK_FAILURE_DETAILS A WITH (NOLOCK)
+		INNER JOIN 
+		  OC_ORDER B WITH (NOLOCK) ON A.ORDER_NO = B.ORDER_NO
+		LEFT OUTER JOIN 
+		  SY_ADMIN C WITH (NOLOCK) ON A.MODER_NO = C.ADMIN_NO
+		LEFT OUTER JOIN 
+		  MB_MEMBER D WITH (NOLOCK) ON B.MEMBER_NO = D.MEMBER_NO
+		<include refid="searchWhere" />
+		<choose>
+			<when test="sortColumn != null">
+		 		ORDER BY
+		 		<if test="sortColumn == 'orderDtm'.toString()">
+			 		B.ORDER_DTM
+		 		</if>
+		 		<if test="sortColumn == 'modDtm'.toString()">
+			 		A.PROC_DTM
+		 		</if>
+		 		<if test="sortType == 'DESC'.toString()">
+		 			DESC
+		 		</if>
+		 	</when>
+			<otherwise>	
+		 		ORDER BY B.ORDER_DTM DESC
+			</otherwise>
+		</choose>
+		<include refid="Paging.mssql" />
+	</select>
+	
+	<select id="selectListCount"  parameterType="pageable" resultType="int">
+		/*+ kr.co.abcmart.bo.order.model.master.OcOrderZeroBankbookFailureDetailsDao.selectListCount [무통장입금 실패 목록 건수 조회][이재영] */
+		SELECT
+			<include refid="Paging.totalCount" /> 	
+		FROM 	
+		  OC_ORDER_ZERO_BANKBOOK_FAILURE_DETAILS A WITH (NOLOCK)
+		INNER JOIN 
+		  OC_ORDER B WITH (NOLOCK) ON A.ORDER_NO = B.ORDER_NO
+		LEFT OUTER JOIN 
+		  SY_ADMIN C WITH (NOLOCK) ON A.MODER_NO = C.ADMIN_NO
+		LEFT OUTER JOIN 
+		  MB_MEMBER D WITH (NOLOCK) ON B.MEMBER_NO = D.MEMBER_NO
+		<include refid="searchWhere" />
+	</select>
+</mapper>

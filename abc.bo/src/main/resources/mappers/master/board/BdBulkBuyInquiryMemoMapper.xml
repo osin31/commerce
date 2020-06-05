@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.board.repository.master.BdBulkBuyInquiryMemoDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.board.model.master.BdBulkBuyInquiryMemo">
+    
+     /*+ kr.co.abcmart.bo.board.repository.master.BdBulkBuyInquiryMemoDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			bd_bulk_buy_inquiry_memo WITH (NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+	
+	<select id="selectBulkBuyMemoList" parameterType="kr.co.abcmart.bo.board.model.master.BdBulkBuyInquiryMemo" resultType="kr.co.abcmart.bo.board.model.master.BdBulkBuyInquiryMemo">
+    /*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselMemoDao.selectBulkBuyMemoList [대량구매 메모정보 조회] [신인철] */
+    	SELECT A.BLK_BUY_INQRY_SEQ
+    	     , A.BLK_BUY_MEMO_SEQ
+    	     , A.MEMO_TEXT
+    	     , A.DEL_YN
+    	     , A.RGST_DTM
+    	     , A.RGSTER_NO
+    	     , B.LOGIN_ID
+    	     , B.ADMIN_NAME
+    	  FROM BD_BULK_BUY_INQUIRY_MEMO A WITH (NOLOCK)
+    	  LEFT JOIN SY_ADMIN B WITH (NOLOCK)
+    	    ON A.RGSTER_NO = B.ADMIN_NO
+    	 WHERE A.BLK_BUY_INQRY_SEQ = #{blkBuyInqrySeq, jdbcType=INTEGER}
+    	   AND A.DEL_YN = 'N'
+    	 ORDER BY A.BLK_BUY_INQRY_SEQ, A.BLK_BUY_MEMO_SEQ DESC
+    </select>
+    
+	<insert id="insertBulkBuyMemo" useGeneratedKeys="true" keyProperty="blkBuyMemoSeq" parameterType="kr.co.abcmart.bo.board.model.master.BdBulkBuyInquiryMemo">
+		/*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselMemoDao.insertBulkBuyMemo [대량구매 메모 작성] [신인철] */
+		<selectKey keyProperty="blkBuyMemoSeq" resultType="Int" order="BEFORE">
+			SELECT ISNULL(MAX(BLK_BUY_MEMO_SEQ),0)+1
+			  FROM BD_BULK_BUY_INQUIRY_MEMO
+			 WHERE BLK_BUY_INQRY_SEQ = #{blkBuyInqrySeq, jdbcType=INTEGER}
+		</selectKey>
+		INSERT INTO BD_BULK_BUY_INQUIRY_MEMO
+			 ( BLK_BUY_INQRY_SEQ
+			 , BLK_BUY_MEMO_SEQ
+			 , MEMO_TEXT
+			 , DEL_YN
+			 , RGSTER_NO
+			 , RGST_DTM ) 
+		VALUES ( #{blkBuyInqrySeq, jdbcType=INTEGER}
+			 , #{blkBuyMemoSeq, jdbcType=INTEGER}
+			 , #{memoText, jdbcType=VARCHAR}
+			 , #{delYn, jdbcType=CHAR}
+			 , #{rgsterNo, jdbcType=VARCHAR}
+			 , GETDATE() )
+	</insert>
+	
+	<select id="selectBulkBuyMemo" parameterType="kr.co.abcmart.bo.board.model.master.BdBulkBuyInquiryMemo" resultType="kr.co.abcmart.bo.board.model.master.BdBulkBuyInquiryMemo">
+		 /*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselMemoDao.selectBulkBuyMemo [상담 메모정보 조회] [신인철] */
+    	SELECT A.BLK_BUY_INQRY_SEQ
+    	     , A.BLK_BUY_MEMO_SEQ
+    	     , A.MEMO_TEXT
+    	     , A.DEL_YN
+    	     , A.RGST_DTM
+    	     , A.RGSTER_NO
+    	     , B.LOGIN_ID
+    	     , B.ADMIN_NAME
+    	  FROM BD_BULK_BUY_INQUIRY_MEMO A WITH (NOLOCK)
+    	  LEFT JOIN SY_ADMIN B WITH (NOLOCK)
+    	    ON A.RGSTER_NO = B.ADMIN_NO
+    	 WHERE A.BLK_BUY_INQRY_SEQ = #{blkBuyInqrySeq, jdbcType=INTEGER}
+    	   AND A.BLK_BUY_MEMO_SEQ = #{blkBuyMemoSeq, jdbcType=INTEGER}
+    	   AND A.DEL_YN = 'N'
+    	 ORDER BY A.BLK_BUY_INQRY_SEQ, A.BLK_BUY_MEMO_SEQ DESC
+	</select>
+	
+</mapper>

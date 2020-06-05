@@ -1,0 +1,711 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.order.repository.master.IfOrderDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	cbcd, maejangcd, ordno, itemsno, ordtype, orddt, sumpakingrule, orddp, oldordno, nameorder, mobileorder, phoneorder, memberyn, memberid, namereceiver, mobilereceiver, phonereceiver, zipcode, address, addressdetail, email, delimsg, memo, adminnmemo, mallname, mallordno, settlekind, prnsettleprice, settleprice, enuri, memberdc, emoney1, emoney2, reserve1, reserve2, coupon1, couponno1, coupon2, couponno2, delivery, delitype, bankcode, bankaccount, banksender, vbank, vacount, cdt, goodsno, goodsnm, opt1, opt2, addopt, bacode, taxyn, ea, price, supply, sumpakingkey, partdelitype, partdeliyn, sangpumfullcd, deliverycode, deliveryno, ddt, selfdelivery, selfdeliveryrs, confirmdt, confirm, escrowyn, escrowconfirm, escrowno, cashreceipt, cancelbankcode, cancelbankaccount, cancelbackuser, cancelccdt, cancelrfee, ordstatus, packingdt, receivedt, deliverytype, bfcanceltype, rtreqtype, outconfirmtype, prgstatus, regdate, condate, errorstatus, workdiv, safe_key, arsworkdiv, arsstatus, arsrecvdate, arserrorstatus, ori_store_cd, conf_store_cd, deleverystorecd, addresschange, paymentstatus, moneypaymentcomplete, off_zone_area_flag, off_zone_area_cd, sendbackreqdate, sendbackresdate, sendbackdeliveryno
+    </sql>
+    
+    <sql id="pk-columns">
+    	cbcd = #{cbcd, jdbcType=CHAR} AND itemsno = #{itemsno, jdbcType=VARCHAR} AND maejangcd = #{maejangcd, jdbcType=VARCHAR} AND ordno = #{ordno, jdbcType=VARCHAR}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.order.model.master.IfOrder" resultType="kr.co.abcmart.bo.order.model.master.IfOrder">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.IfOrderDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			IF_ORDER
+		<where> 
+			<if test="cbcd != null"> 
+				 cbcd = #{cbcd, jdbcType=CHAR}
+			</if> 
+			<if test="maejangcd != null"> 
+				 AND maejangcd = #{maejangcd, jdbcType=VARCHAR}
+			</if> 
+			<if test="ordno != null"> 
+				 AND ordno = #{ordno, jdbcType=VARCHAR}
+			</if> 
+			<if test="itemsno != null"> 
+				 AND itemsno = #{itemsno, jdbcType=VARCHAR}
+			</if> 
+			<if test="ordtype != null"> 
+				 AND ordtype = #{ordtype, jdbcType=VARCHAR}
+			</if> 
+			<if test="orddt != null"> 
+				 AND orddt = #{orddt, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="sumpakingrule != null"> 
+				 AND sumpakingrule = #{sumpakingrule, jdbcType=CHAR}
+			</if> 
+			<if test="orddp != null"> 
+				 AND orddp = #{orddp, jdbcType=VARCHAR}
+			</if> 
+			<if test="oldordno != null"> 
+				 AND oldordno = #{oldordno, jdbcType=VARCHAR}
+			</if> 
+			<if test="nameorder != null"> 
+				 AND nameorder = #{nameorder, jdbcType=VARCHAR}
+			</if> 
+			<if test="mobileorder != null"> 
+				 AND mobileorder = #{mobileorder, jdbcType=VARCHAR}
+			</if> 
+			<if test="phoneorder != null"> 
+				 AND phoneorder = #{phoneorder, jdbcType=VARCHAR}
+			</if> 
+			<if test="memberyn != null"> 
+				 AND memberyn = #{memberyn, jdbcType=CHAR}
+			</if> 
+			<if test="memberid != null"> 
+				 AND memberid = #{memberid, jdbcType=VARCHAR}
+			</if> 
+			<if test="namereceiver != null"> 
+				 AND namereceiver = #{namereceiver, jdbcType=VARCHAR}
+			</if> 
+			<if test="mobilereceiver != null"> 
+				 AND mobilereceiver = #{mobilereceiver, jdbcType=VARCHAR}
+			</if> 
+			<if test="phonereceiver != null"> 
+				 AND phonereceiver = #{phonereceiver, jdbcType=VARCHAR}
+			</if> 
+			<if test="zipcode != null"> 
+				 AND zipcode = #{zipcode, jdbcType=VARCHAR}
+			</if> 
+			<if test="address != null"> 
+				 AND address = #{address, jdbcType=VARCHAR}
+			</if> 
+			<if test="addressdetail != null"> 
+				 AND addressdetail = #{addressdetail, jdbcType=VARCHAR}
+			</if> 
+			<if test="email != null"> 
+				 AND email = #{email, jdbcType=VARCHAR}
+			</if> 
+			<if test="delimsg != null"> 
+				 AND delimsg = #{delimsg, jdbcType=VARCHAR}
+			</if> 
+			<if test="memo != null"> 
+				 AND memo = #{memo, jdbcType=VARCHAR}
+			</if> 
+			<if test="adminnmemo != null"> 
+				 AND adminnmemo = #{adminnmemo, jdbcType=VARCHAR}
+			</if> 
+			<if test="mallname != null"> 
+				 AND mallname = #{mallname, jdbcType=VARCHAR}
+			</if> 
+			<if test="mallordno != null"> 
+				 AND mallordno = #{mallordno, jdbcType=VARCHAR}
+			</if> 
+			<if test="settlekind != null"> 
+				 AND settlekind = #{settlekind, jdbcType=CHAR}
+			</if> 
+			<if test="prnsettleprice != null"> 
+				 AND prnsettleprice = #{prnsettleprice, jdbcType=INTEGER}
+			</if> 
+			<if test="settleprice != null"> 
+				 AND settleprice = #{settleprice, jdbcType=INTEGER}
+			</if> 
+			<if test="enuri != null"> 
+				 AND enuri = #{enuri, jdbcType=INTEGER}
+			</if> 
+			<if test="memberdc != null"> 
+				 AND memberdc = #{memberdc, jdbcType=INTEGER}
+			</if> 
+			<if test="emoney1 != null"> 
+				 AND emoney1 = #{emoney1, jdbcType=INTEGER}
+			</if> 
+			<if test="emoney2 != null"> 
+				 AND emoney2 = #{emoney2, jdbcType=INTEGER}
+			</if> 
+			<if test="reserve1 != null"> 
+				 AND reserve1 = #{reserve1, jdbcType=INTEGER}
+			</if> 
+			<if test="reserve2 != null"> 
+				 AND reserve2 = #{reserve2, jdbcType=INTEGER}
+			</if> 
+			<if test="coupon1 != null"> 
+				 AND coupon1 = #{coupon1, jdbcType=INTEGER}
+			</if> 
+			<if test="couponno1 != null"> 
+				 AND couponno1 = #{couponno1, jdbcType=VARCHAR}
+			</if> 
+			<if test="coupon2 != null"> 
+				 AND coupon2 = #{coupon2, jdbcType=INTEGER}
+			</if> 
+			<if test="couponno2 != null"> 
+				 AND couponno2 = #{couponno2, jdbcType=VARCHAR}
+			</if> 
+			<if test="delivery != null"> 
+				 AND delivery = #{delivery, jdbcType=INTEGER}
+			</if> 
+			<if test="delitype != null"> 
+				 AND delitype = #{delitype, jdbcType=VARCHAR}
+			</if> 
+			<if test="bankcode != null"> 
+				 AND bankcode = #{bankcode, jdbcType=VARCHAR}
+			</if> 
+			<if test="bankaccount != null"> 
+				 AND bankaccount = #{bankaccount, jdbcType=VARCHAR}
+			</if> 
+			<if test="banksender != null"> 
+				 AND banksender = #{banksender, jdbcType=VARCHAR}
+			</if> 
+			<if test="vbank != null"> 
+				 AND vbank = #{vbank, jdbcType=VARCHAR}
+			</if> 
+			<if test="vacount != null"> 
+				 AND vacount = #{vacount, jdbcType=VARCHAR}
+			</if> 
+			<if test="cdt != null"> 
+				 AND cdt = #{cdt, jdbcType=VARCHAR}
+			</if> 
+			<if test="goodsno != null"> 
+				 AND goodsno = #{goodsno, jdbcType=VARCHAR}
+			</if> 
+			<if test="goodsnm != null"> 
+				 AND goodsnm = #{goodsnm, jdbcType=VARCHAR}
+			</if> 
+			<if test="opt1 != null"> 
+				 AND opt1 = #{opt1, jdbcType=VARCHAR}
+			</if> 
+			<if test="opt2 != null"> 
+				 AND opt2 = #{opt2, jdbcType=VARCHAR}
+			</if> 
+			<if test="addopt != null"> 
+				 AND addopt = #{addopt, jdbcType=VARCHAR}
+			</if> 
+			<if test="bacode != null"> 
+				 AND bacode = #{bacode, jdbcType=VARCHAR}
+			</if> 
+			<if test="taxyn != null"> 
+				 AND taxyn = #{taxyn, jdbcType=CHAR}
+			</if> 
+			<if test="ea != null"> 
+				 AND ea = #{ea, jdbcType=INTEGER}
+			</if> 
+			<if test="price != null"> 
+				 AND price = #{price, jdbcType=INTEGER}
+			</if> 
+			<if test="supply != null"> 
+				 AND supply = #{supply, jdbcType=INTEGER}
+			</if> 
+			<if test="sumpakingkey != null"> 
+				 AND sumpakingkey = #{sumpakingkey, jdbcType=INTEGER}
+			</if> 
+			<if test="partdelitype != null"> 
+				 AND partdelitype = #{partdelitype, jdbcType=BIT}
+			</if> 
+			<if test="partdeliyn != null"> 
+				 AND partdeliyn = #{partdeliyn, jdbcType=BIT}
+			</if> 
+			<if test="sangpumfullcd != null"> 
+				 AND sangpumfullcd = #{sangpumfullcd, jdbcType=VARCHAR}
+			</if> 
+			<if test="deliverycode != null"> 
+				 AND deliverycode = #{deliverycode, jdbcType=VARCHAR}
+			</if> 
+			<if test="deliveryno != null"> 
+				 AND deliveryno = #{deliveryno, jdbcType=VARCHAR}
+			</if> 
+			<if test="ddt != null"> 
+				 AND ddt = #{ddt, jdbcType=VARCHAR}
+			</if> 
+			<if test="selfdelivery != null"> 
+				 AND selfdelivery = #{selfdelivery, jdbcType=INTEGER}
+			</if> 
+			<if test="selfdeliveryrs != null"> 
+				 AND selfdeliveryrs = #{selfdeliveryrs, jdbcType=VARCHAR}
+			</if> 
+			<if test="confirmdt != null"> 
+				 AND confirmdt = #{confirmdt, jdbcType=VARCHAR}
+			</if> 
+			<if test="confirm != null"> 
+				 AND confirm = #{confirm, jdbcType=CHAR}
+			</if> 
+			<if test="escrowyn != null"> 
+				 AND escrowyn = #{escrowyn, jdbcType=BIT}
+			</if> 
+			<if test="escrowconfirm != null"> 
+				 AND escrowconfirm = #{escrowconfirm, jdbcType=CHAR}
+			</if> 
+			<if test="escrowno != null"> 
+				 AND escrowno = #{escrowno, jdbcType=VARCHAR}
+			</if> 
+			<if test="cashreceipt != null"> 
+				 AND cashreceipt = #{cashreceipt, jdbcType=VARCHAR}
+			</if> 
+			<if test="cancelbankcode != null"> 
+				 AND cancelbankcode = #{cancelbankcode, jdbcType=VARCHAR}
+			</if> 
+			<if test="cancelbankaccount != null"> 
+				 AND cancelbankaccount = #{cancelbankaccount, jdbcType=VARCHAR}
+			</if> 
+			<if test="cancelbackuser != null"> 
+				 AND cancelbackuser = #{cancelbackuser, jdbcType=VARCHAR}
+			</if> 
+			<if test="cancelccdt != null"> 
+				 AND cancelccdt = #{cancelccdt, jdbcType=VARCHAR}
+			</if> 
+			<if test="cancelrfee != null"> 
+				 AND cancelrfee = #{cancelrfee, jdbcType=INTEGER}
+			</if> 
+			<if test="ordstatus != null"> 
+				 AND ordstatus = #{ordstatus, jdbcType=VARCHAR}
+			</if> 
+			<if test="packingdt != null"> 
+				 AND packingdt = #{packingdt, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="receivedt != null"> 
+				 AND receivedt = #{receivedt, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="deliverytype != null"> 
+				 AND deliverytype = #{deliverytype, jdbcType=VARCHAR}
+			</if> 
+			<if test="bfcanceltype != null"> 
+				 AND bfcanceltype = #{bfcanceltype, jdbcType=VARCHAR}
+			</if> 
+			<if test="rtreqtype != null"> 
+				 AND rtreqtype = #{rtreqtype, jdbcType=VARCHAR}
+			</if> 
+			<if test="outconfirmtype != null"> 
+				 AND outconfirmtype = #{outconfirmtype, jdbcType=VARCHAR}
+			</if> 
+			<if test="prgstatus != null"> 
+				 AND prgstatus = #{prgstatus, jdbcType=VARCHAR}
+			</if> 
+			<if test="regdate != null"> 
+				 AND regdate = #{regdate, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="condate != null"> 
+				 AND condate = #{condate, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="errorstatus != null"> 
+				 AND errorstatus = #{errorstatus, jdbcType=CHAR}
+			</if> 
+			<if test="workdiv != null"> 
+				 AND workdiv = #{workdiv, jdbcType=CHAR}
+			</if> 
+			<if test="safeKey != null"> 
+				 AND safe_key = #{safeKey, jdbcType=VARCHAR}
+			</if> 
+			<if test="arsworkdiv != null"> 
+				 AND arsworkdiv = #{arsworkdiv, jdbcType=VARCHAR}
+			</if> 
+			<if test="arsstatus != null"> 
+				 AND arsstatus = #{arsstatus, jdbcType=VARCHAR}
+			</if> 
+			<if test="arsrecvdate != null"> 
+				 AND arsrecvdate = #{arsrecvdate, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="arserrorstatus != null"> 
+				 AND arserrorstatus = #{arserrorstatus, jdbcType=CHAR}
+			</if> 
+			<if test="oriStoreCd != null"> 
+				 AND ori_store_cd = #{oriStoreCd, jdbcType=VARCHAR}
+			</if> 
+			<if test="confStoreCd != null"> 
+				 AND conf_store_cd = #{confStoreCd, jdbcType=VARCHAR}
+			</if> 
+			<if test="deleverystorecd != null"> 
+				 AND deleverystorecd = #{deleverystorecd, jdbcType=VARCHAR}
+			</if> 
+			<if test="addresschange != null"> 
+				 AND addresschange = #{addresschange, jdbcType=VARCHAR}
+			</if> 
+			<if test="paymentstatus != null"> 
+				 AND paymentstatus = #{paymentstatus, jdbcType=VARCHAR}
+			</if> 
+			<if test="moneypaymentcomplete != null"> 
+				 AND moneypaymentcomplete = #{moneypaymentcomplete, jdbcType=VARCHAR}
+			</if> 
+			<if test="offZoneAreaFlag != null"> 
+				 AND off_zone_area_flag = #{offZoneAreaFlag, jdbcType=VARCHAR}
+			</if> 
+			<if test="offZoneAreaCd != null"> 
+				 AND off_zone_area_cd = #{offZoneAreaCd, jdbcType=VARCHAR}
+			</if> 
+			<if test="sendbackreqdate != null"> 
+				 AND sendbackreqdate = #{sendbackreqdate, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="sendbackresdate != null"> 
+				 AND sendbackresdate = #{sendbackresdate, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="sendbackdeliveryno != null"> 
+				 AND sendbackdeliveryno = #{sendbackdeliveryno, jdbcType=VARCHAR}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <insert id="insert" parameterType="kr.co.abcmart.bo.order.model.master.IfOrder">	
+
+     /*+ kr.co.abcmart.bo.order.repository.master.IfOrderDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO IF_ORDER
+			 ( cbcd, maejangcd, ordno, itemsno, ordtype, orddt, sumpakingrule, orddp, oldordno, nameorder, mobileorder, phoneorder, memberyn, memberid, namereceiver, mobilereceiver, phonereceiver, zipcode, address, addressdetail, email, delimsg, memo, adminnmemo, mallname, mallordno, settlekind, prnsettleprice, settleprice, enuri, memberdc, emoney1, emoney2, reserve1, reserve2, coupon1, couponno1, coupon2, couponno2, delivery, delitype, bankcode, bankaccount, banksender, vbank, vacount, cdt, goodsno, goodsnm, opt1, opt2, addopt, bacode, taxyn, ea, price, supply, sumpakingkey, partdelitype, partdeliyn, sangpumfullcd, deliverycode, deliveryno, ddt, selfdelivery, selfdeliveryrs, confirmdt, confirm, escrowyn, escrowconfirm, escrowno, cashreceipt, cancelbankcode, cancelbankaccount, cancelbackuser, cancelccdt, cancelrfee, ordstatus, packingdt, receivedt, deliverytype, bfcanceltype, rtreqtype, outconfirmtype, prgstatus, regdate, condate, errorstatus, workdiv, safe_key, arsworkdiv, arsstatus, arsrecvdate, arserrorstatus, ori_store_cd, conf_store_cd, deleverystorecd, addresschange, paymentstatus, moneypaymentcomplete, off_zone_area_flag, off_zone_area_cd, sendbackreqdate, sendbackresdate, sendbackdeliveryno ) 
+
+		VALUES 
+			 ( #{cbcd, jdbcType=CHAR}, #{maejangcd, jdbcType=VARCHAR}, #{ordno, jdbcType=VARCHAR}, #{itemsno, jdbcType=VARCHAR}, #{ordtype, jdbcType=VARCHAR}, <choose><when test="orddt != null">#{orddt, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{sumpakingrule, jdbcType=CHAR}, #{orddp, jdbcType=VARCHAR}, #{oldordno, jdbcType=VARCHAR}, #{nameorder, jdbcType=VARCHAR}, #{mobileorder, jdbcType=VARCHAR}, #{phoneorder, jdbcType=VARCHAR}, #{memberyn, jdbcType=CHAR}, #{memberid, jdbcType=VARCHAR}, #{namereceiver, jdbcType=VARCHAR}, #{mobilereceiver, jdbcType=VARCHAR}, #{phonereceiver, jdbcType=VARCHAR}, #{zipcode, jdbcType=VARCHAR}, #{address, jdbcType=VARCHAR}, #{addressdetail, jdbcType=VARCHAR}, #{email, jdbcType=VARCHAR}, #{delimsg, jdbcType=VARCHAR}, #{memo, jdbcType=VARCHAR}, #{adminnmemo, jdbcType=VARCHAR}, #{mallname, jdbcType=VARCHAR}, #{mallordno, jdbcType=VARCHAR}, #{settlekind, jdbcType=CHAR}, #{prnsettleprice, jdbcType=INTEGER}, #{settleprice, jdbcType=INTEGER}, #{enuri, jdbcType=INTEGER}, #{memberdc, jdbcType=INTEGER}, #{emoney1, jdbcType=INTEGER}, #{emoney2, jdbcType=INTEGER}, #{reserve1, jdbcType=INTEGER}, #{reserve2, jdbcType=INTEGER}, #{coupon1, jdbcType=INTEGER}, #{couponno1, jdbcType=VARCHAR}, #{coupon2, jdbcType=INTEGER}, #{couponno2, jdbcType=VARCHAR}, #{delivery, jdbcType=INTEGER}, #{delitype, jdbcType=VARCHAR}, #{bankcode, jdbcType=VARCHAR}, #{bankaccount, jdbcType=VARCHAR}, #{banksender, jdbcType=VARCHAR}, #{vbank, jdbcType=VARCHAR}, #{vacount, jdbcType=VARCHAR}, #{cdt, jdbcType=VARCHAR}, #{goodsno, jdbcType=VARCHAR}, #{goodsnm, jdbcType=VARCHAR}, #{opt1, jdbcType=VARCHAR}, #{opt2, jdbcType=VARCHAR}, #{addopt, jdbcType=VARCHAR}, #{bacode, jdbcType=VARCHAR}, #{taxyn, jdbcType=CHAR}, #{ea, jdbcType=INTEGER}, #{price, jdbcType=INTEGER}, #{supply, jdbcType=INTEGER}, #{sumpakingkey, jdbcType=INTEGER}, #{partdelitype, jdbcType=BIT}, #{partdeliyn, jdbcType=BIT}, #{sangpumfullcd, jdbcType=VARCHAR}, #{deliverycode, jdbcType=VARCHAR}, #{deliveryno, jdbcType=VARCHAR}, #{ddt, jdbcType=VARCHAR}, #{selfdelivery, jdbcType=INTEGER}, #{selfdeliveryrs, jdbcType=VARCHAR}, #{confirmdt, jdbcType=VARCHAR}, #{confirm, jdbcType=CHAR}, #{escrowyn, jdbcType=BIT}, #{escrowconfirm, jdbcType=CHAR}, #{escrowno, jdbcType=VARCHAR}, #{cashreceipt, jdbcType=VARCHAR}, #{cancelbankcode, jdbcType=VARCHAR}, #{cancelbankaccount, jdbcType=VARCHAR}, #{cancelbackuser, jdbcType=VARCHAR}, #{cancelccdt, jdbcType=VARCHAR}, #{cancelrfee, jdbcType=INTEGER}, #{ordstatus, jdbcType=VARCHAR}, <choose><when test="packingdt != null">#{packingdt, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, <choose><when test="receivedt != null">#{receivedt, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{deliverytype, jdbcType=VARCHAR}, #{bfcanceltype, jdbcType=VARCHAR}, #{rtreqtype, jdbcType=VARCHAR}, #{outconfirmtype, jdbcType=VARCHAR}, #{prgstatus, jdbcType=VARCHAR}, <choose><when test="regdate != null">#{regdate, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, <choose><when test="condate != null">#{condate, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{errorstatus, jdbcType=CHAR}, #{workdiv, jdbcType=CHAR}, #{safeKey, jdbcType=VARCHAR}, #{arsworkdiv, jdbcType=VARCHAR}, #{arsstatus, jdbcType=VARCHAR}, <choose><when test="arsrecvdate != null">#{arsrecvdate, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{arserrorstatus, jdbcType=CHAR}, #{oriStoreCd, jdbcType=VARCHAR}, #{confStoreCd, jdbcType=VARCHAR}, #{deleverystorecd, jdbcType=VARCHAR}, #{addresschange, jdbcType=VARCHAR}, #{paymentstatus, jdbcType=VARCHAR}, #{moneypaymentcomplete, jdbcType=VARCHAR}, #{offZoneAreaFlag, jdbcType=VARCHAR}, #{offZoneAreaCd, jdbcType=VARCHAR}, <choose><when test="sendbackreqdate != null">#{sendbackreqdate, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, <choose><when test="sendbackresdate != null">#{sendbackresdate, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{sendbackdeliveryno, jdbcType=VARCHAR} )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.order.model.master.IfOrder">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.IfOrderDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE IF_ORDER
+		<set> 
+			<if test="cbcd != null"> 
+				cbcd = #{cbcd, jdbcType=CHAR}, 
+			</if> 
+			<if test="maejangcd != null"> 
+				maejangcd = #{maejangcd, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="ordno != null"> 
+				ordno = #{ordno, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="itemsno != null"> 
+				itemsno = #{itemsno, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="ordtype != null"> 
+				ordtype = #{ordtype, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="orddt != null"> 
+				orddt = #{orddt, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="sumpakingrule != null"> 
+				sumpakingrule = #{sumpakingrule, jdbcType=CHAR}, 
+			</if> 
+			<if test="orddp != null"> 
+				orddp = #{orddp, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="oldordno != null"> 
+				oldordno = #{oldordno, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="nameorder != null"> 
+				nameorder = #{nameorder, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="mobileorder != null"> 
+				mobileorder = #{mobileorder, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="phoneorder != null"> 
+				phoneorder = #{phoneorder, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="memberyn != null"> 
+				memberyn = #{memberyn, jdbcType=CHAR}, 
+			</if> 
+			<if test="memberid != null"> 
+				memberid = #{memberid, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="namereceiver != null"> 
+				namereceiver = #{namereceiver, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="mobilereceiver != null"> 
+				mobilereceiver = #{mobilereceiver, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="phonereceiver != null"> 
+				phonereceiver = #{phonereceiver, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="zipcode != null"> 
+				zipcode = #{zipcode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="address != null"> 
+				address = #{address, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="addressdetail != null"> 
+				addressdetail = #{addressdetail, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="email != null"> 
+				email = #{email, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="delimsg != null"> 
+				delimsg = #{delimsg, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="memo != null"> 
+				memo = #{memo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="adminnmemo != null"> 
+				adminnmemo = #{adminnmemo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="mallname != null"> 
+				mallname = #{mallname, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="mallordno != null"> 
+				mallordno = #{mallordno, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="settlekind != null"> 
+				settlekind = #{settlekind, jdbcType=CHAR}, 
+			</if> 
+			<if test="prnsettleprice != null"> 
+				prnsettleprice = #{prnsettleprice, jdbcType=INTEGER}, 
+			</if> 
+			<if test="settleprice != null"> 
+				settleprice = #{settleprice, jdbcType=INTEGER}, 
+			</if> 
+			<if test="enuri != null"> 
+				enuri = #{enuri, jdbcType=INTEGER}, 
+			</if> 
+			<if test="memberdc != null"> 
+				memberdc = #{memberdc, jdbcType=INTEGER}, 
+			</if> 
+			<if test="emoney1 != null"> 
+				emoney1 = #{emoney1, jdbcType=INTEGER}, 
+			</if> 
+			<if test="emoney2 != null"> 
+				emoney2 = #{emoney2, jdbcType=INTEGER}, 
+			</if> 
+			<if test="reserve1 != null"> 
+				reserve1 = #{reserve1, jdbcType=INTEGER}, 
+			</if> 
+			<if test="reserve2 != null"> 
+				reserve2 = #{reserve2, jdbcType=INTEGER}, 
+			</if> 
+			<if test="coupon1 != null"> 
+				coupon1 = #{coupon1, jdbcType=INTEGER}, 
+			</if> 
+			<if test="couponno1 != null"> 
+				couponno1 = #{couponno1, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="coupon2 != null"> 
+				coupon2 = #{coupon2, jdbcType=INTEGER}, 
+			</if> 
+			<if test="couponno2 != null"> 
+				couponno2 = #{couponno2, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="delivery != null"> 
+				delivery = #{delivery, jdbcType=INTEGER}, 
+			</if> 
+			<if test="delitype != null"> 
+				delitype = #{delitype, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="bankcode != null"> 
+				bankcode = #{bankcode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="bankaccount != null"> 
+				bankaccount = #{bankaccount, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="banksender != null"> 
+				banksender = #{banksender, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="vbank != null"> 
+				vbank = #{vbank, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="vacount != null"> 
+				vacount = #{vacount, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cdt != null"> 
+				cdt = #{cdt, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="goodsno != null"> 
+				goodsno = #{goodsno, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="goodsnm != null"> 
+				goodsnm = #{goodsnm, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="opt1 != null"> 
+				opt1 = #{opt1, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="opt2 != null"> 
+				opt2 = #{opt2, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="addopt != null"> 
+				addopt = #{addopt, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="bacode != null"> 
+				bacode = #{bacode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="taxyn != null"> 
+				taxyn = #{taxyn, jdbcType=CHAR}, 
+			</if> 
+			<if test="ea != null"> 
+				ea = #{ea, jdbcType=INTEGER}, 
+			</if> 
+			<if test="price != null"> 
+				price = #{price, jdbcType=INTEGER}, 
+			</if> 
+			<if test="supply != null"> 
+				supply = #{supply, jdbcType=INTEGER}, 
+			</if> 
+			<if test="sumpakingkey != null"> 
+				sumpakingkey = #{sumpakingkey, jdbcType=INTEGER}, 
+			</if> 
+			<if test="partdelitype != null"> 
+				partdelitype = #{partdelitype, jdbcType=BIT}, 
+			</if> 
+			<if test="partdeliyn != null"> 
+				partdeliyn = #{partdeliyn, jdbcType=BIT}, 
+			</if> 
+			<if test="sangpumfullcd != null"> 
+				sangpumfullcd = #{sangpumfullcd, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="deliverycode != null"> 
+				deliverycode = #{deliverycode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="deliveryno != null"> 
+				deliveryno = #{deliveryno, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="ddt != null"> 
+				ddt = #{ddt, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="selfdelivery != null"> 
+				selfdelivery = #{selfdelivery, jdbcType=INTEGER}, 
+			</if> 
+			<if test="selfdeliveryrs != null"> 
+				selfdeliveryrs = #{selfdeliveryrs, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="confirmdt != null"> 
+				confirmdt = #{confirmdt, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="confirm != null"> 
+				confirm = #{confirm, jdbcType=CHAR}, 
+			</if> 
+			<if test="escrowyn != null"> 
+				escrowyn = #{escrowyn, jdbcType=BIT}, 
+			</if> 
+			<if test="escrowconfirm != null"> 
+				escrowconfirm = #{escrowconfirm, jdbcType=CHAR}, 
+			</if> 
+			<if test="escrowno != null"> 
+				escrowno = #{escrowno, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cashreceipt != null"> 
+				cashreceipt = #{cashreceipt, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cancelbankcode != null"> 
+				cancelbankcode = #{cancelbankcode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cancelbankaccount != null"> 
+				cancelbankaccount = #{cancelbankaccount, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cancelbackuser != null"> 
+				cancelbackuser = #{cancelbackuser, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cancelccdt != null"> 
+				cancelccdt = #{cancelccdt, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cancelrfee != null"> 
+				cancelrfee = #{cancelrfee, jdbcType=INTEGER}, 
+			</if> 
+			<if test="ordstatus != null"> 
+				ordstatus = #{ordstatus, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="packingdt != null"> 
+				packingdt = #{packingdt, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="receivedt != null"> 
+				receivedt = #{receivedt, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="deliverytype != null"> 
+				deliverytype = #{deliverytype, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="bfcanceltype != null"> 
+				bfcanceltype = #{bfcanceltype, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rtreqtype != null"> 
+				rtreqtype = #{rtreqtype, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="outconfirmtype != null"> 
+				outconfirmtype = #{outconfirmtype, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="prgstatus != null"> 
+				prgstatus = #{prgstatus, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="regdate != null"> 
+				regdate = #{regdate, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="condate != null"> 
+				condate = #{condate, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="errorstatus != null"> 
+				errorstatus = #{errorstatus, jdbcType=CHAR}, 
+			</if> 
+			<if test="workdiv != null"> 
+				workdiv = #{workdiv, jdbcType=CHAR}, 
+			</if> 
+			<if test="safeKey != null"> 
+				safe_key = #{safeKey, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="arsworkdiv != null"> 
+				arsworkdiv = #{arsworkdiv, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="arsstatus != null"> 
+				arsstatus = #{arsstatus, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="arsrecvdate != null"> 
+				arsrecvdate = #{arsrecvdate, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="arserrorstatus != null"> 
+				arserrorstatus = #{arserrorstatus, jdbcType=CHAR}, 
+			</if> 
+			<if test="oriStoreCd != null"> 
+				ori_store_cd = #{oriStoreCd, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="confStoreCd != null"> 
+				conf_store_cd = #{confStoreCd, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="deleverystorecd != null"> 
+				deleverystorecd = #{deleverystorecd, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="addresschange != null"> 
+				addresschange = #{addresschange, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="paymentstatus != null"> 
+				paymentstatus = #{paymentstatus, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="moneypaymentcomplete != null"> 
+				moneypaymentcomplete = #{moneypaymentcomplete, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="offZoneAreaFlag != null"> 
+				off_zone_area_flag = #{offZoneAreaFlag, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="offZoneAreaCd != null"> 
+				off_zone_area_cd = #{offZoneAreaCd, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="sendbackreqdate != null"> 
+				sendbackreqdate = #{sendbackreqdate, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="sendbackresdate != null"> 
+				sendbackresdate = #{sendbackresdate, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="sendbackdeliveryno != null"> 
+				sendbackdeliveryno = #{sendbackdeliveryno, jdbcType=VARCHAR}, 
+			</if> 
+		</set> 
+		WHERE 
+			 cbcd = #{cbcd, jdbcType=CHAR} AND itemsno = #{itemsno, jdbcType=VARCHAR} AND maejangcd = #{maejangcd, jdbcType=VARCHAR} AND ordno = #{ordno, jdbcType=VARCHAR}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.order.model.master.IfOrder">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.IfOrderDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM IF_ORDER
+		WHERE 
+			 cbcd = #{cbcd, jdbcType=CHAR} AND itemsno = #{itemsno, jdbcType=VARCHAR} AND maejangcd = #{maejangcd, jdbcType=VARCHAR} AND ordno = #{ordno, jdbcType=VARCHAR}  
+    </delete>
+</mapper>

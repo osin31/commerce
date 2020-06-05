@@ -1,0 +1,3 @@
+keytool -genkey -alias abcmart.co.kr -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore abcmart.co.kr.p12 -validity 3650 
+keytool -export -alias abcmart.co.kr -keystore abcmart.co.kr.p12 -rfc -file abcmart.co.kr.cer
+keytool -import -alias abcmart.co.kr -file abcmart.co.kr.cer -keystore abcmart.co.kr.ts

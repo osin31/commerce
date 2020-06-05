@@ -1,0 +1,806 @@
+@import 'scss_header';
+
+/**********************************************************************************
+** tbl-header
+***********************************************************************************/
+.tbl-header {
+	@include clearfix;
+	font-size: 0;
+
+	.fl {
+		float: left;
+	}
+
+	.fr {
+		float: right;
+	}
+
+	.text {
+		font-size: $defaultFontSize;
+		line-height: 23px;
+	}
+
+	.ui-sel {
+		width: auto;
+	}
+
+	.btn-sm {
+		+ .ui-sel {
+			margin-left: 8px;
+		}
+	}
+
+	+ .tbl-col, + .tbl-row, + .ibsheet-wrap, + .editor-wrap {
+		margin-top: 10px;
+	}
+}
+
+/**********************************************************************************
+** tbl-col
+***********************************************************************************/
+.tbl-wrap {
+
+	&.scroll-x {
+		overflow-x: auto;
+		border-left: 1px solid #ddd;
+		border-right: 1px solid #ddd;
+
+		.tbl-col {
+			border-left: none;
+
+			tr {
+
+				th, td {
+					&:last-child {
+						border-right: none;
+					}
+				}
+			}
+		}
+	}
+
+	+ .col-wrap {
+		margin-top: 27px;
+	}
+}
+
+.tbl-col {
+	border-top: 2px solid #000;
+	border-left: 1px solid #ddd;
+
+	th, td {
+		&.only-chk, &.only-rdo {
+			padding: 10px 12px;
+			text-align: center;
+			vertical-align: middle;
+
+			.ui-chk {
+				input[type=checkbox] {
+					+ label {
+						width: 18px;
+						height: 18px;
+						padding: 0;
+					}
+				}
+			}
+
+			.ui-rdo {
+				input[type=radio] {
+					+ label {
+						width: 18px;
+						height: 18px;
+						padding: 0;
+					}
+				}
+			}
+		}
+	}
+
+	thead {
+		th {
+			padding: 11px 10px 12px;
+			background-color: #f9f9f9;
+			font-weight: 700;
+			color: #222;
+			border-bottom: 1px solid #ddd;
+			border-right: 1px solid #ddd;
+			font-size: $defaultFontSize;
+			text-align: center;
+
+			&.input {
+				padding: 6px 12px;
+			}
+
+			.th-required:after {
+				content: ' *';
+				color: $pointColorRed;
+			}
+		}
+	}
+
+	tbody, tfoot {
+		.selected-row {
+			th, td {
+				background: $pointColorLightRed;
+			}
+		}
+
+		th, td {
+			color: $defaultTextColor;
+			background: #fff;
+			padding: 16px 10px;
+			font-size: $defaultFontSize;
+			font-weight: 400;
+			border-bottom: 1px solid #ddd;
+			border-right: 1px solid #ddd;
+			word-break: break-all;
+			text-align: left;
+
+			&.input {
+				font-size: 0;
+				padding: 10px 12px 11px;
+				@include clearfix;
+
+				&:not(.clear-float) * {
+					float: left;
+				}
+
+				.search-dropdown-box {
+					* {
+						float: none;
+					}
+				}
+
+				a, button, input, .ui-sel, .ui-chk, .ui-rdo {
+					+ .text {
+						margin-left: 8px;
+					}
+				}
+
+				.btn-sm {
+					+ .search-item {
+						margin-left: 14px;
+					}
+				}
+
+				.file-wrap {
+					float: none;
+
+					* {
+						float: none;
+					}
+				}
+
+				.ui-sel {
+					+ .file-wrap {
+						float: left;
+					}
+				}
+			}
+
+			.ui-textarea {
+				min-height: 60px;
+			}
+		}
+
+		td {
+			> .text {
+				display: inline-block;
+				font-size: $defaultFontSize;
+				line-height: 23px;
+				vertical-align: top;
+
+				+ a, + button, + input, + .ui-sel, + .ui-chk, + .ui-rdo {
+					margin-left: 8px;
+				}
+
+				+ a.link, + button.link, a.link, button.link {
+					line-height: 23px;
+				}
+			}
+
+			.prod-box {
+				display: block;
+				width: 100%;
+				font-size: 0;
+
+				.thumb-box {
+					display: inline-block;
+					width: 100px;
+					height: 100px;
+					background: {
+						image: url(../../images/temp/temp_prod_img.jpg);
+						position: 0 0;
+						repeat: no-repeat;
+						size: cover
+					}
+					vertical-align: middle;
+
+				}
+
+				.link, .text, .info {
+					display: inline-block;
+					width: calc(100% - 110px);
+					margin-left: 10px;
+					font-size: $defaultFontSize;
+					line-height: 1.4;
+					vertical-align: middle;
+				}
+				.info {
+					span, a {
+						display: block;
+					}
+					a {
+						text-decoration: underline;
+					}
+				}
+			}
+
+			.td-box-both {
+				@include clearfix;
+				display: block;
+
+				.fl {
+					float: left;
+					max-width: 65%;
+				}
+
+				.fr {
+					max-width: 35%;
+					float: right;
+				}
+
+				.text {
+					display: inline-block;
+					font-size: $defaultFontSize;
+					vertical-align: top;
+					line-height: 23px;
+
+					+ .text, + .link {
+						margin-left: 8px;
+						line-height: 23px;
+					}
+				}
+
+				.td-text-list {
+					+ .text {
+						margin-top: 4px;
+					}
+				}
+			}
+
+
+			@media screen and (max-width: 1440px) {
+				&.input {
+					> .search-dropdown-box {
+						width: 100%;
+
+						.selectize-control.search-dropdown, .search-dropdown.ui-sel {
+							min-width: auto;
+							max-width: 200px;
+							width: 100%;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	tbody {
+		.row-sum {
+			th, td {
+				background: #f5f5f5;
+				//background: rgba($pointColorRed, 0.03);
+			}
+		}
+	}
+
+	tfoot {
+		tr {
+
+			th, td {
+				background: #f5f5f5;
+				//background: rgba($pointColorRed, 0.03);
+			}
+		}
+	}
+
+	+ .tbl-row, + .anchor-tab-wrap, + .search-wrap {
+		margin-top: 20px;
+	}
+
+	+ .tbl-desc-wrap {
+		margin-top: 10px;
+	}
+
+	+ .col-wrap, + .tbl-controller {
+		margin-top: 27px;
+	}
+}
+
+/**********************************************************************************
+** tbl-row
+***********************************************************************************/
+.tbl-row {
+	border: 1px solid #ddd;
+	border-top: 2px solid #000;
+	border-left: none;
+	background-color: #fff;
+
+	th, td {
+		border-bottom: 1px solid #ddd;
+		letter-spacing: -0.3px;
+		vertical-align: top;
+
+		&.only-chk, &.only-rdo {
+			padding: 10px 12px;
+			text-align: center;
+			vertical-align: middle;
+
+			.ui-chk {
+				input[type=checkbox] {
+					+ label {
+						width: 18px;
+						height: 18px;
+						padding: 0;
+					}
+				}
+			}
+
+			.ui-rdo {
+				input[type=radio] {
+					+ label {
+						width: 18px;
+						height: 18px;
+						padding: 0;
+					}
+				}
+			}
+		}
+
+		.tbl-col {
+			th, td {
+				vertical-align: middle;
+			}
+		}
+	}
+
+	tbody > tr > th {
+		background-color: #f9f9f9;
+		font-size: $defaultFontSize;
+		font-weight: 700;
+		color: #222;
+		text-align: left;
+		padding: 14px 12px 15px;
+		line-height: 1.4;
+
+		&[scope=rowgroup] + th {
+			border-left: 1px solid #ddd;
+		}
+
+		.th-required:after {
+			content: ' *';
+			color: $pointColorRed;
+		}
+
+		&:first-child {
+			border-left: 1px solid #ddd;
+		}
+
+		&.th-lborder {
+			border-left: 1px solid #ddd;
+		}
+	}
+
+	td {
+		color: $defaultTextColor;
+		padding: 16px 12px 17px;
+		font-size: $defaultFontSize;
+
+		&.td-spot {
+			background-color: #fff4f5;
+		}
+
+		&.input {
+			padding: 10px 12px;
+			font-size: 0;
+
+			a, button, input, .ui-sel, .ui-chk, .ui-rdo, .date-box {
+				+ .text {
+					margin-left: 8px;
+				}
+			}
+
+			.rating-text-both {
+				.rating-container {
+					display: inline-block;
+					vertical-align: top;
+				}
+
+				.text {
+					display: inline-block;
+					margin: 6px 0 0 10px;
+					font-size: 12px;
+					vertical-align: top;
+				}
+			}
+
+			&.vertical-middle {
+				border-left: 1px solid #ddd;
+				vertical-align: middle;
+			}
+
+			.prod-box {
+				display: block;
+				width: 100%;
+				font-size: 0;
+
+				.thumb-box {
+					display: inline-block;
+					width: 100px;
+					height: 100px;
+					background: {
+						image: url(../../images/temp/temp_prod_img.jpg);
+						position: 0 0;
+						repeat: no-repeat;
+						size: cover
+					}
+					vertical-align: middle;
+
+				}
+
+				.link, .text {
+					display: inline-block;
+					width: calc(100% - 110px);
+					margin-left: 10px;
+					font-size: $defaultFontSize;
+					line-height: 1.4;
+					vertical-align: middle;
+				}
+			}
+
+			.attach-file-list {
+				li {
+					margin-top: 5px;
+				}
+			}
+
+			> .text {
+				display: inline-block;
+				font-size: $defaultFontSize;
+				line-height: 23px;
+				vertical-align: top;
+
+				+ a, + button, + input, + .ui-sel, + .ui-chk, + .ui-rdo {
+					margin-left: 8px;
+				}
+
+				+ .btn-link {
+					+ .ui-chk {
+						margin-left: 8px;
+					}
+				}
+
+				a.link, button.link {
+					line-height: 23px;
+				}
+
+				&.payment-state {
+					font-size: 0;
+
+					> span {
+						display: inline-block;
+						font-size: $defaultFontSize;
+						vertical-align: top;
+
+						+ span {
+							padding-left: 5px;
+						}
+					}
+				}
+			}
+
+			.link {
+				line-height: 23px;
+			}
+
+			.rating-container {
+				margin: 4px 0 3px;
+			}
+
+			.photo-comment {
+				.img {
+					display: inline-block;
+					max-width: 100px;
+					margin-right: 5px;
+					vertical-align: top;
+
+					img {
+						width: 100%;
+					}
+				}
+			}
+
+			.ip-text-box {
+				.ui-input {
+					+ .ui-chk {
+						margin-left: 10px;
+					}
+				}
+
+				.ui-chk {
+					+ .ui-input {
+						margin-left: 10px;
+					}
+				}
+
+				+ .search-item {
+					margin-left: 14px;
+				}
+			}
+
+			.term-date-wrap {
+				.ip-text-box {
+					.ui-sel {
+						+ .text {
+							width: auto;
+							margin-left: 8px;
+						}
+					}
+				}
+
+				.ui-sel {
+					+ .text {
+						margin-left: 0;
+					}
+				}
+
+				.date-box {
+					+ .text {
+						margin-left: 0;
+					}
+				}
+			}
+
+			.comment-desc {
+				font-size: $defaultFontSize;
+				line-height: 1.4;
+			}
+
+			/* 회원유형 > 회원등급 */
+			.member-grade-list {
+				display: inline-block;
+				width: 100%;
+				font-size: 0;
+				vertical-align: top;
+
+				.text {
+					float: none;
+					display: inline-block;
+					margin-right: 10px;
+					font-size: $defaultFontSize;
+					vertical-align: top;
+					line-height: 23px;
+				}
+
+				.ip-box-list {
+					float: none;
+					display: inline-block;
+					vertical-align: top;
+
+					+ .text {
+						margin-left: 6px;
+					}
+				}
+
+				+ .td-text-list {
+					margin-top: 5px;
+				}
+			}
+
+			.category-setting-box {
+				.ip-box-list {
+					display: inline-block;
+					margin: 0 31px 0 8px;
+					vertical-align: top;
+				}
+			}
+		}
+
+		.td-btn-group {
+			display: inline-block;
+			vertical-align: top;
+
+			+ .ui-textarea, + .ui-input, + .ui-sel {
+				margin-top: 6px;
+			}
+		}
+
+		.ui-rdo, .ui-chk {
+			margin: {
+				top: 2px;
+				bottom: 3px;
+			}
+
+			// label을 텍스트가 아닌 인풋으로 사용할 때
+			&.ip-label-instead {
+				margin: 0;
+			}
+		}
+
+		.msg-wrap {
+			display: block;
+
+			.msg-title {
+				display: block;
+				margin-bottom: 10px;
+				font-size: 13px;
+			}
+
+			.msg-box {
+				position: relative;
+				display: block;
+				padding-right: 133px;
+
+				.ui-textarea {
+					display: inline-block;
+					width: 100%;
+					height: 100px;
+					vertical-align: top;
+				}
+
+				.text-limit {
+					position: absolute;
+					right: 0;
+					bottom: 0;
+					display: block;
+
+
+					.desc {
+						display: inline-block;
+						font-size: 12px;
+						line-height: 23px;
+						vertical-align: top;
+					}
+
+					.ui-input {
+						margin: 0 3px;
+						padding:0 5px 1px;
+						width:42px !important;
+
+					}
+				}
+
+				&.ip-size-lg {
+					padding-right: 74px;
+				}
+
+				&.template-box {
+					position: relative;
+					padding-right: 0;
+
+					.ui-textarea {
+						padding-right: 209px;
+					}
+
+					.text-limit-box {
+						position: absolute;
+						right: 10px;
+						top: 10px;
+
+						.text-limit {
+							position: relative;
+							display: block;
+							color: #999;
+							font-size: 12px;
+							line-height: 17px;
+							vertical-align: top;
+
+							.name, .value {
+								display: inline-block;
+							}
+
+							.name {
+								width: 30px;
+							}
+
+							.value {
+								width: 120px;
+								text-align: right;
+
+								.bytes {
+									color: #000;
+									font-weight: 700;
+								}
+							}
+						}
+					}
+
+					.warning-box {
+						display: block;
+						margin-top: 5px;
+
+						span {
+							display: block;
+							color: $pointColorRed;
+							font-size: 12px;
+							line-height: 17px;
+						}
+					}
+				}
+			}
+
+			+ .td-text-list {
+				margin-top: 5px;
+			}
+		}
+
+		.td-box-both {
+			@include clearfix;
+			display: block;
+
+			.fl {
+				float: left;
+				max-width: 65%;
+			}
+
+			.fr {
+				max-width: 35%;
+				float: right;
+			}
+
+			.text {
+				display: inline-block;
+				font-size: $defaultFontSize;
+				vertical-align: top;
+				line-height: 23px;
+
+				+ .text, + .link {
+					margin-left: 8px;
+					line-height: 23px;
+				}
+			}
+
+			.td-text-list {
+				+ .text {
+					margin-top: 4px;
+				}
+			}
+		}
+
+		.ip-box-list {
+			.term-date-wrap {
+				.ui-sel {
+					+ .text {
+						line-height: 23px;
+						margin-left: 0;
+					}
+				}
+			}
+		}
+	}
+
+	+ .content-header {
+		margin-top: 24px;
+	}
+
+	+ .tbl-row, + .tbl-col, + .tab-wrap, + .anchor-tab-wrap, + .ibsheet-wrap {
+		margin-top: 20px;
+	}
+
+	+ .mail-wrap {
+		margin-top: 20px;
+
+		+ .tbl-desc-wrap {
+			margin-top: 10px;
+		}
+	}
+
+	+ .tbl-controller, + .col-wrap {
+		margin-top: 27px;
+	}
+
+	+ .tbl-desc-wrap {
+		margin-top: 10px;
+	}
+}

@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.event.repository.master.EvEventRouletteJoinMemberDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.event.model.master.EvEventRouletteJoinMember">
+
+     /*+ kr.co.abcmart.bo.event.repository.master.EvEventRouletteJoinMemberDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			EV_EVENT_ROULETTE_JOIN_MEMBER
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+     <select id="selectEvEventRouletteJoinMemberList" parameterType="Pageable" resultType="kr.co.abcmart.bo.event.vo.EvEventJoinResultVO">
+    /*+ kr.co.abcmart.bo.event.repository.master.EvEventRouletteJoinMemberDao.selectEvEventRouletteJoinMemberList [이벤트 참여(룰렛형) 조회 쿼리] [이지훈] */
+    	SELECT
+	    	EERJM.EVENT_RULET_JOIN_MEMBER_SEQ
+	    	,EERJM.EVENT_RULET_JOIN_MEMBER_SEQ AS EV_EVENT_JOIN_MEMBER_SEQ
+	    	,EERJM.EVENT_NO
+	    	,EERJM.EVENT_RULET_BENEFIT_SEQ
+	    	,EERJM.MEMBER_NO
+	    	,EERJM.JOIN_DTM
+	    	,EERJM.ISSUE_YN
+	    	,EERJM.ISSUE_INFO
+	    	,EERJM.ISSUER_NO
+	    	,EERJM.ISSUE_DTM
+	    	,DBO.FN_CODE_VALUE('DEVICE_CODE', EERJM.DEVICE_CODE) AS DEVICE_CODE_NAME
+    	    ,DBO.FN_CODE_VALUE('MEMBER_TYPE_CODE', MM.MEMBER_TYPE_CODE) AS MEMBER_TYPE_CODE_NAME
+	    	,EERB.BENEFIT_NAME
+	    	,EERB.BENEFIT_GBN_CODE
+	    	,MM.LOGIN_ID
+	    	,B.ADMIN_NAME AS MODER_NAME
+			,B.LOGIN_ID AS MODER_ID
+			,B.MOD_DTM AS MOD_DTM
+			,STUFF((SELECT CONCAT(',', SSC.CHNNL_NAME) FROM EV_EVENT_TARGET_CHANNEL EETC JOIN SY_SITE_CHNNL SSC ON EETC.CHNNL_NO = SSC.CHNNL_NO AND SSC.USE_YN = 'Y' WHERE EETC.EVENT_NO = EE.EVENT_NO FOR XML PATH('')), 1, 1, '') AS CHNNL_NAME
+			,(SELECT COUNT(*)
+				FROM EV_EVENT_RESULT_BENEFIT_MEMBER EERBM WITH(NOLOCK)
+			   WHERE EERJM.EVENT_NO = EERBM.EVENT_NO
+				 AND EERJM.EVENT_RULET_JOIN_MEMBER_SEQ = EERBM.EV_EVENT_JOIN_MEMBER_SEQ) AS WIN_COUNT
+		FROM
+			EV_EVENT_ROULETTE_JOIN_MEMBER EERJM WITH(NOLOCK)
+		INNER JOIN EV_EVENT EE WITH(NOLOCK)
+			ON EERJM.EVENT_NO = EE.EVENT_NO
+		INNER JOIN EV_EVENT_ROULETTE_BENEFIT EERB WITH(NOLOCK)
+					ON EERJM.EVENT_NO = EERB.EVENT_NO
+					AND EERJM.EVENT_RULET_BENEFIT_SEQ = EERB.EVENT_RULET_BENEFIT_SEQ
+		INNER JOIN MB_MEMBER MM WITH(NOLOCK)
+					ON EERJM.MEMBER_NO = MM.MEMBER_NO
+		LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON EERJM.MODER_NO = B.ADMIN_NO
+		<include refid="whereSql" />
+		ORDER BY EERJM.JOIN_DTM DESC
+		<include refid="Paging.mssql" />
+    </select>
+
+    <select id="selectEvEventRouletteJoinMemberCount" parameterType="Pageable" resultType="int">
+   		SELECT
+    		<include refid="Paging.totalCount" />
+    	FROM
+    		EV_EVENT_ROULETTE_JOIN_MEMBER EERJM WITH(NOLOCK)
+		INNER JOIN MB_MEMBER MM WITH(NOLOCK)
+					ON EERJM.MEMBER_NO = MM.MEMBER_NO
+    	<include refid="whereSql" />
+    </select>
+
+    <select id="selectEvEventRouletteJoinMemberCountByEventNo" parameterType="String" resultType="int">
+   		SELECT
+    		COUNT(*)
+    	FROM
+    		EV_EVENT_ROULETTE_JOIN_MEMBER EERJM WITH(NOLOCK)
+		WHERE EVENT_NO = #{eventNo, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectEvEventRouletteJoinMemberSeq" parameterType="Map" resultType="Long">
+    /*+ kr.co.abcmart.bo.event.repository.master.EvEventRouletteJoinMemberDao.selectEvEventRouletteJoinMemberSeq [이벤트 참여 seq 조회 쿼리] [이지훈] */
+    	SELECT
+    		 ISNULL(MIN(EERJM.EVENT_RULET_JOIN_MEMBER_SEQ), 0)
+    	FROM
+    		EV_EVENT_ROULETTE_JOIN_MEMBER EERJM WITH(NOLOCK)
+    	WHERE EERJM.EVENT_NO = #{eventNo, jdbcType=VARCHAR}
+    		AND EERJM.MEMBER_NO = #{memberNo, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectMemberNoByLoginId" parameterType="Map" resultType="String">
+    	/*+ kr.co.abcmart.bo.event.repository.master.EvEventRouletteJoinMemberDao.selectMemberNoByLoginId [로그인 아이디에 의한 응모자 회원번호 조회] [이지훈] */
+		SELECT
+    		TOP(1) MM.MEMBER_NO
+    	FROM
+    		EV_EVENT_ROULETTE_JOIN_MEMBER EERJM WITH(NOLOCK)
+		INNER JOIN MB_MEMBER MM WITH(NOLOCK)
+					ON EERJM.MEMBER_NO = MM.MEMBER_NO
+		 		   AND MM.LOGIN_ID = #{loginId, jdbcType=VARCHAR}
+		WHERE EERJM.EVENT_NO = #{eventNo, jdbcType=VARCHAR}
+		ORDER BY EERJM.ISSUE_DTM ASC
+    </select>
+
+    <select id="selectEvEventRouletteResultMemberList" parameterType="Pageable" resultType="kr.co.abcmart.bo.event.vo.EvEventJoinResultVO">
+    /*+ kr.co.abcmart.bo.event.repository.master.EvEventRouletteJoinMemberDao.selectEvEventRouletteResultMemberList [이벤트 참여(룰렛형) 조회 쿼리] [이지훈] */
+    	SELECT
+	    	EERJM.EVENT_RULET_JOIN_MEMBER_SEQ
+	    	,EERJM.EVENT_RULET_JOIN_MEMBER_SEQ AS EV_EVENT_JOIN_MEMBER_SEQ
+	    	,EERJM.EVENT_NO
+	    	,EERJM.EVENT_RULET_BENEFIT_SEQ
+	    	,EERJM.MEMBER_NO
+	    	,EERJM.JOIN_DTM
+	    	,EERJM.ISSUE_YN
+	    	,EERJM.ISSUE_INFO
+	    	,EERJM.ISSUER_NO
+	    	,EERJM.ISSUE_DTM
+	    	,DBO.FN_CODE_VALUE('DEVICE_CODE', EERJM.DEVICE_CODE) AS DEVICE_CODE_NAME
+    	    ,DBO.FN_CODE_VALUE('MEMBER_TYPE_CODE', MM.MEMBER_TYPE_CODE) AS MEMBER_TYPE_CODE_NAME
+    	    ,STUFF((SELECT CONCAT(',', SSC.CHNNL_NAME) FROM EV_EVENT_TARGET_CHANNEL EETC JOIN SY_SITE_CHNNL SSC ON EETC.CHNNL_NO = SSC.CHNNL_NO AND SSC.USE_YN = 'Y' WHERE EETC.EVENT_NO = EE.EVENT_NO FOR XML PATH('')), 1, 1, '') AS CHNNL_NAME
+	    	,MM.LOGIN_ID
+	    	,EE.EVENT_TYPE_CODE
+			,EE.EVENT_NAME
+			,DBO.FN_CODE_VALUE('EVENT_TYPE_CODE', EE.EVENT_TYPE_CODE) AS EVENT_TYPE_CODE_NAME
+			,B.ADMIN_NAME AS MODER_NAME
+			,B.LOGIN_ID AS MODER_ID
+			,B.MOD_DTM AS MOD_DTM
+			,MM.MEMBER_NAME AS ADD_INFO1
+			,MM.HDPHN_NO_TEXT AS ADD_INFO2
+			,MM.EMAIL_ADDR_TEXT AS ADD_INFO3
+		FROM
+			EV_EVENT_ROULETTE_JOIN_MEMBER EERJM WITH(NOLOCK)
+		INNER JOIN EV_EVENT EE WITH(NOLOCK)
+			ON EERJM.EVENT_NO = EE.EVENT_NO
+		INNER JOIN MB_MEMBER MM WITH(NOLOCK)
+					ON EERJM.MEMBER_NO = MM.MEMBER_NO
+		INNER JOIN EV_EVENT_RESULT_BENEFIT_MEMBER EERBM WITH(NOLOCK)
+					ON EERBM.EVENT_NO = EERJM.EVENT_NO
+				  AND EERBM.EV_EVENT_JOIN_MEMBER_SEQ = EERJM.EVENT_RULET_JOIN_MEMBER_SEQ
+				  AND EERBM.MEMBER_NO = MM.MEMBER_NO
+		LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON EERJM.MODER_NO = B.ADMIN_NO
+		<include refid="whereSql" />
+		ORDER BY EERJM.JOIN_DTM DESC
+		<include refid="Paging.mssql" />
+    </select>
+
+    <select id="selectEvEventRouletteResultMemberCount" parameterType="Pageable" resultType="int">
+   		SELECT
+    		<include refid="Paging.totalCount" />
+    	FROM
+    		EV_EVENT_ROULETTE_JOIN_MEMBER EERJM WITH(NOLOCK)
+		INNER JOIN EV_EVENT EE WITH(NOLOCK)
+					ON EERJM.EVENT_NO = EE.EVENT_NO
+		INNER JOIN MB_MEMBER MM WITH(NOLOCK)
+					ON EERJM.MEMBER_NO = MM.MEMBER_NO
+		INNER JOIN EV_EVENT_RESULT_BENEFIT_MEMBER EERBM WITH(NOLOCK)
+					ON EERBM.EVENT_NO = EERJM.EVENT_NO
+				  AND EERBM.EV_EVENT_JOIN_MEMBER_SEQ = EERJM.EVENT_RULET_JOIN_MEMBER_SEQ
+				  AND EERBM.MEMBER_NO = MM.MEMBER_NO
+    	<include refid="whereSql" />
+    </select>
+
+    <update id="updateEvEventRouletteJoinMember" parameterType="kr.co.abcmart.bo.event.model.master.EvEventRouletteJoinMember">
+     /*+ kr.co.abcmart.bo.event.repository.master.EvEventRouletteJoinMemberDao.updateEvEventRouletteJoinMember [이벤트 참여(룰렛형) 수정 쿼리] [이지훈] */
+    UPDATE EV_EVENT_ROULETTE_JOIN_MEMBER
+		<set>
+			<if test="eventNo != null">
+				event_no = #{eventNo, jdbcType=VARCHAR},
+			</if>
+			<if test="eventRuletBenefitSeq != null">
+				event_rulet_benefit_seq = #{eventRuletBenefitSeq, jdbcType=TINYINT},
+			</if>
+			<if test="memberNo != null">
+				member_no = #{memberNo, jdbcType=VARCHAR},
+			</if>
+			<if test="joinDtm != null">
+				join_dtm = #{joinDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="deviceCode != null">
+				device_code = #{deviceCode, jdbcType=VARCHAR},
+			</if>
+			<if test="issueYn != null">
+				issue_yn = #{issueYn, jdbcType=CHAR},
+			</if>
+			<if test="issueInfo != null">
+				issue_info = #{issueInfo, jdbcType=VARCHAR},
+			</if>
+			<if test="issuerNo != null">
+				issuer_no = #{issuerNo, jdbcType=VARCHAR},
+			</if>
+			<if test="issueDtm != null">
+				issue_dtm = #{issueDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="moderNo != null">
+				moder_no = #{moderNo, jdbcType=VARCHAR},
+			</if>
+			<if test="modDtm != null">
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		WHERE
+			 event_rulet_join_member_seq = #{eventRuletJoinMemberSeq, jdbcType=BIGINT}
+    </update>
+
+    <sql id="whereSql">
+    	<where>
+    		<if test='bean.eventNo != null and bean.eventNo != ""'>
+				AND EERJM.EVENT_NO = #{bean.eventNo, jdbcType=VARCHAR}
+			</if>
+    		<if test='bean.loginId != null and bean.loginId != ""'>
+				AND MM.LOGIN_ID = #{bean.loginId, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.deviceCodes != null and bean.deviceCodes.length > 0'>
+				AND EERJM.DEVICE_CODE IN
+				<foreach collection="bean.deviceCodes" item="deviceCode" open="(" close=")" separator=",">
+					#{deviceCode}
+				</foreach>
+			</if>
+    		<if test='bean.memberTypeCodes != null and bean.memberTypeCodes != "" '>
+    			AND MM.MEMBER_TYPE_CODE IN
+				<foreach collection="bean.memberTypeCodes" item="memberTypeCode" open="(" close=")" separator=",">
+					#{memberTypeCode}
+				</foreach>
+    		</if>
+    		<if test='bean.dateType != null and bean.dateType != ""'>
+				<if test='bean.dateType == "join"'>
+					<if test='bean.startYmd != null and bean.startYmd != ""'>
+						AND EERJM.JOIN_DTM >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})
+					</if>
+					<if test='bean.endYmd != null and bean.endYmd != ""'>
+						AND CONVERT(DATETIME, CONCAT(#{bean.endYmd, jdbcType=VARCHAR}, ' 23:59:59')) >= EERJM.JOIN_DTM
+					</if>
+				</if>
+			</if>
+			<if test='bean.issueYn != null and bean.issueYn != ""'>
+				AND ISSUE_YN = #{bean.issueYn, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.issueYnArr != null and bean.issueYnArr !="" '>
+    			AND
+    			<foreach collection="bean.issueYnArr " item="issueYn" open="(" close=")" separator="OR">
+    				ISSUE_YN = #{issueYn}
+				</foreach>
+    		</if>
+    		<if test='bean.eventRsltBenefitSeq != null and bean.eventRsltBenefitSeq != ""'>
+				AND EERBM.EVENT_RSLT_BENEFIT_SEQ = #{bean.eventRsltBenefitSeq, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.winYn != null and bean.winYn !="" '>
+			AND
+				<choose>
+					<when test='bean.winYn == "Y"'>EXISTS</when>
+					<otherwise>NOT EXISTS</otherwise>
+				</choose>
+				(SELECT EERBM.EV_EVENT_JOIN_MEMBER_SEQ FROM EV_EVENT_RESULT_BENEFIT_MEMBER EERBM WITH(NOLOCK)
+				WHERE EERJM.EVENT_RULET_JOIN_MEMBER_SEQ = EERBM.EV_EVENT_JOIN_MEMBER_SEQ)
+			</if>
+    	</where>
+    </sql>
+
+</mapper>

@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.cmm.repository.master.CmTermsDetailDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.cmm.model.master.CmTermsDetail" resultType="kr.co.abcmart.bo.cmm.model.master.CmTermsDetail">
+    
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmTermsDetailDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			cm_terms_detail WITH (NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+	
+	<insert id="insertTermsDetail" useGeneratedKeys="true" keyProperty="termsDtlSeq" parameterType="kr.co.abcmart.bo.cmm.model.master.CmTermsDetail">
+		/*+ kr.co.abcmart.bo.cmm.repository.master.CmTermsDetailDao.insertTermsOfUse [이용약관 등록][신인철] */
+		<selectKey keyProperty="termsDtlSeq" resultType="Int" order="BEFORE">
+			SELECT ISNULL(MAX(TERMS_DTL_SEQ), 0)+1
+			  FROM CM_TERMS_DETAIL
+			 WHERE TERMS_SEQ=#{termsSeq, jdbcType=INTEGER}
+		</selectKey>
+		INSERT INTO CM_TERMS_DETAIL
+			 ( TERMS_SEQ
+			 , TERMS_DTL_SEQ
+			 , TERMS_NAME
+			 , TERMS_INFO
+			 , REQ_AGREE_YN
+			 , DISP_YN
+			 , RGSTER_NO
+			 , RGST_DTM
+			 , MODER_NO
+			 , MOD_DTM)
+		VALUES
+			 ( #{termsSeq, jdbcType=INTEGER}
+			 , #{termsDtlSeq, jdbcType=INTEGER}
+			 , #{termsName, jdbcType=VARCHAR}
+			 , #{termsInfo, jdbcType=VARCHAR}
+			 , #{reqAgreeYn, jdbcType=VARCHAR}
+			 , #{dispYn, jdbcType=VARCHAR}
+			 , #{rgsterNo, jdbcType=VARCHAR}
+			 , GETDATE()
+			 , #{moderNo, jdbcType=VARCHAR}
+			 , GETDATE() ) 
+	</insert>
+	
+	<select id="selectTermsOfUseDetail" parameterType="kr.co.abcmart.bo.cmm.model.master.CmTermsDetail" resultType="kr.co.abcmart.bo.cmm.model.master.CmTermsDetail">
+		/*+ kr.co.abcmart.bo.cmm.repository.master.CmTermsDetailDao.selectTermsOfUseDetail [이용약관 상세조회] [신인철] */  
+		SELECT A.TERMS_SEQ
+			 , A.TERMS_DTL_SEQ
+			 , A.TERMS_NAME
+			 , A.TERMS_INFO
+			 , A.REQ_AGREE_YN
+			 , A.DISP_YN
+			 , A.RGSTER_NO
+			 , A.RGST_DTM
+			 , B.LOGIN_ID+'('+B.ADMIN_NAME+')' AS MODER_NAME
+	 		 , A.MODER_NO
+			 , A.MOD_DTM 
+		  FROM CM_TERMS_DETAIL A WITH(NOLOCK)
+		  LEFT JOIN SY_ADMIN B WITH (NOLOCK)
+			ON A.MODER_NO = B.ADMIN_NO
+		 WHERE A.TERMS_SEQ = #{termsSeq, jdbcType=VARCHAR}
+	</select>
+	
+	<select id="selectTermsDetailList" parameterType="kr.co.abcmart.bo.cmm.model.master.CmTermsDetail" resultType="kr.co.abcmart.bo.cmm.model.master.CmTermsDetail">
+		/*+ kr.co.abcmart.bo.cmm.repository.master.CmTermsDetailDao.selectTermsOfUseDetail [이용약관 상세조회] [신인철] */  
+		SELECT A.TERMS_SEQ
+			 , A.TERMS_DTL_SEQ
+			 , A.TERMS_NAME
+			 , A.TERMS_INFO
+			 , A.REQ_AGREE_YN
+			 , A.DISP_YN
+			 , A.RGSTER_NO
+			 , A.RGST_DTM
+			 , B.LOGIN_ID+'('+B.ADMIN_NAME+')' AS MODER_NAME
+	 		 , A.MODER_NO
+			 , A.MOD_DTM 
+		  FROM CM_TERMS_DETAIL A WITH(NOLOCK)
+		  LEFT JOIN SY_ADMIN B WITH (NOLOCK)
+			ON A.MODER_NO = B.ADMIN_NO
+		 WHERE A.TERMS_SEQ = #{termsSeq, jdbcType=INTEGER}
+	</select>
+	
+	
+	<select id="selectSignUpOrderDetail" parameterType="kr.co.abcmart.bo.cmm.model.master.CmTermsDetail" resultType="kr.co.abcmart.bo.cmm.model.master.CmTermsDetail">
+		/*+ kr.co.abcmart.bo.cmm.repository.master.CmTermsDetailDao.selectSignUpDetail [회원가입동의 약관 상세조회 영역 호출] [신인철] */  
+		SELECT TERMS_SEQ
+			 , TERMS_DTL_SEQ
+			 , TERMS_NAME
+			 , TERMS_INFO
+			 , REQ_AGREE_YN
+			 , DISP_YN
+			 , RGSTER_NO
+			 , RGST_DTM
+	 		 , MODER_NO
+			 , MOD_DTM 
+		  FROM CM_TERMS_DETAIL WITH(NOLOCK)
+		 WHERE TERMS_SEQ = #{termsSeq, jdbcType=INTEGER}
+		   AND TERMS_DTL_SEQ = #{termsDtlSeq, jdbcType=INTEGER}
+	</select>
+	
+	<update id="updateTermsDetail" parameterType="kr.co.abcmart.bo.cmm.model.master.CmTermsDetail">
+	/*+ kr.co.abcmart.bo.cmm.repository.master.CmTermsDetailDao.updateTermsDetail [TERMS_SEQ에 따른 전체 DISP 수정] [신인철] */
+		UPDATE CM_TERMS_DETAIL
+		   SET DISP_YN = #{dispYn, jdbcType=VARCHAR}
+			 , MODER_NO = #{moderNo, jdbcType=VARCHAR}
+			 , MOD_DTM = GETDATE()
+		 WHERE TERMS_SEQ = #{termsSeq, jdbcType=INTEGER}
+	</update>
+	
+<!-- 	<update id="updateDetailArea" parameterType="kr.co.abcmart.bo.cmm.model.master.CmTermsDetail"> -->
+<!-- 		/*+ kr.co.abcmart.bo.cmm.repository.master.CmTermsDetailDao.updateDetailArea [회원가입동의 수정시에 디테일항목 수정or추가등록] [신인철] */ -->
+<!-- 		MERGE INTO CM_TERMS_DETAIL A -->
+<!-- 		USING (SELECT 1 AS X) X -->
+<!-- 		   ON A.TERMS_SEQ = #{termsSeq, jdbcType=INTEGER} -->
+<!-- 		  AND A.TERMS_DTL_SEQ = #{termsDtlSeq, jdbcType=INTEGER} -->
+<!-- 		 WHEN MATCHED THEN -->
+<!-- 	   UPDATE SET A.TERMS_NAME = #{termsName, jdbcType=VARCHAR} -->
+<!-- 	   		, A.TERMS_INFO = #{termsInfo, jdbcType=VARCHAR} -->
+<!-- 	   		, A.REQ_AGREE_YN = #{reqAgreeYn, jdbcType=VARCHAR} -->
+<!-- 	   		, A.DISP_YN = #{dispYn, jdbcType=VARCHAR} -->
+<!-- 	   		, A.MODER_NO = #{moderNo, jdbcType=VARCHAR} -->
+<!-- 	   		, A.MOD_DTM = GETDATE() -->
+<!-- 		 WHEN NOT MATCHED THEN -->
+<!-- 	   INSERT (TERMS_SEQ -->
+<!-- 			, TERMS_DTL_SEQ -->
+<!-- 			, TERMS_NAME -->
+<!-- 			, TERMS_INFO -->
+<!-- 			, REQ_AGREE_YN -->
+<!-- 			, DISP_YN -->
+<!-- 			, RGSTER_NO -->
+<!-- 			, RGST_DTM -->
+<!-- 			, MODER_NO -->
+<!-- 			, MOD_DTM) -->
+<!-- 	   VALUES (#{termsSeq, jdbcType=INTEGER} -->
+<!-- 	   		, #{termsDtlSeq, jdbcType=INTEGER}  -->
+<!-- 	   		, #{termsName, jdbcType=VARCHAR} -->
+<!-- 	   		, #{termsInfo, jdbcType=VARCHAR} -->
+<!-- 	   		, #{reqAgreeYn, jdbcType=VARCHAR} -->
+<!-- 	   		, #{dispYn, jdbcType=VARCHAR} -->
+<!-- 	   		, #{rgsterNo, jdbcType=VARCHAR} -->
+<!-- 	   		, GETDATE() -->
+<!-- 	   		, #{moderNo, jdbcType=VARCHAR} -->
+<!-- 	   		, GETDATE() ) ; -->
+<!-- 	</update> -->
+	
+	<delete id="deleteTerms" parameterType="kr.co.abcmart.bo.cmm.model.master.CmTermsDetail">
+		/*+ kr.co.abcmart.bo.cmm.repository.master.CmTermsDetailDao.deleteTerms [약관 삭제] [신인철] */ 
+		DELETE FROM CM_TERMS_DETAIL
+		 WHERE TERMS_SEQ = #{termsSeq, jdbcType=INTEGER}
+	</delete>
+	
+	<select id="selectPrivacyGrid" parameterType="kr.co.abcmart.bo.cmm.model.master.CmTermsDetail" resultType="kr.co.abcmart.bo.cmm.model.master.CmTermsDetail">
+		/*+ kr.co.abcmart.bo.cmm.repository.master.CmTermsDetailDao.selectPrivacyGrid [전시여부 조건 ,개인정보약관 그리드조회] [신인철] */  
+		SELECT TERMS_SEQ
+			 , TERMS_DTL_SEQ
+			 , TERMS_DTL_CODE
+			 , TERMS_NAME
+			 , TERMS_CONT_INFO
+			 , REQ_AGREE_YN
+			 , SORT_SEQ
+			 , DISP_YN
+			 , RGSTER_NO
+			 , RGST_DTM
+	 		 , MODER_NO
+			 , MOD_DTM 
+		  FROM CM_TERMS_DETAIL WITH(NOLOCK)
+		 WHERE DISP_YN = #{dispYn, jdbcType=VARCHAR}
+		   AND TERMS_DTL_CODE = #{termsDtlCode, jdbcType=VARCHAR}
+	</select>
+
+</mapper>

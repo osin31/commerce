@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.order.repository.master.OcReturnTargetDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.order.model.master.OcReturnTarget">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.OcReturnTargetDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			OC_RETURN_TARGET
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <insert id="insertOcReturnTarget" parameterType="kr.co.abcmart.bo.order.model.master.OcReturnTarget">
+    /*+ kr.co.abcmart.bo.order.repository.master.OcReturnTargetDao.insertOcReturnTarget [반품완료 -구매확정 대상]] */
+		INSERT INTO OC_RETURN_TARGET (
+			  ORG_ORDER_NO    -- 원주문번호	
+			, CLM_NO		  -- 클레임번호	
+			, MEMBER_NO	      -- 회원번호	
+			, RGSTER_NO	      -- 등록자번호	
+			, RGST_DTM		  -- 등록일시	
+		)  values (
+		    #{orgOrderNo, jdbcType=VARCHAR}	 -- 주문번호
+		  , #{clmNo, jdbcType=VARCHAR}       -- 클레임 번호
+		  , #{memberNo, jdbcType=VARCHAR}	 -- 회원번호
+		  , #{rgsterNo, jdbcType=VARCHAR}	 -- 등록자번호
+		  , GETDATE()						 -- 등록일시
+		)
+	</insert>
+
+</mapper>

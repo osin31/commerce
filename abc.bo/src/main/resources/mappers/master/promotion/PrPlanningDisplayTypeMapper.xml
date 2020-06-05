@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayTypeDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayType">
+    
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayTypeDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			PR_PLANNING_DISPLAY_TYPE
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectPrPlanningDisplayTypeListByPlndpNo" parameterType="String" resultType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayType">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayTypeDao.selectPrPlanningDisplayTypeListByPlndpNo [기획전 유형 리스트 조회] [이가영] */  
+    
+		SELECT 
+			plndp_no,
+    		plndp_type_code
+		FROM 
+			PR_PLANNING_DISPLAY_TYPE with (nolock)
+		WHERE 
+			plndp_no = #{plndpNo, jdbcType=VARCHAR}
+    </select>
+    
+    <insert id="insertPrPlanningDisplayType" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayType">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayTypeDao.insertPrPlanningDisplayType [기획전 유형 등록] [이가영] */
+    
+    	INSERT INTO PR_PLANNING_DISPLAY_TYPE (
+    		plndp_no,
+    		plndp_type_code
+    	) VALUES (
+    		#{plndpNo, jdbcType=VARCHAR},
+    		#{plndpTypeCode, jdbcType=VARCHAR}
+    	)
+    </insert>
+    
+    <delete id="deletePrPlanningDisplayTypeListByPlndpNo" parameterType="String">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayTypeDao.deletePrPlanningDisplayTypeListByPlndpNo [기획전 유형 삭제] [이가영] */
+    
+	    DELETE FROM
+	    	PR_PLANNING_DISPLAY_TYPE
+	    WHERE 
+			plndp_no = #{plndpNo, jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

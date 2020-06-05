@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.PdProductOptionChangeHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.product.model.master.PdProductOptionChangeHistory">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionChangeHistoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			pd_product_option_change_history WITH(NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <insert id="insertWithSelectKey" parameterType="kr.co.abcmart.bo.product.model.master.PdProductOptionChangeHistory">
+    	<selectKey resultType="java.lang.Integer" keyProperty="chngHistSeq" order="BEFORE">
+    		SELECT
+    			ISNULL(MAX(chng_hist_seq) + 1, 1)
+    		FROM
+    			pd_product_option_change_history WITH(NOLOCK)
+    		WHERE
+    			prdt_no = #{prdtNo, jdbcType=VARCHAR}
+    			AND prdt_optn_no = #{prdtOptnNo, jdbcType=VARCHAR}
+    	</selectKey>
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionChangeHistoryDao.insertWithSelectKey [상품 옵션 변경 이력 등록 쿼리] [김세훈] */
+		INSERT INTO
+			pd_product_option_change_history
+			( prdt_no, prdt_optn_no, chng_hist_seq, chng_field, chng_field_name, chng_before_field_value, chng_after_field_value, rgster_no, rgst_dtm ) 
+		VALUES
+			( #{prdtNo, jdbcType=VARCHAR}, #{prdtOptnNo, jdbcType=VARCHAR}, #{chngHistSeq, jdbcType=INTEGER}, #{chngField, jdbcType=VARCHAR}, #{chngFieldName, jdbcType=VARCHAR}, #{chngBeforeFieldValue, jdbcType=VARCHAR}, #{chngAfterFieldValue, jdbcType=VARCHAR}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <delete id="deleteByForeignKeys" parameterType="kr.co.abcmart.bo.product.model.master.PdProductOptionChangeHistory">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionChangeHistoryDao.deleteByForeignKeys [왜래키에 의한 상품옵션변경이력 삭제 쿼리] [김세훈] */
+		DELETE
+		FROM pd_product_option_change_history
+		WHERE
+			prdt_no = #{prdtNo, jdbcType=VARCHAR} AND prdt_optn_no = #{prdtOptnNo, jdbcType=VARCHAR}  
+	</delete>
+    
+    <delete id="deleteContraryOptions">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionChangeHistoryDao.deleteContraryOptions [상품 옵션 목록에 존재하지 않는 옵션 삭제 쿼리] [김세훈] */
+		DELETE
+		FROM pd_product_option_change_history
+		WHERE
+			prdt_no = #{prdtNo, jdbcType=VARCHAR}
+			AND prdt_optn_no NOT IN
+			<foreach collection="productOption" item="item" open="(" separator="," close=")">
+				#{item.prdtOptnNo, jdbcType=VARCHAR}
+			</foreach>
+	</delete>
+
+</mapper>

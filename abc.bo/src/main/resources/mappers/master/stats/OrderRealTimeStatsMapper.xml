@@ -1,0 +1,1039 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.stats.repository.master.OrderRealTimeStatsDao">
+	<select id="selectCurrentDateTime" resultType="java.sql.Timestamp">
+		/*+ kr.co.abcmart.bo.stats.repository.master.OrderRealTimeStatsDao.selectCurrentDateTime [DB DateTime를 조회 한다.] [김진성] */
+		SELECT GETDATE() AS CURRENT_DATETIME
+	</select>
+
+	<sql id="searchWhere">
+		<if test="(bean.dayFromDate != null and bean.dayFromDate != '' )
+			and (bean.dayToDate != null and bean.dayToDate != '' )">
+				AND ORDER_DTM BETWEEN CONVERT(DATETIME, #{bean.dayFromDate, jdbcType=VARCHAR}) 
+		   			  AND CONVERT(DATETIME, #{bean.dayToDate, jdbcType=VARCHAR})
+		</if>
+		<if test="bean.siteNo != null and bean.siteNo != '' "> <!-- 사이트 코드 -->
+		 	AND SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+		</if>
+		
+		<if test="bean.deviceCodes != null and bean.deviceCodes != '' "> <!-- 디바이스 코드 -->
+			AND DEVICE_CODE IN
+			<foreach item="item" index="index" collection="bean.deviceCodes" open="(" separator="," close=")">
+				#{item, jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		<if test="bean.stockGbnCodeArr != null and bean.stockGbnCodeArr != '' ">
+	    		AND
+	    		<choose>
+		    		<when test="bean.typeStats != 'device'">
+			    		<foreach collection="bean.stockGbnCodeArr" item="stockGbnCode" open="(" close=")" separator="or">
+			    			OC.STOCK_GBN_CODE = #{stockGbnCode, jdbcType=VARCHAR} -- 발송처별
+			    		</foreach>
+		    		</when>
+		    		<otherwise>
+		    			EXISTS ( SELECT 1
+									FROM OC_ORDER_DELIVERY_HISTORY oodh WITH (NOLOCK)
+								WHERE 
+									<foreach collection="bean.stockGbnCodeArr" item="stockGbnCode" open="(" close=")" separator="or">
+			    						oodh.STOCK_GBN_CODE = #{stockGbnCode, jdbcType=VARCHAR} -- 발송처별
+			    					</foreach>
+								AND oodh.ORDER_NO = OM.ORDER_NO
+								)
+		    		</otherwise>
+	    		</choose>
+	    </if>
+		<if test="bean.orderNo != null and bean.orderNo != '' ">
+			AND ORDER_NO = #{bean.orderNo, jdbcType=VARCHAR}
+		</if>
+	</sql>
+	
+	<sql id="addSearchWhere">
+		<if test="bean.mmnyPrdtYn != null and bean.mmnyPrdtYn != ''">  
+      		AND  OP.MMNY_PRDT_YN = #{bean.mmnyPrdtYn, jdbcType=CHAR} --자사상품여부 조건 *
+    			<if test="bean.mmnyPrdtYn == 'Y' and (bean.ourChannel !=null and bean.ourChannel != '') ">
+    				AND OP.CHNNL_NO = #{bean.ourChannel, jdbcType=VARCHAR}	-- 자사상품여부 Y선택시 채널번호로 검색
+    			</if>
+    			<if test="bean.mmnyPrdtYn == 'N' and (bean.shoperSiteNo !=null and bean.shoperSiteNo != '') ">
+    				AND SITE_NO = #{bean.shoperSiteNo, jdbcType=VARCHAR}	-- 자사상품여부 N선택시 사이트번호로 검색	
+    			</if>
+      	</if>
+      	<if test="bean.vndrNo != null and bean.vndrNo != '' ">
+     		AND OP.VNDR_NO = #{bean.vndrNo, jdbcType=VARCHAR}
+     	</if>
+      	<choose>
+      		<when test="bean.typeStats != 'payment' ">
+      			<if test="bean.pymntMeansCode != null and bean.pymntMeansCode !='' ">
+		    		AND EXISTS ( SELECT 1
+		
+		            	FROM OC_ORDER_PAYMENT WITH (NOLOCK)
+		
+			           WHERE ORDER_NO = OC.ORDER_NO
+			             AND
+						<foreach collection="bean.pymntMeansCode" item="pymntMeansCode" open="(" close=")" separator="or">
+								<if test="(pymntMeansCode != '10001' and pymntMeansCode != '10002') ">
+			             		 	PYMNT_MEANS_CODE = #{pymntMeansCode, jdbcType=VARCHAR}  -- 결제수단 구분
+			             		 </if>
+			             		<if test="pymntMeansCode == '10001' or pymntMeansCode == '10002' ">
+			             			<choose>
+			             				<when test="bean.chkEscroTrue == 'Y' and bean.chkEscroFalse == '' ">
+			             					(PYMNT_MEANS_CODE = #{pymntMeansCode, jdbcType=VARCHAR} AND ESCR_APPLY_YN = #{bean.chkEscroTrue, jdbcType=CHAR}) -- 에스크로 적용여부 Y
+			             				</when>
+			             				<when test="bean.chkEscroFalse == 'N' and bean.chkEscroTrue == '' ">
+			             					(PYMNT_MEANS_CODE = #{pymntMeansCode, jdbcType=VARCHAR} AND ESCR_APPLY_YN = #{bean.chkEscroFalse, jdbcType=CHAR}) -- 에스크로 미적용여부 N
+			             				</when>
+			             				<otherwise>
+			             					PYMNT_MEANS_CODE = #{pymntMeansCode, jdbcType=VARCHAR}  -- 결제수단 구분
+			             				</otherwise>
+			             			</choose> 
+					           		
+					           	</if>
+					           
+			            </foreach>
+			        	)
+		             
+		    	</if>
+      		</when>
+      		<otherwise>
+   				<if test="bean.chkEscroTrue == 'Y' and bean.chkEscroFalse == '' ">
+           			AND ESCR_APPLY_YN = #{bean.chkEscroTrue, jdbcType=CHAR} -- 에스크로 적용여부 Y
+		        </if>
+	           	<if test="bean.chkEscroFalse == 'N' and bean.chkEscroTrue == '' ">
+	           		AND ESCR_APPLY_YN = #{bean.chkEscroFalse, jdbcType=CHAR} -- 에스크로 미적용여부 N
+	           	</if>
+      		</otherwise>
+      	</choose>
+      	
+	</sql>
+	
+	<select id="selectCurrentSaleStatsList" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.CurrentSaleStats">
+		/*+ kr.co.abcmart.bo.stats.repository.master.OrderRealTimeStatsDao.selectCurrentSaleStatsList [당일매출 현황 조회] [김진성] */
+			WITH AllTime AS (
+	
+							      SELECT 0 AS JOIN_DTM, CONCAT(FORMAT(0, '00'), '~', FORMAT(1, '00'), '시') AS DTM_TITLE
+							  UNION ALL
+							      SELECT JOIN_DTM + 1, CONCAT(FORMAT(JOIN_DTM+1, '00'), '~', FORMAT(JOIN_DTM+2, '00'), '시') AS DTM_TITLE
+							      	FROM AllTime
+								  WHERE JOIN_DTM <![CDATA[<]]> 23	
+
+							)
+							
+							, SearchData AS (
+	
+	                              SELECT V.ORDER_DTM
+	
+	                                   , V.ORDER_TIMESLOT_VALUE
+	
+	                                   , SUM((CASE WHEN V.SALES_CNCL_GBN_TYPE ='C' OR V.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*V.ORDER_QTY) AS ORDER_QTY
+	                                   , SUM((CASE WHEN V.SALES_CNCL_GBN_TYPE ='C' OR V.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*V.PRDT_NORMAL_AMT) AS PRDT_NORMAL_AMT
+	                                   , SUM((CASE WHEN V.SALES_CNCL_GBN_TYPE ='C' OR V.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*V.ORDER_AMT) AS ORDER_AMT
+	
+	                                   , SUM((CASE WHEN V.SALES_CNCL_GBN_TYPE ='C' OR V.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN V.STOCK_GBN_CODE = '10000' THEN V.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+	                                   , SUM((CASE WHEN V.SALES_CNCL_GBN_TYPE ='C' OR V.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN V.STOCK_GBN_CODE = '10000' THEN V.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10000
+	                                   , SUM((CASE WHEN V.SALES_CNCL_GBN_TYPE ='C' OR V.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN V.STOCK_GBN_CODE = '10000' THEN V.ORDER_AMT ELSE 0 END)) AS ORDER_AMT_10000
+	
+	                                   , SUM((CASE WHEN V.SALES_CNCL_GBN_TYPE ='C' OR V.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN V.STOCK_GBN_CODE = '10001' THEN V.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+	                                   , SUM((CASE WHEN V.SALES_CNCL_GBN_TYPE ='C' OR V.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN V.STOCK_GBN_CODE = '10001' THEN V.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10001
+	                                   , SUM((CASE WHEN V.SALES_CNCL_GBN_TYPE ='C' OR V.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN V.STOCK_GBN_CODE = '10001' THEN V.ORDER_AMT ELSE 0 END)) AS ORDER_AMT_10001
+	
+	                                   , SUM((CASE WHEN V.SALES_CNCL_GBN_TYPE ='C' OR V.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN V.STOCK_GBN_CODE = '10002' THEN V.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+	                                   , SUM((CASE WHEN V.SALES_CNCL_GBN_TYPE ='C' OR V.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN V.STOCK_GBN_CODE = '10002' THEN V.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10002
+	                                   , SUM((CASE WHEN V.SALES_CNCL_GBN_TYPE ='C' OR V.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN V.STOCK_GBN_CODE = '10002' THEN V.ORDER_AMT ELSE 0 END)) AS ORDER_AMT_10002
+	
+	                                   , SUM((CASE WHEN V.SALES_CNCL_GBN_TYPE ='C' OR V.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN V.STOCK_GBN_CODE = '10003' THEN V.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10003
+	                                   , SUM((CASE WHEN V.SALES_CNCL_GBN_TYPE ='C' OR V.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN V.STOCK_GBN_CODE = '10003' THEN V.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10003
+	                                   , SUM((CASE WHEN V.SALES_CNCL_GBN_TYPE ='C' OR V.SALES_CNCL_GBN_TYPE = 'R' THEN -1 ELSE 1 END)*(CASE WHEN V.STOCK_GBN_CODE = '10003' THEN V.ORDER_AMT ELSE 0 END)) AS ORDER_AMT_10003
+	
+	                                FROM (
+	
+	                                             SELECT CONVERT(CHAR(10), OC.ORDER_DTM, 23) AS ORDER_DTM
+	                                                  , DATEPART(HH, OC.ORDER_DTM) AS ORDER_TIMESLOT_VALUE
+	                                                  , OP.ORDER_NO --, OP.PRDT_TYPE_CODE, OP.ORDER_QTY
+	                                                  , (CASE WHEN OP.PRDT_TYPE_CODE = '10004' THEN 0 ELSE OP.ORDER_QTY END * OC.AMT_TYPE) AS ORDER_QTY --배송비는 수량에서 제외
+	                                                  , (OP.PRDT_NORMAL_AMT* AMT_TYPE) AS PRDT_NORMAL_AMT
+	                                                  , (OP.ORDER_AMT * AMT_TYPE) AS ORDER_AMT
+	                                                  , CASE WHEN OP.PRDT_TYPE_CODE = '10004' THEN '10000'  --배송비는 온라인물류로 처리
+	
+	                                                                 ELSE ( SELECT TOP 1
+	
+	                                                                               STOCK_GBN_CODE
+	
+                                                                            FROM OC_ORDER_DELIVERY_HISTORY WITH (NOLOCK)
+
+                                                                            WHERE ORDER_NO = OP.ORDER_NO
+                                                                            	AND ORDER_PRDT_SEQ = OP.ORDER_PRDT_SEQ
+
+                                                                            ORDER BY ORDER_NO, ORDER_PRDT_SEQ, ORDER_DLVY_HIST_SEQ
+	
+	                                                                         )
+	
+	                                                                 END AS STOCK_GBN_CODE  -- 발송처가 NULL인 경우 그리고 NULL인 경우 처리방법 확인
+	
+	                                                     ,OC.SALES_CNCL_GBN_TYPE
+	
+	                                               FROM (
+	
+	                                                            SELECT ORDER_NO
+	                                                            	 , MEMBER_NO
+	                                                            	 , ORDER_DTM
+	                                                            	 , SITE_NO
+	                                                            	 , MEMBER_TYPE_CODE
+	                                                            	 , EMP_YN
+	                                                            	 , DEVICE_CODE
+																	 , DLVY_TYPE_CODE, CLM_NO
+																	 , SALES_CNCL_GBN_TYPE
+	                                                                 , CASE WHEN SALES_CNCL_GBN_TYPE = 'C' THEN    -- 취소(반품주문이면 -1, 일반취소주문이면 0), 매출( 1 )
+	                                                                   CASE WHEN ( SELECT COUNT(CLM_NO) CLM_CNT
+	
+                                                                                     FROM OC_CLAIM WITH (NOLOCK)
+
+                                                                                    WHERE CLM_NO = OM.CLM_NO
+
+                                                                                         AND CLM_GBN_CODE = '10002'  --반품                                               
+
+                                                                                  ) IS NOT NULL THEN -1
+	
+	                                                                            ELSE 0 END  
+	
+	                                                                   ELSE 1 END AS AMT_TYPE
+	
+	                                                               FROM OC_ORDER OM WITH (NOLOCK)                                         
+	
+	                                                              WHERE SALES_CNCL_GBN_TYPE IN ('C','S')                      -- 취소, 매출
+																	
+	                                                                AND ORDER_DTM <![CDATA[>=]]> CONVERT(DATETIME, CONVERT(CHAR(8), GETDATE(), 112))
+	                                                                AND ORDER_DTM <![CDATA[<]]> CONVERT(DATETIME, CONVERT(CHAR(8), GETDATE()+1, 112))
+	
+																	AND ORDER_STAT_CODE != '10000' -- 임시주문 제외
+																	
+																	<include refid="searchWhere"/>
+	
+	                                                        ) OC
+	
+	                                             INNER JOIN OC_ORDER_PRODUCT OP WITH (NOLOCK)
+	                                             	ON OC.ORDER_NO = OP.ORDER_NO
+	                                             WHERE OP.PRDT_TYPE_CODE != '10004' -- 배송비는 제외
+	                                             	<include refid="addSearchWhere"/>
+	
+	                                         ) V  GROUP BY ORDER_DTM , ORDER_TIMESLOT_VALUE
+	
+										)SELECT B.HOUR_TITLE
+											  , B.ORDER_QTY_ALL
+											  , B.PRDT_NORMAL_AMT_ALL
+											  , B.ORDER_AMT_ALL
+											  , B.ORDER_QTY_10000
+											  , B.PRDT_NORMAL_AMT_10000
+											  , B.ORDER_AMT_10000
+											  , B.ORDER_QTY_10001
+											  , B.PRDT_NORMAL_AMT_10001
+											  , B.ORDER_AMT_10001
+											  , B.ORDER_QTY_10002
+											  , B.PRDT_NORMAL_AMT_10002
+											  , B.ORDER_AMT_10002
+											  , B.ORDER_QTY_10003
+											  , B.PRDT_NORMAL_AMT_10003
+											  , B.ORDER_AMT_10003
+										FROM (
+													SELECT '누적 현황' AS HOUR_TITLE
+													
+													     , SUM(ISNULL(S.ORDER_QTY, 0))                	AS ORDER_QTY_ALL
+													     , SUM(ISNULL(PRDT_NORMAL_AMT, 0))            	AS PRDT_NORMAL_AMT_ALL
+													     , SUM(ISNULL(ORDER_AMT, 0))                  	AS ORDER_AMT_ALL
+													
+												     	 , SUM(ISNULL(S.ORDER_QTY_10000, 0))          	AS ORDER_QTY_10000
+												         , SUM(ISNULL(PRDT_NORMAL_AMT_10000, 0)) 		AS PRDT_NORMAL_AMT_10000
+												         , SUM(ISNULL(ORDER_AMT_10000, 0))         		AS ORDER_AMT_10000
+													
+													     , SUM(ISNULL(S.ORDER_QTY_10001, 0))          	AS ORDER_QTY_10001
+												         , SUM(ISNULL(PRDT_NORMAL_AMT_10001, 0)) 		AS PRDT_NORMAL_AMT_10001
+												         , SUM(ISNULL(ORDER_AMT_10001, 0))         		AS ORDER_AMT_10001
+													
+													     , SUM(ISNULL(S.ORDER_QTY_10002, 0))          	AS ORDER_QTY_10002
+												         , SUM(ISNULL(PRDT_NORMAL_AMT_10002, 0)) 		AS PRDT_NORMAL_AMT_10002
+												         , SUM(ISNULL(ORDER_AMT_10002, 0))         		AS ORDER_AMT_10002
+													
+													     , SUM(ISNULL(S.ORDER_QTY_10003, 0))         	AS ORDER_QTY_10003
+												         , SUM(ISNULL(PRDT_NORMAL_AMT_10003, 0)) 		AS PRDT_NORMAL_AMT_10003
+												         , SUM(ISNULL(ORDER_AMT_10003, 0))         		AS ORDER_AMT_10003
+													
+													  FROM AllTime A WITH (NOLOCK)
+										   LEFT OUTER JOIN SearchData S WITH (NOLOCK)
+													  	ON A.JOIN_DTM = S.ORDER_TIMESLOT_VALUE
+													  	
+										UNION ALL
+													
+													SELECT A.DTM_TITLE AS HOUR_TITLE
+													
+													     , ISNULL(S.ORDER_QTY, 0)                AS ORDER_QTY_ALL
+													     , ISNULL(PRDT_NORMAL_AMT, 0)            AS PRDT_NORMAL_AMT_ALL
+													     , ISNULL(ORDER_AMT, 0)                  AS ORDER_AMT_ALL
+													
+												     	 , ISNULL(S.ORDER_QTY_10000, 0)          AS ORDER_QTY_10000
+												         , ISNULL(PRDT_NORMAL_AMT_10000, 0) 		AS PRDT_NORMAL_AMT_10000
+												         , ISNULL(ORDER_AMT_10000, 0)         	AS ORDER_AMT_10000
+													
+													     , ISNULL(S.ORDER_QTY_10001, 0)          AS ORDER_QTY_10001
+												         , ISNULL(PRDT_NORMAL_AMT_10001, 0) 		AS PRDT_NORMAL_AMT_10001
+												         , ISNULL(ORDER_AMT_10001, 0)         	AS ORDER_AMT_10001
+													
+													     , ISNULL(S.ORDER_QTY_10002, 0)          AS ORDER_QTY_10002
+												         , ISNULL(PRDT_NORMAL_AMT_10002, 0) 		AS PRDT_NORMAL_AMT_10002
+												         , ISNULL(ORDER_AMT_10002, 0)         	AS ORDER_AMT_10002
+													
+													     , ISNULL(S.ORDER_QTY_10003, 0)          AS ORDER_QTY_10003
+												         , ISNULL(PRDT_NORMAL_AMT_10003, 0) 		AS PRDT_NORMAL_AMT_10003
+												         , ISNULL(ORDER_AMT_10003, 0)         	AS ORDER_AMT_10003
+													
+													  FROM AllTime A WITH (NOLOCK)
+										   LEFT OUTER JOIN SearchData S WITH (NOLOCK)
+													  	ON A.JOIN_DTM = S.ORDER_TIMESLOT_VALUE
+									) B
+	</select>
+	
+	<select id="selectCurrentSaleDetailList" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.CurrentSaleStats">
+		/*+ kr.co.abcmart.bo.stats.repository.master.OrderRealTimeStatsDao.selectCurrentSaleDetailList [상품매출 현황 상세 목록 조회] [이재렬] */
+			with SearchData AS (
+
+                              SELECT 
+                                        V.BRAND_NO
+                                      , V.STD_CTGR_NO
+                                      , V.STYLE_INFO
+                                      , V.PRDT_COLOR_CODE
+                                      , V.PRDT_NO
+                                      , MAX(V.PRDT_NAME) AS PRDT_NAME
+                                      
+                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*v.ORDER_QTY) AS ORDER_QTY
+                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*v.PRDT_NORMAL_AMT) AS PRDT_NORMAL_AMT
+                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*v.ORDER_AMT) AS ORDER_AMT
+                                      
+                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10000' THEN V.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10000' THEN V.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10000
+                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10000' THEN V.ORDER_AMT ELSE 0 END)) AS ORDER_AMT_10000
+
+                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10001' THEN V.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10001' THEN V.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10001
+                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10001' THEN V.ORDER_AMT ELSE 0 END)) AS ORDER_AMT_10001
+
+                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10002' THEN V.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10002' THEN V.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10002
+                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10002' THEN V.ORDER_AMT ELSE 0 END)) AS ORDER_AMT_10002
+
+                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10003' THEN V.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10003
+                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10003' THEN V.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10003
+                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10003' THEN V.ORDER_AMT ELSE 0 END)) AS ORDER_AMT_10003
+
+                                FROM (
+
+                                             SELECT CONVERT(CHAR(10), OC.ORDER_DTM, 23) AS ORDER_DTM
+
+                                                  , DATEPART(HH, OC.ORDER_DTM) AS ORDER_TIMESLOT_VALUE
+                                                  , OP.ORDER_NO --, OP.PRDT_TYPE_CODE, OP.ORDER_QTY
+                                                  , (CASE WHEN OP.PRDT_TYPE_CODE = '10004' THEN 0 ELSE OP.ORDER_QTY END * OC.AMT_TYPE) AS ORDER_QTY --배송비는 수량에서 제외
+                                                  , (OP.PRDT_NORMAL_AMT* AMT_TYPE) AS PRDT_NORMAL_AMT
+                                                  , (OP.ORDER_AMT * AMT_TYPE) AS ORDER_AMT
+                                                  , CASE WHEN OP.PRDT_TYPE_CODE = '10004' THEN '10000'  --배송비는 온라인물류로 처리
+
+                                                          ELSE ISNULL(( SELECT TOP 1
+
+                                                                           STOCK_GBN_CODE
+
+                                                                 FROM OC_ORDER_DELIVERY_HISTORY WITH (NOLOCK)
+
+                                                                 WHERE ORDER_NO = OP.ORDER_NO AND ORDER_PRDT_SEQ = OP.ORDER_PRDT_SEQ
+
+                                                                 ORDER BY ORDER_NO, ORDER_PRDT_SEQ, ORDER_DLVY_HIST_SEQ
+
+                                                                  ),
+                                                                    (SELECT TOP 1 STOCK_GBN_CODE
+                                                                    	FROM OC_ORDER_DELIVERY_HISTORY WITH (NOLOCK)
+                                                                    		WHERE ORDER_NO = OC.ORG_ORDER_NO))
+
+                                                     END AS STOCK_GBN_CODE  -- 발송처가 NULL인 경우 그리고 NULL인 경우 처리방법 확인
+
+                                                     ,OC.SALES_CNCL_GBN_TYPE
+                                                     , OP.BRAND_NO
+                                                     , OP.STD_CTGR_NO
+                                                     , OP.STYLE_INFO
+                                                     , OP.PRDT_COLOR_CODE
+                                                     , OP.PRDT_NO
+                                                     , OP.PRDT_NAME
+
+                                               FROM (
+
+                                                            SELECT ORDER_NO
+                                                            	 , MEMBER_NO
+                                                            	 , ORDER_DTM
+                                                            	 , SITE_NO
+                                                            	 , MEMBER_TYPE_CODE
+                                                            	 , EMP_YN
+                                                            	 , DEVICE_CODE
+                                                                 , DLVY_TYPE_CODE, CLM_NO
+                                                                 , SALES_CNCL_GBN_TYPE
+                                                                 , CASE WHEN SALES_CNCL_GBN_TYPE = 'C' THEN    -- 취소(반품주문이면 -1, 일반취소주문이면 0), 매출( 1 )
+
+                                                                    CASE WHEN ( SELECT COUNT(CLM_NO) CLM_CNT
+
+                                                                                  FROM OC_CLAIM WITH (NOLOCK)
+
+                                                                                 WHERE CLM_NO = OM.CLM_NO
+
+                                                                                     AND CLM_GBN_CODE = '10002'  --반품                                               
+
+                                                                               ) IS NOT NULL THEN 0
+
+                                                                             ELSE 0 END  
+
+                                                            		ELSE 1 END AS AMT_TYPE
+                                                            	 , ORG_ORDER_NO
+
+                                                               FROM OC_ORDER OM WITH (NOLOCK)                                         
+
+                                                              WHERE SALES_CNCL_GBN_TYPE IN ('C','S')                      -- 취소, 매출
+																<if test="(bean.dayFromDate == null or bean.dayFromDate == '' )
+																	and (bean.dayToDate == null or bean.dayToDate == '' )">
+		                                                                AND ORDER_DTM <![CDATA[>=]]> CONVERT(DATETIME, CONVERT(CHAR(8), GETDATE(), 112))
+		                                                                AND ORDER_DTM <![CDATA[<]]> CONVERT(DATETIME, CONVERT(CHAR(8), GETDATE()+1, 112))
+                                                                </if>
+                                                                
+                                                                AND ORDER_STAT_CODE != '10000' -- 임시주문 제외
+                                                                
+																<include refid="searchWhere"/>
+                                                        ) OC
+
+                                             INNER JOIN OC_ORDER_PRODUCT OP WITH (NOLOCK)
+                                             	ON OC.ORDER_NO = OP.ORDER_NO
+                                             	AND OP.PRDT_TYPE_CODE != '10004'
+                                             	<include refid="addSearchWhere"/>
+
+                                         ) V
+                                         	<if test="(bean.fromTime != null and bean.fromTime != '')
+                                         				and (bean.toTime != null and bean.toTime != '') ">
+                                         					WHERE ORDER_TIMESLOT_VALUE <![CDATA[>=]]> CONVERT(INT, #{bean.fromTime, jdbcType=VARCHAR})
+                                         						AND ORDER_TIMESLOT_VALUE <![CDATA[<]]> CONVERT(INT, #{bean.toTime, jdbcType=VARCHAR})  -- 시간 조건 *
+                                         	</if>
+                                            GROUP BY V.BRAND_NO, V.STD_CTGR_NO, V.STYLE_INFO, V.PRDT_COLOR_CODE, V.PRDT_NO
+
+									)SELECT '누적합계' AS BRAND_NO
+									      , '' AS BRAND_NAME
+									      , '' AS STD_CTGR_NO
+									      , '' AS STD_CTGR_NAME
+									      , '' AS STYLE_INFO
+									      , '' AS PRDT_COLOR_CODE
+									      , '' AS PRDT_COLOR_NAME
+									      , '' AS PRDT_NO_NAME
+									      , '' AS PRDT_NO
+					 	 		 		  , '' AS PRDT_NAME
+									      , SUM(ISNULL(S.ORDER_QTY, 0))                AS ORDER_QTY_ALL
+									      , SUM(ISNULL(PRDT_NORMAL_AMT, 0))            AS  PRDT_NORMAL_AMT_ALL
+									      , SUM(ISNULL(ORDER_AMT, 0))                  AS ORDER_AMT_ALL
+									      , SUM(ISNULL(S.ORDER_QTY_10000, 0))          AS ORDER_QTY_10000
+									      , SUM(ISNULL(PRDT_NORMAL_AMT_10000, 0)) 	   AS PRDT_NORMAL_AMT_10000
+									      , SUM(ISNULL(ORDER_AMT_10000, 0))            AS ORDER_AMT_10000
+									      , SUM(ISNULL(S.ORDER_QTY_10001, 0))          AS ORDER_QTY_10001
+									      , SUM(ISNULL(PRDT_NORMAL_AMT_10001, 0)) 	   AS PRDT_NORMAL_AMT_10001
+									      , SUM(ISNULL(ORDER_AMT_10001, 0))            AS ORDER_AMT_10001
+									      , SUM(ISNULL(S.ORDER_QTY_10002, 0))          AS ORDER_QTY_10002
+									      , SUM(ISNULL(PRDT_NORMAL_AMT_10002, 0)) 	   AS PRDT_NORMAL_AMT_10002
+									      , SUM(ISNULL(ORDER_AMT_10002, 0))            AS ORDER_AMT_10002
+									      , SUM(ISNULL(S.ORDER_QTY_10003, 0))          AS ORDER_QTY_10003
+									      , SUM(ISNULL(PRDT_NORMAL_AMT_10003, 0)) 	   AS PRDT_NORMAL_AMT_10003
+									      , SUM(ISNULL(ORDER_AMT_10003, 0))            AS ORDER_AMT_10003
+									
+									  FROM SearchData S WITH (NOLOCK)
+									  LEFT OUTER JOIN DP_BRAND BR WITH (NOLOCK)
+									  	ON S.BRAND_NO = BR.BRAND_NO
+									  LEFT OUTER JOIN SY_STANDARD_CATEGORY SC WITH (NOLOCK)
+										ON S.STD_CTGR_NO = SC.STD_CTGR_NO
+										
+									UNION ALL
+									
+										SELECT S.BRAND_NO
+									      , BR.BRAND_NAME
+									      , S.STD_CTGR_NO
+									      , SC.STD_CTGR_NAME
+									      , S.STYLE_INFO
+									      , S.PRDT_COLOR_CODE
+									      , (SELECT CODE_DTL_NAME FROM SY_CODE_DETAIL WITH (NOLOCK)
+									      		WHERE CODE_FIELD = 'PRDT_COLOR_CODE'
+									      			AND CODE_DTL_NO = S.PRDT_COLOR_CODE) AS PRDT_COLOR_NAME
+									      , CONCAT(S.PRDT_NO, ' / ', S.PRDT_NAME) AS PRDT_NO_NAME
+									      , S.PRDT_NO
+					 	 		 		  , S.PRDT_NAME
+									      , ISNULL(S.ORDER_QTY, 0)                AS ORDER_QTY_ALL
+									      , ISNULL(PRDT_NORMAL_AMT, 0)            AS  PRDT_NORMAL_AMT_ALL
+									      , ISNULL(ORDER_AMT, 0)                  AS ORDER_AMT_ALL
+									      , ISNULL(S.ORDER_QTY_10000, 0)          AS ORDER_QTY_10000
+									      , ISNULL(PRDT_NORMAL_AMT_10000, 0) 	  AS PRDT_NORMAL_AMT_10000
+									      , ISNULL(ORDER_AMT_10000, 0)         	  AS ORDER_AMT_10000
+									      , ISNULL(S.ORDER_QTY_10001, 0)          AS ORDER_QTY_10001
+									      , ISNULL(PRDT_NORMAL_AMT_10001, 0) 	  AS PRDT_NORMAL_AMT_10001
+									      , ISNULL(ORDER_AMT_10001, 0)         	  AS ORDER_AMT_10001
+									      , ISNULL(S.ORDER_QTY_10002, 0)          AS ORDER_QTY_10002
+									      , ISNULL(PRDT_NORMAL_AMT_10002, 0) 	  AS PRDT_NORMAL_AMT_10002
+									      , ISNULL(ORDER_AMT_10002, 0)         	  AS ORDER_AMT_10002
+									      , ISNULL(S.ORDER_QTY_10003, 0)          AS ORDER_QTY_10003
+									      , ISNULL(PRDT_NORMAL_AMT_10003, 0) 	  AS PRDT_NORMAL_AMT_10003
+									      , ISNULL(ORDER_AMT_10003, 0)         	  AS ORDER_AMT_10003
+									
+									  FROM SearchData S WITH (NOLOCK)
+									  LEFT OUTER JOIN DP_BRAND BR WITH (NOLOCK)
+									  	ON S.BRAND_NO = BR.BRAND_NO
+									  LEFT OUTER JOIN SY_STANDARD_CATEGORY SC WITH (NOLOCK)
+										ON S.STD_CTGR_NO = SC.STD_CTGR_NO
+	</select>
+	
+	<select id="selectCurrentDeviceList" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.CurrentSaleStats">
+		/*+ kr.co.abcmart.bo.stats.repository.master.OrderRealTimeStatsDao.selectCurrentDeviceList [당일 디바이스별 매출 현황 조회] [이재렬] */
+			WITH AllTime AS (
+
+			      SELECT 0 AS JOIN_DTM, CONCAT(FORMAT(0, '00'), '~', FORMAT(1, '00'), '시') AS DTM_TITLE
+			
+			       UNION ALL
+			
+			      SELECT JOIN_DTM + 1, CONCAT(FORMAT(JOIN_DTM+1, '00'), '~', FORMAT(JOIN_DTM+2, '00'), '시') AS DTM_TITLE
+			
+			        FROM AllTime
+			
+			       WHERE JOIN_DTM <![CDATA[<]]> 23
+			
+			)
+
+				,   SearchData AS (
+				
+				                SELECT  
+				
+				                ORDER_DTM, ORDER_TIMESLOT_VALUE
+				
+				                  , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*v.ORDER_QTY) AS ORDER_QTY				
+				                  , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*v.PRDT_NORMAL_AMT) AS PRDT_NORMAL_AMT
+				                  , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*v.ORDER_AMT) AS ORDER_AMT
+				
+				                  , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.DEVICE_CODE = '10000' THEN V.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+				                  , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.DEVICE_CODE = '10000' THEN V.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10000
+				                  , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.DEVICE_CODE = '10000' THEN V.ORDER_AMT ELSE 0 END)) AS ORDER_AMT_10000
+				
+				                  , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.DEVICE_CODE = '10001' THEN V.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+				                  , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.DEVICE_CODE = '10001' THEN V.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10001
+				                  , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.DEVICE_CODE = '10001' THEN V.ORDER_AMT ELSE 0 END)) AS ORDER_AMT_10001
+				
+				                  , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.DEVICE_CODE = '10002' THEN V.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+				                  , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.DEVICE_CODE = '10002' THEN V.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10002
+				                  , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.DEVICE_CODE = '10002' THEN V.ORDER_AMT ELSE 0 END)) AS ORDER_AMT_10002
+				
+				                  FROM (
+				
+				                         SELECT   CONVERT(CHAR(10), OC.ORDER_DTM, 23) AS ORDER_DTM
+				                                 , DATEPART(HH, OC.ORDER_DTM) AS ORDER_TIMESLOT_VALUE
+				                                 , OP.ORDER_NO 
+				                                 , (CASE WHEN OP.PRDT_TYPE_CODE = '10004' THEN 0 ELSE OP.ORDER_QTY END * OC.AMT_TYPE) AS ORDER_QTY --배송비는 수량에서 제외
+				                                 , (OP.PRDT_NORMAL_AMT* AMT_TYPE) AS PRDT_NORMAL_AMT
+				                                 , (OP.ORDER_AMT * AMT_TYPE) AS ORDER_AMT
+				                                 , CASE WHEN OP.PRDT_TYPE_CODE = '10004' THEN '10000'  --배송비는 온라인물류로 처리
+				
+				                                                ELSE ( SELECT TOP 1
+				
+		                                                                         STOCK_GBN_CODE
+		
+		                                                               FROM OC_ORDER_DELIVERY_HISTORY WITH (NOLOCK)
+		
+		                                                               WHERE ORDER_NO = OP.ORDER_NO AND ORDER_PRDT_SEQ = OP.ORDER_PRDT_SEQ
+		
+		                                                               ORDER BY ORDER_NO, ORDER_PRDT_SEQ, ORDER_DLVY_HIST_SEQ
+				
+				                                                        )
+				
+				                                                END AS STOCK_GBN_CODE  -- 발송처가 NULL인 경우 그리고 NULL인 경우 처리방법 확인
+				
+				                                 , oc.SALES_CNCL_GBN_TYPE
+				
+				                                 , oc.DEVICE_CODE
+				
+				                           FROM (
+				
+				                                        SELECT ORDER_NO, MEMBER_NO, ORDER_DTM, SITE_NO, MEMBER_TYPE_CODE, EMP_YN, DEVICE_CODE
+				
+				                                                , DLVY_TYPE_CODE, CLM_NO
+				
+				                                                , SALES_CNCL_GBN_TYPE
+				
+				                                                , CASE WHEN SALES_CNCL_GBN_TYPE = 'C' THEN    -- 취소(반품주문이면 -1, 일반취소주문이면 0), 매출( 1 )
+				
+				                                                             CASE WHEN ( SELECT COUNT(CLM_NO) CLM_CNT
+				
+	                                                                                       FROM OC_CLAIM WITH (NOLOCK)
+	
+	                                                                                      WHERE CLM_NO = OM.CLM_NO
+	
+	                                                                                          AND CLM_GBN_CODE = '10002'  --반품                                               
+	
+	                                                                                    ) IS NOT NULL THEN -1
+				
+				                                                                      ELSE 0 END  
+				
+				                                                     ELSE 1 END AS AMT_TYPE
+				
+				                                           FROM OC_ORDER OM WITH (NOLOCK)                                         
+				
+				                                          WHERE SALES_CNCL_GBN_TYPE IN ('C','S')                      -- 취소, 매출
+				
+				                                            AND ORDER_DTM <![CDATA[>=]]> CONVERT(DATETIME, CONVERT(CHAR(8), GETDATE(), 112))
+				                                            AND ORDER_DTM <![CDATA[<]]> CONVERT(DATETIME, CONVERT(CHAR(8), GETDATE()+1, 112))
+				                                            
+				                                            AND ORDER_STAT_CODE != '10000' -- 임시주문제외
+				                                            
+																<include refid="searchWhere"/>
+				
+				                                    ) OC
+				
+				                         INNER JOIN OC_ORDER_PRODUCT OP WITH (NOLOCK) ON OC.ORDER_NO = OP.ORDER_NO
+				                         	AND OP.PRDT_TYPE_CODE != '10004'
+												<include refid="addSearchWhere"/>
+				
+				                   ) V  
+				
+				                       group by ORDER_DTM,ORDER_TIMESLOT_VALUE
+				
+				      )
+				      SELECT
+				
+					       '누적 현황' AS HOUR_TITLE
+					
+					      , SUM(ISNULL(S.ORDER_QTY, 0))                	  AS ORDER_QTY_ALL
+					      , SUM(ISNULL(PRDT_NORMAL_AMT, 0))            	  AS  PRDT_NORMAL_AMT_ALL
+					      , SUM(ISNULL(ORDER_AMT, 0))                  	  AS ORDER_AMT_ALL
+					
+					      , SUM(ISNULL(S.ORDER_QTY_10000, 0))          	  AS ORDER_QTY_10000
+					      , SUM(ISNULL(PRDT_NORMAL_AMT_10000, 0)) 	  	  AS PRDT_NORMAL_AMT_10000
+					      , SUM(ISNULL(ORDER_AMT_10000, 0))         	  AS ORDER_AMT_10000
+					
+					      , SUM(ISNULL(S.ORDER_QTY_10001, 0))          	  AS ORDER_QTY_10001
+					      , SUM(ISNULL(PRDT_NORMAL_AMT_10001, 0)) 	  	  AS PRDT_NORMAL_AMT_10001
+					      , SUM(ISNULL(ORDER_AMT_10001, 0))         	  AS ORDER_AMT_10001
+					
+					      , SUM(ISNULL(S.ORDER_QTY_10002, 0))          	  AS ORDER_QTY_10002
+					      , SUM(ISNULL(PRDT_NORMAL_AMT_10002, 0)) 	  	  AS PRDT_NORMAL_AMT_10002
+					      , SUM(ISNULL(ORDER_AMT_10002, 0))         	  AS ORDER_AMT_10002
+				
+				  	FROM AllTime A WITH (NOLOCK)
+				  	 LEFT OUTER JOIN SearchData S WITH (NOLOCK)
+				  	 ON A.JOIN_DTM = S.ORDER_TIMESLOT_VALUE
+				 UNION ALL    
+				    SELECT
+				
+				        A.DTM_TITLE AS HOUR_TITLE
+				
+				      , ISNULL(S.ORDER_QTY, 0)                AS ORDER_QTY_ALL
+				      , ISNULL(PRDT_NORMAL_AMT, 0)            AS  PRDT_NORMAL_AMT_ALL
+				      , ISNULL(ORDER_AMT, 0)                  AS ORDER_AMT_ALL
+				
+				      , ISNULL(S.ORDER_QTY_10000, 0)          AS ORDER_QTY_10000
+				      , ISNULL(PRDT_NORMAL_AMT_10000, 0) 	  AS PRDT_NORMAL_AMT_10000
+				      , ISNULL(ORDER_AMT_10000, 0)         	  AS ORDER_AMT_10000
+				
+				      , ISNULL(S.ORDER_QTY_10001, 0)          AS ORDER_QTY_10001
+				      , ISNULL(PRDT_NORMAL_AMT_10001, 0) 	  AS PRDT_NORMAL_AMT_10001
+				      , ISNULL(ORDER_AMT_10001, 0)         	  AS ORDER_AMT_10001
+				
+				      , ISNULL(S.ORDER_QTY_10002, 0)          AS ORDER_QTY_10002
+				      , ISNULL(PRDT_NORMAL_AMT_10002, 0) 	  AS PRDT_NORMAL_AMT_10002
+				      , ISNULL(ORDER_AMT_10002, 0)         	  AS ORDER_AMT_10002
+				
+				  FROM AllTime A WITH (NOLOCK)
+				  LEFT OUTER JOIN SearchData S WITH (NOLOCK)
+				  ON A.JOIN_DTM = S.ORDER_TIMESLOT_VALUE
+	</select>
+	
+	<select id="selectCurrentPaymentList" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.CurrentSaleStats">
+		/*+ kr.co.abcmart.bo.stats.repository.master.OrderRealTimeStatsDao.selectCurrentPaymentList [당일 결제수단별 매출 현황 조회] [이재렬] */
+					WITH AllTime AS (
+
+							      SELECT 0 AS JOIN_DTM, CONCAT(FORMAT(0, '00'), '~', FORMAT(1, '00'), '시') AS DTM_TITLE
+							  UNION ALL
+							      SELECT JOIN_DTM + 1, CONCAT(FORMAT(JOIN_DTM+1, '00'), '~', FORMAT(JOIN_DTM+2, '00'), '시') AS DTM_TITLE
+							        FROM AllTime
+							       WHERE JOIN_DTM <![CDATA[<]]> 23
+							
+							),
+								 PYMNTS AS (
+								      SELECT  ORDER_DTM
+            								, ORDER_TIMESLOT_VALUE
+								            , SUM((CASE WHEN SALES_CNCL_GBN_TYPE='C' OR SALES_CNCL_GBN_TYPE='R' THEN -1 ELSE 1 END)) AS ORDER_QTY_ALL
+								            , SUM((CASE WHEN SALES_CNCL_GBN_TYPE='C' OR SALES_CNCL_GBN_TYPE='R' THEN -1 ELSE 1 END) * PYMNT_AMT) AS ORDER_AMT_ALL
+								            , SUM((CASE WHEN SALES_CNCL_GBN_TYPE='C' OR SALES_CNCL_GBN_TYPE='R' THEN -1 ELSE 1 END) * (CASE WHEN PYMNT_MEANS_CODE = '10000' THEN ORDER_CNT ELSE 0 END)) AS ORDER_QTY_10000
+								            , SUM((CASE WHEN SALES_CNCL_GBN_TYPE='C' OR SALES_CNCL_GBN_TYPE='R' THEN -1 ELSE 1 END) * (CASE WHEN PYMNT_MEANS_CODE = '10000' THEN PYMNT_AMT ELSE 0 END)) AS ORDER_AMT_10000
+								            , SUM((CASE WHEN SALES_CNCL_GBN_TYPE='C' OR SALES_CNCL_GBN_TYPE='R' THEN -1 ELSE 1 END) * (CASE WHEN PYMNT_MEANS_CODE = '10001' THEN ORDER_CNT ELSE 0 END)) AS ORDER_QTY_10001
+								            , SUM((CASE WHEN SALES_CNCL_GBN_TYPE='C' OR SALES_CNCL_GBN_TYPE='R' THEN -1 ELSE 1 END) * (CASE WHEN PYMNT_MEANS_CODE = '10001' THEN PYMNT_AMT ELSE 0 END)) AS ORDER_AMT_10001
+								            , SUM((CASE WHEN SALES_CNCL_GBN_TYPE='C' OR SALES_CNCL_GBN_TYPE='R' THEN -1 ELSE 1 END) * (CASE WHEN PYMNT_MEANS_CODE = '10002' THEN ORDER_CNT ELSE 0 END)) AS ORDER_QTY_10002
+								            , SUM((CASE WHEN SALES_CNCL_GBN_TYPE='C' OR SALES_CNCL_GBN_TYPE='R' THEN -1 ELSE 1 END) * (CASE WHEN PYMNT_MEANS_CODE = '10002' THEN PYMNT_AMT ELSE 0 END)) AS ORDER_AMT_10002
+								            , SUM((CASE WHEN SALES_CNCL_GBN_TYPE='C' OR SALES_CNCL_GBN_TYPE='R' THEN -1 ELSE 1 END) * (CASE WHEN PYMNT_MEANS_CODE = '10003' THEN ORDER_CNT ELSE 0 END)) AS ORDER_QTY_10003
+								            , SUM((CASE WHEN SALES_CNCL_GBN_TYPE='C' OR SALES_CNCL_GBN_TYPE='R' THEN -1 ELSE 1 END) * (CASE WHEN PYMNT_MEANS_CODE = '10003' THEN PYMNT_AMT ELSE 0 END)) AS ORDER_AMT_10003
+								            , SUM((CASE WHEN SALES_CNCL_GBN_TYPE='C' OR SALES_CNCL_GBN_TYPE='R' THEN -1 ELSE 1 END) * (CASE WHEN PYMNT_MEANS_CODE = '10004' THEN ORDER_CNT ELSE 0 END)) AS ORDER_QTY_10004
+								            , SUM((CASE WHEN SALES_CNCL_GBN_TYPE='C' OR SALES_CNCL_GBN_TYPE='R' THEN -1 ELSE 1 END) * (CASE WHEN PYMNT_MEANS_CODE = '10004' THEN PYMNT_AMT ELSE 0 END)) AS ORDER_AMT_10004
+								            , SUM((CASE WHEN SALES_CNCL_GBN_TYPE='C' OR SALES_CNCL_GBN_TYPE='R' THEN -1 ELSE 1 END) * (CASE WHEN PYMNT_MEANS_CODE = '10005' THEN ORDER_CNT ELSE 0 END)) AS ORDER_QTY_10005
+								            , SUM((CASE WHEN SALES_CNCL_GBN_TYPE='C' OR SALES_CNCL_GBN_TYPE='R' THEN -1 ELSE 1 END) * (CASE WHEN PYMNT_MEANS_CODE = '10005' THEN PYMNT_AMT ELSE 0 END)) AS ORDER_AMT_10005
+								            , SUM((CASE WHEN SALES_CNCL_GBN_TYPE='C' OR SALES_CNCL_GBN_TYPE='R' THEN -1 ELSE 1 END) * (CASE WHEN PYMNT_MEANS_CODE = '10006' THEN ORDER_CNT ELSE 0 END)) AS ORDER_QTY_10006
+								            , SUM((CASE WHEN SALES_CNCL_GBN_TYPE='C' OR SALES_CNCL_GBN_TYPE='R' THEN -1 ELSE 1 END) * (CASE WHEN PYMNT_MEANS_CODE = '10006' THEN PYMNT_AMT ELSE 0 END)) AS ORDER_AMT_10006
+								            , SUM((CASE WHEN SALES_CNCL_GBN_TYPE='C' OR SALES_CNCL_GBN_TYPE='R' THEN -1 ELSE 1 END) * (CASE WHEN PYMNT_MEANS_CODE IN ('10007', '10008') THEN ORDER_CNT ELSE 0 END)) AS ORDER_QTY_99999
+								            , SUM((CASE WHEN SALES_CNCL_GBN_TYPE='C' OR SALES_CNCL_GBN_TYPE='R' THEN -1 ELSE 1 END) * (CASE WHEN PYMNT_MEANS_CODE IN ('10007', '10008') THEN PYMNT_AMT ELSE 0 END)) AS ORDER_AMT_99999
+								        FROM (
+								              SELECT  CONVERT(CHAR(10), ORDER_DTM, 23) AS ORDER_DTM
+													, DATEPART(HH, ORDER_DTM) AS ORDER_TIMESLOT_VALUE
+								                    , B.PYMNT_MEANS_CODE
+								                    , B.PYMNT_AMT
+								                    , B.DEVICE_CODE
+								                    , B.ESCR_APPLY_YN
+								                    , A.SITE_NO
+								                    , A.SALES_CNCL_GBN_TYPE
+								                    , CASE WHEN A.SALES_CNCL_GBN_TYPE = 'C' THEN
+								                    	CASE WHEN( SELECT COUNT(CLM_NO)
+								                    				FROM OC_CLAIM WITH (NOLOCK)
+								                    				WHERE CLM_NO = A.CLM_NO
+								                    				AND CLM_GBN_CODE = '10002'	-- 반품
+								                    				) IS NOT NULL THEN -1
+								                    	ELSE 0 END
+								                    ELSE 1 END AS ORDER_CNT
+								                    , A.ORDER_STAT_CODE
+										      FROM OC_ORDER A WITH (NOLOCK)
+										        INNER JOIN OC_ORDER_PAYMENT B WITH (NOLOCK)
+										          ON A.ORDER_NO = B.ORDER_NO
+								          ) TT
+								         WHERE SALES_CNCL_GBN_TYPE IN ('C', 'S')	-- 취소, 매출
+								         	AND ORDER_DTM <![CDATA[>=]]> CONVERT(DATETIME, CONVERT(CHAR(8), GETDATE(), 112))
+          									AND ORDER_DTM <![CDATA[<]]> CONVERT(DATETIME, CONVERT(CHAR(8), GETDATE()+1, 112))
+          									
+          									AND ORDER_STAT_CODE != '10000' -- 임시주문제외
+          									
+								          <include refid="searchWhere"/>
+								          <if test="bean.chkEscroTrue == 'Y' and bean.chkEscroFalse == '' ">
+							           		AND ESCR_APPLY_YN = #{bean.chkEscroTrue, jdbcType=CHAR} -- 에스크로 적용여부 Y
+							           	  </if>
+							           	  <if test="bean.chkEscroFalse == 'N' and bean.chkEscroTrue == '' ">
+							           		AND ESCR_APPLY_YN = #{bean.chkEscroFalse, jdbcType=CHAR} -- 에스크로 미적용여부 N
+							           	  </if>
+								        GROUP BY ORDER_DTM, ORDER_TIMESLOT_VALUE
+								      )
+								      SELECT  '누적현황' AS HOUR_TITLE
+								            , SUM(ISNULL(ORDER_QTY_ALL, 0)) AS ORDER_QTY_ALL
+								            , SUM(ISNULL(ORDER_AMT_ALL, 0)) AS ORDER_AMT_ALL
+								            , SUM(ISNULL(ORDER_QTY_10000, 0)) AS ORDER_QTY_10000
+								            , SUM(ISNULL(ORDER_AMT_10000, 0)) AS ORDER_AMT_10000
+								            , SUM(ISNULL(ORDER_QTY_10001, 0)) AS ORDER_QTY_10001
+								            , SUM(ISNULL(ORDER_AMT_10001, 0)) AS ORDER_AMT_10001
+								            , SUM(ISNULL(ORDER_QTY_10002, 0)) AS ORDER_QTY_10002
+								            , SUM(ISNULL(ORDER_AMT_10002, 0)) AS ORDER_AMT_10002
+								            , SUM(ISNULL(ORDER_QTY_10003, 0)) AS ORDER_QTY_10003
+								            , SUM(ISNULL(ORDER_AMT_10003, 0)) AS ORDER_AMT_10003
+								            , SUM(ISNULL(ORDER_QTY_10004, 0)) AS ORDER_QTY_10004
+								            , SUM(ISNULL(ORDER_AMT_10004, 0)) AS ORDER_AMT_10004
+								            , SUM(ISNULL(ORDER_QTY_10005, 0)) AS ORDER_QTY_10005
+								            , SUM(ISNULL(ORDER_AMT_10005, 0)) AS ORDER_AMT_10005
+								            , SUM(ISNULL(ORDER_QTY_10006, 0)) AS ORDER_QTY_10006
+								            , SUM(ISNULL(ORDER_AMT_10006, 0)) AS ORDER_AMT_10006
+								            , SUM(ISNULL(ORDER_QTY_99999, 0)) AS ORDER_QTY_99999
+								            , SUM(ISNULL(ORDER_AMT_99999, 0)) AS ORDER_AMT_99999
+								      FROM AllTime AT WITH (NOLOCK)
+								      LEFT OUTER JOIN PYMNTS P WITH (NOLOCK)
+								        ON AT.JOIN_DTM = P.ORDER_TIMESLOT_VALUE  
+								  UNION ALL
+								    SELECT    AT.DTM_TITLE AS HOUR_TITLE
+								            , ISNULL(ORDER_QTY_ALL, 0) AS ORDER_QTY_ALL
+								            , ISNULL(ORDER_AMT_ALL, 0) AS ORDER_AMT_ALL
+								            , ISNULL(ORDER_QTY_10000, 0) AS ORDER_QTY_10000
+								            , ISNULL(ORDER_AMT_10000, 0) AS ORDER_AMT_10000
+								            , ISNULL(ORDER_QTY_10001, 0) AS ORDER_QTY_10001
+								            , ISNULL(ORDER_AMT_10001, 0) AS ORDER_AMT_10001
+								            , ISNULL(ORDER_QTY_10002, 0) AS ORDER_QTY_10002
+								            , ISNULL(ORDER_AMT_10002, 0) AS ORDER_AMT_10002
+								            , ISNULL(ORDER_QTY_10003, 0) AS ORDER_QTY_10003
+								            , ISNULL(ORDER_AMT_10003, 0) AS ORDER_AMT_10003
+								            , ISNULL(ORDER_QTY_10004, 0) AS ORDER_QTY_10004
+								            , ISNULL(ORDER_AMT_10004, 0) AS ORDER_AMT_10004
+								            , ISNULL(ORDER_QTY_10005, 0) AS ORDER_QTY_10005
+								            , ISNULL(ORDER_AMT_10005, 0) AS ORDER_AMT_10005
+								            , ISNULL(ORDER_QTY_10006, 0) AS ORDER_QTY_10006
+								            , ISNULL(ORDER_AMT_10006, 0) AS ORDER_AMT_10006
+								            , ISNULL(ORDER_QTY_99999, 0) AS ORDER_QTY_99999
+								            , ISNULL(ORDER_AMT_99999, 0) AS ORDER_AMT_99999
+								      FROM AllTime AT WITH (NOLOCK)
+								      LEFT OUTER JOIN PYMNTS P WITH (NOLOCK)
+								        ON AT.JOIN_DTM = P.ORDER_TIMESLOT_VALUE
+
+	</select>
+	
+	<select id="selectCurrentPrdtList" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.CurrentSaleStats">
+		/*+ kr.co.abcmart.bo.stats.repository.master.OrderRealTimeStatsDao.selectCurrentPrdtList [당일 상품판매 현황 조회] [이재렬] */
+			WITH SearchData AS (
+							
+	                              SELECT 
+	
+	                                        V.ORDER_TIMESLOT_VALUE
+                                          , V.ORDER_DTM
+                                          , V.BRAND_NO
+	                                      , V.STD_CTGR_NO
+	                                      , V.STYLE_INFO
+	                                      , V.PRDT_COLOR_CODE
+	                                      , V.PRDT_NO
+	                                      , MAX(V.PRDT_NAME) AS PRDT_NAME
+	                                      
+	                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*v.ORDER_QTY) AS ORDER_QTY
+	                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*v.PRDT_NORMAL_AMT) AS PRDT_NORMAL_AMT
+	                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*v.ORDER_AMT) AS ORDER_AMT
+	
+	                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10000' THEN V.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10000
+	                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10000' THEN V.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10000
+	                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10000' THEN V.ORDER_AMT ELSE 0 END)) AS ORDER_AMT_10000
+	
+	                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10001' THEN V.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10001
+	                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10001' THEN V.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10001
+	                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10001' THEN V.ORDER_AMT ELSE 0 END)) AS ORDER_AMT_10001
+	
+	                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10002' THEN V.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10002
+	                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10002' THEN V.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10002
+	                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10002' THEN V.ORDER_AMT ELSE 0 END)) AS ORDER_AMT_10002
+	
+	                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10003' THEN V.ORDER_QTY ELSE 0 END)) AS ORDER_QTY_10003
+	                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10003' THEN V.PRDT_NORMAL_AMT ELSE 0 END)) AS PRDT_NORMAL_AMT_10003
+	                                      , SUM((case when v.SALES_CNCL_GBN_TYPE ='C' or v.SALES_CNCL_GBN_TYPE = 'R' then -1 else 1 end)*(CASE WHEN V.STOCK_GBN_CODE = '10003' THEN V.ORDER_AMT ELSE 0 END)) AS ORDER_AMT_10003
+	
+	                                FROM (
+	
+	                                             SELECT CONVERT(CHAR(10), OC.ORDER_DTM, 23) AS ORDER_DTM
+	
+	                                                  , DATEPART(HH, OC.ORDER_DTM) AS ORDER_TIMESLOT_VALUE
+	                                                  , OP.ORDER_NO --, OP.PRDT_TYPE_CODE, OP.ORDER_QTY
+                                                      , (CASE WHEN OP.PRDT_TYPE_CODE = '10004' THEN 0 ELSE OP.ORDER_QTY END * OC.AMT_TYPE) AS ORDER_QTY --배송비는 수량에서 제외
+                                                      , (OP.PRDT_NORMAL_AMT* AMT_TYPE) AS PRDT_NORMAL_AMT
+                                                      , (OP.ORDER_AMT * AMT_TYPE) AS ORDER_AMT
+                                                      , CASE WHEN OP.PRDT_TYPE_CODE = '10004' THEN '10000'  --배송비는 온라인물류로 처리
+	
+                                                                 ELSE ( SELECT TOP 1
+
+                                                                                        STOCK_GBN_CODE
+
+                                                                              FROM OC_ORDER_DELIVERY_HISTORY WITH (NOLOCK)
+
+                                                                              WHERE ORDER_NO = OP.ORDER_NO
+                                                                              	AND ORDER_PRDT_SEQ = OP.ORDER_PRDT_SEQ
+                                                                              ORDER BY ORDER_NO, ORDER_PRDT_SEQ, ORDER_DLVY_HIST_SEQ
+
+                                                                       )
+
+                                                                 END AS STOCK_GBN_CODE  -- 발송처가 NULL인 경우 그리고 NULL인 경우 처리방법 확인
+	
+	                                                     , OC.SALES_CNCL_GBN_TYPE
+                                                         , OP.BRAND_NO
+                                                         , OP.STD_CTGR_NO
+                                                         , OP.STYLE_INFO
+                                                         , OP.PRDT_COLOR_CODE
+                                                         , OP.PRDT_NO
+                                                         , OP.PRDT_NAME
+
+	                                               FROM (
+	
+	                                                            SELECT ORDER_NO
+	                                                            	 , MEMBER_NO
+	                                                            	 , ORDER_DTM
+	                                                            	 , SITE_NO
+	                                                            	 , MEMBER_TYPE_CODE
+	                                                            	 , EMP_YN
+	                                                            	 , DEVICE_CODE
+                                                                     , DLVY_TYPE_CODE, CLM_NO
+                                                                     , SALES_CNCL_GBN_TYPE
+                                                                     , CASE WHEN SALES_CNCL_GBN_TYPE = 'C' THEN    -- 취소(반품주문이면 -1, 일반취소주문이면 0), 매출( 1 )
+
+                                                                                      CASE WHEN ( SELECT COUNT(CLM_NO) CLM_CNT
+
+                                                                                                      FROM OC_CLAIM WITH (NOLOCK)
+
+                                                                                                     WHERE CLM_NO = OM.CLM_NO
+
+                                                                                                         AND CLM_GBN_CODE = '10002'  --반품                                               
+
+                                                                                                   ) IS NOT NULL THEN 0
+
+                                                                                               ELSE 0 END  
+
+                                                                              			ELSE 1 END AS AMT_TYPE
+	
+	                                                               FROM OC_ORDER OM WITH (NOLOCK)                                        
+	
+	                                                              WHERE ORDER_STAT_CODE != '10000' -- 임시주문 제외
+	                                                              	AND SALES_CNCL_GBN_TYPE IN ('C','S')                      -- 취소, 매출
+	                                                                AND ORDER_DTM <![CDATA[>=]]> CONVERT(DATETIME, CONVERT(CHAR(8), GETDATE(), 112))
+	                                                                AND ORDER_DTM <![CDATA[<]]> CONVERT(DATETIME, CONVERT(CHAR(8), GETDATE()+1, 112))
+	                                                                <include refid="searchWhere"/>
+	
+	                                                        ) OC
+	
+	                                             INNER JOIN OC_ORDER_PRODUCT OP WITH (NOLOCK)
+	                                             	ON OC.ORDER_NO = OP.ORDER_NO
+	                                             	AND OP.PRDT_TYPE_CODE != '10004'
+	                                             <include refid="addSearchWhere"/>
+	
+	                                         ) V <choose> 
+		                                         	  <when test="(bean.fromTime != null and bean.toTime != '') and (bean.toTime != null and bean.toTime != '') ">
+		                                         			WHERE ORDER_TIMESLOT_VALUE <![CDATA[>=]]> CONVERT(INT, #{bean.fromTime, jdbcType=VARCHAR})
+		                                         				AND ORDER_TIMESLOT_VALUE <![CDATA[<]]> CONVERT(INT, #{bean.toTime, jdbcType=VARCHAR}) -- 시간 선택시 옵션
+		                                         	  </when>
+		                                         	  <otherwise>
+		                                         	  		WHERE ORDER_TIMESLOT_VALUE <![CDATA[>=]]> 00
+		                                         	  			AND ORDER_TIMESLOT_VALUE <![CDATA[<]]> 24 -- 시간 미선택시 
+		                                         	  </otherwise>
+	                                         	 </choose>
+	
+	                                             GROUP BY V.ORDER_DTM, V.ORDER_TIMESLOT_VALUE, V.BRAND_NO, V.STD_CTGR_NO, V.STYLE_INFO, V.PRDT_COLOR_CODE, V.PRDT_NO
+												
+								)
+									SELECT 
+									       '누적 합계' AS BRAND_NO
+									      , '' AS BRAND_NAME
+									      , '' AS STD_CTGR_NO
+									      , '' AS STD_CTGR_NAME
+									      , '' AS STYLE_INFO
+									      , '' AS PRDT_COLOR_CODE
+									      , '' AS PRDT_COLOR_NAME
+									      , '' AS PRDT_NO_NAME
+									      , '' AS PRDT_NO
+					 	 		 		  , '' AS PRDT_NAME
+									      , SUM(ISNULL(S.ORDER_QTY, 0))                 AS ORDER_QTY_ALL
+									      , SUM(ISNULL(PRDT_NORMAL_AMT, 0))             AS PRDT_NORMAL_AMT_ALL
+									      , SUM(ISNULL(ORDER_AMT, 0))                   AS ORDER_AMT_ALL	
+									      , SUM(ISNULL(S.ORDER_QTY_10000, 0))           AS ORDER_QTY_10000
+									      , SUM(ISNULL(PRDT_NORMAL_AMT_10000, 0)) 		AS PRDT_NORMAL_AMT_10000		
+									      , SUM(ISNULL(ORDER_AMT_10000, 0))         	AS ORDER_AMT_10000	
+									      , SUM(ISNULL(S.ORDER_QTY_10001, 0))           AS ORDER_QTY_10001
+									      , SUM(ISNULL(PRDT_NORMAL_AMT_10001, 0)) 		AS PRDT_NORMAL_AMT_10001
+									      , SUM(ISNULL(ORDER_AMT_10001, 0))         	AS ORDER_AMT_10001
+									      , SUM(ISNULL(S.ORDER_QTY_10002, 0))           AS ORDER_QTY_10002
+									      , SUM(ISNULL(PRDT_NORMAL_AMT_10002, 0)) 		AS PRDT_NORMAL_AMT_10002
+									      , SUM(ISNULL(ORDER_AMT_10002, 0))         	AS ORDER_AMT_10002
+									      , SUM(ISNULL(S.ORDER_QTY_10003, 0))     		AS ORDER_QTY_10003
+									      , SUM(ISNULL(PRDT_NORMAL_AMT_10003, 0)) 		AS PRDT_NORMAL_AMT_10003
+									      , SUM(ISNULL(ORDER_AMT_10003, 0))         	AS ORDER_AMT_10003
+									
+									  FROM SearchData S WITH (NOLOCK)
+										   LEFT OUTER JOIN DP_BRAND BR WITH (NOLOCK)
+										   	ON S.BRAND_NO = BR.BRAND_NO
+										   LEFT OUTER JOIN SY_STANDARD_CATEGORY SC WITH (NOLOCK)
+										   	ON S.STD_CTGR_NO = SC.STD_CTGR_NO
+								 UNION ALL
+									SELECT 
+									        S.BRAND_NO
+									      , BR.BRAND_NAME
+									      , S.STD_CTGR_NO
+									      , SC.STD_CTGR_NAME
+									      , S.STYLE_INFO
+									      , S.PRDT_COLOR_CODE
+									      , (SELECT CODE_DTL_NAME FROM SY_CODE_DETAIL WITH (NOLOCK) WHERE CODE_FIELD = 'PRDT_COLOR_CODE' AND CODE_DTL_NO = S.PRDT_COLOR_CODE) AS PRDT_COLOR_NAME
+									      , CONCAT(S.PRDT_NO, ' / ', S.PRDT_NAME) AS PRDT_NO_NAME
+									      , S.PRDT_NO
+					 	 		 		  , S.PRDT_NAME
+									      , ISNULL(S.ORDER_QTY, 0)                	AS ORDER_QTY_ALL
+									      , ISNULL(PRDT_NORMAL_AMT, 0)            	AS  PRDT_NORMAL_AMT_ALL
+									      , ISNULL(ORDER_AMT, 0)                  	AS ORDER_AMT_ALL	
+									      , ISNULL(S.ORDER_QTY_10000, 0)          	AS ORDER_QTY_10000
+									      , ISNULL(PRDT_NORMAL_AMT_10000, 0) 		AS PRDT_NORMAL_AMT_10000		
+									      , ISNULL(ORDER_AMT_10000, 0)         		AS ORDER_AMT_10000	
+									      , ISNULL(S.ORDER_QTY_10001, 0)          	AS ORDER_QTY_10001
+									      , ISNULL(PRDT_NORMAL_AMT_10001, 0) 		AS PRDT_NORMAL_AMT_10001
+									      , ISNULL(ORDER_AMT_10001, 0)         		AS ORDER_AMT_10001
+									      , ISNULL(S.ORDER_QTY_10002, 0)          	AS ORDER_QTY_10002
+									      , ISNULL(PRDT_NORMAL_AMT_10002, 0) 		AS PRDT_NORMAL_AMT_10002
+									      , ISNULL(ORDER_AMT_10002, 0)         		AS ORDER_AMT_10002
+									      , ISNULL(S.ORDER_QTY_10003, 0)          	AS ORDER_QTY_10003
+									      , ISNULL(PRDT_NORMAL_AMT_10003, 0) 		AS PRDT_NORMAL_AMT_10003
+									      , ISNULL(ORDER_AMT_10003, 0)         		AS ORDER_AMT_10003
+									
+									  FROM SearchData S WITH (NOLOCK)
+										   LEFT OUTER JOIN DP_BRAND BR WITH (NOLOCK)
+										   	ON S.BRAND_NO = BR.BRAND_NO
+										   LEFT OUTER JOIN SY_STANDARD_CATEGORY SC WITH (NOLOCK)
+										   	ON S.STD_CTGR_NO = SC.STD_CTGR_NO
+								
+	</select>
+	
+	<select id="selectClaimCntGroupbyVndr" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.CurrentSaleStats">
+		/*+ kr.co.abcmart.bo.stats.repository.master.OrderRealTimeStatsDao.selectClaimCntGroupbyVndr [당일 교환/반품 클레임 업체별/사유별 카운트 조회] [이강수] */
+		
+		  SELECT ISNULL(COUNT(A.CLM_NO), 0)			AS CNT
+		       , CASE CONCAT(B.VNDR_NO, A.CLM_GBN_CODE) WHEN B.VNDR_NO + '10001' THEN B.VNDR_NO + 'E'
+														WHEN B.VNDR_NO + '10002' THEN B.VNDR_NO + 'R'
+				 END								AS GBN
+			   , CONCAT(B.VNDR_NO, B.CLM_RSN_CODE)	AS RSN
+			   , B.CLM_PRDT_STAT_CODE
+			   , B.MMNY_PRDT_YN
+			   , B.VNDR_NO
+			   , C.VNDR_NAME
+	        FROM OC_CLAIM		  A WITH (NOLOCK)
+	        JOIN OC_CLAIM_PRODUCT B WITH (NOLOCK) ON A.CLM_NO  = B.CLM_NO
+			JOIN VD_VENDOR		  C WITH (NOLOCK) ON B.VNDR_NO = C.VNDR_NO
+	       WHERE A.CLM_GBN_CODE   	  IN ('10001', '10002') /* 교환, 반품 */
+	         AND B.PRDT_TYPE_CODE NOT IN ('10003', '10004') /* 사은품, 배송비 제외 */
+			 AND ISNULL(B.UP_CLM_PRDT_SEQ, '') = ''
+
+			<include refid="clmSearchWhere"/>
+
+	    GROUP BY B.VNDR_NO, CONCAT(B.VNDR_NO, B.CLM_RSN_CODE), A.CLM_GBN_CODE, B.CLM_PRDT_STAT_CODE, B.MMNY_PRDT_YN, B.VNDR_NO, C.VNDR_NAME
+		ORDER BY VNDR_NO
+		
+	</select>
+	
+	<sql id="clmSearchWhere">
+
+		<choose>
+			<when test='bean.isClmStatsYn == "N"'>
+				AND DATEDIFF(DD, A.MOD_DTM, GETDATE()) = 0
+			</when>
+			<when test='bean.isClmStatsYn == "Y"'>
+				<if test="bean.choicePeriod == 'date' and bean.choicePeriod != null">
+		 		 	AND A.RGST_DTM BETWEEN CONVERT(DATE, #{bean.dayFromDate, jdbcType=VARCHAR}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.dayToDate, jdbcType=VARCHAR}))
+				</if>
+				<if test="bean.choicePeriod == 'month' and bean.choicePeriod != null">
+					AND CONVERT(CHAR(6), A.RGST_DTM, 112) BETWEEN REPLACE(#{bean.monthFromDate, jdbcType=VARCHAR},'.','') AND REPLACE(#{bean.monthToDate, jdbcType=VARCHAR},'.','')
+				</if>
+				<if test="bean.choicePeriod == 'year' and bean.choicePeriod != null">
+					AND CONVERT(CHAR(4), A.RGST_DTM, 112) BETWEEN REPLACE(#{bean.yearFromDate, jdbcType=VARCHAR},'.','') AND REPLACE(#{bean.yearToDate, jdbcType=VARCHAR},'.','')
+				</if>
+			</when>
+		</choose>
+
+		<if test="bean.siteNo != null and bean.siteNo != '' "> <!-- 사이트 코드 -->
+		 	AND A.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+		</if>
+		
+		<if test="bean.deviceCodes != null and bean.deviceCodes != '' "> <!-- 디바이스 코드 -->
+			AND A.DEVICE_CODE IN
+			<foreach item="item" index="index" collection="bean.deviceCodes" open="(" separator="," close=")">
+				#{item, jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		
+    	<if test="bean.stockGbnCodeArr != null">
+      		<if test="bean.stockGbnCodeArr.length > 0">
+		    	 AND EXISTS ( SELECT 1 
+						   	    FROM OC_ORDER_DELIVERY_HISTORY Z WITH (NOLOCK)
+						       WHERE Z.ORDER_NO = A.ORG_ORDER_NO
+						    	 AND Z.STOCK_GBN_CODE IN  
+				 <foreach collection="bean.stockGbnCodeArr" item="item" open="(" close=")" separator=",">
+					 #{item, jdbcType=VARCHAR}
+				 </foreach>
+				 )
+			 </if>
+		</if>
+		
+		<if test="bean.mmnyPrdtYn != null and bean.mmnyPrdtYn != ''">  
+      		AND B.MMNY_PRDT_YN = #{bean.mmnyPrdtYn, jdbcType=CHAR} --자사상품여부 조건 *
+    			<if test="bean.mmnyPrdtYn == 'Y' and (bean.ourChannel !=null and bean.ourChannel != '') ">
+    				AND B.CHNNL_NO = #{bean.ourChannel, jdbcType=VARCHAR}
+    			</if>
+    			<if test="bean.mmnyPrdtYn == 'N' and (bean.shoperSiteNo !=null and bean.shoperSiteNo != '') ">
+    				AND A.SITE_NO = #{bean.shoperSiteNo, jdbcType=VARCHAR}	
+    			</if>
+      	</if>
+      	
+      	<if test="bean.vndrNo != null and bean.vndrNo != '' ">
+     		AND B.VNDR_NO = #{bean.vndrNo, jdbcType=VARCHAR}
+     	</if>
+		
+	</sql>
+	
+</mapper>

@@ -1,0 +1,1164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.promotion.repository.master.PrCouponDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.promotion.model.master.PrCoupon">
+    
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			PR_COUPON
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectPrCouponList" parameterType="pageable" resultType="kr.co.abcmart.bo.promotion.model.master.PrCoupon">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponDao.selectBdPopupList [쿠폰 리스트 조회 쿼리] [이지훈] */
+    	SELECT
+			PC.CPN_NO
+			,PC.CPN_NAME
+			,PC.CPN_TYPE_CODE
+			,PC.NORMAL_CPN_YN
+			,PC.CPN_USE_GBN_TYPE
+			,PC.USE_YN
+			,PC.DISP_YN
+			,PC.CPN_ZONE_DISP_YN
+			,PC.ISSUE_START_DTM
+			,PC.ISSUE_END_DTM
+			,PC.VALID_TERM_GBN_TYPE
+			,PC.VALID_START_DTM
+			,PC.VALID_END_DTM
+			,PC.USE_LIMIT_DAY_COUNT
+			,PC.VALID_TERM_ALERT_YN
+			,PC.ALERT_SEND_DAY_COUNT
+			,PC.RELAY_CPN_USE_YN
+			,PC.RELAY_CPN_NO
+			,PC.DWLD_PSBLT_YN
+			,PC.MON_YN
+			,PC.TUE_YN
+			,PC.WED_YN
+			,PC.THU_YN
+			,PC.FRI_YN
+			,PC.SAT_YN
+			,PC.SUN_YN
+			,PC.DWLD_START_TIME
+			,PC.DWLD_END_TIME
+			,PC.USE_PLACE_GBN_TYPE
+			,PC.CPN_CRT_TYPE
+			,PC.PAPER_CRT_COUNT
+			,PC.PAPER_CRT_RNDM_NO_VALUE
+			,PC.STORE_APPLY_TYPE
+			,PC.STORE_POS_DISP_YN
+			<!-- ,PC.EMP_APPLY_YN -->
+			,PC.TOTAL_ISSUE_LIMIT_YN
+			,PC.TOTAL_ISSUE_LIMIT_COUNT
+			,PC.TOTAL_ISSUE_COUNT
+			,PC.PER1PSN_ISSUE_LIMIT_YN
+			,PC.PER1PSN_MAX_ISSUE_COUNT
+			,PC.MIN_LIMIT_SELL_AMT
+			,PC.LIMIT_DSCNT_RATE
+			,PC.CPN_APPLY_TYPE
+			,PC.CPN_DESC_TEXT
+			,PC.DSCNT_TYPE
+			,PC.DSCNT_VALUE
+			,PC.MAX_DSCNT_LIMIT_YN
+			,PC.MAX_DSCNT_LIMIT_AMT
+			,PC.MAX_CPN_APPLY_YN
+			,PC.MAX_CPN_APPLY_QTY
+			,PC.AFFLTS_CODE
+			,PC.RGSTER_NO
+			,PC.RGST_DTM
+			,PC.MODER_NO
+			,PC.MOD_DTM
+			,B.ADMIN_NAME AS RGSTER_NAME
+			,B.LOGIN_ID AS RGSTER_ID
+    	    ,C.ADMIN_NAME AS MODER_NAME
+			,C.LOGIN_ID AS MODER_ID
+			,B.ADMIN_NO AS RGSTER_NO
+			,C.ADMIN_NO AS MODER_NO
+    	    ,DBO.FN_CODE_VALUE('CPN_TYPE_CODE', PC.CPN_TYPE_CODE) AS CPN_TYPE_CODE_NAME
+    	    ,STUFF((SELECT CONCAT(',',DBO.FN_CODE_VALUE('DEVICE_CODE', PCAD.DEVICE_CODE)) FROM PR_COUPON_APPLY_DEVICE PCAD WITH(NOLOCK) WHERE PC.CPN_NO = PCAD.CPN_NO FOR XML PATH('')), 1, 1, '') AS DEVICE_CODE_NAME
+    	    ,STUFF((SELECT CONCAT(',', SSC.CHNNL_NAME) FROM PR_COUPON_APPLY_CHANNEL PCAC WITH(NOLOCK) JOIN SY_SITE_CHNNL SSC ON PCAC.CHNNL_NO = SSC.CHNNL_NO AND SSC.USE_YN = 'Y' WHERE PCAC.CPN_NO = PC.CPN_NO FOR XML PATH('')), 1, 1, '') AS CHNNL_NAME
+    	    , 'L' AS pageType
+    	FROM  
+    		PR_COUPON PC WITH(NOLOCK)
+    	LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON PC.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON PC.MODER_NO = C.ADMIN_NO
+    	<include refid="whereSql" />
+    	<choose>
+			 <when test="sortColumn != null">
+			 	ORDER BY
+			 	<if test="sortColumn == 'cpnName'.toString()">
+			 		PC.CPN_NAME
+			 	</if>
+			 	<if test="sortColumn == 'issueStartDtm'.toString()">
+			 		PC.ISSUE_START_DTM
+			 	</if>
+			 	<if test="sortColumn == 'issueEndDtm'.toString()">
+			 		PC.ISSUE_END_DTM
+			 	</if>
+			 	<if test="sortColumn == 'rgstDtm'.toString()">
+			 		PC.RGST_DTM
+			 	</if>
+			 	<if test="sortColumn == 'modDtm'.toString()">
+			 		PC.MOD_DTM
+			 	</if>
+			 	<if test="sortType == 'DESC'.toString()">
+			 		DESC
+			 	</if>
+			 </when>
+			 <otherwise>
+			 	ORDER BY PC.RGST_DTM DESC 
+			 </otherwise>
+		</choose>
+		<include refid="Paging.mssql" />
+    </select>
+    
+    <select id="selectPrCouponCount" parameterType="pageable" resultType="int">
+    	SELECT
+    		<include refid="Paging.totalCount" /> 
+    	FROM  
+    		PR_COUPON PC WITH(NOLOCK)
+    	<include refid="whereSql" />
+    </select>
+    
+    <select id="selectMemberCanUseCouponCount" parameterType="kr.co.abcmart.bo.promotion.vo.PrCouponSearchVO" resultType="int">
+    	SELECT
+    		COUNT(*) 
+    	FROM  
+    		PR_COUPON A WITH(NOLOCK)
+		INNER JOIN MB_MEMBER_COUPON B WITH(NOLOCK)
+		    ON A.CPN_NO = B.CPN_NO
+    	<include refid="memberCouponWhereSql" />
+    </select>
+    
+     <select id="selectMemberCouponList" parameterType="pageable" resultType="kr.co.abcmart.bo.promotion.model.master.PrCoupon">
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponDao.selectMemberCouponList [회원 상세 페이지 쿠폰 리스트 조회] [3TOP] */
+		SELECT A.MEMBER_NO
+               , A.CPN_NO
+               , A.HOLD_CPN_SEQ
+               , B.CPN_NAME
+               , B.CPN_TYPE_CODE
+               , B.NORMAL_CPN_YN
+               , B.CPN_USE_GBN_TYPE
+               , B.DSCNT_TYPE
+               , B.DSCNT_VALUE
+               , B.USE_PLACE_GBN_TYPE
+               , B.VALID_TERM_GBN_TYPE
+               , STUFF((SELECT CONCAT(',', Z.CODE_DTL_NAME)
+        		              FROM PR_COUPON X
+        		              JOIN PR_COUPON_APPLY_DEVICE Y
+        		                ON X.CPN_NO = Y.CPN_NO
+        		              JOIN SY_CODE_DETAIL Z
+        		                ON Y.DEVICE_CODE = Z.CODE_DTL_NO
+        		               AND Z.CODE_FIELD = 'DEVICE_CODE'
+        		               AND Z.USE_YN = 'Y'
+        		             WHERE X.CPN_NO = A.CPN_NO
+        		               FOR XML PATH('')), 1, 1, '') AS DEVICE_NAME
+        		   , STUFF((SELECT CONCAT(',', Y.CHNNL_NAME)
+        		              FROM PR_COUPON_APPLY_CHANNEL X
+        		              JOIN SY_SITE_CHNNL Y
+        		                ON X.CHNNL_NO = Y.CHNNL_NO
+        		               AND Y.USE_YN = 'Y'
+        		             WHERE X.CPN_NO = A.CPN_NO
+        		               FOR XML PATH('')), 1, 1, '') AS CHNNL_NAME
+               , B.VALID_START_DTM
+        	     , B.VALID_END_DTM
+               , B.USE_LIMIT_DAY_COUNT
+               , A.CPN_USE_DTM
+               , A.CPN_ISSUE_DTM
+               , A.CPN_STAT_CODE
+               <![CDATA[
+               , CASE WHEN (A.CPN_STAT_CODE = '10000' OR A.CPN_STAT_CODE = '10001') AND A.VALID_START_DTM <= GETDATE()
+        					AND A.VALID_END_DTM >= GETDATE() AND A.CPN_USE_DTM IS NULL 
+        			  THEN 'POSSIBLE_STOP'
+        			  WHEN A.CPN_STAT_CODE = '10002' AND A.VALID_START_DTM <= GETDATE() 
+        			       AND A.VALID_END_DTM >= GETDATE() AND A.CPN_USE_DTM IS NOT NULL 
+        			  THEN 'RE_ISSUE'
+        			  WHEN A.CPN_STAT_CODE = '10003' AND A.VALID_START_DTM < GETDATE()
+        			       AND A.CPN_USE_DTM IS NULL 
+        			  THEN 'RE_ISSUE'
+        			  WHEN A.CPN_STAT_CODE = '10004' AND A.VALID_START_DTM <= GETDATE() 
+        			       AND A.VALID_END_DTM >= GETDATE() AND A.CPN_USE_DTM IS NULL 
+        			  THEN 'UNPAUSE'
+        			  ELSE '-'
+                  END USE_YN_VAL
+               ]]>
+               , C.ORDER_NO
+               , CONCAT(D.LOGIN_ID, '(', D.ADMIN_NAME, ')') AS ADMIN_NAME
+            FROM MB_MEMBER_COUPON A WITH(NOLOCK)
+            JOIN PR_COUPON B WITH(NOLOCK)
+              ON A.CPN_NO = B.CPN_NO
+        LEFT JOIN OC_ORDER_USE_COUPON C WITH(NOLOCK)
+              ON A.CPN_NO = C.CPN_NO
+             AND A.MEMBER_NO = C.MEMBER_NO
+             AND A.HOLD_CPN_SEQ = C.HOLD_CPN_SEQ
+            JOIN SY_ADMIN D WITH(NOLOCK)
+              ON A.RGSTER_NO = D.ADMIN_NO
+		 <include refid="memberWhereSql" />
+		 ORDER BY A.RGST_DTM DESC 
+		 <include refid="Paging.mssql" />
+    </select>
+    
+    <select id="selectMemberCouponCount" parameterType="pageable" resultType="int">
+    	SELECT
+    		<include refid="Paging.totalCount" /> 
+    	FROM MB_MEMBER_COUPON A WITH(NOLOCK)
+        JOIN PR_COUPON B WITH(NOLOCK)
+          ON A.CPN_NO = B.CPN_NO
+   LEFT JOIN OC_ORDER_USE_COUPON C WITH(NOLOCK)
+          ON A.CPN_NO = C.CPN_NO
+         AND A.MEMBER_NO = C.MEMBER_NO
+         AND A.HOLD_CPN_SEQ = C.HOLD_CPN_SEQ
+        JOIN SY_ADMIN D WITH(NOLOCK)
+          ON A.RGSTER_NO = D.ADMIN_NO
+    	<include refid="memberWhereSql" />
+    </select>
+    
+    <select id="selectPrCoupon" parameterType="kr.co.abcmart.bo.promotion.model.master.PrCoupon" resultType="kr.co.abcmart.bo.promotion.model.master.PrCoupon">
+   /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponDao.selectPrCoupon [쿠폰 상세 조회 쿼리] [이지훈] */
+    	SELECT
+			PC.CPN_NO
+			,PC.CPN_NAME
+			,PC.CPN_TYPE_CODE
+			,PC.NORMAL_CPN_YN
+			,PC.CPN_USE_GBN_TYPE
+			,PC.USE_YN
+			,PC.DISP_YN
+			,PC.CPN_ZONE_DISP_YN
+			,PC.ISSUE_START_DTM
+			,PC.ISSUE_END_DTM
+			,PC.VALID_TERM_GBN_TYPE
+			,PC.VALID_START_DTM
+			,PC.VALID_END_DTM
+			,PC.USE_LIMIT_DAY_COUNT
+			,PC.VALID_TERM_ALERT_YN
+			,PC.ALERT_SEND_DAY_COUNT
+			,PC.RELAY_CPN_USE_YN
+			,PC.RELAY_CPN_NO
+			,PC.DWLD_PSBLT_YN
+			,PC.MON_YN
+			,PC.TUE_YN
+			,PC.WED_YN
+			,PC.THU_YN
+			,PC.FRI_YN
+			,PC.SAT_YN
+			,PC.SUN_YN
+			,PC.DWLD_START_TIME
+			,PC.DWLD_END_TIME
+			,PC.USE_PLACE_GBN_TYPE
+			,PC.CPN_CRT_TYPE
+			,PC.PAPER_CRT_COUNT
+			,PC.PAPER_CRT_RNDM_NO_VALUE
+			,PC.STORE_APPLY_TYPE
+			,PC.STORE_POS_DISP_YN
+			<!-- ,PC.EMP_APPLY_YN -->
+			,PC.TOTAL_ISSUE_LIMIT_YN
+			,PC.TOTAL_ISSUE_LIMIT_COUNT
+			,PC.TOTAL_ISSUE_COUNT
+			,PC.PER1PSN_ISSUE_LIMIT_YN
+			,PC.PER1PSN_MAX_ISSUE_COUNT
+			,PC.MIN_LIMIT_SELL_AMT
+			,PC.LIMIT_DSCNT_RATE
+			,PC.CPN_APPLY_TYPE
+			,PC.CPN_DESC_TEXT
+			,PC.DSCNT_TYPE
+			,PC.DSCNT_VALUE
+			,PC.MAX_DSCNT_LIMIT_YN
+			,PC.MAX_DSCNT_LIMIT_AMT
+			,PC.MAX_CPN_APPLY_YN
+			,PC.MAX_CPN_APPLY_QTY
+			,PC.AFFLTS_CODE
+			,PC.RGSTER_NO
+			,PC.RGST_DTM
+			,PC.MODER_NO
+			,PC.MOD_DTM
+			,B.ADMIN_NAME AS RGSTER_NAME
+			,B.LOGIN_ID AS RGSTER_ID
+    	    ,C.ADMIN_NAME AS MODER_NAME
+			,C.LOGIN_ID AS MODER_ID
+    	    ,DBO.FN_CODE_VALUE('CPN_TYPE_CODE', PC.CPN_TYPE_CODE) AS CPN_TYPE_CODE_NAME
+    	    ,(SELECT DBO.FN_CODE_VALUE('DEVICE_CODE', PCAD.DEVICE_CODE) FROM PR_COUPON_APPLY_DEVICE PCAD WITH(NOLOCK) WHERE PC.CPN_NO = PCAD.CPN_NO FOR XML PATH('')) AS DEVICE_CODE_NAME
+    	    ,(SELECT PC2.CPN_NAME FROM PR_COUPON PC2 WITH(NOLOCK) WHERE PC.RELAY_CPN_NO = PC2.CPN_NO) AS RELAY_CPN_NAME
+    	    ,(SELECT COUNT(*) FROM MB_MEMBER_COUPON MMC WITH(NOLOCK) WHERE PC.CPN_NO = MMC.CPN_NO) AS MEMBER_COUPON_COUNT
+    	FROM  
+    		PR_COUPON PC WITH(NOLOCK)
+    	LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON PC.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON PC.MODER_NO = C.ADMIN_NO
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <sql id="whereSql">
+		<where> 
+			<if test='bean.dateType != null and bean.dateType != ""'>
+				<if test='bean.dateType == "issueStartYmd"'>
+					<if test='bean.startYmd != null and bean.startYmd != ""'>
+						AND PC.ISSUE_START_DTM >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})  
+					</if>
+					<if test='bean.endYmd != null and bean.endYmd != ""'>
+						AND CONVERT(DATETIME, CONCAT(#{bean.endYmd, jdbcType=VARCHAR}, ' 23:59:59')) >= PC.ISSUE_START_DTM   
+					</if>
+				</if>
+				<if test='bean.dateType == "issueEndYmd"'>
+					<if test='bean.startYmd != null and bean.startYmd != ""'>
+						AND PC.ISSUE_END_DTM >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR})   
+					</if>
+					<if test='bean.endYmd != null and bean.endYmd != ""'>
+						AND CONVERT(DATETIME, CONCAT(#{bean.endYmd, jdbcType=VARCHAR}, ' 23:59:59')) >= PC.ISSUE_END_DTM       
+					</if>
+				</if>
+				<if test='bean.dateType == "rgster"'>
+					<if test='bean.startYmd != null and bean.startYmd != ""'>
+						AND PC.RGST_DTM >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR}) 
+					</if>
+					<if test='bean.endYmd != null and bean.endYmd != ""'>
+						AND CONVERT(DATETIME, CONCAT(#{bean.endYmd, jdbcType=VARCHAR}, ' 23:59:59')) >= PC.RGST_DTM  
+					</if>
+				</if>
+				<if test='bean.dateType == "moder"'>
+					<if test='bean.startYmd != null and bean.startYmd != ""'>
+						AND PC.MOD_DTM >= CONVERT(DATETIME, #{bean.startYmd, jdbcType=VARCHAR}) 
+					</if>
+					<if test='bean.endYmd != null and bean.endYmd != ""'>
+						AND CONVERT(DATETIME, CONCAT(#{bean.endYmd, jdbcType=VARCHAR}, ' 23:59:59')) >= PC.MOD_DTM  
+					</if>
+				</if>
+			</if>
+			<if test='bean.cpnTypeCode != null and bean.cpnTypeCode != ""'>
+				AND PC.CPN_TYPE_CODE = #{bean.cpnTypeCode, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.cpnUseGbnTypes != null and bean.cpnUseGbnTypes.length > 0'>
+				AND PC.CPN_USE_GBN_TYPE IN
+				<foreach collection="bean.cpnUseGbnTypes" item="cpnUseGbnType" open="(" close=")" separator=",">
+					#{cpnUseGbnType}
+				</foreach>
+			</if>
+			<if test='bean.useYn != null and bean.useYn != ""'> 
+				AND PC.USE_YN = #{bean.useYn, jdbcType=CHAR}
+			</if>
+			<if test='bean.dispYn != null and bean.dispYn != ""'> 
+				AND PC.DISP_YN = #{bean.dispYn, jdbcType=CHAR}
+			</if>
+			<!-- <if test='bean.empApplyYn != null and bean.empApplyYn != ""'> 
+				AND PC.EMP_APPLY_YN = #{bean.empApplyYn, jdbcType=CHAR}
+			</if> -->
+			<if test='bean.usePlaceGbnType != null and bean.usePlaceGbnType != ""'> 
+				AND PC.USE_PLACE_GBN_TYPE = #{bean.usePlaceGbnType, jdbcType=CHAR}
+			</if>
+			<if test='(bean.deviceCodes != null and bean.deviceCodes.length > 0) and bean.chkDeviceModule == null'>
+				AND EXISTS
+				(
+					SELECT PCAD.CPN_NO FROM PR_COUPON_APPLY_DEVICE PCAD WITH(NOLOCK) WHERE PC.CPN_NO = PCAD.CPN_NO
+					AND PCAD.DEVICE_CODE IN
+					<foreach collection="bean.deviceCodes" item="deviceCode" open="(" close=")" separator=",">
+						#{deviceCode}
+					</foreach>
+				)
+			</if>
+			<if test='(bean.chnnlNos != null and bean.chnnlNos.length > 0) and bean.chkChannelModule == null'>
+				AND EXISTS
+				(
+					SELECT PCAC.CPN_NO FROM PR_COUPON_APPLY_CHANNEL PCAC WITH(NOLOCK) WHERE PC.CPN_NO = PCAC.CPN_NO
+					AND PCAC.CHNNL_NO IN
+					<foreach collection="bean.chnnlNos" item="chnnlNo" open="(" close=")" separator=",">
+						#{chnnlNo}
+					</foreach>
+				)
+			</if>
+			<if test='bean.prdtNo != null and bean.prdtNo != "" '>
+				AND EXISTS
+				(
+					SELECT PCAP.PRDT_NO FROM PR_COUPON_APPLY_PRODUCT PCAP WITH(NOLOCK) WHERE PC.CPN_NO = PCAP.CPN_NO
+					AND PCAP.PRDT_NO = #{bean.prdtNo, jdbcType=VARCHAR}
+				)
+			</if>
+			<if test='bean.keywordType != null and bean.keywordType != ""'>
+				<choose>
+					<when test='bean.keywordType == "cpnNo"'>
+						AND PC.CPN_NO LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+					</when>
+					<when test='bean.keywordType == "cpnName"'>
+						AND PC.CPN_NAME LIKE '%'+#{bean.keyword, jdbcType=VARCHAR}+'%'
+					</when>
+				</choose>	
+			</if>
+			<if test='bean.normalCpnYn != null and bean.normalCpnYn != "" '>
+				AND PC.NORMAL_CPN_YN = #{bean.normalCpnYn, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.cpnZoneDispYn != null and bean.cpnZoneDispYn != "" '>
+				AND PC.CPN_ZONE_DISP_YN = #{bean.cpnZoneDispYn, jdbcType=VARCHAR}
+			</if>
+		</where>  
+    </sql>
+    
+    <sql id="memberWhereSql">
+    	WHERE A.MEMBER_NO = #{bean.memberNo, jdbcType=VARCHAR}
+	   <if test='bean.cpnTypeCode != null and bean.cpnTypeCode != ""'>
+	      AND B.CPN_TYPE_CODE = #{bean.cpnTypeCode, jdbcType=VARCHAR}
+	   </if>
+	   <if test='bean.chnnlNos != null and bean.chnnlNos.length > 0'>
+		  AND EXISTS (SELECT 1
+		 						     FROM PR_COUPON_APPLY_CHANNEL Z
+		 						    WHERE Z.CPN_NO = A.CPN_NO
+		 						      AND Z.CHNNL_NO IN 
+		 						     <foreach collection="bean.chnnlNos" item="chnnlNo" open="(" close=")" separator=",">
+										#{chnnlNo}
+									</foreach>
+		 				       )
+	   </if>
+	   <if test="bean.searchKey != null and bean.searchKey != '' and bean.searchValue != null and bean.searchValue != ''">
+	   	<choose>
+	   		<when test="bean.searchKey == 'couponNo'">
+	   			AND A.CPN_NO = #{bean.searchValue, jdbcType=VARCHAR}
+	   		</when>
+	   		<when test="bean.searchKey == 'couponName'">
+	   			AND B.CPN_NAME LIKE #{bean.searchValue, jdbcType=VARCHAR}+'%'
+	   		</when>
+	   	</choose>
+	   </if>
+	   <if test="bean.searchDtm != null and bean.searchDtm != ''">
+	   	<choose>
+	   		<when test="bean.searchDtm == 'cpnIssueDtm'">
+	   			AND A.CPN_ISSUE_DTM BETWEEN CONVERT(DATE, #{bean.fromDate, jdbcType=VARCHAR}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate, jdbcType=VARCHAR}))
+	   		</when>
+	   		<when test="bean.searchDtm == 'cpnUseDtm'">
+	   			AND A.CPN_USE_DTM BETWEEN CONVERT(DATE, #{bean.fromDate, jdbcType=VARCHAR}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate, jdbcType=VARCHAR}))
+	   		</when>
+	   	</choose>
+	   </if>
+	   <if test='bean.cpnUseYns != null and bean.cpnUseYns.length > 0'>
+			AND
+			<foreach collection="bean.cpnUseYns" item="cpnUseYns" open="(" close=")" separator="OR">
+				<choose>
+					<when test='cpnUseYns == "Y"'>
+						A.CPN_STAT_CODE = '10002'
+					</when>
+					<when test='cpnUseYns == "S"'>
+						A.CPN_STAT_CODE = '10004'
+					</when>
+					<when test='cpnUseYns == "N"'>
+						(A.CPN_STAT_CODE = '10000' OR A.CPN_STAT_CODE = '10001') 
+						AND A.CPN_USE_DTM IS NUll
+						<!-- AND A.VALID_START_DTM  <![CDATA[<=]]>  GETDATE() AND A.VALID_END_DTM >= GETDATE() -->
+					</when>
+					<when test='cpnUseYns == "E"'>
+						A.CPN_STAT_CODE = '10003'
+					</when>
+				</choose>
+			</foreach>
+		</if>
+    </sql>
+    
+    <sql id="memberCouponWhereSql">
+    	WHERE B.MEMBER_NO = #{memberNo, jdbcType=VARCHAR}
+    	AND
+			<![CDATA[
+			(GETDATE() >= B.VALID_START_DTM AND GETDATE() <= B.VALID_END_DTM)
+			]]>
+		AND
+			B.CPN_USE_DTM IS NULL
+	   <if test='cpnTypeCode != null and cpnTypeCode != ""'>
+	      AND A.CPN_TYPE_CODE = #{cpnTypeCode, jdbcType=VARCHAR}
+	   </if>
+	   <if test='cpnStatCodes != null and cpnStatCodes != ""'>
+	      AND B.CPN_STAT_CODE IN
+	      		<foreach collection="cpnStatCodes" item="cpnStatCode" open="(" close=")" separator=",">
+					#{cpnStatCode}
+				</foreach>
+	   </if>
+	   <if test='chnnlNos != null and chnnlNos.length > 0'>
+		  AND EXISTS (SELECT 1
+		 						     FROM PR_COUPON_APPLY_CHANNEL Z
+		 						    WHERE Z.CPN_NO = A.CPN_NO
+		 						      AND Z.CHNNL_NO IN 
+		 						     <foreach collection="chnnlNos" item="chnnlNo" open="(" close=")" separator=",">
+										#{chnnlNo}
+									</foreach>
+		 				       )
+	   </if>
+	   <if test="searchKey != null and searchKey != '' and searchValue != null and searchValue != ''">
+	   	<choose>
+	   		<when test="searchKey == 'couponNo'">
+	   			AND A.CPN_NO = #{searchValue, jdbcType=VARCHAR}
+	   		</when>
+	   		<when test="searchKey == 'couponName'">
+	   			AND A.CPN_NAME LIKE '%'+#{searchValue, jdbcType=VARCHAR}+'%'
+	   		</when>
+	   	</choose>
+	   </if>
+	   <if test="searchDtm != null and searchDtm != ''">
+	   	<choose>
+	   		<when test="searchDtm == 'cpnIssueDtm'">
+	   			AND B.CPN_ISSUE_DTM BETWEEN CONVERT(DATE, #{fromDate, jdbcType=VARCHAR}) AND DATEADD(DD, 1, CONVERT(DATE, #{toDate, jdbcType=VARCHAR}))
+	   		</when>
+	   		<when test="searchDtm == 'cpnUseDtm'">
+	   			AND B.CPN_USE_DTM BETWEEN CONVERT(DATE, #{fromDate, jdbcType=VARCHAR}) AND DATEADD(DD, 1, CONVERT(DATE, #{toDate, jdbcType=VARCHAR}))
+	   		</when>
+	   	</choose>
+	   </if>
+    </sql>
+    
+    <insert id="insertPrCoupon" parameterType="kr.co.abcmart.bo.promotion.model.master.PrCoupon">	
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponDao.insertPrCoupon [쿠폰 insert 쿼리] [이지훈] */
+    	<selectKey keyProperty="cpnNo" resultType="String" order="BEFORE">
+			SELECT NEXT VALUE FOR SEQ_PR_COUPON_CPN_NO
+		</selectKey>
+		INSERT INTO PR_COUPON
+			(
+				CPN_NO
+				,CPN_NAME
+				,CPN_TYPE_CODE
+				,NORMAL_CPN_YN
+				,CPN_USE_GBN_TYPE
+				,USE_YN
+				,DISP_YN
+				,CPN_ZONE_DISP_YN
+				,ISSUE_START_DTM
+				,ISSUE_END_DTM
+				,VALID_TERM_GBN_TYPE
+				,VALID_START_DTM
+				,VALID_END_DTM
+				<if test='useLimitDayCount != null and useLimitDayCount !=""'>
+				,USE_LIMIT_DAY_COUNT
+				</if>
+				,VALID_TERM_ALERT_YN
+				<if test='alertSendDayCount != null and alertSendDayCount !=""'>
+				,ALERT_SEND_DAY_COUNT
+				</if>
+				,RELAY_CPN_USE_YN
+				,RELAY_CPN_NO
+				,DWLD_PSBLT_YN
+				,MON_YN
+				,TUE_YN
+				,WED_YN
+				,THU_YN
+				,FRI_YN
+				,SAT_YN
+				,SUN_YN
+				,DWLD_START_TIME
+				,DWLD_END_TIME
+				,USE_PLACE_GBN_TYPE
+				,CPN_CRT_TYPE
+				<if test='paperCrtCount != null and paperCrtCount !=""'>
+				,PAPER_CRT_COUNT
+				</if>
+				,PAPER_CRT_RNDM_NO_VALUE
+				<if test='storeApplyType != null and storeApplyType !=""'>
+				,STORE_APPLY_TYPE
+				</if>
+				<if test='storePosDispYn != null and storePosDispYn !=""'>
+				,STORE_POS_DISP_YN
+				</if>
+				<!-- ,EMP_APPLY_YN -->
+				<if test='totalIssueLimitYn != null and totalIssueLimitYn !=""'>
+				,TOTAL_ISSUE_LIMIT_YN
+				</if>
+				<if test='totalIssueLimitCount != null and totalIssueLimitCount !=""'>
+				,TOTAL_ISSUE_LIMIT_COUNT
+				</if>
+				<if test='totalIssueCount != null and totalIssueCount !=""'>
+				,TOTAL_ISSUE_COUNT
+				</if>
+				<if test='per1psnIssueLimitYn != null and per1psnIssueLimitYn !=""'>
+				,PER1PSN_ISSUE_LIMIT_YN
+				</if>
+				<if test='per1psnMaxIssueCount != null and per1psnMaxIssueCount !=""'>
+				,PER1PSN_MAX_ISSUE_COUNT
+				</if>
+				<if test='minLimitSellAmt != null and minLimitSellAmt != ""'>
+				,MIN_LIMIT_SELL_AMT
+				</if>
+				<if test='limitDscntRate != null and limitDscntRate != ""'>
+				,LIMIT_DSCNT_RATE
+				</if>
+				,CPN_APPLY_TYPE
+				,CPN_DESC_TEXT
+				<if test='dscntType != null and dscntType !=""'>
+				,DSCNT_TYPE
+				</if>
+				<if test='dscntValue != null and dscntValue !=""'>
+				,DSCNT_VALUE
+				</if>
+				<if test='maxDscntLimitYn != null and maxDscntLimitYn !=""'>
+				,MAX_DSCNT_LIMIT_YN
+				</if>
+				<if test='maxDscntLimitAmt != null and maxDscntLimitAmt !=""'>
+				,MAX_DSCNT_LIMIT_AMT
+				</if>
+				<if test='maxCpnApplyYn != null and maxCpnApplyYn !=""'>
+				,MAX_CPN_APPLY_YN
+				</if>
+				<if test='maxCpnApplyQty != null and maxCpnApplyQty !=""'>
+				,MAX_CPN_APPLY_QTY
+				</if>
+				,AFFLTS_CODE
+				,RGSTER_NO
+				,RGST_DTM
+				,MODER_NO
+				,MOD_DTM
+			)
+		VALUES 
+			(
+			 	#{cpnNo, jdbcType=VARCHAR}
+			 	,#{cpnName, jdbcType=VARCHAR}
+			 	,#{cpnTypeCode, jdbcType=VARCHAR}
+			 	,#{normalCpnYn, jdbcType=CHAR}
+			 	,#{cpnUseGbnType, jdbcType=CHAR}
+			 	,#{useYn, jdbcType=CHAR}
+			 	,#{dispYn, jdbcType=CHAR}
+			 	,#{cpnZoneDispYn, jdbcType=CHAR}
+			 	,#{issueStartDtm, jdbcType=TIMESTAMP}
+			 	,#{issueEndDtm, jdbcType=TIMESTAMP}
+			 	,#{validTermGbnType, jdbcType=CHAR}
+			 	,#{validStartDtm, jdbcType=TIMESTAMP}
+			 	,#{validEndDtm, jdbcType=TIMESTAMP}
+			 	<if test='useLimitDayCount != null and useLimitDayCount !=""'>
+			 	,#{useLimitDayCount, jdbcType=SMALLINT}
+			 	</if>
+			 	,#{validTermAlertYn, jdbcType=CHAR}
+			 	<if test='alertSendDayCount != null and alertSendDayCount !=""'>
+			 	,#{alertSendDayCount, jdbcType=TINYINT}
+			 	</if>
+			 	,#{relayCpnUseYn, jdbcType=CHAR}
+			 	,#{relayCpnNo, jdbcType=VARCHAR}
+			 	,#{dwldPsbltYn, jdbcType=CHAR}
+			 	,#{monYn, jdbcType=CHAR}
+			 	,#{tueYn, jdbcType=CHAR}
+			 	,#{wedYn, jdbcType=CHAR}
+			 	,#{thuYn, jdbcType=CHAR}
+			 	,#{friYn, jdbcType=CHAR}
+			 	,#{satYn, jdbcType=CHAR}
+			 	,#{sunYn, jdbcType=CHAR}
+			 	,#{dwldStartTime, jdbcType=CHAR}
+			 	,#{dwldEndTime, jdbcType=CHAR}
+			 	,#{usePlaceGbnType, jdbcType=CHAR}
+			 	,#{cpnCrtType, jdbcType=CHAR}
+			 	<if test='paperCrtCount != null and paperCrtCount !=""'>
+			 	,#{paperCrtCount, jdbcType=INTEGER}
+			 	</if>
+			 	,#{paperCrtRndmNoValue, jdbcType=VARCHAR}
+			 	<if test='storeApplyType != null and storeApplyType !=""'>
+			 	,#{storeApplyType, jdbcType=CHAR}
+			 	</if>
+			 	<if test='storePosDispYn != null and storePosDispYn !=""'>
+			 	,#{storePosDispYn, jdbcType=CHAR}
+			 	</if>
+			 	<!-- ,#{empApplyYn, jdbcType=CHAR} -->
+			 	<if test='totalIssueLimitYn != null and totalIssueLimitYn !=""'>
+			 	,#{totalIssueLimitYn, jdbcType=CHAR}
+			 	</if>
+			 	<if test='totalIssueLimitCount != null and totalIssueLimitCount !=""'>
+			 	,#{totalIssueLimitCount, jdbcType=INTEGER}
+			 	</if>
+			 	<if test='totalIssueCount != null and totalIssueCount !=""'>
+			 	,#{totalIssueCount, jdbcType=INTEGER}
+			 	</if>
+			 	<if test='per1psnIssueLimitYn != null and per1psnIssueLimitYn !=""'>
+			 	,#{per1psnIssueLimitYn, jdbcType=CHAR}
+			 	</if>
+			 	<if test='per1psnMaxIssueCount != null and per1psnMaxIssueCount !=""'>
+			 	,#{per1psnMaxIssueCount, jdbcType=SMALLINT}
+			 	</if>
+			 	<if test='minLimitSellAmt != null and minLimitSellAmt != ""'>
+			 	,#{minLimitSellAmt, jdbcType=INTEGER}
+			 	</if>
+			 	<if test='limitDscntRate != null and limitDscntRate != ""'>
+			 	,#{limitDscntRate, jdbcType=TINYINT}
+			 	</if>
+			 	,#{cpnApplyType, jdbcType=CHAR}
+			 	,#{cpnDescText, jdbcType=VARCHAR}
+			 	<if test='dscntType != null and dscntType !=""'>
+			 	,#{dscntType, jdbcType=CHAR}
+			 	</if>
+			 	<if test='dscntValue != null and dscntValue !=""'>
+			 	,#{dscntValue, jdbcType=INTEGER}
+			 	</if>
+			 	<if test='maxDscntLimitYn != null and maxDscntLimitYn !=""'>
+			 	,#{maxDscntLimitYn, jdbcType=CHAR}
+			 	</if>
+			 	<if test='maxDscntLimitAmt != null and maxDscntLimitAmt !=""'>
+			 	,#{maxDscntLimitAmt, jdbcType=INTEGER}
+			 	</if>
+			 	<if test='maxCpnApplyYn != null and maxCpnApplyYn !=""'>
+			 	,#{maxCpnApplyYn, jdbcType=CHAR}
+			 	</if>
+			 	<if test='maxCpnApplyQty != null and maxCpnApplyQty !=""'>
+			 	,#{maxCpnApplyQty, jdbcType=TINYINT}
+			 	</if>
+			 	,#{affltsCode, jdbcType=VARCHAR}
+			 	,#{rgsterNo, jdbcType=VARCHAR}
+			 	,#{rgstDtm, jdbcType=TIMESTAMP}
+			 	,#{moderNo, jdbcType=VARCHAR}
+			 	,#{modDtm, jdbcType=TIMESTAMP}
+			)  
+    </insert>
+    
+   <select id="selectMemberCouponPopList" parameterType="pageable" resultType="kr.co.abcmart.bo.promotion.model.master.PrCoupon">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponDao.selectMemberCouponPopList [쿠폰 리스트 조회 쿼리(멤버 팝업)] [이지훈] */
+    	SELECT
+			PC.CPN_NO
+			,PC.CPN_NAME
+			,PC.CPN_TYPE_CODE
+			,PC.NORMAL_CPN_YN
+			,PC.CPN_USE_GBN_TYPE
+			,PC.USE_YN
+			,PC.DISP_YN
+			,PC.CPN_ZONE_DISP_YN
+			,PC.ISSUE_START_DTM
+			,PC.ISSUE_END_DTM
+			,PC.VALID_TERM_GBN_TYPE
+			,PC.VALID_START_DTM
+			,PC.VALID_END_DTM
+			,PC.USE_LIMIT_DAY_COUNT
+			,PC.VALID_TERM_ALERT_YN
+			,PC.ALERT_SEND_DAY_COUNT
+			,PC.RELAY_CPN_USE_YN
+			,PC.RELAY_CPN_NO
+			,PC.DWLD_PSBLT_YN
+			,PC.MON_YN
+			,PC.TUE_YN
+			,PC.WED_YN
+			,PC.THU_YN
+			,PC.FRI_YN
+			,PC.SAT_YN
+			,PC.SUN_YN
+			,PC.DWLD_START_TIME
+			,PC.DWLD_END_TIME
+			,PC.USE_PLACE_GBN_TYPE
+			,PC.CPN_CRT_TYPE
+			,PC.PAPER_CRT_COUNT
+			,PC.PAPER_CRT_RNDM_NO_VALUE
+			,PC.STORE_APPLY_TYPE
+			,PC.STORE_POS_DISP_YN
+			<!-- ,PC.EMP_APPLY_YN -->
+			,PC.TOTAL_ISSUE_LIMIT_YN
+			,PC.TOTAL_ISSUE_LIMIT_COUNT
+			,PC.TOTAL_ISSUE_COUNT
+			,PC.PER1PSN_ISSUE_LIMIT_YN
+			,PC.PER1PSN_MAX_ISSUE_COUNT
+			,PC.MIN_LIMIT_SELL_AMT
+			,PC.LIMIT_DSCNT_RATE
+			,PC.CPN_APPLY_TYPE
+			,PC.CPN_DESC_TEXT
+			,PC.DSCNT_TYPE
+			,PC.DSCNT_VALUE
+			,PC.MAX_DSCNT_LIMIT_YN
+			,PC.MAX_DSCNT_LIMIT_AMT
+			,PC.MAX_CPN_APPLY_YN
+			,PC.MAX_CPN_APPLY_QTY
+			,PC.AFFLTS_CODE
+			,PC.RGSTER_NO
+			,PC.RGST_DTM
+			,PC.MODER_NO
+			,PC.MOD_DTM
+    	    ,DBO.FN_CODE_VALUE('CPN_TYPE_CODE', PC.CPN_TYPE_CODE) AS CPN_TYPE_CODE_NAME
+    	    ,MM.MEMBER_NO
+    	    ,MM.LOGIN_ID
+    	    ,MM.MEMBER_NAME
+    	    ,DBO.FN_CODE_VALUE('MBSHP_GRADE_CODE', MM.MBSHP_GRADE_CODE) AS MBSHP_GRADE_CODE_NAME
+    	    ,DBO.FN_CODE_VALUE('MEMBER_TYPE_CODE', MM.MEMBER_TYPE_CODE) AS MEMBER_TYPE_CODE_NAME
+    	    ,MMC.HOLD_CPN_SEQ
+    	    ,MMC.CPN_USE_DTM
+    	    ,MMC.CPN_ISSUE_DTM
+    	    ,DBO.FN_CODE_VALUE('CPN_STAT_CODE', MMC.CPN_STAT_CODE) AS CPN_STAT_CODE_NAME
+    	    ,CASE
+    	    	WHEN (MMC.CPN_STAT_CODE = '10000' OR MMC.CPN_STAT_CODE = '10001') 
+    	    			AND MMC.VALID_START_DTM <![CDATA[<=]]> getdate() AND MMC.VALID_END_DTM <![CDATA[>=]]> getdate()
+    	    			AND MMC.CPN_USE_DTM IS NULL THEN 'POSSIBLE_STOP'
+    	    			
+    	    	WHEN MMC.CPN_STAT_CODE = '10002'
+    	    			AND MMC.VALID_START_DTM <![CDATA[<=]]> getdate() AND MMC.VALID_END_DTM <![CDATA[>=]]> getdate()
+    	    			AND MMC.CPN_USE_DTM IS NOT NULL THEN 'RE_ISSUE'
+    	    	
+				WHEN MMC.CPN_STAT_CODE = '10003'
+						AND MMC.VALID_START_DTM <![CDATA[<]]> getdate()
+						AND MMC.CPN_USE_DTM IS NULL THEN 'RE_ISSUE'
+						
+				WHEN MMC.CPN_STAT_CODE = '10004'
+						AND MMC.VALID_START_DTM <![CDATA[<=]]> getdate() AND MMC.VALID_END_DTM <![CDATA[>=]]> getdate()
+						AND MMC.CPN_USE_DTM IS NULL THEN 'UNPAUSE'
+    	    	ELSE 'NONE'
+    	     END AS USE_YN_VAL
+    	     ,(SELECT TOP 1 OOUC.ORDER_NO 
+    	         FROM OC_ORDER_USE_COUPON OOUC WITH(NOLOCK) 
+    	        WHERE OOUC.CPN_NO = PC.CPN_NO  
+    	          AND OOUC.HOLD_CPN_SEQ = MMC.HOLD_CPN_SEQ
+    	          AND OOUC.MEMBER_NO = MMC.MEMBER_NO
+    	          AND MMC.CPN_USE_DTM IS NOT NULL
+    	     	ORDER BY ORDER_NO
+    	     ) AS ORDER_NO
+    	FROM  PR_COUPON PC WITH(NOLOCK)
+    	JOIN MB_MEMBER_COUPON MMC WITH(NOLOCK)
+   		  ON PC.CPN_NO = MMC.CPN_NO
+    	JOIN MB_MEMBER MM WITH(NOLOCK)
+    	  ON MMC.MEMBER_NO = MM.MEMBER_NO
+    	 AND MM.LEAVE_YN = 'N'
+    	LEFT JOIN OC_ORDER_USE_COUPON OOUC WITH(NOLOCK)
+    	  ON OOUC.CPN_NO = PC.CPN_NO  
+    	 AND OOUC.HOLD_CPN_SEQ = MMC.HOLD_CPN_SEQ
+    	 AND OOUC.MEMBER_NO = MMC.MEMBER_NO
+		 AND OOUC.CLM_NO IS NULL
+	    LEFT JOIN OC_ORDER_PRODUCT OOP WITH(NOLOCK)  
+		  ON OOP.ORDER_NO = OOUC.ORDER_NO
+		 AND OOP.ORDER_PRDT_SEQ = OOUC.ORDER_PRDT_SEQ
+    	<include refid="memberPopSql" />
+		ORDER BY MMC.RGST_DTM DESC 
+		<include refid="Paging.mssql" />
+    </select>
+    
+    <select id="selectMemberCouponPopCount" parameterType="pageable" resultType="int">
+    	SELECT
+    		<include refid="Paging.totalCount" /> 
+    	FROM PR_COUPON PC WITH(NOLOCK)
+		JOIN MB_MEMBER_COUPON MMC WITH(NOLOCK)
+   		  ON PC.CPN_NO = MMC.CPN_NO
+    	JOIN MB_MEMBER MM WITH(NOLOCK)
+    	  ON MMC.MEMBER_NO = MM.MEMBER_NO
+    	 AND MM.LEAVE_YN = 'N'
+    	LEFT JOIN OC_ORDER_USE_COUPON OOUC WITH(NOLOCK)
+    	  ON OOUC.CPN_NO = PC.CPN_NO  
+    	 AND OOUC.HOLD_CPN_SEQ = MMC.HOLD_CPN_SEQ
+    	 AND OOUC.MEMBER_NO = MMC.MEMBER_NO
+		 AND OOUC.CLM_NO IS NULL
+	    LEFT JOIN OC_ORDER_PRODUCT OOP WITH(NOLOCK)  
+		  ON OOP.ORDER_NO = OOUC.ORDER_NO
+		 AND OOP.ORDER_PRDT_SEQ = OOUC.ORDER_PRDT_SEQ
+    	<include refid="memberPopSql" />
+    </select>
+    
+    <select id="selectTotalMemberCouponCount" parameterType="String" resultType="int">
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponDao.selectTotalMemberCouponCount [쿠폰 발행 카운트 조회] [이지훈] */
+    	SELECT
+    		COUNT(*) 
+    	FROM MB_MEMBER_COUPON WITH(NOLOCK)
+    	WHERE CPN_NO = #{cpnNo, jdbcType=VARCHAR}
+    </select>
+    
+    <sql id="memberPopSql">
+    	  WHERE PC.CPN_NO = #{bean.cpnNo, jdbcType=VARCHAR}
+   		<if test='bean.loginId != null and bean.loginId != ""'> 
+			AND MM.LOGIN_ID LIKE '%'+#{bean.loginId, jdbcType=VARCHAR}+'%'
+		</if>
+   		<if test='bean.memberName != null and bean.memberName != ""'> 
+			AND MM.MEMBER_NAME LIKE '%'+#{bean.memberName, jdbcType=VARCHAR}+'%'
+		</if>
+   		<if test='bean.usePlaceGbnType != null and bean.usePlaceGbnType != ""'> 
+			<choose>
+				<when test='bean.usePlaceGbnType == "O"'>
+			AND (
+				OOP.ORDER_PRDT_STAT_CODE NOT IN('10000','10001', '10010', '10011')
+				AND MMC.USE_STORE_NO IS NULL 
+				) 
+				</when>
+				<when test='bean.usePlaceGbnType == "F"'>
+			AND (
+				OOP.ORDER_PRDT_STAT_CODE NOT IN('10000','10001', '10010', '10011')
+				AND MMC.USE_STORE_NO IS NOT NULL
+				)	
+				</when>
+				<otherwise>
+			AND (
+				(MMC.USE_STORE_NO IS NULL OR MMC.USE_STORE_NO IS NOT NULL ) 
+				AND OOP.ORDER_PRDT_STAT_CODE NOT IN('10000','10001', '10010', '10011')
+				) 
+				</otherwise>
+			</choose>
+    		
+		</if>
+		<if test='bean.cpnUseYns != null and bean.cpnUseYns.length > 0'>
+			AND
+			<foreach collection="bean.cpnUseYns" item="cpnUseYns" open="(" close=")" separator="OR">
+				<choose>
+					<when test='cpnUseYns == "Y"'>
+						MMC.CPN_STAT_CODE = '10002'
+					</when>
+					<when test='cpnUseYns == "S"'>
+						MMC.CPN_STAT_CODE = '10004'
+					</when>
+					<when test='cpnUseYns == "N"'>
+						MMC.CPN_USE_DTM IS NUll
+					</when>
+					<when test='cpnUseYns == "E"'>
+						MMC.CPN_STAT_CODE = '10003'
+					</when>
+				</choose>
+			</foreach>
+		</if>
+    </sql>
+    
+    <select id="selectSoldOutCmpnsCpnPolicy" resultType="kr.co.abcmart.bo.promotion.model.master.PrCoupon">
+    	/*+  kr.co.abcmart.bo.promotion.repository.master.PrCouponDao.selectSoldOutCmpnsCpnPolicy [현재 시행중인 온라인 회원의 기본 정책 품절보상쿠폰 조회] [김태호] */
+		SELECT A.CPN_NO
+	    	 , CASE WHEN A.VALID_TERM_GBN_TYPE = 'T' THEN A.VALID_START_DTM
+	    	        WHEN A.VALID_TERM_GBN_TYPE = 'D' THEN GETDATE()
+	    	   END AS VALID_START_DTM
+			 , CASE WHEN A.VALID_TERM_GBN_TYPE = 'T' THEN A.VALID_END_DTM
+				    WHEN A.VALID_TERM_GBN_TYPE = 'D' THEN GETDATE() + A.USE_LIMIT_DAY_COUNT
+			   END AS VALID_END_DTM
+		  FROM PR_COUPON A WITH (NOLOCK)
+		  JOIN CM_ONLINE_MEMBER_POLICY B WITH (NOLOCK)
+		    ON A.CPN_NO = B.SOLD_OUT_CMPNS_CPN_NO
+		 WHERE A.ISSUE_START_DTM &lt;= GETDATE() AND GETDATE() &lt;= A.ISSUE_END_DTM
+		   AND A.USE_YN = 'Y'
+		   AND B.PLCY_SEQ = (
+		 						SELECT TOP 1
+		                        	   PLCY_SEQ
+		                          FROM CM_ONLINE_MEMBER_POLICY WITH (NOLOCK)
+		                         WHERE PLCY_APPLY_YMD &lt;= GETDATE()
+		                         ORDER BY PLCY_SEQ DESC
+							)
+    </select>
+    
+    <update id="updateTotalIssueCount" parameterType="kr.co.abcmart.bo.promotion.model.master.PrCoupon">
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponDao.updateTotalIssueCount [쿠폰 다운로드 수 증가] [이지훈] */
+		UPDATE PR_COUPON
+		<set> 
+			<if test="totalIssueCount != null"> 
+				TOTAL_ISSUE_COUNT = #{totalIssueCount, jdbcType=INTEGER}
+			</if> 
+		</set> 
+		WHERE 
+			 CPN_NO = #{cpnNo, jdbcType=VARCHAR}   
+    </update>
+    
+    <select id="selectPrdtNoByCpnList" parameterType="String" resultType="kr.co.abcmart.bo.promotion.model.master.PrCoupon">
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponDao.selectPrdtNoByCpnList [상품번호에 의한 쿠폰 조회] [이지훈] */  
+		SELECT 
+			PC.CPN_NO
+			,PC.CPN_NAME
+			,PC.CPN_TYPE_CODE
+			,PC.NORMAL_CPN_YN
+			,PC.CPN_USE_GBN_TYPE
+			,PC.USE_YN
+			,PC.DISP_YN
+			,PC.CPN_ZONE_DISP_YN
+			,PC.ISSUE_START_DTM
+			,PC.ISSUE_END_DTM
+			,PC.VALID_TERM_GBN_TYPE
+			,PC.VALID_START_DTM
+			,PC.VALID_END_DTM
+			,PC.USE_LIMIT_DAY_COUNT
+			,PC.VALID_TERM_ALERT_YN
+			,PC.ALERT_SEND_DAY_COUNT
+			,PC.RELAY_CPN_USE_YN
+			,PC.RELAY_CPN_NO
+			,PC.DWLD_PSBLT_YN
+			,PC.MON_YN
+			,PC.TUE_YN
+			,PC.WED_YN
+			,PC.THU_YN
+			,PC.FRI_YN
+			,PC.SAT_YN
+			,PC.SUN_YN
+			,PC.DWLD_START_TIME
+			,PC.DWLD_END_TIME
+			,PC.USE_PLACE_GBN_TYPE
+			,PC.CPN_CRT_TYPE
+			,PC.PAPER_CRT_COUNT
+			,PC.PAPER_CRT_RNDM_NO_VALUE
+			,PC.STORE_APPLY_TYPE
+			,PC.STORE_POS_DISP_YN
+			,PC.TOTAL_ISSUE_LIMIT_YN
+			,PC.TOTAL_ISSUE_LIMIT_COUNT
+			,PC.TOTAL_ISSUE_COUNT
+			,PC.PER1PSN_ISSUE_LIMIT_YN
+			,PC.PER1PSN_MAX_ISSUE_COUNT
+			,PC.MIN_LIMIT_SELL_AMT
+			,PC.LIMIT_DSCNT_RATE
+			,PC.CPN_APPLY_TYPE
+			,PC.CPN_DESC_TEXT
+			,PC.DSCNT_TYPE
+			,PC.DSCNT_VALUE
+			,PC.MAX_DSCNT_LIMIT_YN
+			,PC.MAX_DSCNT_LIMIT_AMT
+			,PC.MAX_CPN_APPLY_YN
+			,PC.MAX_CPN_APPLY_QTY
+			,PC.AFFLTS_CODE
+			,PC.RGSTER_NO
+			,PC.RGST_DTM
+			,PC.MODER_NO
+			,PC.MOD_DTM
+		FROM 
+			PR_COUPON PC WITH(NOLOCK)
+		INNER JOIN PR_COUPON_APPLY_PRODUCT PCAP WITH(NOLOCK)
+					ON PC.CPN_NO = PCAP.CPN_NO
+				  AND PCAP.PRDT_NO = #{prdtNo, jdbcType=VARCHAR}
+		WHERE PC.USE_YN = 'Y'
+			AND PC.DISP_YN = 'Y'
+			AND PC.DWLD_PSBLT_YN = 'Y'
+			AND PC.USE_PLACE_GBN_TYPE != 'F'<!-- O:온라인, F:오프라인, A:온/오프라인 -->
+			AND PC.CPN_CRT_TYPE = 'O'<!-- O:온라인, P:지류생성 -->
+			AND ((PC.TOTAL_ISSUE_LIMIT_YN = 'N') OR (PC.TOTAL_ISSUE_LIMIT_YN = 'Y' AND PC.TOTAL_ISSUE_LIMIT_COUNT &gt; PC.TOTAL_ISSUE_COUNT))<!-- 발급제한이 없는 쿠폰 또는 발급제한이 있는 쿠폰 중, 발급된 수가 총발급제한수보다 적은 쿠폰 -->
+			AND 'Y' =
+				CASE
+					WHEN DATEPART(DW, GETDATE()) = 1 THEN PC.SUN_YN
+					WHEN DATEPART(DW, GETDATE()) = 2 THEN PC.MON_YN
+					WHEN DATEPART(DW, GETDATE()) = 3 THEN PC.TUE_YN
+					WHEN DATEPART(DW, GETDATE()) = 4 THEN PC.WED_YN
+					WHEN DATEPART(DW, GETDATE()) = 5 THEN PC.THU_YN
+					WHEN DATEPART(DW, GETDATE()) = 6 THEN PC.FRI_YN
+					WHEN DATEPART(DW, GETDATE()) = 7 THEN PC.SAT_YN
+				END
+			AND PC.DWLD_START_TIME &lt;= CAST(GETDATE() AS TIME)
+			AND PC.DWLD_END_TIME &gt;= CAST(GETDATE() AS TIME)
+    </select>
+    
+    <update id="updatePrCoupon" parameterType="kr.co.abcmart.bo.promotion.model.master.PrCoupon">
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponDao.updatePrCoupon [쿠폰 update 쿼리] [이지훈] */
+		UPDATE PR_COUPON
+		<set> 
+			<if test="cpnName != null"> 
+				cpn_name = #{cpnName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="normalCpnYn != null"> 
+				normal_cpn_yn = #{normalCpnYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="cpnUseGbnType != null"> 
+				cpn_use_gbn_type = #{cpnUseGbnType, jdbcType=CHAR}, 
+			</if> 
+			<if test="useYn != null"> 
+				use_yn = #{useYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="dispYn != null"> 
+				disp_yn = #{dispYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="issueStartDtm != null"> 
+				issue_start_dtm = #{issueStartDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="issueEndDtm != null"> 
+				issue_end_dtm = #{issueEndDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="validTermGbnType != null"> 
+				valid_term_gbn_type = #{validTermGbnType, jdbcType=CHAR}, 
+			</if> 
+			<if test="validStartDtm != null"> 
+				valid_start_dtm = #{validStartDtm, jdbcType=TIMESTAMP},
+			</if>
+			<if test="validEndDtm != null">  
+				valid_end_dtm = #{validEndDtm, jdbcType=TIMESTAMP},
+			</if> 
+			<choose>
+				<when test='useLimitDayCount != null'>use_limit_day_count = #{useLimitDayCount, jdbcType=SMALLINT}, </when>
+				<when test='validTermGbnType != null and validTermGbnType == "T" '>use_limit_day_count = 0,</when>
+			</choose>
+			<if test="validTermAlertYn != null"> 
+				valid_term_alert_yn = #{validTermAlertYn, jdbcType=CHAR}, 
+			</if> 
+			<choose>
+				<when test='alertSendDayCount != null'>alert_send_day_count = #{alertSendDayCount, jdbcType=TINYINT}, </when>
+				<when test='validTermAlertYn != null and validTermAlertYn =="N" '>alert_send_day_count = 0,</when>
+			</choose>
+			<if test="relayCpnUseYn != null"> 
+				relay_cpn_use_yn = #{relayCpnUseYn, jdbcType=CHAR}, 
+			</if> 
+			relay_cpn_no = #{relayCpnNo, jdbcType=VARCHAR}, 
+			<if test="dwldPsbltYn != null"> 
+				dwld_psblt_yn = #{dwldPsbltYn, jdbcType=CHAR}, 
+			</if> 
+			mon_yn = #{monYn, jdbcType=CHAR}, 
+			tue_yn = #{tueYn, jdbcType=CHAR}, 
+			wed_yn = #{wedYn, jdbcType=CHAR}, 
+			thu_yn = #{thuYn, jdbcType=CHAR}, 
+			fri_yn = #{friYn, jdbcType=CHAR}, 
+			sat_yn = #{satYn, jdbcType=CHAR}, 
+			sun_yn = #{sunYn, jdbcType=CHAR}, 
+			<if test="dwldStartTime != null"> 
+				dwld_start_time = #{dwldStartTime, jdbcType=TIME},
+			</if>
+			<if test="dwldEndTime != null">  
+				dwld_end_time = #{dwldEndTime, jdbcType=TIME},
+			</if> 
+			<if test="usePlaceGbnType != null"> 
+				use_place_gbn_type = #{usePlaceGbnType, jdbcType=CHAR}, 
+			</if> 
+			<if test="cpnCrtType != null"> 
+				cpn_crt_type = #{cpnCrtType, jdbcType=CHAR}, 
+			</if> 
+			<if test="paperCrtCount != null"> 
+				paper_crt_count = #{paperCrtCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="paperCrtRndmNoValue != null"> 
+				paper_crt_rndm_no_value = #{paperCrtRndmNoValue, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="storeApplyType != null"> 
+				store_apply_type = #{storeApplyType, jdbcType=CHAR}, 
+			</if> 
+			<if test="storePosDispYn != null"> 
+				store_pos_disp_yn = #{storePosDispYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="totalIssueLimitYn != null"> 
+				total_issue_limit_yn = #{totalIssueLimitYn, jdbcType=CHAR}, 
+			</if> 
+			<choose>
+				<when test='totalIssueLimitCount != null'>total_issue_limit_count = #{totalIssueLimitCount, jdbcType=INTEGER}, </when>
+				<when test='totalIssueLimitYn != null and totalIssueLimitYn == "N" '>total_issue_limit_count = 0,</when>
+			</choose>
+			<if test="totalIssueCount != null"> 
+				total_issue_count = #{totalIssueCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="per1psnIssueLimitYn != null"> 
+				per1psn_issue_limit_yn = #{per1psnIssueLimitYn, jdbcType=CHAR}, 
+			</if> 
+			<choose>
+				<when test='per1psnMaxIssueCount != null'>per1psn_max_issue_count = #{per1psnMaxIssueCount, jdbcType=INTEGER}, </when>
+				<when test='per1psnIssueLimitYn != null and per1psnIssueLimitYn == "N" '>per1psn_max_issue_count = 0,</when>
+			</choose>
+			<if test='minLimitSellAmt != null'>
+				min_limit_sell_amt = #{minLimitSellAmt, jdbcType=INTEGER},
+			</if>
+			<if test='limitDscntRate != null'>
+				limit_dscnt_rate = #{limitDscntRate, jdbcType=TINYINT}, 
+			</if>
+			<if test="cpnApplyType != null"> 
+				cpn_apply_type = #{cpnApplyType, jdbcType=CHAR}, 
+			</if> 
+			<if test="cpnDescText != null"> 
+				cpn_desc_text = #{cpnDescText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="dscntType != null"> 
+				dscnt_type = #{dscntType, jdbcType=CHAR}, 
+			</if> 
+			<if test='dscntValue != null'>
+				dscnt_value = #{dscntValue, jdbcType=INTEGER}, 
+			</if>
+			<if test="maxDscntLimitYn != null"> 
+				max_dscnt_limit_yn = #{maxDscntLimitYn, jdbcType=CHAR}, 
+			</if> 
+			<choose>
+				<when test='maxDscntLimitAmt != null'>max_dscnt_limit_amt = #{maxDscntLimitAmt, jdbcType=INTEGER}, </when>
+				<when test='maxDscntLimitYn !=null and maxDscntLimitYn == "N" '>max_dscnt_limit_amt = 0,</when>
+			</choose>
+			<if test="maxCpnApplyYn != null"> 
+				max_cpn_apply_yn = #{maxCpnApplyYn, jdbcType=CHAR}, 
+			</if> 
+			<choose>
+				<when test='maxCpnApplyQty != null'>max_cpn_apply_qty = #{maxCpnApplyQty, jdbcType=INTEGER}, </when>
+				<when test='maxCpnApplyYn != null and maxCpnApplyYn == "N" '>max_cpn_apply_qty = 0,</when>
+			</choose>
+			<if test="affltsCode != null"> 
+				afflts_code = #{affltsCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cpnZoneDispYn != null"> 
+				cpn_zone_disp_yn = #{cpnZoneDispYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 cpn_no = #{cpnNo, jdbcType=VARCHAR}   
+    </update>
+    
+</mapper>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.order.repository.master.OcOrderProductApplyPromotionDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.order.model.master.OcOrderProductApplyPromotion">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOrderProductApplyPromotionDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			OC_ORDER_PRODUCT_APPLY_PROMOTION WITH (NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+
+	<select id="selectOrderPromoList" parameterType="kr.co.abcmart.bo.order.vo.OcOrderDiscountVO" resultType="kr.co.abcmart.bo.order.vo.OcOrderDiscountVO">
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOrderProductApplyPromotionDao.selectOrderPromoList [주문 프로모션 조회] */  
+    
+		SELECT 'PROMO' 				AS DISCOUNT_GBN 
+			 , A.PROMO_NO  			AS DISCOUNT_ID
+			 , A.DSCNT_TYPE			AS DISCOUNT_TYPE
+			 , A.DSCNT_VALUE 		AS DISCOUNT_VALUE
+			 , A.DSCNT_AMT 			AS DISCOUNT_AMT
+			 , B.PRDT_NO			AS DISCOUNT_PRDT_NO
+			 , B.PRDT_NAME 			AS DISCOUNT_PRDT_NAME
+			 , CONVERT(VARCHAR(10),C.PROMO_START_DTM,120)	AS DISCOUNT_START_DT 	
+			 , CONVERT(VARCHAR(10),C.PROMO_END_DTM,120)		AS DISCOUNT_END_DT
+			 , C.PROMO_NAME			AS DISCOUNT_TXT
+		  FROM OC_ORDER_PRODUCT_APPLY_PROMOTION A WITH (NOLOCK)
+		  JOIN OC_ORDER_PRODUCT B WITH (NOLOCK)
+		    ON A.ORDER_NO = B.ORDER_NO 
+		   AND A.ORDER_PRDT_SEQ = B.ORDER_PRDT_SEQ
+		  JOIN PR_PROMOTION C
+		    ON A.PROMO_NO 	= C.PROMO_NO 
+		WHERE A.ORDER_NO 	= #{orderNo, jdbcType=VARCHAR}  
+    </select>
+    
+    <select id="selectClaimCancelPromoList" parameterType="kr.co.abcmart.bo.claim.vo.OcClaimDiscountVO" resultType="kr.co.abcmart.bo.claim.vo.OcClaimDiscountVO">
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOrderProductApplyPromotionDao.selectClaimCancelPromoList [클레임 취소 프로모션 조회] [kth] */  
+		SELECT 'PROMO' 				AS DISCOUNT_GBN 
+			 , A.PROMO_NO  			AS DISCOUNT_ID
+			 , A.DSCNT_TYPE			AS DISCOUNT_TYPE
+			 , A.DSCNT_VALUE 		AS DISCOUNT_VALUE
+			 , A.DSCNT_AMT 			AS DISCOUNT_AMT
+			 , A.CLM_NO				AS CLM_NO
+			 , B.PRDT_NO			AS DISCOUNT_PRDT_NO
+			 , B.PRDT_NAME 			AS DISCOUNT_PRDT_NAME
+			 , C.PROMO_START_DTM	AS DISCOUNT_START_DT 	
+			 , C.PROMO_END_DTM		AS DISCOUNT_END_DT
+			 , C.PROMO_NAME			AS DISCOUNT_TXT
+		  FROM OC_ORDER_PRODUCT_APPLY_PROMOTION A WITH (NOLOCK)
+		  JOIN OC_ORDER_PRODUCT B WITH (NOLOCK)
+		    ON A.ORDER_NO = B.ORDER_NO 
+		   AND A.ORDER_PRDT_SEQ = B.ORDER_PRDT_SEQ
+		  JOIN PR_PROMOTION C WITH (NOLOCK)
+		    ON A.PROMO_NO 	= C.PROMO_NO 
+		 WHERE A.CLM_NO IS NOT NULL
+		<if test='orgOrderNo != null and orgOrderNo != ""'>
+		   AND A.ORDER_NO IN (SELECT ORDER_NO FROM OC_ORDER WHERE ORG_ORDER_NO = #{orgOrderNo})
+		</if>
+		<if test='orderNo != null and orderNo != ""'>
+		   AND A.ORDER_NO = #{orderNo}
+		</if>
+    </select>
+    
+    <update id="updateOrderProductApplyPromotionClmNo" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderProductApplyPromotion">
+    	/*+ kr.co.abcmart.bo.order.repository.master.OcOrderProductApplyPromotionDao.updateOrderProductApplyPromotionClmNo [주문상품 프로모션 클레임번호 업데이트] [KTH] */
+    	UPDATE OC_ORDER_PRODUCT_APPLY_PROMOTION
+    	   SET CLM_NO = #{clmNo, jdbcType=VARCHAR}
+    	 WHERE ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+		<if test='orderPrdtSeq != null'>
+		   AND ORDER_PRDT_SEQ = #{orderPrdtSeq, jdbcType=INTEGER}
+		</if>
+		<if test='applyPromoSeq != null'>
+		   AND APPLY_PROMO_SEQ = #{applyPromoSeq, jdbcType=TINYINT}
+		</if>
+    </update>
+    
+	<select id="selectOrderProductApplyPromotion" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderProductApplyPromotion" resultType="kr.co.abcmart.bo.order.model.master.OcOrderProductApplyPromotion">
+	/*+ kr.co.abcmart.bo.order.repository.master.OcOrderProductApplyPromotionDao.selectOrderProductApplyPromotion [주문 상품 프로모션 조회] */  
+	
+		SELECT ORDER_NO	
+			 , ORDER_PRDT_SEQ	
+			 , APPLY_PROMO_SEQ	
+			 , PROMO_NO	
+			 , PROMO_TYPE_CODE	
+			 , DSCNT_TYPE	
+			 , DSCNT_VALUE	
+			 , DSCNT_AMT	
+			 , CLM_NO		
+			 , CHNG_DSCNT_VALUE
+			 , CHNG_DSCNT_AMT	 
+		  FROM OC_ORDER_PRODUCT_APPLY_PROMOTION WITH (NOLOCK)
+		 WHERE ORDER_NO  = #{orderNo, jdbcType=VARCHAR}
+		<if test='orderPrdtSeq != null and orderPrdtSeq != ""'>  
+		   AND ORDER_PRDT_SEQ = #{orderPrdtSeq, jdbcType=VARCHAR}  
+		</if>
+		<if test='promoTypeCodes != null and promoTypeCodes != ""'>  
+			   AND PROMO_TYPE_CODE IN
+			<foreach item="item" index="index" collection="promoTypeCodes" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		
+    </select>
+
+</mapper>

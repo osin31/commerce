@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.afterService.repository.master.OcAsAcceptProductDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptProduct">
+    
+     /*+ kr.co.abcmart.bo.afterService.repository.master.OcAsAcceptProductDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			OC_AS_ACCEPT_PRODUCT WITH (NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    
+    <insert id="inertOcAsAcceptProduct" parameterType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptProduct">
+     /*+ kr.co.abcmart.bo.afterService.model.master.OcAsAcceptProductDao.inertOcAsAcceptProduct [접수 insert] [이상호] */
+		INSERT INTO OC_AS_ACCEPT_PRODUCT(
+				   AS_ACCEPT_NO
+				  ,AS_ACCEPT_PRDT_SEQ
+				  ,ORG_ORDER_NO
+				  ,ORDER_NO
+				  ,ORDER_PRDT_SEQ
+				  ,PRDT_NO
+				  ,PRDT_OPTN_NO
+				  ,PRDT_NAME
+				  ,ENG_PRDT_NAME
+				  ,OPTN_NAME
+				  ,PRDT_TYPE_CODE
+				  ,STYLE_INFO
+				  ,PRDT_COLOR_CODE
+				  ,BRAND_NO
+				  ,ORDER_AMT
+				  ,AS_RSN_CODE
+				  ,AS_ETC_RSN_TEXT
+				  ,AS_ACCEPT_CONT_TEXT
+				  ,AS_DLBRT_CODE
+				  ,AS_DLBRT_CONT_TEXT
+				  ,AS_PROC_TYPE_CODE
+				  ,AS_PROC_TYPE_DTL_CODE
+				  ,AS_PROC_CONT_TEXT
+				  ,AS_AMT
+				  ,LOGIS_VNDR_CODE
+				  ,WAYBIL_NO_TEXT
+				  ,AS_PRDT_STAT_CODE
+				  ,RGSTER_NO
+				  ,RGST_DTM
+				  ,MODER_NO
+				  ,MOD_DTM
+				) VALUES (
+				    #{asAcceptNo, jdbcType=VARCHAR}
+				  ,#{asAcceptPrdtSeq, jdbcType=TINYINT} 
+				  ,#{orgOrderNo, jdbcType=VARCHAR}
+				  ,#{orderNo, jdbcType=VARCHAR} -- 2020.05.18 : 교환재배송상품도 AS 걸릴 수 있기에 orgOrderNo -> orderNo로 수정
+				  ,#{orderPrdtSeq, jdbcType=INTEGER}
+				  ,#{prdtNo, jdbcType=VARCHAR}  
+				  ,#{prdtOptnNo, jdbcType=VARCHAR} 
+				  ,#{prdtName, jdbcType=VARCHAR}  
+				  ,#{engPrdtName, jdbcType=VARCHAR}
+				  ,#{optnName, jdbcType=VARCHAR} 
+				  ,#{prdtTypeCode, jdbcType=VARCHAR} 
+				  ,#{styleInfo, jdbcType=VARCHAR} 
+				  ,#{prdtColorCode, jdbcType=VARCHAR}
+				  ,#{brandNo, jdbcType=VARCHAR}
+				  ,#{orderAmt, jdbcType=INTEGER}
+				  ,#{asRsnCode, jdbcType=VARCHAR}  
+				  ,NULL 
+				  ,#{asAcceptContText, jdbcType=VARCHAR} 
+				  ,NULL 
+				  ,NULL 
+				  ,NULL 
+				  ,NULL 
+				  ,NULL 
+				  ,0   
+				  ,NULL 
+				  ,NULL 
+				  ,#{asPrdtStatCode, jdbcType=VARCHAR}  
+				  ,#{rgsterNo, jdbcType=VARCHAR}
+				  ,getdate() 
+				  ,NULL 
+				  ,NULL 
+				)
+	</insert>
+	
+	<update id="updateOcAsAcceptProduct" parameterType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptProduct">
+    
+     /*+ kr.co.abcmart.bo.afterService.repository.master.OcAsAcceptProductDao.updateOcAsAcceptProduct [상태 update 쿼리] [Generator] */
+    
+		UPDATE OC_AS_ACCEPT_PRODUCT
+		<set> 
+			<if test="asRsnCode != null"> 
+				as_rsn_code = #{asRsnCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="asEtcRsnText != null"> 
+				as_etc_rsn_text = #{asEtcRsnText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="asAcceptContText != null"> 
+				as_accept_cont_text = #{asAcceptContText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="asDlbrtCode != null"> 
+				as_dlbrt_code = #{asDlbrtCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="asDlbrtContText != null"> 
+				as_dlbrt_cont_text = #{asDlbrtContText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="asProcTypeCode != null"> 
+				as_proc_type_code = #{asProcTypeCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="asProcTypeDtlCode != null"> 
+				as_proc_type_dtl_code = #{asProcTypeDtlCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="asProcContText != null"> 
+				as_proc_cont_text = #{asProcContText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="asAmt != null"> 
+				as_amt = #{asAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="logisVndrCode != null"> 
+				logis_vndr_code = #{logisVndrCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="waybilNoText != null"> 
+				waybil_no_text = #{waybilNoText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="dlvyTodoYmd != null"> 
+				dlvy_todo_ymd = #{dlvyTodoYmd, jdbcType=CHAR}, 
+			</if> 
+			<if test="asPrdtStatCode != null"> 
+				AS_PRDT_STAT_CODE = #{asPrdtStatCode, jdbcType=VARCHAR}, 
+			</if> 
+			MODER_NO = #{moderNo, jdbcType=VARCHAR}, 
+			MOD_DTM = GETDATE() 
+		</set> 
+		WHERE 
+			 AS_ACCEPT_NO = #{asAcceptNo, jdbcType=VARCHAR} AND AS_ACCEPT_PRDT_SEQ = #{asAcceptPrdtSeq, jdbcType=TINYINT}   
+    </update>
+    
+     <select id="selectOrderAsArr" parameterType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptProduct" resultType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptProduct">
+    
+     /*+ kr.co.abcmart.bo.afterService.repository.master.OcAsAcceptProductDao.selectOrderAsArr [] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		 FROM OC_AS_ACCEPT_PRODUCT WITH (NOLOCK)
+		WHERE ORDER_NO IN
+			<foreach collection="array" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+    </select>
+    
+    <select id="selectAsPrdtDetailForInquiry" parameterType="kr.co.abcmart.bo.afterService.model.master.OcAsAccept" resultType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptProduct">
+    
+     /*+ kr.co.abcmart.bo.afterService.repository.master.OcAsAcceptProductDao.selectAsPrdtDetailForInquiry [1:1문의관리 - AS 상품 상세] [이강수] */
+    
+		  SELECT A.AS_ACCEPT_NO			-- AS 번호
+			   , A.AS_ACCEPT_PRDT_SEQ	-- AS접수상품순번
+			   , A.ORDER_NO				-- 상품별 주문번호
+			   , A.PRDT_NO
+			   , C.VNDR_PRDT_NO_TEXT			AS VNDR_PRDT_NO -- 업체상품코드
+			   , A.PRDT_NAME
+			   , DBO.FN_CODE_VALUE('PRDT_COLOR_CODE', A.PRDT_COLOR_CODE)	as PRDT_COLOR_CODE_NAME	-- 색상코드
+			   , A.OPTN_NAME
+			   , C.VNDR_NO
+		   FROM OC_AS_ACCEPT_PRODUCT	A WITH (NOLOCK)
+		   LEFT OUTER JOIN PD_PRODUCT	C WITH (NOLOCK) ON A.PRDT_NO = C.PRDT_NO
+		  WHERE A.AS_ACCEPT_NO 			= #{asAcceptNo, jdbcType=VARCHAR}
+		    AND A.AS_ACCEPT_PRDT_SEQ 	= #{asAcceptPrdtSeq, jdbcType=INTEGER}
+		    
+    </select>
+    
+    <select id="selectAsAcceptProductDetailInfoBackend" parameterType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptProduct" resultType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptProduct">
+
+	/*+ kr.co.abcmart.bo.afterService.repository.master.OcAsAcceptProductDao.selectAsAcceptProductDetailInfoBackend [접수번호 상세 조회 ] [이강수] */  
+
+		 SELECT C.BRAND_NAME AS BRAND_NAME
+			  , A.AS_ACCEPT_NO
+		      , A.AS_ACCEPT_PRDT_SEQ
+		      , A.AS_AMT
+		      , A.AS_PROC_TYPE_DTL_CODE
+		      , DBO.FN_CODE_VALUE('AS_STAT_CODE',B.AS_STAT_CODE) AS AS_STAT_CODE_NAME
+		      , DBO.FN_CODE_VALUE('AS_GBN_CODE',B.AS_GBN_CODE) AS AS_GBN_CODE_NAME
+		      , DBO.FN_CODE_VALUE('AS_RSN_CODE',A.AS_RSN_CODE) AS AS_RSN_CODE_NAME
+		      , B.AS_GBN_CODE
+		      , A.AS_RSN_CODE
+		      , A.AS_ACCEPT_CONT_TEXT
+		      , DBO.FN_CODE_VALUE('AS_PROC_TYPE_DTL_CODE',A.AS_PROC_TYPE_DTL_CODE)AS AS_PROC_TYPE_DTL_CODE_NAME
+		      , A.AS_PROC_TYPE_DTL_CODE
+		      , A.AS_PROC_CONT_TEXT
+		      , DBO.FN_CODE_VALUE('LOGIS_VNDR_CODE',A.LOGIS_VNDR_CODE) AS LOGIS_VNDR_CODE_NAME
+		      , DBO.FN_CODE_ADDINFO('LOGIS_VNDR_CODE',A.LOGIS_VNDR_CODE,1) AS LOGIS_VNDR_CODE_ADD_INFO1
+		      , A.LOGIS_VNDR_CODE
+		      , A.WAYBIL_NO_TEXT
+		      , A.PRDT_NO
+		      , A.PRDT_NAME
+		      , DBO.FN_CODE_VALUE('PRDT_COLOR_CODE', A.PRDT_COLOR_CODE) AS PRDT_COLOR_CODE_NAME
+		      , A.OPTN_NAME
+		      ----------- S : 상품 관련 파일 칼럼들 ------------------------
+			  , D.IMAGE_NAME
+			  , D.IMAGE_PATH_TEXT
+			  , D.IMAGE_URL
+			  , D.FILE_TYPE
+			  , D.ALTRN_TEXT
+			  ----------- E : 상품 관련 파일 칼럼들 ------------------------
+		 FROM OC_AS_ACCEPT_PRODUCT 					A WITH (NOLOCK)
+		 JOIN OC_AS_ACCEPT 							B WITH (NOLOCK) ON A.AS_ACCEPT_NO = B.AS_ACCEPT_NO
+		 LEFT OUTER JOIN DP_BRAND					C WITH (NOLOCK) ON A.BRAND_NO = C.BRAND_NO
+		 JOIN PD_PRODUCT_RELATION_FILE	D WITH (NOLOCK) ON A.PRDT_NO = D.PRDT_NO AND D.PRDT_RLTN_FILE_SEQ = 1
+	    WHERE A.AS_ACCEPT_NO 		= #{asAcceptNo, jdbcType=VARCHAR}
+		  AND A.AS_ACCEPT_PRDT_SEQ 	= #{asAcceptPrdtSeq, jdbcType=TINYINT}		
+
+	</select>
+	
+	<select id="selectOrgOrderAllAsProductList" parameterType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptProduct" resultType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptProduct">
+	/*+ kr.co.abcmart.bo.afterService.repository.master.OcAsAcceptProductDao.selectOrgOrderAllAsProductList [원 주문에 걸린 모든 AS 목록] [KTH] */
+		SELECT AS_ACCEPT_NO
+		     , AS_ACCEPT_PRDT_SEQ
+		     , ORG_ORDER_NO
+		     , ORDER_NO
+		     , ORDER_PRDT_SEQ
+		     , AS_PRDT_STAT_CODE
+		  FROM OC_AS_ACCEPT_PRODUCT WITH (NOLOCK)
+		 WHERE ORG_ORDER_NO = #{orgOrderNo, jdbcType=VARCHAR}
+	</select>
+	
+	<select id="getOrderPrdtAsAccept" parameterType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptProduct" resultType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptProduct">
+    
+	/*+ kr.co.abcmart.bo.afterService.repository.master.OcAsAcceptProductDao.getOrderPrdtAsAccept */  
+	SELECT AS_ACCEPT_NO, AS_ACCEPT_PRDT_SEQ, ORG_ORDER_NO, ORDER_NO, ORDER_PRDT_SEQ, PRDT_NO, PRDT_OPTN_NO, PRDT_NAME, ENG_PRDT_NAME, OPTN_NAME, PRDT_TYPE_CODE, STYLE_INFO, PRDT_COLOR_CODE, BRAND_NO, ORDER_AMT, AS_RSN_CODE, AS_ETC_RSN_TEXT, AS_ACCEPT_CONT_TEXT, AS_DLBRT_CODE, AS_DLBRT_CONT_TEXT, AS_PROC_TYPE_CODE, AS_PROC_TYPE_DTL_CODE, AS_PROC_CONT_TEXT, AS_AMT, LOGIS_VNDR_CODE, WAYBIL_NO_TEXT, DLVY_TODO_YMD, AS_PRDT_STAT_CODE 
+		 , AS_PRDT_STAT_CODE_NAME , RANK_SEQ 
+	  FROM (
+			SELECT 
+				<include refid="select-columns" />
+				, dbo.FN_CODE_VALUE( 'AS_PRDT_STAT_CODE' , AS_PRDT_STAT_CODE ) AS AS_PRDT_STAT_CODE_NAME
+				, RANK( )OVER( PARTITION BY ORDER_NO, ORDER_PRDT_SEQ ORDER BY  AS_ACCEPT_NO  DESC ) AS RANK_SEQ 
+			 FROM OC_AS_ACCEPT_PRODUCT WITH (NOLOCK)
+			<trim prefix="WHERE" prefixOverrides="AND">
+				<if test="orderNo != null and orderNo != ''">
+					ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+				</if>
+				<if test="orderPrdtSeq != null and orderPrdtSeq != ''">
+					AND ORDER_PRDT_SEQ = #{orderPrdtSeq, jdbcType=VARCHAR}
+				</if>
+				<if test="asPrdtStatCodes != null and asPrdtStatCodes != ''">
+				AND AS_PRDT_STAT_CODE IN
+						<foreach item="item" index="index" collection="asPrdtStatCodes" open="(" separator="," close=")">
+							#{item}
+						</foreach>
+				</if>
+			</trim>
+		)S WHERE S.RANK_SEQ = 1
+    </select>
+	
+	<select id="selectAsListByMemberNo" parameterType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptProduct" resultType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptProduct">
+	/*+ kr.co.abcmart.bo.afterService.repository.master.OcAsAcceptProductDao.selectAsListByMemberNo [회원번호로 AS목록 조회][이강수] */  
+
+		SELECT OAP.AS_ACCEPT_NO
+			 , OAP.PRDT_NO
+			 , OAP.PRDT_OPTN_NO
+			 , OAP.OPTN_NAME
+			 , OOP.VNDR_NO
+			 , OOP.VNDR_NAME
+			 , OOP.ORDER_PRDT_SEQ
+		  FROM OC_AS_ACCEPT         OA  WITH (NOLOCK)
+		  JOIN OC_AS_ACCEPT_PRODUCT OAP WITH (NOLOCK) ON OA.AS_ACCEPT_NO = OAP.AS_ACCEPT_NO
+		  JOIN OC_ORDER_PRODUCT     OOP WITH (NOLOCK) ON OAP.ORDER_NO = OOP.ORDER_NO AND OAP.ORDER_PRDT_SEQ = OOP.ORDER_PRDT_SEQ
+		 WHERE OA.MEMBER_NO = #{memberNo, jdbcType=VARCHAR}
+      ORDER BY OA.AS_ACCEPT_NO DESC
+	
+	</select>
+	
+</mapper>

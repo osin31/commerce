@@ -1,0 +1,692 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.board.repository.master.BdMemberCounselDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel">
+
+     /*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			BD_MEMBER_COUNSEL WITH (NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <!-- 검색 조건 -->
+    <sql id="searchWhere">
+    	<trim prefix="WHERE" prefixOverrides="AND|OR">
+    	<if test="bean.vndrNo != null and bean.vndrNo !=''">
+		   AND A.VNDR_NO =  #{bean.vndrNo, jdbcType=VARCHAR}
+		</if>
+    	<if test="bean.cnslGbnCode != null and bean.cnslGbnCode !=''">
+		   AND A.CNSL_GBN_CODE =  #{bean.cnslGbnCode, jdbcType=VARCHAR}
+		</if>
+		<if test="(bean.searchDateKey != null and bean.searchDateKey !='') and (bean.fromDate != null and bean.fromDate != '') and (bean.toDate != null and bean.toDate != '')">
+		   <choose>
+		   		<when test="bean.searchDateKey == 'inqryDtm'">
+		   AND A.INQRY_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+		   		</when>
+		   		<when test="bean.searchDateKey == 'aswrDtm'">
+		   AND A.ASWR_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+		   		</when>
+		   		<when test="bean.searchDateKey == 'escalationDtm'">
+		   AND A.VNDR_ASSIGN_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+		   		</when>
+		   </choose>
+		</if>
+		<if test="bean.searchAswrStatCode != null and bean.searchAswrStatCode !=''">
+		   AND A.ASWR_STAT_CODE = #{bean.searchAswrStatCode, jdbcType=VARCHAR}
+		</if>
+		<if test="bean.searchCnslTypeCode != null and bean.searchCnslTypeCode !=''">
+		   AND A.CNSL_TYPE_CODE = #{bean.searchCnslTypeCode, jdbcType=VARCHAR}
+		</if>
+		<if test="bean.searchCnslTypeDtlCode != null and bean.searchCnslTypeDtlCode !=''">
+		   AND A.CNSL_TYPE_DTL_CODE = #{bean.searchCnslTypeDtlCode, jdbcType=VARCHAR}
+		</if>
+		<if test="bean.searchChageVndr != null and bean.searchChageVndr !=''">
+		   <choose>
+				<when test="bean.searchChageVndr == 'cs'">
+		   AND A.VNDR_ASSIGN_YN = 'N'
+				</when>
+				<when test="bean.searchChageVndr == 'vndr'">
+		   AND A.VNDR_ASSIGN_YN = 'Y'
+				</when>
+				<when test="bean.searchChageVndr == 'vndrNm' and bean.searchChageVndrValue != null and bean.searchChageVndrValue != ''">
+		   AND EXISTS (
+		   				SELECT 1
+		   				  FROM VD_VENDOR Z WITH (NOLOCK)
+		   				 WHERE A.VNDR_NO = Z.VNDR_NO
+		   				   AND Z.VNDR_NAME LIKE CONCAT('%', #{bean.searchChageVndrValue, jdbcType=VARCHAR}, '%')
+					  )
+				</when>
+		   </choose>
+		</if>
+		<if test="bean.searchKey != null and bean.searchKey != '' and bean.searchValue != null and bean.searchValue != ''">
+			<choose>
+				<when test="bean.searchKey == 'inqryTitleText'">
+		   AND (A.INQRY_TITLE_TEXT LIKE CONCAT('%', #{bean.searchValue, jdbcType=VARCHAR}, '%') OR A.INQRY_CONT_TEXT LIKE CONCAT('%', #{bean.searchValue, jdbcType=VARCHAR}, '%'))
+		   		</when>
+				<when test="bean.searchKey == 'loginId'">
+		   AND EXISTS (
+		   				SELECT 1
+		   				  FROM MB_MEMBER Z WITH (NOLOCK)
+		   				 WHERE A.MEMBER_NO = Z.MEMBER_NO
+		   				   AND Z.LOGIN_ID = #{bean.searchValue, jdbcType=VARCHAR}
+					  )
+		   		</when>
+		   		<when test="bean.searchKey == 'memberName'">
+		   AND EXISTS (
+		   				SELECT 1
+		   				  FROM MB_MEMBER Z WITH (NOLOCK)
+		   				 WHERE A.MEMBER_NO = Z.MEMBER_NO
+		   				   AND Z.MEMBER_NAME = #{bean.searchValue, jdbcType=VARCHAR}
+		   				   <if test="bean.hdphnBackNoText != null and bean.hdphnBackNoText != ''">
+				     	   AND RIGHT(REPLACE(Z.HDPHN_NO_TEXT, '-', ''), 4) = #{bean.hdphnBackNoText, jdbcType=VARCHAR}
+					       </if>
+					  )
+		   		</when>
+				<when test="bean.searchKey == 'rgsterName'">
+		   AND EXISTS (
+   						SELECT Z.ADMIN_NO
+   						  FROM SY_ADMIN Z WITH (NOLOCK)
+   						 WHERE A.ASWR_NO = Z.ADMIN_NO
+   						   AND Z.ADMIN_NAME = #{bean.searchValue, jdbcType=VARCHAR}
+	                  )
+		   		</when>
+			</choose>
+		</if>
+		<if test="bean.memberNo != null and bean.memberNo != ''">
+			AND A.MEMBER_NO = #{bean.memberNo}
+		</if>
+		<if test="bean.inqryTitleText != null and bean.inqryTitleText != ''">
+			AND A.INQRY_TITLE_TEXT LIKE CONCAT('%', #{bean.inqryTitleText, jdbcType=VARCHAR}, '%')
+		</if>
+		<if test="bean.siteNo != null and bean.siteNo != ''">
+			AND A.SITE_NO = #{bean.siteNo}
+		</if>
+		<if test="bean.vndrAssignYn != null and bean.vndrAssignYn != ''">
+			AND A.VNDR_ASSIGN_YN = #{bean.vndrAssignYn, jdbcType=CHAR}
+		</if>
+		</trim>
+    </sql>
+
+    <select id="selectBdMemberCounselListCount" parameterType="pageable" resultType="int">
+    /*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselDao.selectBdMemberCounselListCount [1:1 문의 검색 조회결과 개수] [신인철] */
+		SELECT <include refid="Paging.totalCount" />
+		  FROM BD_MEMBER_COUNSEL A WITH (NOLOCK)
+		<include refid="searchWhere" />
+    </select>
+	
+	<select id="selectNoAswrCounselList" parameterType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel" resultType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselDao.selectBdMemberCounselListCount [1:1 문의 검색 미답변 조회] [신인철] */
+		SELECT A.MEMBER_CNSL_SEQ
+			 , A.SITE_NO
+			 , A.CNSL_TYPE_CODE
+			 , A.CNSL_TYPE_DTL_CODE
+			 , A.CNSL_SCRIPT_SEQ
+			 , A.ORDER_PRDT_SEQ
+			 , A.AS_ACCEPT_NO
+			 , A.AS_ACCEPT_PRDT_SEQ
+			 , A.INQRY_TITLE_TEXT
+			 , A.INQRY_CONT_TEXT
+			 , A.INQRY_DTM
+			 , A.MEMBER_NO
+			 , A.VNDR_NO
+			 , ISNULL(A.ORDER_NO, '') AS ORDER_NO
+			 , ISNULL(A.PRDT_NO, '') AS PRDT_NO
+			 , ISNULL(P.PRDT_NAME, '') AS PRDT_NAME
+		  FROM BD_MEMBER_COUNSEL A WITH (NOLOCK)
+		  LEFT OUTER JOIN PD_PRODUCT P WITH (NOLOCK) ON A.PRDT_NO = P.PRDT_NO 
+		 WHERE A.CNSL_GBN_CODE = #{cnslGbnCode, jdbcType=VARCHAR}
+		   AND A.ASWR_STAT_CODE = #{aswrStatCode, jdbcType=VARCHAR}
+		 <if test="vndrNo != null">
+		   AND A.VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+		 </if>
+		 ORDER BY A.INQRY_DTM DESC
+	</select>
+	
+	
+    <select id="selectBdMemberCounselList" parameterType="kr.co.abcmart.bo.board.vo.BdInquirySearchVO" resultType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel">
+    /*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselDao.selectBdMemberCounselList [1:1 문의 검색 조회결과] [신인철] */
+		SELECT S.MEMBER_CNSL_SEQ
+		     , S.VNDR_NO
+		     , S.MEMBER_NO
+		     , S.CNSL_GBN_CODE
+		     , T.CODE_DTL_NAME AS ASWR_STAT_NAME
+		     , CASE WHEN S.CNSL_GBN_CODE = '10001'
+		     		THEN V.CODE_DTL_NAME
+		     		ELSE CONCAT(U.CODE_DTL_NAME, ' > ', V.CODE_DTL_NAME)
+		        END AS CNSL_TYPE_NAME /* 회원상세 문의내역 탭 목록에서 필요한 검색조건 추가[이동엽] */
+		     , W.SITE_NO 					 /* 회원상세 문의내역 탭 목록에서 필요한 검색조건 추가[이동엽] */
+		     , S.INQRY_TITLE_TEXT
+		     , W.SITE_NAME
+		     , X.VNDR_NAME
+			 , X.VNDR_GBN_TYPE
+		     , Y.LOGIN_ID AS INQUIRY_ID
+		     , Y.MEMBER_NAME AS INQUIRY_NAME
+		     , S.INQRY_DTM
+		     , CASE WHEN Z.LOGIN_ID IS NOT NULL THEN Z.LOGIN_ID END AS ASWR_ID
+		     , CASE WHEN Z.LOGIN_ID IS NOT NULL THEN Z.ADMIN_NAME END AS ASWR_NAME
+		     , S.ASWR_DTM
+		     , S.ASWR_NO
+		     , S.VNDR_ASSIGN_DTM
+		     , (SELECT COUNT(1)
+		     	  FROM BD_MEMBER_COUNSEL_ATTACH_FILE F WITH (NOLOCK)
+		     	 WHERE F.MEMBER_CNSL_SEQ = S.MEMBER_CNSL_SEQ) AS CHECK_ATCH_FILE
+		  FROM (
+		        SELECT A.MEMBER_CNSL_SEQ
+		             , A.CNSL_GBN_CODE
+		             , A.ASWR_STAT_CODE
+		             , A.CNSL_TYPE_CODE
+		             , A.CNSL_TYPE_DTL_CODE
+		             , A.INQRY_TITLE_TEXT
+		             , A.SITE_NO
+		             , A.VNDR_NO
+		             , A.VNDR_ASSIGN_YN
+		             , A.VNDR_ASNR_NO
+		             , A.VNDR_ASSIGN_DTM
+		             , A.MEMBER_NO
+		             , A.INQRY_DTM
+		             , A.ASWR_NO
+		             , A.ASWR_DTM
+		          FROM BD_MEMBER_COUNSEL A WITH (NOLOCK)
+		<include refid="searchWhere" />
+				<choose> 
+					<when test="sortColumn != null">
+ 				 ORDER BY
+						<if test="sortColumn == 'aswrStatName'.toString()">
+					   A.ASWR_STAT_CODE
+						</if>
+						<if test="sortColumn == 'inqryTitleText'.toString()">
+					   A.INQRY_TITLE_TEXT
+						</if>
+						<if test="sortColumn == 'inqryDtm'.toString()">
+					   A.INQRY_DTM
+						</if>
+						<if test="sortColumn == 'aswrDtm'.toString()">
+					   A.ASWR_DTM
+						</if>
+						<if test="sortType == 'DESC'.toString()">
+					   DESC
+					   <if test="sortColumn == 'inqryTitleText'.toString() or sortColumn == 'inqryTitleText'.toString()">
+					   , A.INQRY_DTM DESC
+					   </if>
+						</if>
+					</when>
+					<otherwise>
+				 ORDER BY A.INQRY_DTM DESC, A.MEMBER_CNSL_SEQ DESC
+					</otherwise>
+				</choose>
+		<include refid="Paging.mssql" />
+		        ) S
+		  JOIN SY_CODE_DETAIL T WITH (NOLOCK) ON S.ASWR_STAT_CODE = T.CODE_DTL_NO AND T.CODE_FIELD = 'ASWR_STAT_CODE'
+		  JOIN SY_CODE_DETAIL U WITH (NOLOCK) ON S.CNSL_TYPE_CODE = U.CODE_DTL_NO AND U.CODE_FIELD = 'CNSL_TYPE_CODE'
+		  JOIN SY_CODE_DETAIL V WITH (NOLOCK) ON S.CNSL_TYPE_DTL_CODE = V.CODE_DTL_NO AND V.CODE_FIELD = 'CNSL_TYPE_DTL_CODE'
+		  JOIN SY_SITE W WITH (NOLOCK) ON S.SITE_NO = W.SITE_NO
+		  JOIN MB_MEMBER Y WITH (NOLOCK) ON S.MEMBER_NO = Y.MEMBER_NO
+		  LEFT OUTER JOIN VD_VENDOR X WITH (NOLOCK) ON S.VNDR_NO = X.VNDR_NO
+		  LEFT OUTER JOIN SY_ADMIN Z WITH (NOLOCK) ON S.ASWR_NO = Z.ADMIN_NO
+		  --문의 일시 기준으로만 수정
+		 ORDER BY S.INQRY_DTM DESC
+    </select>
+
+	<select id="selectBdMemberCounsel" parameterType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel" resultType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselDao.selectBdMemberCounsel [고객 문의 상세정보] [신인철] */
+		SELECT A.MEMBER_CNSL_SEQ
+			 , A.SITE_NO
+			 , A.CNSL_GBN_CODE
+			 , A.CNSL_TYPE_CODE
+			 , A.CNSL_TYPE_DTL_CODE
+			 , A.CNSL_SCRIPT_SEQ
+			 , A.ORDER_NO
+			 , A.ORDER_PRDT_SEQ
+			 , A.PRDT_NO
+			 , A.AS_ACCEPT_NO
+			 , A.AS_ACCEPT_PRDT_SEQ
+			 , A.INQRY_TITLE_TEXT
+			 , A.INQRY_CONT_TEXT
+			 , A.ASWR_STAT_CODE
+			 , A.ASWR_CONT_TEXT
+			 , A.INQRY_DTM
+			 , A.MEMBER_NO
+			 , A.ASWR_NO
+			 , A.ASWR_DTM
+			 , A.VNDR_ASSIGN_YN
+			 , A.VNDR_NO
+			 , A.VNDR_ASNR_NO
+			 , A.VNDR_ASSIGN_DTM
+			 , V.VNDR_NAME
+			 , CASE WHEN A.MEMBER_NO IS NOT NULL THEN MB.LOGIN_ID END AS INQUIRY_ID
+			 , CASE WHEN A.MEMBER_NO IS NOT NULL THEN MB.MEMBER_NAME END AS INQUIRY_NAME
+			 , CASE WHEN B.LOGIN_ID IS NOT NULL THEN B.LOGIN_ID END AS ASWR_ID
+			 , CASE WHEN B.LOGIN_ID IS NOT NULL THEN B.ADMIN_NAME END AS ASWR_NAME
+			 , C.SITE_NAME
+			 , E.CNSL_TYPE_CODE AS ASWR_CNSL_TYPE_CODE
+			 , E.CNSL_TYPE_DTL_CODE AS ASWR_CNSL_TYPE_DTL_CODE
+			 , E.CNSL_SCRIPT_TITLE_TEXT
+			 , T.CODE_DTL_NAME AS ASWR_STAT_NAME
+			 , ISNULL(OP.PRDT_NAME, AP.PRDT_NAME) AS PRDT_NAME
+			 , ISNULL(OP.PRDT_COLOR_CODE, AP.PRDT_COLOR_CODE) AS PRDT_COLOR_CODE
+			 , ISNULL(OP.OPTN_NAME, AP.OPTN_NAME) AS OPTN_NAME
+			 , (SELECT DPBR.BRAND_NAME
+				  FROM DP_BRAND DPBR WITH(NOLOCK)
+				 WHERE DPBR.BRAND_NO = ISNULL(OP.BRAND_NO, AP.BRAND_NO)) AS BRAND_NAME
+			 , OP.VNDR_PRDT_NO_TEXT
+			 , OP.MMNY_PRDT_YN
+		  FROM BD_MEMBER_COUNSEL A WITH (NOLOCK)
+		  LEFT OUTER JOIN SY_ADMIN B WITH (NOLOCK) ON A.ASWR_NO = B.ADMIN_NO
+		  JOIN SY_SITE C WITH (NOLOCK) ON A.SITE_NO = C.SITE_NO
+		  JOIN MB_MEMBER MB WITH (NOLOCK) ON A.MEMBER_NO = MB.MEMBER_NO
+		  JOIN SY_CODE_DETAIL T WITH (NOLOCK) ON A.ASWR_STAT_CODE = T.CODE_DTL_NO AND T.CODE_FIELD = 'ASWR_STAT_CODE'
+		  LEFT OUTER JOIN CM_COUNSEL_SCRIPT E WITH (NOLOCK) ON A.CNSL_SCRIPT_SEQ = E.CNSL_SCRIPT_SEQ
+		  LEFT OUTER JOIN VD_VENDOR V WITH (NOLOCK) ON A.VNDR_NO = V.VNDR_NO
+		  LEFT OUTER JOIN OC_ORDER_PRODUCT OP WITH(NOLOCK) ON A.ORDER_NO = OP.ORDER_NO AND A.ORDER_PRDT_SEQ = OP.ORDER_PRDT_SEQ
+		  LEFT OUTER JOIN OC_AS_ACCEPT_PRODUCT AP WITH(NOLOCK) ON A.AS_ACCEPT_NO = AP.AS_ACCEPT_NO AND A.AS_ACCEPT_PRDT_SEQ = AP.AS_ACCEPT_PRDT_SEQ
+		 WHERE A.MEMBER_CNSL_SEQ = #{memberCnslSeq, jdbcType=INTEGER}
+	</select>
+
+	<update id="updatebdMemberCounsel" parameterType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselDao.updatebdMemberCounsel [고객 문의 정보 수정] [신인철] */
+		UPDATE BD_MEMBER_COUNSEL
+		   SET ASWR_STAT_CODE		= #{aswrStatCode, jdbcType=VARCHAR}
+			<if test ="cnslTypeCode != null and cnslTypeCode != ''">
+			 , CNSL_TYPE_CODE 		= #{cnslTypeCode, jdbcType=VARCHAR}
+			</if>
+			<if test ="cnslTypeDtlCode != null and cnslTypeDtlCode != ''">
+			 , CNSL_TYPE_DTL_CODE 	= #{cnslTypeDtlCode, jdbcType=VARCHAR}
+			</if>
+			<if test ="vndrAssignYn != null and vndrAssignYn != ''">
+			 , VNDR_ASSIGN_YN 		= #{vndrAssignYn, jdbcType=CHAR}
+			</if>
+			<if test="vndrAssignYn == 'Y'.toString() and vndrAsnrNo != null">
+			 , VNDR_ASNR_NO			= #{vndrAsnrNo, jdbcType=VARCHAR}
+			 , VNDR_ASSIGN_DTM		= GETDATE()
+			</if>
+			 , VNDR_NO				= #{vndrNo, jdbcType=VARCHAR}
+			 , CNSL_SCRIPT_SEQ		= #{cnslScriptSeq, jdbcType=VARCHAR}
+			 , ASWR_CONT_TEXT		= #{aswrContText, jdbcType=VARCHAR}
+			 , ASWR_NO 				= #{aswrNo, jdbcType=VARCHAR}
+			<if test="aswrStatCode == '10002'">
+			 , ASWR_DTM 			= #{aswrDtm}
+			</if>
+			<if test="asAcceptNo != null and asAcceptNo != ''">
+			 , AS_ACCEPT_NO 		= #{asAcceptNo, jdbcType=VARCHAR}
+			</if>
+			<if test="prdtNo != null and prdtNo != ''">
+			 , PRDT_NO 				= #{prdtNo, jdbcType=VARCHAR}
+			</if>
+		 WHERE MEMBER_CNSL_SEQ = #{memberCnslSeq, jdbcType=INTEGER}
+	</update>
+
+	<select id="selectInquiryStatData" parameterType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel" resultType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel">
+		/*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselDao.selectInquiryStatData [회원 고객 문의 현황] [이동엽] */
+
+		SELECT SUB.UNAS_CNT+SUB.HOLD_CNT+SUB.COMP_CNT AS TOTAL_CNT
+             , SUB.UNAS_CNT
+             , SUB.HOLD_CNT
+             , SUB.COMP_CNT
+             , SUB.ONLINE_UNAS_CNT
+             , SUB.ONLINE_HOLD_CNT
+             , SUB.OFFLINE_UNAS_CNT
+          FROM
+             (
+              SELECT ISNULL(SUM(CASE WHEN ASWR_STAT_CODE = '10000' THEN 1 ELSE 0 END),0) AS UNAS_CNT
+                   , ISNULL(SUM(CASE WHEN ASWR_STAT_CODE = '10001' THEN 1 ELSE 0 END),0) AS HOLD_CNT
+                   , ISNULL(SUM(CASE WHEN ASWR_STAT_CODE = '10002' THEN 1 ELSE 0 END),0) AS COMP_CNT
+                   , ISNULL(SUM(CASE WHEN CNSL_GBN_CODE != '10002' AND ASWR_STAT_CODE = '10000' THEN 1 ELSE 0 END),0) ONLINE_UNAS_CNT
+                   , ISNULL(SUM(CASE WHEN CNSL_GBN_CODE != '10002' AND ASWR_STAT_CODE = '10001' THEN 1 ELSE 0 END),0) ONLINE_HOLD_CNT
+                   , ISNULL(SUM(CASE WHEN CNSL_GBN_CODE = '10002' AND ASWR_STAT_CODE = '10001' THEN 1 ELSE 0 END),0) OFFLINE_UNAS_CNT
+                FROM BD_MEMBER_COUNSEL WITH (NOLOCK)
+               WHERE MEMBER_NO = #{memberNo}
+               <if test="memberTabInfo == 'Y'.toString()">
+		      	 AND <![CDATA[INQRY_DTM <= GETDATE() AND INQRY_DTM >= DATEADD(MONTH, -2, GETDATE())]]>
+		       </if>
+              ) SUB
+	</select>
+
+	<insert id="insertMemberCounsel" useGeneratedKeys="true" keyProperty="memberCnslSeq" parameterType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel">
+		INSERT INTO BD_MEMBER_COUNSEL (
+               CNSL_GBN_CODE
+             , MEMBER_NO
+             , INQRY_DTM
+             , SITE_NO
+             , CNSL_TYPE_CODE
+             , CNSL_TYPE_DTL_CODE
+             , INQRY_TITLE_TEXT
+             , INQRY_CONT_TEXT
+             , ORDER_NO
+             , ORDER_PRDT_SEQ
+             , PRDT_NO
+             , AS_ACCEPT_NO
+             , AS_ACCEPT_PRDT_SEQ
+             , VNDR_NO
+             , CNSL_SCRIPT_SEQ
+             , ASWR_CONT_TEXT
+             , ASWR_STAT_CODE
+             , ASWR_NO
+             , ASWR_DTM
+  		) VALUES (
+               #{cnslGbnCode}
+             , #{memberNo}
+             , GETDATE()
+             , #{siteNo}
+             , #{cnslTypeCode}
+             , #{cnslTypeDtlCode}
+             , #{inqryTitleText}
+             , #{inqryContText}
+             , #{orderNo}
+             , #{orderPrdtSeq}
+             , #{prdtNo}
+             , #{asAcceptNo}
+             , #{asAcceptPrdtSeq}
+             , #{vndrNo}
+             , #{cnslScriptSeq}
+             , #{aswrContText}
+             , #{aswrStatCode}
+             , #{aswrNo}
+             , GETDATE()
+  		)
+	</insert>
+
+	<select id="selectOrderiquiryArr" parameterType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel" resultType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel">
+		/*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselDao.selectOrderiquiryArr [고객 문의 정보 조회 주문기준] */
+
+		SELECT
+			<include refid="select-columns" />
+		 FROM BD_MEMBER_COUNSEL WITH (NOLOCK)
+		WHERE ORDER_NO IN
+			<foreach collection="array" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+    </select>
+    
+    <select id="selectIndividualInquiryDetail" parameterType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel" resultType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselDao.selectIndividualInquiryDetail [입점관리 1:1 문의 상세정보] [고웅환] */
+		SELECT A.MEMBER_CNSL_SEQ
+			 , A.MEMBER_NO
+			 , A.SITE_NO
+			 , A.ORDER_NO
+			 , A.ORDER_PRDT_SEQ
+			 , A.PRDT_NO
+			 , A.INQRY_TITLE_TEXT
+			 , A.INQRY_CONT_TEXT
+			 , A.INQRY_DTM
+			 , A.ASWR_NO
+			 , A.ASWR_STAT_CODE
+			 , A.ASWR_CONT_TEXT
+			 , A.ASWR_DTM
+			 , A.VNDR_NO
+			 , A.VNDR_ASSIGN_DTM
+			 , V.VNDR_NAME
+			 , CASE WHEN A.MEMBER_NO IS NOT NULL THEN MB.LOGIN_ID END AS INQUIRY_ID
+			 , CASE WHEN A.MEMBER_NO IS NOT NULL THEN MB.MEMBER_NAME END AS INQUIRY_NAME
+			 , CASE WHEN B.LOGIN_ID IS NOT NULL THEN B.LOGIN_ID END AS ASWR_ID
+			 , CASE WHEN B.LOGIN_ID IS NOT NULL THEN B.ADMIN_NAME END AS ASWR_NAME
+			 , C.SITE_NAME
+			 , T.CODE_DTL_NAME AS ASWR_STAT_NAME
+			 , CASE
+				WHEN A.CNSL_GBN_CODE = '10000' THEN CONCAT(
+					dbo.FN_CODE_VALUE('CNSL_TYPE_CODE', A.CNSL_TYPE_CODE), ' > ', dbo.FN_CODE_VALUE('CNSL_TYPE_DTL_CODE', A.CNSL_TYPE_DTL_CODE))
+				END AS CNSL_TYPE_NAME
+			 , ISNULL(OP.PRDT_NAME, AP.PRDT_NAME) AS PRDT_NAME
+			 , ISNULL(OP.PRDT_COLOR_CODE, AP.PRDT_COLOR_CODE) AS PRDT_COLOR_CODE
+			 , ISNULL(OP.OPTN_NAME, AP.OPTN_NAME) AS OPTN_NAME
+			 , (SELECT DPBR.BRAND_NAME
+				  FROM DP_BRAND DPBR WITH(NOLOCK)
+				 WHERE DPBR.BRAND_NO = ISNULL(OP.BRAND_NO, AP.BRAND_NO)) AS BRAND_NAME
+			 , OP.VNDR_PRDT_NO_TEXT
+			 , OP.MMNY_PRDT_YN	
+		  FROM BD_MEMBER_COUNSEL A WITH (NOLOCK)
+		  LEFT OUTER JOIN SY_ADMIN B WITH (NOLOCK) ON A.ASWR_NO = B.ADMIN_NO
+		  JOIN SY_SITE C WITH (NOLOCK) ON A.SITE_NO = C.SITE_NO
+		  JOIN MB_MEMBER MB WITH (NOLOCK) ON A.MEMBER_NO = MB.MEMBER_NO
+		  JOIN SY_CODE_DETAIL T WITH (NOLOCK) ON A.ASWR_STAT_CODE = T.CODE_DTL_NO AND T.CODE_FIELD = 'ASWR_STAT_CODE'
+		  LEFT OUTER JOIN VD_VENDOR V WITH (NOLOCK) ON A.VNDR_NO = V.VNDR_NO
+		  LEFT OUTER JOIN OC_ORDER_PRODUCT OP WITH(NOLOCK) ON A.ORDER_NO = OP.ORDER_NO AND A.ORDER_PRDT_SEQ = OP.ORDER_PRDT_SEQ
+		  LEFT OUTER JOIN OC_AS_ACCEPT_PRODUCT AP WITH(NOLOCK) ON A.AS_ACCEPT_NO = AP.AS_ACCEPT_NO AND A.AS_ACCEPT_PRDT_SEQ = AP.AS_ACCEPT_PRDT_SEQ
+		 WHERE A.MEMBER_CNSL_SEQ = #{memberCnslSeq, jdbcType=INTEGER}
+	</select>
+	
+	<select id="selectInquiryGroupCount" resultType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel" parameterType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselDao.selectInquiryGroupCount [BO 1:1문의 그룹별 대시보드 최근 1달 건수 조회] [고웅환] */
+		SELECT COUNT(1) AS TOTAL_CNT
+		     , A.VNDR_ASSIGN_YN
+		  FROM BD_MEMBER_COUNSEL A WITH (NOLOCK )
+		 WHERE VNDR_ASSIGN_YN IN ('Y', 'N')
+		   AND A.CNSL_GBN_CODE = #{cnslGbnCode, jdbcType=VARCHAR}
+		   AND A.ASWR_STAT_CODE = #{aswrStatCode, jdbcType=VARCHAR}
+		   AND A.INQRY_DTM
+		BETWEEN CONVERT(DATETIME, CONCAT(
+		            CONVERT(CHAR(10), DATEADD(MM, -1, GETDATE()), 102), ' 00:00:00'))
+		   AND CONVERT(DATETIME, CONCAT(
+		            CONVERT(CHAR(10), GETDATE(), 102), ' 23:59:59'))
+		GROUP BY A.VNDR_ASSIGN_YN
+	</select>
+	
+	<select id="selectNoAswrVoiceCustom" resultType="Integer" parameterType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselDao.selectNoAswrVoiceCustom [BO 고객의 소리 그룹별 대시보드 최근 1달 건수 조회] [이재렬] */
+		SELECT COUNT(1)
+		  FROM BD_MEMBER_COUNSEL A WITH (NOLOCK)
+		 WHERE A.CNSL_GBN_CODE = #{cnslGbnCode, jdbcType=VARCHAR}
+		   AND A.ASWR_STAT_CODE = #{aswrStatCode, jdbcType=VARCHAR}
+		   AND A.INQRY_DTM
+       BETWEEN CONVERT(DATETIME, CONCAT(
+                   CONVERT(CHAR(10), DATEADD(MM, -1, GETDATE()), 102), ' 00:00:00'))
+           AND CONVERT(DATETIME, CONCAT(
+                   CONVERT(CHAR(10), GETDATE(), 102), ' 23:59:59'))
+		 <if test="vndrNo != null">
+		   AND A.VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+		 </if>
+	</select>
+	
+	<select id="selectNoAswrCounselListForPo" parameterType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel" resultType="Integer">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselDao.selectNoAswrCounselListForPo [PO 1:1 문의 검색 답변보류 최근 1달 건수 조회] [이재렬] */
+		SELECT COUNT(1)
+		  FROM BD_MEMBER_COUNSEL A WITH (NOLOCK)
+		 WHERE A.CNSL_GBN_CODE = #{cnslGbnCode, jdbcType=VARCHAR}
+		   AND A.ASWR_STAT_CODE = #{aswrStatCode, jdbcType=VARCHAR}
+		   AND A.VNDR_ASSIGN_YN = 'Y'
+	  	   AND A.INQRY_DTM
+       BETWEEN CONVERT(DATETIME, CONCAT(
+                   CONVERT(CHAR(10), DATEADD(MM, -1, GETDATE()), 102), ' 00:00:00'))
+           AND CONVERT(DATETIME, CONCAT(
+                   CONVERT(CHAR(10), GETDATE(), 102), ' 23:59:59'))
+		 <if test="vndrNo != null">
+		   AND A.VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+		 </if>
+	</select>
+	
+	<select id="selectManagementVndrList" resultType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselDao.selectManagementVndrList [관리대상 업체 조회] [신인철] */
+		SELECT TOP 5
+			   SUM(COUNT) AS TOTAL_CNT
+			 , MAX(DD.VNDR_NAME) AS VNDR_NAME
+		  FROM (
+				SELECT COUNT(1) AS COUNT
+					 , MAX(B.VNDR_NAME) AS VNDR_NAME
+					 , MAX(A.VNDR_NO) AS VNDR_NO
+				  FROM BD_MEMBER_COUNSEL A
+				  JOIN VD_VENDOR B
+					ON A.VNDR_NO = B.VNDR_NO
+				 WHERE A.VNDR_ASSIGN_YN = 'Y'
+				   AND B.VNDR_GBN_TYPE = 'V'
+				   AND A.ASWR_STAT_CODE != '10002'
+				   AND A.INQRY_DTM BETWEEN  DATEADD(DD, -30, CONVERT(DATE,GETDATE()) )  AND DATEADD(DD, 1, CONVERT(DATE,  GETDATE() ))
+				 GROUP BY B.VNDR_NO   
+				 UNION ALL
+				SELECT COUNT(1) AS COUNT
+					 , MAX(D.VNDR_NAME) AS VNDR_NAME
+					 , MAX(C.VNDR_NO) AS VNDR_NO
+				  FROM BD_CORPR_BOARD C
+				  JOIN VD_VENDOR D
+					ON C.VNDR_NO = D.VNDR_NO
+				 WHERE C.VNDR_INQRY_YN = 'Y'
+				   AND D.VNDR_GBN_TYPE = 'V'
+				   AND C.ASWR_STAT_CODE != '10002'
+				   AND C.INQRY_DTM BETWEEN  DATEADD(DD, -30, CONVERT(DATE,GETDATE()) )  AND DATEADD(DD, 1, CONVERT(DATE,  GETDATE() ))
+				 GROUP BY D.VNDR_NO   
+				 UNION ALL
+				SELECT COUNT(1) AS COUNT
+					 , MAX(F.VNDR_NAME) AS VNDR_NAME
+					 , MAX(E.VNDR_NO) AS VNDR_NO
+				  FROM BD_PRODUCT_INQUIRY E
+				  JOIN VD_VENDOR F
+					ON F.VNDR_NO = E.VNDR_NO
+				 WHERE F.VNDR_GBN_TYPE = 'V'
+				   AND E.ASWR_STAT_CODE != '10002'
+				   AND E.INQRY_DTM BETWEEN  DATEADD(DD, -30, CONVERT(DATE,GETDATE()) )  AND DATEADD(DD, 1, CONVERT(DATE,  GETDATE() ))				   
+				 GROUP BY F.VNDR_NO
+			   )DD
+		 GROUP BY DD.VNDR_NO
+		 ORDER BY TOTAL_CNT DESC
+	</select>
+	
+	<select id="selectCounselExcelList" parameterType="kr.co.abcmart.bo.board.vo.BdInquirySearchVO" resultType="kr.co.abcmart.bo.board.model.master.BdMemberCounsel">
+    /*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselDao.selectBdMemberCounselList [1:1 문의 검색 조회결과 엑셀] [신인철] */
+		SELECT CAST(ROW_NUMBER() OVER(ORDER BY S.INQRY_DTM DESC ) AS VARCHAR) AS ROW_NUM
+		     , T.CODE_DTL_NAME AS ASWR_STAT_NAME
+		     , CASE WHEN S.CNSL_GBN_CODE = '10001'
+		     		THEN V.CODE_DTL_NAME
+		     		ELSE CONCAT(U.CODE_DTL_NAME, ' > ', V.CODE_DTL_NAME)
+		        END AS CNSL_TYPE_NAME /* 회원상세 문의내역 탭 목록에서 필요한 검색조건 추가[이동엽] */
+		     , S.INQRY_TITLE_TEXT
+		     , W.SITE_NAME
+		     , X.VNDR_NAME
+		     , Y.LOGIN_ID AS INQUIRY_ID
+		     , Y.MEMBER_NAME AS INQUIRY_NAME
+		     , S.INQRY_DTM
+		     , CASE WHEN Z.LOGIN_ID IS NOT NULL THEN Z.LOGIN_ID END AS ASWR_ID
+		     , CASE WHEN Z.LOGIN_ID IS NOT NULL THEN Z.ADMIN_NAME END AS ASWR_NAME
+		     , S.ASWR_DTM
+		  FROM (
+		        SELECT A.MEMBER_CNSL_SEQ
+		             , A.CNSL_GBN_CODE
+		             , A.ASWR_STAT_CODE
+		             , A.CNSL_TYPE_CODE
+		             , A.CNSL_TYPE_DTL_CODE
+		             , A.INQRY_TITLE_TEXT
+		             , A.SITE_NO
+		             , A.VNDR_NO
+		             , A.VNDR_ASSIGN_YN
+		             , A.VNDR_ASNR_NO
+		             , A.VNDR_ASSIGN_DTM
+		             , A.MEMBER_NO
+		             , A.INQRY_DTM
+		             , A.ASWR_NO
+		             , A.ASWR_DTM
+		          FROM BD_MEMBER_COUNSEL A WITH (NOLOCK)
+				<trim prefix="WHERE" prefixOverrides="AND|OR">
+		    	<if test="vndrNo != null and vndrNo !=''">
+				   AND A.VNDR_NO =  #{vndrNo, jdbcType=VARCHAR}
+				</if>
+		    	<if test="cnslGbnCode != null and cnslGbnCode !=''">
+				   AND A.CNSL_GBN_CODE =  #{cnslGbnCode, jdbcType=VARCHAR}
+				</if>
+				<if test="(searchDateKey != null and searchDateKey !='') and (fromDate != null and fromDate != '') and (toDate != null and toDate != '')">
+				   <choose>
+				   		<when test="searchDateKey == 'inqryDtm'">
+				   AND A.INQRY_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+				   		</when>
+				   		<when test="searchDateKey == 'aswrDtm'">
+				   AND A.ASWR_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+				   		</when>
+				   		<when test="searchDateKey == 'escalationDtm'">
+				   AND A.VNDR_ASSIGN_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+				   		</when>
+				   </choose>
+				</if>
+				<if test="searchAswrStatCode != null and searchAswrStatCode !=''">
+				   AND A.ASWR_STAT_CODE = #{searchAswrStatCode, jdbcType=VARCHAR}
+				</if>
+				<if test="searchCnslTypeCode != null and searchCnslTypeCode !=''">
+				   AND A.CNSL_TYPE_CODE = #{searchCnslTypeCode, jdbcType=VARCHAR}
+				</if>
+				<if test="searchCnslTypeDtlCode != null and searchCnslTypeDtlCode !=''">
+				   AND A.CNSL_TYPE_DTL_CODE = #{searchCnslTypeDtlCode, jdbcType=VARCHAR}
+				</if>
+				<if test="searchChageVndr != null and searchChageVndr !=''">
+				   <choose>
+						<when test="searchChageVndr == 'cs'">
+				   AND A.VNDR_ASSIGN_YN = 'N'
+						</when>
+						<when test="searchChageVndr == 'vndr'">
+				   AND A.VNDR_ASSIGN_YN = 'Y'
+						</when>
+						<when test="searchChageVndr == 'vndrNm' and searchChageVndrValue != null and searchChageVndrValue != ''">
+				   AND EXISTS (
+				   				SELECT 1
+				   				  FROM VD_VENDOR Z WITH (NOLOCK)
+				   				 WHERE A.VNDR_NO = Z.VNDR_NO
+				   				   AND Z.VNDR_NAME LIKE CONCAT('%', #{searchChageVndrValue, jdbcType=VARCHAR}, '%')
+							  )
+						</when>
+				   </choose>
+				</if>
+				<if test="searchKey != null and searchKey != '' and searchValue != null and searchValue != ''">
+					<choose>
+						<when test="searchKey == 'inqryTitleText'">
+				   AND (A.INQRY_TITLE_TEXT LIKE CONCAT('%', #{searchValue, jdbcType=VARCHAR}, '%') OR A.INQRY_CONT_TEXT LIKE CONCAT('%', #{searchValue, jdbcType=VARCHAR}, '%'))
+				   		</when>
+						<when test="searchKey == 'loginId'">
+				   AND EXISTS (
+				   				SELECT 1
+				   				  FROM MB_MEMBER Z WITH (NOLOCK)
+				   				 WHERE A.MEMBER_NO = Z.MEMBER_NO
+				   				   AND Z.LOGIN_ID = #{searchValue, jdbcType=VARCHAR}
+							  )
+				   		</when>
+				   		<when test="searchKey == 'memberName'">
+				   AND EXISTS (
+				   				SELECT 1
+				   				  FROM MB_MEMBER Z WITH (NOLOCK)
+				   				 WHERE A.MEMBER_NO = Z.MEMBER_NO
+				   				   AND Z.MEMBER_NAME = #{searchValue, jdbcType=VARCHAR}
+				   				   <if test="hdphnBackNoText != null and hdphnBackNoText != ''">
+						     	   AND RIGHT(REPLACE(Z.HDPHN_NO_TEXT, '-', ''), 4) = #{hdphnBackNoText, jdbcType=VARCHAR}
+							       </if>
+							  )
+				   		</when>
+						<when test="searchKey == 'rgsterName'">
+				   AND EXISTS (
+		   						SELECT Z.ADMIN_NO
+		   						  FROM SY_ADMIN Z WITH (NOLOCK)
+		   						 WHERE A.ASWR_NO = Z.ADMIN_NO
+		   						   AND Z.ADMIN_NAME = #{searchValue, jdbcType=VARCHAR}
+			                  )
+				   		</when>
+					</choose>
+				</if>
+				<if test="memberNo != null and memberNo != ''">
+					AND A.MEMBER_NO = #{memberNo}
+				</if>
+				<if test="inqryTitleText != null and inqryTitleText != ''">
+					AND A.INQRY_TITLE_TEXT LIKE CONCAT('%', #{inqryTitleText, jdbcType=VARCHAR}, '%')
+				</if>
+				<if test="siteNo != null and siteNo != ''">
+					AND A.SITE_NO = #{siteNo}
+				</if>
+				<if test="vndrAssignYn != null and vndrAssignYn != ''">
+					AND A.VNDR_ASSIGN_YN = #{vndrAssignYn, jdbcType=CHAR}
+				</if>
+				</trim>
+		        ) S
+				   JOIN SY_CODE_DETAIL T WITH (NOLOCK) ON S.ASWR_STAT_CODE = T.CODE_DTL_NO AND T.CODE_FIELD = 'ASWR_STAT_CODE'
+				   JOIN SY_CODE_DETAIL U WITH (NOLOCK) ON S.CNSL_TYPE_CODE = U.CODE_DTL_NO AND U.CODE_FIELD = 'CNSL_TYPE_CODE'
+				   JOIN SY_CODE_DETAIL V WITH (NOLOCK) ON S.CNSL_TYPE_DTL_CODE = V.CODE_DTL_NO AND V.CODE_FIELD = 'CNSL_TYPE_DTL_CODE'
+				   JOIN SY_SITE W WITH (NOLOCK) ON S.SITE_NO = W.SITE_NO
+				   JOIN MB_MEMBER Y WITH (NOLOCK) ON S.MEMBER_NO = Y.MEMBER_NO
+				   LEFT OUTER JOIN VD_VENDOR X WITH (NOLOCK) ON S.VNDR_NO = X.VNDR_NO
+				   LEFT OUTER JOIN SY_ADMIN Z WITH (NOLOCK) ON S.ASWR_NO = Z.ADMIN_NO
+				  --문의 일시 기준으로만 수정
+				  ORDER BY S.INQRY_DTM DESC
+    </select>
+
+</mapper>

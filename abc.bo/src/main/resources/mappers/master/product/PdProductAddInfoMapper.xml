@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.PdProductAddInfoDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+
+    <sql id="select-columns-alias-a">
+		A.prdt_no, A.add_info_type, A.prdt_add_info_seq, A.prdt_add_info_rltn_seq, A.disp_yn, A.prdt_materl_text, A.prdt_add_info, A.prdt_safe_type_code, A.safe_crtfc_no_text, A.safe_crtfc_image_name, A.safe_crtfc_image_path_text, A.safe_crtfc_image_url, A.sort_seq, A.rgster_no, A.rgst_dtm, A.moder_no, A.mod_dtm
+    </sql>
+
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.product.model.master.PdProductAddInfo">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductAddInfoDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			pd_product_add_info WITH(NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <insert id="insertWithSelectKey" parameterType="kr.co.abcmart.bo.product.model.master.PdProductAddInfo">
+    	<selectKey resultType="java.lang.Integer" keyProperty="prdtAddInfoSeq" order="BEFORE">
+    		SELECT
+    			ISNULL(MAX(prdt_add_info_seq) + 1, 1)
+    		FROM
+    			pd_product_add_info WITH(NOLOCK)
+    		WHERE
+    			prdt_no = #{prdtNo, jdbcType=VARCHAR}
+    	</selectKey>
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductAddInfoDao.insertWithSelectKey [상품 추가정보 등록 쿼리] [김세훈] */
+		INSERT INTO PD_PRODUCT_ADD_INFO
+			( PRDT_NO
+			, ADD_INFO_TYPE
+			, PRDT_ADD_INFO_SEQ
+			, PRDT_ADD_INFO_RLTN_SEQ
+			, DISP_YN
+			, PRDT_MATERL_TEXT
+			, PRDT_ADD_INFO
+			, PRDT_SAFE_TYPE_CODE
+			, SAFE_CRTFC_NO_TEXT
+			, SAFE_CRTFC_IMAGE_NAME
+			, SAFE_CRTFC_IMAGE_PATH_TEXT
+			, SAFE_CRTFC_IMAGE_URL
+			, SORT_SEQ
+			, RGSTER_NO
+			, RGST_DTM
+			, MODER_NO
+			, MOD_DTM )
+		VALUES
+			( #{prdtNo, jdbcType=VARCHAR}
+			, #{addInfoType, jdbcType=CHAR}
+			, #{prdtAddInfoSeq, jdbcType=INTEGER}
+			, #{prdtAddInfoRltnSeq, jdbcType=INTEGER}
+			, #{dispYn, jdbcType=CHAR}
+			, #{prdtMaterlText, jdbcType=VARCHAR}
+			, #{prdtAddInfo, jdbcType=VARCHAR}
+			, #{prdtSafeTypeCode, jdbcType=VARCHAR}
+			, #{safeCrtfcNoText, jdbcType=VARCHAR}
+			, #{safeCrtfcImageName, jdbcType=VARCHAR}
+			, #{safeCrtfcImagePathText, jdbcType=VARCHAR}
+			, #{safeCrtfcImageUrl, jdbcType=VARCHAR}
+			, #{sortSeq, jdbcType=INTEGER}
+			, #{rgsterNo, jdbcType=VARCHAR}
+			, GETDATE()
+			, #{moderNo, jdbcType=VARCHAR}
+			, GETDATE() )
+    </insert>
+
+    <delete id="deleteByForeignKeys" parameterType="kr.co.abcmart.bo.product.model.master.PdProductAddInfo">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductAddInfoDao.deleteByForeignKeys [왜래키를 사용한 상품추가정보 삭제 쿼리] [김세훈] */
+		DELETE
+		FROM
+			pd_product_add_info
+		WHERE
+			 prdt_no = #{prdtNo, jdbcType=VARCHAR}
+    </delete>
+
+	<select id="selectWithProductInfoNotice" parameterType="java.lang.String" resultType="kr.co.abcmart.bo.product.model.master.PdProductAddInfo">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductAddInfoDao.selectWithProductInfoNotice [상품추가정보 및 상품정보고시정보 조회 쿼리] [김세훈] */
+		SELECT
+			<include refid="select-columns-alias-a" />,
+			B.info_notc_name,
+			B.info_notc_dflt_value,
+			B.req_yn,
+			B.sort_seq,
+			B.PRDT_INFO_NOTC_CODE
+		FROM
+			pd_product_add_info A WITH(NOLOCK)
+			LEFT JOIN cm_product_info_notice B WITH(NOLOCK) ON A.prdt_add_info_rltn_seq = B.prdt_info_notc_seq
+		WHERE
+			A.prdt_no = #{prdtNo, jdbcType=VARCHAR}
+			AND A.add_info_type = 'I'
+		UNION ALL
+		SELECT
+			<include refid="select-columns-alias-a" />,
+			'' AS info_notc_name,
+			'' AS info_notc_dflt_value,
+			'' AS req_yn,
+			'' AS sort_seq,
+			'' AS PRDT_INFO_NOTC_CODE
+		FROM
+			pd_product_add_info A WITH(NOLOCK)
+		WHERE
+			A.prdt_no = #{prdtNo, jdbcType=VARCHAR}
+			AND A.add_info_type = 'P'
+		UNION ALL
+		SELECT
+			<include refid="select-columns-alias-a" />,
+			'' AS info_notc_name,
+			'' AS info_notc_dflt_value,
+			'' AS req_yn,
+			'' AS sort_seq,
+			'' AS PRDT_INFO_NOTC_CODE
+		FROM
+			pd_product_add_info A WITH(NOLOCK)
+		WHERE
+			A.prdt_no = #{prdtNo, jdbcType=VARCHAR}
+			AND A.add_info_type = 'A'
+    </select>
+
+    <update id="updateVendorAsMngrText" parameterType="kr.co.abcmart.bo.vendor.model.master.VdVendor">
+    	/*+ kr.co.abcmart.bo.product.repository.master.PdProductAddInfoDao.updateVendorAsMngrText [입점사 AS담당자 연락처 일괄변경 쿼리] [김세훈] */
+    	UPDATE
+    		pd_product_add_info
+    	SET
+    		prdt_add_info = #{asMngrText, jdbcType=VARCHAR}
+    	FROM
+    		pd_product_add_info A WITH(NOLOCK)
+    		INNER JOIN cm_product_info_notice B WITH(NOLOCK) ON A.prdt_add_info_rltn_seq = B.prdt_info_notc_seq
+    		INNER JOIN pd_product C WITH(NOLOCK) ON A.prdt_no = C.prdt_no
+    	WHERE
+    		A.add_info_type = 'I'<!-- 추가정보구분값 중 정보제공고시 -->
+    		AND B.prdt_info_notc_code = '${@kr.co.abcmart.constant.CommonCode@PRDT_INFO_NOTC_CODE_AS_MANAGER_INFO}'<!-- AS담당자정보 -->
+    		AND C.mmny_prdt_yn = 'N'<!-- 입점상품 -->
+    		AND C.vndr_no = #{vndrNo, jdbcType=VARCHAR}<!-- 입점사번호 -->
+    </update>
+
+</mapper>

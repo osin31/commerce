@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyMenuDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	menu_no, up_menu_no, menu_gbn_type, menu_name, menu_url, rsrc_url, rsrc_type, menu_level, all_path_menu_no, all_path_menu_name, member_info_mgmt_yn, auth_apply_system_type, sort_seq, disp_yn, use_yn, note_text, rgster_no, rgst_dtm, moder_no, mod_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	menu_no = #{menuNo, jdbcType=VARCHAR}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.system.model.master.SyMenu" resultType="kr.co.abcmart.bo.system.model.master.SyMenu">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyMenuDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			sy_menu WITH (NOLOCK)
+
+		<where> 
+			<if test="menuNo != null"> 
+				 menu_no = #{menuNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="upMenuNo != null"> 
+				 AND up_menu_no = #{upMenuNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="menuGbnType != null"> 
+				 AND menu_gbn_type = #{menuGbnType, jdbcType=CHAR}
+			</if> 
+			<if test="menuName != null"> 
+				 AND menu_name = #{menuName, jdbcType=VARCHAR}
+			</if> 
+			<if test="menuUrl != null"> 
+				 AND menu_url = #{menuUrl, jdbcType=VARCHAR}
+			</if> 
+			<if test="rsrcUrl != null"> 
+				 AND rsrc_url = #{rsrcUrl, jdbcType=VARCHAR}
+			</if> 
+			<if test="rsrcType != null"> 
+				 AND rsrc_type = #{rsrcType, jdbcType=VARCHAR}
+			</if> 
+			<if test="menuLevel != null"> 
+				 AND menu_level = #{menuLevel, jdbcType=INTEGER}
+			</if> 
+			<if test="allPathMenuNo != null"> 
+				 AND all_path_menu_no = #{allPathMenuNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="allPathMenuName != null"> 
+				 AND all_path_menu_name = #{allPathMenuName, jdbcType=VARCHAR}
+			</if> 
+			<if test="memberInfoMgmtYn != null"> 
+				 AND member_info_mgmt_yn = #{memberInfoMgmtYn, jdbcType=CHAR}
+			</if> 
+			<if test="authApplySystemType != null"> 
+				 AND auth_apply_system_type = #{authApplySystemType, jdbcType=CHAR}
+			</if> 
+			<if test="sortSeq != null"> 
+				 AND sort_seq = #{sortSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="dispYn != null"> 
+				 AND disp_yn = #{dispYn, jdbcType=CHAR}
+			</if> 
+			<if test="useYn != null"> 
+				 AND use_yn = #{useYn, jdbcType=CHAR}
+			</if> 
+			<if test="noteText != null"> 
+				 AND note_text = #{noteText, jdbcType=VARCHAR}
+			</if> 
+			<if test="rgsterNo != null"> 
+				 AND rgster_no = #{rgsterNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="rgstDtm != null"> 
+				 AND rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="moderNo != null"> 
+				 AND moder_no = #{moderNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="modDtm != null"> 
+				 AND mod_dtm = #{modDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <insert id="insert" parameterType="kr.co.abcmart.bo.system.model.master.SyMenu">	
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SyMenuDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO sy_menu
+			 ( menu_no, up_menu_no, menu_gbn_type, menu_name, menu_url, rsrc_url, rsrc_type, menu_level, all_path_menu_no, all_path_menu_name, member_info_mgmt_yn, auth_apply_system_type, sort_seq, disp_yn, use_yn, note_text, rgster_no, rgst_dtm, moder_no, mod_dtm ) 
+
+		VALUES 
+			 ( #{menuNo, jdbcType=VARCHAR}, #{upMenuNo, jdbcType=VARCHAR}, #{menuGbnType, jdbcType=CHAR}, #{menuName, jdbcType=VARCHAR}, #{menuUrl, jdbcType=VARCHAR}, #{rsrcUrl, jdbcType=VARCHAR}, #{rsrcType, jdbcType=VARCHAR}, #{menuLevel, jdbcType=INTEGER}, #{allPathMenuNo, jdbcType=VARCHAR}, #{allPathMenuName, jdbcType=VARCHAR}, #{memberInfoMgmtYn, jdbcType=CHAR}, #{authApplySystemType, jdbcType=CHAR}, #{sortSeq, jdbcType=INTEGER}, #{dispYn, jdbcType=CHAR}, #{useYn, jdbcType=CHAR}, #{noteText, jdbcType=VARCHAR}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.system.model.master.SyMenu">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyMenuDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE sy_menu
+		<set> 
+			<if test="menuNo != null"> 
+				menu_no = #{menuNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="upMenuNo != null"> 
+				up_menu_no = #{upMenuNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="menuGbnType != null"> 
+				menu_gbn_type = #{menuGbnType, jdbcType=CHAR}, 
+			</if> 
+			<if test="menuName != null"> 
+				menu_name = #{menuName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="menuUrl != null"> 
+				menu_url = #{menuUrl, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rsrcUrl != null"> 
+				rsrc_url = #{rsrcUrl, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rsrcType != null"> 
+				rsrc_type = #{rsrcType, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="menuLevel != null"> 
+				menu_level = #{menuLevel, jdbcType=INTEGER}, 
+			</if> 
+			<if test="allPathMenuNo != null"> 
+				all_path_menu_no = #{allPathMenuNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="allPathMenuName != null"> 
+				all_path_menu_name = #{allPathMenuName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="memberInfoMgmtYn != null"> 
+				member_info_mgmt_yn = #{memberInfoMgmtYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="authApplySystemType != null"> 
+				auth_apply_system_type = #{authApplySystemType, jdbcType=CHAR}, 
+			</if> 
+			<if test="sortSeq != null"> 
+				sort_seq = #{sortSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="dispYn != null"> 
+				disp_yn = #{dispYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="useYn != null"> 
+				use_yn = #{useYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="noteText != null"> 
+				note_text = #{noteText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgsterNo != null"> 
+				rgster_no = #{rgsterNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 menu_no = #{menuNo, jdbcType=VARCHAR}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.system.model.master.SyMenu">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyMenuDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM sy_menu
+		WHERE 
+			 menu_no = #{menuNo, jdbcType=VARCHAR}  
+    </delete>
+</mapper>

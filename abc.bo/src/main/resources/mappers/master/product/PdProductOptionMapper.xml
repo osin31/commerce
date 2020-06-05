@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.PdProductOptionDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+
+	<sql id="select-columns-alias-a">
+    	A.prdt_no, A.prdt_optn_no, A.optn_name, A.add_optn1_text, A.add_optn2_text, A.total_stock_qty, A.total_order_qty, A.order_psblt_qty, A.vndr_prdt_no_text, A.sell_stat_code, A.sold_out_rsn_text, A.sort_seq, A.use_yn, A.rgster_no, A.rgst_dtm, A.moder_no, A.mod_dtm
+	</sql>
+
+	<sql id="select-columns-admin-info">
+		, Y.login_id AS rgster_id
+		, Y.admin_name AS rgster_name
+		, Z.login_id AS moder_id
+		, Z.admin_name AS moder_name
+	</sql>
+
+	<sql id="from-tables-sy-admin">
+		LEFT OUTER JOIN sy_admin Y WITH(NOLOCK) ON A.rgster_no = Y.admin_no
+		LEFT OUTER JOIN sy_admin Z WITH(NOLOCK) ON A.moder_no = Z.admin_no
+	</sql>
+
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.product.model.master.PdProductOption">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			pd_product_option WITH(NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <insert id="insertWithSelectKey" parameterType="kr.co.abcmart.bo.product.model.master.PdProductOption">
+    	<selectKey resultType="java.lang.String" keyProperty="prdtOptnNo" order="BEFORE">
+    		<choose>
+    			<when test="prdtOptnNo == null">
+    				SELECT
+						REPLICATE('0', 3 - LEN(
+								CONVERT(
+									INT,
+									(
+										SELECT
+											ISNULL(MAX(prdt_optn_no + 1), 1)
+										FROM
+											pd_product_option WITH(NOLOCK)
+										WHERE
+											prdt_no = #{prdtNo, jdbcType=VARCHAR}
+									)
+								)
+							)
+						) + CONVERT(
+								VARCHAR(3), (
+									SELECT
+										ISNULL(MAX(prdt_optn_no + 1), 1)
+									FROM
+										pd_product_option WITH(NOLOCK)
+									WHERE
+										prdt_no = #{prdtNo, jdbcType=VARCHAR}
+								)
+						)
+    			</when>
+    			<otherwise>
+    				SELECT #{prdtOptnNo, jdbcType=VARCHAR}
+    			</otherwise>
+    		</choose>
+    	</selectKey>
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionDao.insertWithSelectKey [상품 옵션 등록 쿼리] [김세훈] */
+		INSERT INTO
+			pd_product_option
+			( prdt_no, prdt_optn_no, optn_name, add_optn1_text, add_optn2_text, total_stock_qty, total_order_qty, order_psblt_qty, vndr_prdt_no_text, sell_stat_code, sold_out_rsn_text, sort_seq, use_yn, rgster_no, rgst_dtm, moder_no, mod_dtm )
+		VALUES
+			( #{prdtNo, jdbcType=VARCHAR}, #{prdtOptnNo, jdbcType=VARCHAR}, #{optnName, jdbcType=VARCHAR}, #{addOptn1Text, jdbcType=VARCHAR}, #{addOptn2Text, jdbcType=VARCHAR}, #{totalStockQty, jdbcType=INTEGER}, #{totalOrderQty, jdbcType=INTEGER}, #{orderPsbltQty, jdbcType=INTEGER}, #{vndrPrdtNoText, jdbcType=VARCHAR}, #{sellStatCode, jdbcType=VARCHAR}, #{soldOutRsnText, jdbcType=VARCHAR}, #{sortSeq, jdbcType=INTEGER}, #{useYn, jdbcType=CHAR}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )
+    </insert>
+
+    <select id="selectByPrdtNo" parameterType="java.lang.String" resultType="kr.co.abcmart.bo.product.model.master.PdProductOption">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionDao.selectByPrdtNo [상품번호와 관련된 상품옵션 조회 쿼리] [김세훈] */
+		<!-- 부가적인 정보를 조회함에 있어 외부조인을 사용함 -->
+		SELECT
+			<include refid="select-columns-alias-a" />
+			<include refid="select-columns-admin-info" />
+		FROM
+			pd_product_option A WITH(NOLOCK)
+			<include refid="from-tables-sy-admin" />
+		WHERE
+			A.prdt_no = #{prdtNo}
+		ORDER BY
+			A.sort_seq ASC
+    </select>
+
+    <select id="selectFreeGiftByPrdtNo" parameterType="java.lang.String" resultType="kr.co.abcmart.bo.product.model.master.PdProductOption">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionDao.selectFreeGiftByPrdtNo [사은품번호와 관련된 상품옵션(사은품) 조회 쿼리] [황성준] */
+		<!-- 부가적인 정보를 조회함에 있어 외부조인을 사용함 -->
+		SELECT
+			<include refid="select-columns-alias-a" />
+			<include refid="select-columns-admin-info" />
+		FROM
+			pd_product_option A WITH(NOLOCK)
+			<include refid="from-tables-sy-admin" />
+		WHERE
+			A.prdt_no = #{prdtNo}
+		AND
+			A.prdt_optn_no = '001'
+		AND
+			A.optn_name = '사은품'
+		ORDER BY
+			A.sort_seq ASC
+    </select>
+
+    <select id="selectWithStocks" parameterType="pageable" resultType="kr.co.abcmart.bo.product.model.master.PdProductOption">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionDao.selectWithStocksNew [상품 옵션 및 재고량 조회 쿼리] [김세훈] */
+		SELECT
+			<include refid="select-columns-alias-a" />,
+			ISNULL(B.stock_ai_qty, 0) AS stock_ai_qty,
+			ISNULL(B.stock_aw_qty, 0) AS stock_aw_qty,
+			ISNULL(B.stock_as_qty, 0) AS stock_as_qty,
+			ISNULL(B.stock_vd_qty, 0) AS stock_vd_qty,
+			ISNULL(B.order_ai_count, 0) AS order_ai_count,
+			ISNULL(B.order_aw_count, 0) AS order_aw_count,
+			ISNULL(B.order_as_count, 0) AS order_as_count,
+			ISNULL(B.order_vd_count, 0) AS order_vd_count,
+			ISNULL(B.optn_add_amt, 0) AS optn_add_amt,
+			ISNULL(C.stock_qty, 0) AS stock_sb_qty,<!-- 사방넷 재고수량 -->
+			(SELECT CODE_DTL_NAME FROM SY_CODE_DETAIL WHERE CODE_FIELD = 'SELL_STAT_CODE' AND CODE_DTL_NO = A.SELL_STAT_CODE) AS SELL_STAT_CODE_NAME
+		FROM
+			pd_product_option A WITH(NOLOCK)
+			INNER JOIN (
+				SELECT
+					A.prdt_no,
+					A.prdt_optn_no,
+					SUM(A.stock_ai_qty) AS stock_ai_qty,
+					SUM(A.stock_aw_qty) AS stock_aw_qty,
+					SUM(A.stock_as_qty) AS stock_as_qty,
+					SUM(A.stock_vd_qty) AS stock_vd_qty,
+					SUM(A.order_ai_count) AS order_ai_count,
+					SUM(A.order_aw_count) AS order_aw_count,
+					SUM(A.order_as_count) AS order_as_count,
+					SUM(A.order_vd_count) AS order_vd_count,
+					(
+						SELECT
+							optn_add_amt
+						FROM
+							pd_product_option_price_history WITH(NOLOCK)
+						WHERE
+							prdt_no = A.prdt_no
+							AND prdt_optn_no = A.prdt_optn_no
+							AND GETDATE() &gt;= apply_start_dtm
+							AND GETDATE() &lt;= apply_end_dtm
+					) AS optn_add_amt
+				FROM
+					(
+						SELECT
+							prdt_no,
+							prdt_optn_no,
+							CASE stock_gbn_code WHEN '10000' THEN stock_qty ELSE 0 END AS stock_ai_qty,
+							CASE stock_gbn_code WHEN '10001' THEN stock_qty ELSE 0 END AS stock_aw_qty,
+							CASE stock_gbn_code WHEN '10002' THEN stock_qty ELSE 0 END AS stock_as_qty,
+							CASE stock_gbn_code WHEN '10003' THEN stock_qty ELSE 0 END AS stock_vd_qty,
+							CASE stock_gbn_code WHEN '10000' THEN order_count ELSE 0 END AS order_ai_count,
+							CASE stock_gbn_code WHEN '10001' THEN order_count ELSE 0 END AS order_aw_count,
+							CASE stock_gbn_code WHEN '10002' THEN order_count ELSE 0 END AS order_as_count,
+							CASE stock_gbn_code WHEN '10003' THEN order_count ELSE 0 END AS order_vd_count
+						FROM
+							pd_product_option_stock WITH(NOLOCK)
+						WHERE
+							prdt_no = #{bean.prdtNo, jdbcType=VARCHAR}
+						GROUP BY
+							prdt_no, prdt_optn_no, stock_gbn_code, stock_qty, order_count
+					) A
+				GROUP BY
+					A.prdt_no, A.prdt_optn_no
+			) B ON A.prdt_no = B.prdt_no AND A.prdt_optn_no = B.prdt_optn_no
+			LEFT OUTER JOIN pd_product_option_stock_sabangnet C WITH(NOLOCK) ON B.prdt_no = C.prdt_no AND B.prdt_optn_no = C.prdt_optn_no
+		ORDER BY
+			A.prdt_optn_no ASC
+		<include refid="Paging.mssql" />
+    </select>
+
+    <select id="selectProductOptionTotalCount" parameterType="pageable" resultType="java.lang.Integer">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionDao.selectProductOptionTotalCount [해당 상품 옵션 전체 갯수 조회 쿼리] [김세훈] */
+		SELECT
+			<include refid="Paging.totalCount" />
+		FROM
+			pd_product_option A WITH(NOLOCK)
+		WHERE
+			A.prdt_no = #{bean.prdtNo, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectWithStockAndAddAmt" parameterType="kr.co.abcmart.bo.product.vo.PdProductOptionStockSearchVO" resultType="kr.co.abcmart.bo.product.model.master.PdProductOption">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionDao.selectWithStockAndAddAmt [상품 옵션 조회 시 재고와 옵션별 추가금액 포함 조회 쿼리] [김세훈] */
+		SELECT
+			<include refid="select-columns-alias-a" />
+			<foreach collection="stockGbnCodeList" item="item" open="," close="" separator=",">
+				ISNULL(A.[${item.codeDtlNo}] , 0) AS 'stock_${item.insdMgmtInfoText}_qty'
+			</foreach>
+			, ISNULL( B.optn_add_amt , 0 ) AS optn_add_amt
+		FROM
+			(
+				SELECT
+					B.*
+				FROM
+					(
+						SELECT
+							D.*
+						FROM
+							(
+								SELECT
+									<include refid="select-columns-alias-a" />
+									, E.stock_gbn_code
+									, E.stock_qty
+								FROM
+									pd_product_option A WITH(NOLOCK)
+									INNER JOIN pd_product_option_stock E WITH(NOLOCK) ON A.prdt_no = E.prdt_no AND A.prdt_optn_no = E.prdt_optn_no
+								WHERE
+									A.prdt_no = #{prdtNo, jdbcType=VARCHAR}
+							) D
+					) C
+				PIVOT (
+					SUM(C.stock_qty) FOR C.stock_gbn_code IN
+					<foreach collection="stockGbnCodeList" item="item" open="(" close=")" separator=",">
+						[${item.codeDtlNo}]
+					</foreach>
+				) AS B
+			) AS A
+			INNER JOIN pd_product_option_price_history B WITH(NOLOCK) ON A.prdt_no = B.prdt_no AND A.prdt_optn_no = B.prdt_optn_no AND GETDATE() &gt;= B.apply_start_dtm AND GETDATE() &lt;= B.apply_end_dtm
+		WHERE
+			A.prdt_no = #{prdtNo, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectProductOptionListWithStockAndPrice" parameterType="kr.co.abcmart.bo.product.model.master.PdProductOptionWithStockAndPrice" resultType="kr.co.abcmart.bo.product.model.master.PdProductOptionWithStockAndPrice">
+    	/*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionDao.selectProductOptionListWithStockAndPrice [상품 옵션 목록 재고와 가격까지 같이 조회(서비스 요청서)] [황성준] */
+    	SELECT
+			<include refid="select-columns-alias-a" />,
+			CASE WHEN A.[10000] > 0 THEN A.[10000] ELSE 0 END AS 'stock_ai_qty',
+			CASE WHEN A.[10001] > 0 THEN A.[10001] ELSE 0 END AS 'stock_aw_qty',
+			CASE WHEN A.[10002] > 0 THEN A.[10002] ELSE 0 END AS 'stock_as_qty',
+			CASE WHEN A.[10003] > 0 THEN A.[10003] ELSE 0 END AS 'stock_vd_qty',
+			<!-- <foreach collection="stockGbnCodeList" item="item" open="," close="," separator=",">
+				CASE WHEN A.[${item.codeDtlNo}] > 0 THEN A.[${item.codeDtlNo}] ELSE 0 END AS 'stock_${item.insdMgmtInfoText}_qty'
+			</foreach> -->
+			ISNULL(A.optn_add_amt , 0) AS optn_add_amt,
+			A.normal_amt,
+			A.sell_amt,
+			A.mmny_prdt_yn,
+			A.stock_intgr_yn,
+			A.stock_mgmt_yn,
+			A.site_no
+		FROM
+			(
+			SELECT
+				A.*
+			FROM
+				(
+					SELECT
+						<include refid="select-columns-alias-a" />
+						, B.mmny_prdt_yn
+						, B.stock_intgr_yn
+						, B.stock_mgmt_yn
+						, B.site_no
+						, E.stock_gbn_code
+						, CASE WHEN E.stock_gbn_code IN ('10001', '10002') THEN E.order_count ELSE E.stock_qty - E.order_count END AS stock_qty
+						, F.normal_amt
+						, F.sell_amt
+						, G.optn_add_amt
+					FROM
+						pd_product_option A WITH(NOLOCK)
+						INNER JOIN pd_product B WITH(NOLOCK) ON A.prdt_no = B.prdt_no
+						INNER JOIN pd_product_option_stock E WITH(NOLOCK) ON A.prdt_no = E.prdt_no AND A.prdt_optn_no = E.prdt_optn_no
+						INNER JOIN pd_product_price_history F WITH(NOLOCK) ON A.prdt_no = F.prdt_no AND GETDATE() <![CDATA[>=]]> F.apply_start_dtm AND GETDATE() <![CDATA[<=]]> F.apply_end_dtm
+						INNER JOIN pd_product_option_price_history G WITH(NOLOCK) ON A.prdt_no = G.prdt_no and A.prdt_optn_no = G.prdt_optn_no AND GETDATE() <![CDATA[>=]]> G.apply_start_dtm AND GETDATE() <![CDATA[<=]]> G.apply_end_dtm
+					WHERE
+						A.prdt_no = #{prdtNo, jdbcType=VARCHAR}
+						AND A.use_yn = 'Y'
+				) A
+				PIVOT (
+					SUM(A.stock_qty) FOR A.stock_gbn_code IN ( [10000], [10001], [10002], [10003] )
+				) AS A
+			) AS A
+		ORDER BY
+			A.prdt_optn_no
+    </select>
+
+    <select id="selectProductOptionListWithStock" parameterType="kr.co.abcmart.bo.product.model.master.PdProductOptionWithStockAndPrice" resultType="kr.co.abcmart.bo.product.model.master.PdProductOptionWithStockAndPrice">
+    	/*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionDao.selectProductOptionListWithStock [상품 옵션 목록 재고까지 같이 조회(서비스 요청서) 김세훈 팀장님 꺼랑 비슷 추후 수정 요망] [황성준] */
+    	SELECT
+    		  B.site_no
+    		, A.prdt_no
+    		, A.prdt_optn_no
+    		, C.stock_gbn_code
+    		, C.stock_qty
+    		, B.sell_stat_code
+    	FROM pd_product_option A WITH(NOLOCK)
+    	JOIN pd_product B WITH(NOLOCK)
+    	ON A.prdt_no = B.prdt_no
+    	AND B.site_no = #{siteNo, jdbcType=VARCHAR}
+    	JOIN pd_product_option_stock C WITH(NOLOCK)
+    	ON A.prdt_no = C.prdt_no
+    	AND A.prdt_optn_no = C.prdt_optn_no
+    	<where>
+    		AND A.prdt_no = #{prdtNo, jdbcType=VARCHAR}
+   			AND A.optn_name = #{prdtOptnNo, jdbcType=VARCHAR}
+   			AND A.use_yn = 'Y'
+    	</where>
+    	ORDER BY A.prdt_optn_no
+    </select>
+
+    <select id="selectProductOptionStock" parameterType="java.util.List" resultType="kr.co.abcmart.bo.product.model.master.PdProductOptionStock">
+    /*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionDao.selectProductOptionStock [옵션 재고 수량 조회] [김진성] */
+	     WITH PD_PRDINFO AS (
+		<foreach item="item" index="index" collection="list" separator="UNION ALL">
+	             SELECT #{item.prdtNo, jdbcType=VARCHAR} AS PRDT_NO, #{item.prdtOptnNo, jdbcType=VARCHAR} AS PRDT_OPTN_NO, #{item.promoNo, jdbcType=VARCHAR} AS PROMO_NO
+		</foreach>
+	     )
+	         SELECT B.PRDT_NO
+	              , B.PRDT_OPTN_NO
+	              , B.VNDR_PRDT_NO_TEXT
+	              , MIN(A.SITE_NO) AS SITE_NO                 <!-- 사이트 코드 -->
+	              , MIN(CASE A.SITE_NO WHEN '10000' THEN '01' ELSE '07' END) AS CHANNEL_GB <!-- 재고 조회 요청시 채널 구분 코드 -->
+	              , MIN(A.STOCK_INTGR_YN) AS STOCK_INTGR_YN   <!-- 자사 재고 통합 여부 -->
+	              , MIN(A.MMNY_PRDT_YN) AS MMNY_PRDT_YN       <!-- 자사 상품 여부 -->
+	              , MIN(A.STOCK_MGMT_YN) AS STOCK_MGMT_YN     <!-- 입점사 재고 관리 여부 -->
+	              , MIN(B.SELL_STAT_CODE) AS SELL_STAT_CODE   <!-- 입점업체 옵션 상품 판매 상태 -->
+	              , MIN(B.USE_YN) AS USE_YN                   <!-- 옵션 전시 여부 -->
+	              , MIN(F.PROMO_TYPE_CODE) AS PROMO_TYPE_CODE <!-- 프로모션유형코드  -->
+	              , MIN(F.STOCK_DDCT_TYPE) AS STOCK_DDCT_TYPE <!-- 프로모션 재고차감유형  -->
+	              , MIN(E.EVENT_LIMIT_QTY) AS EVENT_LIMIT_QTY <!-- 타임 특가 한정 할인 수량  -->
+	              , SUM(CASE WHEN D.STOCK_GBN_CODE = '10000' THEN D.STOCK_QTY - D.ORDER_COUNT ELSE 0 END) AS STOCK_AI_QTY
+<!--
+2019-10-03 AI/AW 실시간 조회로 ORDER_COUNT만 조회 한다.
+	              , SUM(CASE WHEN D.STOCK_GBN_CODE = '10001' THEN D.STOCK_QTY - D.ORDER_COUNT ELSE 0 END) AS STOCK_AW_QTY
+	              , SUM(CASE WHEN D.STOCK_GBN_CODE = '10002' THEN D.STOCK_QTY - D.ORDER_COUNT ELSE 0 END) AS STOCK_AS_QTY
+ -->
+ 	              , SUM(CASE WHEN D.STOCK_GBN_CODE = '10001' THEN               D.ORDER_COUNT ELSE 0 END) AS STOCK_AW_QTY
+	              , SUM(CASE WHEN D.STOCK_GBN_CODE = '10002' THEN               D.ORDER_COUNT ELSE 0 END) AS STOCK_AS_QTY
+	              , SUM(CASE WHEN D.STOCK_GBN_CODE = '10003' THEN D.STOCK_QTY - D.ORDER_COUNT ELSE 0 END) AS STOCK_VD_QTY
+	           FROM PD_PRODUCT A WITH(NOLOCK)
+	     INNER JOIN PD_PRODUCT_OPTION B WITH(NOLOCK) ON A.PRDT_NO = B.PRDT_NO
+	     INNER JOIN PD_PRDINFO C WITH(NOLOCK) ON B.PRDT_NO = C.PRDT_NO AND B.PRDT_OPTN_NO = C.PRDT_OPTN_NO
+	LEFT OUTER JOIN PD_PRODUCT_OPTION_STOCK D WITH(NOLOCK) ON B.PRDT_NO = D.PRDT_NO AND B.PRDT_OPTN_NO = D.PRDT_OPTN_NO
+	LEFT OUTER JOIN PR_PROMOTION_TARGET_PRODUCT E WITH(NOLOCK) ON A.PRDT_NO = E.PRDT_NO <!-- 프로모션 대상 상품 -->
+	LEFT OUTER JOIN PR_PROMOTION F WITH(NOLOCK) ON F.PROMO_NO = E.PROMO_NO AND F.PROMO_NO = C.PROMO_NO <!-- 프로모션 마스터 -->
+	<where>
+		<!-- 전시여부에 대한 조건이 있어야한다는 요구로 추가 -->
+		AND A.DISP_YN = 'Y'
+		AND B.USE_YN = 'Y'
+	</where>
+	  GROUP BY B.PRDT_NO, B.PRDT_OPTN_NO, B.VNDR_PRDT_NO_TEXT
+    </select>
+
+    <delete id="deleteContraryOptions">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionDao.deleteContraryOptions [상품 옵션 목록에 존재하지 않는 옵션 삭제 쿼리] [김세훈] */
+		DELETE
+		FROM pd_product_option
+		WHERE
+			prdt_no = #{prdtNo, jdbcType=VARCHAR}
+			AND prdt_optn_no NOT IN
+			<foreach collection="productOption" item="item" open="(" separator="," close=")">
+				#{item.prdtOptnNo, jdbcType=VARCHAR}
+			</foreach>
+	</delete>
+
+</mapper>

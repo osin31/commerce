@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.PdProductOptionPriceHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.product.model.master.PdProductOptionPriceHistory">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionPriceHistoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			pd_product_option_price_history WITH(NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <insert id="insertWithSelectKey" parameterType="kr.co.abcmart.bo.product.model.master.PdProductOptionPriceHistory">
+    	<selectKey resultType="java.lang.Integer" keyProperty="sellPriceHistSeq" order="BEFORE">
+    		SELECT
+    			ISNULL(MAX(sell_price_hist_seq) + 1, 1)
+    		FROM
+    			pd_product_option_price_history WITH(NOLOCK)
+    		WHERE
+    			prdt_no = #{prdtNo, jdbcType=VARCHAR}
+    			AND prdt_optn_no = #{prdtOptnNo, jdbcType=VARCHAR}
+    	</selectKey>
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionPriceHistoryDao.insertWithSelectKey [상품 옵션 가격 이력 등록 쿼리] [김세훈] */
+		INSERT INTO
+			pd_product_option_price_history
+			( prdt_no, prdt_optn_no, sell_price_hist_seq, optn_add_amt, apply_start_dtm, apply_end_dtm, rgster_no, rgst_dtm ) 
+		VALUES
+			( #{prdtNo, jdbcType=VARCHAR}, #{prdtOptnNo, jdbcType=VARCHAR}, #{sellPriceHistSeq, jdbcType=INTEGER}, #{optnAddAmt, jdbcType=INTEGER}, <choose><when test="applyStartDtm != null">#{applyStartDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, <choose><when test="applyEndDtm != null">#{applyEndDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+	<delete id="deleteByForeignKeys" parameterType="kr.co.abcmart.bo.product.model.master.PdProductOptionPriceHistory">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionPriceHistoryDao.delete [왜래키를 사용한 상품옵션가격이력 삭제 쿼리] [김세훈] */
+		DELETE
+		FROM pd_product_option_price_history
+		WHERE
+			prdt_no = #{prdtNo, jdbcType=VARCHAR}
+			AND prdt_optn_no = #{prdtOptnNo, jdbcType=VARCHAR}
+    </delete>
+    
+    <select id="selectRecentPrice" resultType="kr.co.abcmart.bo.product.model.master.PdProductOptionPriceHistory">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionPriceHistoryDao.selectRecentPrice [최근 가격 정보 조회 쿼리] [김세훈] */  
+		SELECT
+			TOP 1
+			<include refid="select-columns" />
+		FROM 
+			pd_product_option_price_history WITH(NOLOCK)
+		WHERE 
+			prdt_no = #{prdtNo, jdbcType=VARCHAR}
+			AND prdt_optn_no = #{prdtOptnNo, jdbcType=VARCHAR}
+		ORDER BY
+			sell_price_hist_seq DESC
+    </select>
+    
+    <delete id="deleteContraryOptions">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductOptionPriceHistoryDao.deleteContraryOptions [상품 옵션 목록에 존재하지 않는 옵션 삭제 쿼리] [김세훈] */
+		DELETE
+		FROM pd_product_option_price_history
+		WHERE
+			prdt_no = #{prdtNo, jdbcType=VARCHAR}
+			AND prdt_optn_no NOT IN
+			<foreach collection="productOption" item="item" open="(" separator="," close=")">
+				#{item.prdtOptnNo, jdbcType=VARCHAR}
+			</foreach>
+	</delete>
+
+</mapper>

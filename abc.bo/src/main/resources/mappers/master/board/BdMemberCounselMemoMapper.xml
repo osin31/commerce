@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.board.repository.master.BdMemberCounselMemoDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.board.model.master.BdMemberCounselMemo">
+
+     /*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselMemoDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			BD_MEMBER_COUNSEL_MEMO WITH (NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectBdMemberCounselMemoList" parameterType="kr.co.abcmart.bo.board.model.master.BdMemberCounselMemo" resultType="kr.co.abcmart.bo.board.model.master.BdMemberCounselMemo">
+    /*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselMemoDao.selectBdMemberCounselMemoList [상담 메모정보 조회] [Generator] */
+    	SELECT A.MEMBER_CNSL_SEQ
+    	     , A.CNSL_MEMO_SEQ
+    	     , A.MEMO_TEXT
+    	     , A.DEL_YN
+    	     , A.RGST_DTM
+    	     , B.LOGIN_ID
+    	     , B.ADMIN_NAME
+    	     , A.RGSTER_NO
+    	  FROM BD_MEMBER_COUNSEL_MEMO A WITH (NOLOCK)
+    	  LEFT JOIN SY_ADMIN B WITH (NOLOCK)
+    	    ON A.RGSTER_NO = B.ADMIN_NO
+    	 WHERE A.MEMBER_CNSL_SEQ = #{memberCnslSeq, jdbcType=INTEGER}
+    	   AND A.DEL_YN = 'N'
+    	 ORDER BY A.MEMBER_CNSL_SEQ, A.CNSL_MEMO_SEQ DESC
+    </select>
+    
+	<insert id="insertAdminMemo" useGeneratedKeys="true" keyProperty="cnslMemoSeq" parameterType="kr.co.abcmart.bo.board.model.master.BdMemberCounselMemo">
+		/*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselMemoDao.insertAdminMemo [관리자 메모 작성] [신인철] */
+		<selectKey keyProperty="cnslMemoSeq" resultType="Int" order="BEFORE">
+			SELECT ISNULL(MAX(CNSL_MEMO_SEQ),0)+1
+			  FROM BD_MEMBER_COUNSEL_MEMO
+			 WHERE MEMBER_CNSL_SEQ=#{memberCnslSeq, jdbcType=INTEGER}
+		</selectKey>
+		INSERT INTO BD_MEMBER_COUNSEL_MEMO
+			 ( MEMBER_CNSL_SEQ
+			 , CNSL_MEMO_SEQ
+			 , MEMO_TEXT
+			 , DEL_YN
+			 , RGSTER_NO
+			 , RGST_DTM ) 
+		VALUES ( #{memberCnslSeq, jdbcType=INTEGER}
+			 , #{cnslMemoSeq, jdbcType=INTEGER}
+			 , #{memoText, jdbcType=VARCHAR}
+			 , #{delYn, jdbcType=CHAR}
+			 , #{rgsterNo, jdbcType=VARCHAR}
+			 , GETDATE() )
+	</insert>
+	
+	<select id="selectAddMemo" parameterType="kr.co.abcmart.bo.board.model.master.BdMemberCounselMemo" resultType="kr.co.abcmart.bo.board.model.master.BdMemberCounselMemo">
+		 /*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselMemoDao.selectAddMemo [상담 메모정보 조회] [신인철] */
+    	SELECT A.MEMBER_CNSL_SEQ
+    	     , A.CNSL_MEMO_SEQ
+    	     , A.MEMO_TEXT
+    	     , A.DEL_YN
+    	     , A.RGST_DTM
+    	     , CONCAT(B.LOGIN_ID, '(', B.ADMIN_NAME, ')') AS RGSTER_NAME
+    	     , A.RGSTER_NO
+    	     , B.LOGIN_ID
+    	     , B.ADMIN_NAME
+    	  FROM BD_MEMBER_COUNSEL_MEMO A WITH (NOLOCK)
+    	  LEFT JOIN SY_ADMIN B WITH (NOLOCK)
+    	    ON A.RGSTER_NO = B.ADMIN_NO
+    	 WHERE A.MEMBER_CNSL_SEQ = #{memberCnslSeq, jdbcType=INTEGER}
+    	   AND A.CNSL_MEMO_SEQ = #{cnslMemoSeq, jdbcType=INTEGER}
+    	   AND A.DEL_YN = 'N'
+    	 ORDER BY A.MEMBER_CNSL_SEQ, A.CNSL_MEMO_SEQ DESC
+	</select>
+	
+	<update id="deleteAddminMemo" parameterType="kr.co.abcmart.bo.board.model.master.BdMemberCounselMemo">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdMemberCounselMemoDao.selectAddMemo [상담 삭제] [신인철] */
+		UPDATE BD_MEMBER_COUNSEL_MEMO
+		   SET DEL_YN = #{delYn, jdbcType = CHAR}
+		 WHERE MEMBER_CNSL_SEQ = #{memberCnslSeq, jdbcType = INTEGER}
+		   AND CNSL_MEMO_SEQ = #{cnslMemoSeq, jdbcType = INTEGER}
+	</update>
+	
+	
+</mapper>

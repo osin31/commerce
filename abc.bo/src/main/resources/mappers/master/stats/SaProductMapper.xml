@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.stats.repository.master.SaProductStatusDao">
+
+    <sql id="dateConvert">
+		<if test="bean.choicePeriod == 'date' and bean.choicePeriod != null">
+ 		 	CONCAT(CONVERT(CHAR(10), A.RGST_DTM, 23),'(', DATENAME(WEEKDAY,A.RGST_DTM), ')')
+		</if>
+		<if test="bean.choicePeriod == 'month' and bean.choicePeriod != null">
+	 		 LEFT(CONVERT(CHAR(10), A.RGST_DTM, 23), 7)
+		</if>
+		<if test="bean.choicePeriod == 'year' and bean.choicePeriod != null">
+	  		 LEFT(CONVERT(CHAR(10), A.RGST_DTM, 23), 4)
+		</if>
+	</sql>
+
+   <select id="productStatsListCount" parameterType="pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaProductStatusDao.productStatsListCount [상품 등록 현황 카운트] [백인천] */
+    	SELECT <include refid="Paging.totalCount"/>
+    	FROM (
+	    	SELECT <include refid="Paging.totalCount"/>
+			  FROM PD_PRODUCT PP WITH(NOLOCK)
+			  	LEFT OUTER JOIN DP_BRAND DB ON PP.BRAND_NO = DB.BRAND_NO
+				LEFT OUTER JOIN VD_VENDOR VV ON PP.VNDR_NO = VV.VNDR_NO
+			<include refid="productStatsWhere"/>
+			GROUP BY PP.VNDR_NO
+		) A
+    </select>
+
+    <select id="productStatsList" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaProductStats" >
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaProductStatusDao.productStatsList [상품 등록 현황 리스트] [백인천] */
+		SELECT
+			  T.VNDR_NAME		/* 업체명 */
+			, T.TOTAL_COUNT		/* 합계 */
+			, T.SELL_WAIT		/* 판매대기 */
+			, T.SELL_SELLING	/* 판매중 */
+			, T.SELL_PAUSE		/* 일시품절 */
+			, T.SELL_STOP		/* 판매중지 */
+			, T.STG_TEMP		/* 임시저장 */
+			, T.STG_REQUEST		/* 승인요청 */
+			, T.STG_WAIT		/* 승인대기 */
+			, T.STG_RETURN		/* 승인반려 */
+			, T.STG_COMPLETE	/* 승인완료 */
+		FROM (
+			SELECT
+				  AA.VNDR_NAME AS VNDR_NAME
+				, COUNT(AA.S_NO) AS TOTAL_COUNT
+				, SUM(AA.SELL_WAIT_COUNT) AS SELL_WAIT
+				, SUM(AA.SELL_SELLING_COUNT) AS SELL_SELLING
+				, SUM(AA.SELL_PAUSE_COUNT) AS SELL_PAUSE
+				, SUM(AA.SELL_STOP_COUNT) AS SELL_STOP
+				, SUM(AA.STG_TEMP_COUNT) AS STG_TEMP
+				, SUM(AA.STG_REQUEST_COUNT) AS STG_REQUEST
+				, SUM(AA.STG_WAIT_COUNT) AS STG_WAIT
+				, SUM(AA.STG_RETURN_COUNT) AS STG_RETURN
+				, SUM(AA.STG_COMPLETE_COUNT) AS STG_COMPLETE
+			FROM (
+				SELECT
+					  PP.VNDR_NO AS S_NO
+					, '합계' AS VNDR_NAME
+					, CASE WHEN PP.SELL_STAT_CODE = '10000' THEN 1 ELSE 0 END AS SELL_WAIT_COUNT
+					, CASE WHEN PP.SELL_STAT_CODE = '10001' THEN 1 ELSE 0 END AS SELL_SELLING_COUNT
+					, CASE WHEN PP.SELL_STAT_CODE = '10002' THEN 1 ELSE 0 END AS SELL_PAUSE_COUNT
+					, CASE WHEN PP.SELL_STAT_CODE = '10003' THEN 1 ELSE 0 END AS SELL_STOP_COUNT
+					, CASE WHEN PP.APRV_STAT_CODE = '10000' THEN 1 ELSE 0 END AS STG_TEMP_COUNT
+					, CASE WHEN PP.APRV_STAT_CODE = '10001' THEN 1 ELSE 0 END AS STG_REQUEST_COUNT
+					, CASE WHEN PP.APRV_STAT_CODE = '10002' THEN 1 ELSE 0 END AS STG_WAIT_COUNT
+					, CASE WHEN PP.APRV_STAT_CODE = '10003' THEN 1 ELSE 0 END AS STG_RETURN_COUNT
+					, CASE WHEN PP.APRV_STAT_CODE = '10004' THEN 1 ELSE 0 END AS STG_COMPLETE_COUNT
+				FROM PD_PRODUCT PP WITH(NOLOCK)
+					LEFT OUTER JOIN DP_BRAND DB WITH(NOLOCK) ON PP.BRAND_NO = DB.BRAND_NO
+					LEFT OUTER JOIN VD_VENDOR VV WITH(NOLOCK) ON PP.VNDR_NO = VV.VNDR_NO
+				<include refid="productStatsWhere"/>
+				) AA
+			GROUP BY AA.VNDR_NAME
+
+			UNION ALL
+
+			SELECT
+				  BB.VNDR_NAME AS VNDR_NAME
+				, COUNT(BB.S_NO) AS TOTAL_COUNT
+				, SUM(BB.SELL_WAIT_COUNT) AS SELL_WAIT
+				, SUM(BB.SELL_SELLING_COUNT) AS SELL_SELLING
+				, SUM(BB.SELL_PAUSE_COUNT) AS SELL_PAUSE
+				, SUM(BB.SELL_STOP_COUNT) AS SELL_STOP
+				, SUM(BB.STG_TEMP_COUNT) AS STG_TEMP
+				, SUM(BB.STG_REQUEST_COUNT) AS STG_REQUEST
+				, SUM(BB.STG_WAIT_COUNT) AS STG_WAIT
+				, SUM(BB.STG_RETURN_COUNT) AS STG_RETURN
+				, SUM(BB.STG_COMPLETE_COUNT) AS STG_COMPLETE
+			FROM (
+				SELECT
+					  PP.VNDR_NO AS S_NO
+					, VV.VNDR_NAME AS VNDR_NAME
+					, CASE WHEN PP.SELL_STAT_CODE = '10000' THEN 1 ELSE 0 END AS SELL_WAIT_COUNT
+					, CASE WHEN PP.SELL_STAT_CODE = '10001' THEN 1 ELSE 0 END AS SELL_SELLING_COUNT
+					, CASE WHEN PP.SELL_STAT_CODE = '10002' THEN 1 ELSE 0 END AS SELL_PAUSE_COUNT
+					, CASE WHEN PP.SELL_STAT_CODE = '10003' THEN 1 ELSE 0 END AS SELL_STOP_COUNT
+					, CASE WHEN PP.APRV_STAT_CODE = '10000' THEN 1 ELSE 0 END AS STG_TEMP_COUNT
+					, CASE WHEN PP.APRV_STAT_CODE = '10001' THEN 1 ELSE 0 END AS STG_REQUEST_COUNT
+					, CASE WHEN PP.APRV_STAT_CODE = '10002' THEN 1 ELSE 0 END AS STG_WAIT_COUNT
+					, CASE WHEN PP.APRV_STAT_CODE = '10003' THEN 1 ELSE 0 END AS STG_RETURN_COUNT
+					, CASE WHEN PP.APRV_STAT_CODE = '10004' THEN 1 ELSE 0 END AS STG_COMPLETE_COUNT
+				FROM PD_PRODUCT PP WITH(NOLOCK)
+					LEFT OUTER JOIN DP_BRAND DB WITH(NOLOCK) ON PP.BRAND_NO = DB.BRAND_NO
+					LEFT OUTER JOIN VD_VENDOR VV WITH(NOLOCK) ON PP.VNDR_NO = VV.VNDR_NO
+				<include refid="productStatsWhere"/>
+				) BB
+			GROUP BY BB.S_NO, BB.VNDR_NAME
+			ORDER BY BB.S_NO
+			<include refid="Paging.mssql" />
+		) T
+    </select>
+
+	<select id="selectProductStatsListForExcel" parameterType="kr.co.abcmart.bo.stats.vo.ProductStatsSearchVO" resultType="kr.co.abcmart.bo.stats.model.master.SaProductStats">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaProductStatusDao.selectProductStatsListForExcel [상품 등록 현황 엑셀 다운로드] [백인천] */
+    	WITH PRODUCTTT AS(
+			SELECT
+				  BB.VNDR_NAME AS VNDR_NAME
+				, COUNT(BB.S_NO) AS TOTAL_COUNT
+				, SUM(BB.SELL_WAIT_COUNT) AS SELL_WAIT
+				, SUM(BB.SELL_SELLING_COUNT) AS SELL_SELLING
+				, SUM(BB.SELL_PAUSE_COUNT) AS SELL_PAUSE
+				, SUM(BB.SELL_STOP_COUNT) AS SELL_STOP
+				, SUM(BB.STG_TEMP_COUNT) AS STG_TEMP
+				, SUM(BB.STG_WAIT_COUNT) AS STG_WAIT
+				, SUM(BB.STG_RETURN_COUNT) AS STG_RETURN
+			FROM (
+				SELECT
+					  PP.VNDR_NO AS S_NO
+					, VV.VNDR_NAME AS VNDR_NAME
+					, CASE WHEN PP.SELL_STAT_CODE = '10000' THEN 1 ELSE 0 END AS SELL_WAIT_COUNT
+					, CASE WHEN PP.SELL_STAT_CODE = '10001' THEN 1 ELSE 0 END AS SELL_SELLING_COUNT
+					, CASE WHEN PP.SELL_STAT_CODE = '10002' THEN 1 ELSE 0 END AS SELL_PAUSE_COUNT
+					, CASE WHEN PP.SELL_STAT_CODE = '10003' THEN 1 ELSE 0 END AS SELL_STOP_COUNT
+					, CASE WHEN PP.APRV_STAT_CODE = '10001' THEN 1 ELSE 0 END AS STG_TEMP_COUNT
+					, CASE WHEN PP.APRV_STAT_CODE = '10002' THEN 1 ELSE 0 END AS STG_WAIT_COUNT
+					, CASE WHEN PP.APRV_STAT_CODE = '10003' THEN 1 ELSE 0 END AS STG_RETURN_COUNT
+				FROM PD_PRODUCT PP WITH(NOLOCK)
+					LEFT OUTER JOIN DP_BRAND DB WITH(NOLOCK) ON PP.BRAND_NO = DB.BRAND_NO
+					LEFT OUTER JOIN VD_VENDOR VV WITH(NOLOCK) ON PP.VNDR_NO = VV.VNDR_NO
+				<include refid="productStatsVoWhere"/>
+				) BB
+			GROUP BY BB.S_NO, BB.VNDR_NAME
+			ORDER BY BB.VNDR_NAME
+			OFFSET (1 - 1) * 1048565 ROWS
+		)
+		SELECT
+			  AA.VNDR_NAME AS VNDR_NAME						/* 업체명 */
+			, COUNT(AA.S_NO) AS TOTAL_COUNT					/* 합계 */
+			, SUM(AA.SELL_WAIT_COUNT) AS SELL_WAIT			/* 판매대기 */
+			, SUM(AA.SELL_SELLING_COUNT) AS SELL_SELLING	/* 판매중 */
+			, SUM(AA.SELL_PAUSE_COUNT) AS SELL_PAUSE		/* 일시품절 */
+			, SUM(AA.SELL_STOP_COUNT) AS SELL_STOP			/* 판매중지 */
+			, SUM(AA.STG_TEMP_COUNT) AS STG_TEMP			/* 임시저장 */
+			, SUM(AA.STG_WAIT_COUNT) AS STG_WAIT			/* 승인대기 */
+			, SUM(AA.STG_RETURN_COUNT) AS STG_RETURN		/* 승인반려 */
+		FROM (
+			SELECT
+				  PP.VNDR_NO AS S_NO
+				, '합계' AS VNDR_NAME
+				, CASE WHEN PP.SELL_STAT_CODE = '10000' THEN 1 ELSE 0 END AS SELL_WAIT_COUNT
+				, CASE WHEN PP.SELL_STAT_CODE = '10001' THEN 1 ELSE 0 END AS SELL_SELLING_COUNT
+				, CASE WHEN PP.SELL_STAT_CODE = '10002' THEN 1 ELSE 0 END AS SELL_PAUSE_COUNT
+				, CASE WHEN PP.SELL_STAT_CODE = '10003' THEN 1 ELSE 0 END AS SELL_STOP_COUNT
+				, CASE WHEN PP.APRV_STAT_CODE = '10001' THEN 1 ELSE 0 END AS STG_TEMP_COUNT
+				, CASE WHEN PP.APRV_STAT_CODE = '10002' THEN 1 ELSE 0 END AS STG_WAIT_COUNT
+				, CASE WHEN PP.APRV_STAT_CODE = '10003' THEN 1 ELSE 0 END AS STG_RETURN_COUNT
+			FROM PD_PRODUCT PP WITH(NOLOCK)
+				LEFT OUTER JOIN DP_BRAND DB WITH(NOLOCK) ON PP.BRAND_NO = DB.BRAND_NO
+				LEFT OUTER JOIN VD_VENDOR VV WITH(NOLOCK) ON PP.VNDR_NO = VV.VNDR_NO
+			<include refid="productStatsVoWhere"/>
+			) AA
+		GROUP BY AA.VNDR_NAME
+
+		UNION ALL
+
+		SELECT PT.VNDR_NAME AS VNDR_NAME		/* 업체명 */
+			 , PT.TOTAL_COUNT AS TOTAL_COUNT	/* 합계 */
+			 , PT.SELL_WAIT AS SELL_WAIT		/* 판매대기 */
+			 , PT.SELL_SELLING AS SELL_SELLING	/* 판매중 */
+			 , PT.SELL_PAUSE AS SELL_PAUSE		/* 일시품절 */
+			 , PT.SELL_STOP						/* 판매중지 */
+			 , PT.STG_TEMP AS STG_TEMP			/* 임시저장 */
+			 , PT.STG_WAIT AS STG_WAIT			/* 승인대기 */
+			 , PT.STG_RETURN AS STG_RETURN		/* 승인반려 */
+		FROM PRODUCTTT PT WITH(NOLOCK)
+
+	</select>
+
+	<sql id="productStatsWhere">
+    	<where>
+    		AND VV.VNDR_NAME IS NOT NULL
+	    	<if test="bean.siteNo != null and bean.siteNo !='' ">
+	    		AND PP.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+	    	</if>
+	    	<if test="bean.brandNo != null and bean.brandNo !='' ">
+	    		AND PP.BRAND_NO = #{bean.brandNo, jdbcType=VARCHAR}
+	    	</if>
+	    	<if test="bean.vndrNo != null and bean.vndrNo !='' ">
+	    		AND PP.VNDR_NO = #{bean.vndrNo, jdbcType=VARCHAR}
+	    	</if>
+    	</where>
+    </sql>
+
+	<sql id="productStatsVoWhere">
+    	<where>
+    		AND VV.VNDR_NAME IS NOT NULL
+	    	<if test="siteNo != null and siteNo !='' ">
+	    		AND PP.SITE_NO = #{siteNo, jdbcType=VARCHAR}
+	    	</if>
+	    	<if test="brandNo != null and brandNo !='' ">
+	    		AND PP.BRAND_NO = #{bean.brandNo, jdbcType=VARCHAR}
+	    	</if>
+	    	<if test="vndrNo != null and vndrNo !='' ">
+	    		AND PP.VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+	    	</if>
+    	</where>
+    </sql>
+
+	<sql id="sns-stats-where">
+    	<if test="bean.siteNo != null and bean.siteNo !='' ">
+    		AND A.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+    	</if>
+    	<if test="bean.fromDate != null and bean.toDate !='' ">
+    		AND A.RGST_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00'))
+   			AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+    	</if>
+    	<if test='bean.deviceCodeArr != null and bean.deviceCodeArr !=""'>
+    		<foreach collection="bean.deviceCodeArr" item="deviceCode" open="AND A.DEVICE_CODE IN (" close=")" separator=",">
+    			#{deviceCode, jdbcType=VARCHAR}
+    		</foreach>
+    	</if>
+    </sql>
+
+    <sql id="cmsn-stats-where">
+    	<if test="bean.siteNo != null and bean.siteNo !='' ">
+    		AND A.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+    	</if>
+    	<if test="bean.deviceCodeArr != null and bean.deviceCodeArr !=''">
+    		AND
+    		<foreach collection="bean.deviceCodeArr" item="deviceCode" open="(" close=")" separator="or">
+    			A.DEVICE_CODE = #{deviceCode, jdbcType=VARCHAR}
+    		</foreach>
+    	</if>
+    	<if test="bean.vndrName != null and bean.vndrName !=''">
+    		AND	B.VNDR_NAME = #{bean.vndrName, jdbcType=VARCHAR}
+    	</if>
+    	<if test="bean.vndrNo != null and bean.vndrNo !=''">
+    		AND	A.VNDR_NO = #{bean.vndrNo, jdbcType=VARCHAR}
+    	</if>
+    	<if test="bean.brandNo != null and bean.brandNo !=''">
+    		AND	A.BRAND_NO = #{bean.brandNo, jdbcType=VARCHAR}
+    	</if>
+    	<if test="bean.vndrStdCtgrNo != null and bean.vndrStdCtgrNo != ''">
+    		AND A.STD_CTGR_NO IN (SELECT STD_CTGR_NO FROM DBO.FN_STD_LEAF_CTGR_GET_TABLE(#{bean.vndrStdCtgrNo, jdbcType=VARCHAR}))
+    	</if>
+    	<if test="bean.cmsnKind != null and bean.cmsnKind != ''">
+    		AND B.CMSN_KIND = #{bean.cmsnKind, jdbcType=VARCHAR}
+    	</if>
+    	<!-- 검색어 -->
+   		<if test='bean.searchKeywordType != null and bean.searchKeywordType != ""'>
+   			<if test='bean.searchKeyword != null and bean.searchKeyword != ""'>
+    			<choose>
+    				<!-- 상품명(국문/영문) -->
+	    			<when test='bean.searchKeywordType == "prdt-name"'>
+	    				AND (A.PRDT_NAME LIKE '%'+ #{bean.searchKeyword, jdbcType=VARCHAR} + '%' OR A.ENG_PRDT_NAME LIKE '%'+ #{bean.searchKeyword, jdbcType=VARCHAR} + '%')
+	    			</when>
+	    			<!-- 스타일 -->
+	    			<when test='bean.searchKeywordType == "style-info"'>
+	    				AND	A.STYLE_INFO LIKE '%'+ #{bean.searchKeyword, jdbcType=VARCHAR} + '%'
+	    			</when>
+	    			<!-- 색상코드 -->
+	    			<when test='bean.searchKeywordType == "color-code"'>
+	    				AND	A.PRDT_COLOR_INFO LIKE '%'+ #{bean.searchKeyword, jdbcType=VARCHAR} + '%'
+	    			</when>
+	    			<!-- 상품검색어 -->
+	    			<when test='bean.searchKeywordType == "srch-keyword"'>
+	    				AND	A.SRCH_KEY_WORD_TEXT LIKE '%'+ #{bean.searchKeyword, jdbcType=VARCHAR} + '%'
+	    			</when>
+	    		</choose>
+    		</if>
+   		</if>
+    </sql>
+
+    <sql id="share-stats-select-columns">
+    	, SUM(1) AS SNS_TOTAL
+		, SUM(CASE WHEN A.SNS_CHNNL_CODE = '10000' THEN 1 ELSE 0 END) AS SNS_10000
+		, SUM(CASE WHEN A.SNS_CHNNL_CODE = '10001' THEN 1 ELSE 0 END) AS SNS_10001
+		, SUM(CASE WHEN A.SNS_CHNNL_CODE = '10002' THEN 1 ELSE 0 END) AS SNS_10002
+		, SUM(CASE WHEN A.SNS_CHNNL_CODE = '10003' THEN 1 ELSE 0 END) AS SNS_10003
+		, SUM(CASE WHEN A.SNS_CHNNL_CODE = '10004' THEN 1 ELSE 0 END) AS SNS_10004
+		, SUM(CASE WHEN A.SNS_CHNNL_CODE = '10005' THEN 1 ELSE 0 END) AS SNS_10005
+		, SUM(CASE WHEN A.SNS_CHNNL_CODE = '10006' THEN 1 ELSE 0 END) AS SNS_10006
+    </sql>
+
+    <select id="shareStatsListCount" parameterType="pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaProductStatusDao.shareStatsListCount [공유하기 현황 조회 count] [변지은] */
+    	SELECT <include refid="Paging.totalCount"/>
+    	FROM (SELECT <include refid="dateConvert"/> AS SNS_DTM
+    	 		FROM SA_SNS_SHARE_STATUS A WITH(NOLOCK)
+    	 		<where>
+	    	    	<include refid="sns-stats-where"/>
+    	 		</where>
+		 		GROUP BY <include refid="dateConvert"/>
+    	) A
+    </select>
+
+    <select id="shareStatsList" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaProductStats" >
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaProductStatusDao.shareStatsList [공유하기 현황 조회] [변지은] */
+    	WITH sns(SNS_DTM, SNS_TOTAL, SNS_10000,	SNS_10001, SNS_10002, SNS_10003, SNS_10004, SNS_10005, SNS_10006) AS
+    		(
+   	  			SELECT
+		   	  		'합계' AS SNS_DTM
+					<include refid="share-stats-select-columns"/>
+				FROM SA_SNS_SHARE_STATUS A WITH(NOLOCK)
+				<where>
+	    	    	<include refid="sns-stats-where"/>
+				</where>
+				UNION ALL
+		  		SELECT
+		   	  		<include refid="dateConvert"/> AS SNS_DTM
+					<include refid="share-stats-select-columns"/>
+				FROM SA_SNS_SHARE_STATUS A WITH(NOLOCK)
+				<where>
+	    	    	<include refid="sns-stats-where"/>
+				</where>
+				GROUP BY <include refid="dateConvert"/>
+		)
+		SELECT SNS_DTM, SNS_TOTAL, SNS_10000,	SNS_10001, SNS_10002, SNS_10003, SNS_10004, SNS_10005, SNS_10006
+		FROM SNS WITH(NOLOCK)
+		ORDER BY SNS_DTM DESC
+		<if test='bean.isExcel == null or bean.isExcel == ""'>
+			<include refid="Paging.mssql" />
+		</if>
+    </select>
+    
+    <sql id="vdCmsnCte">
+    WITH VD_CMSN_CTE AS (
+        SELECT MAX(A.VNDR_DFLT_CMSN_SEQ) AS MAX_SEQ,
+               B.PRDT_NO,
+               A.VNDR_NO,
+               ISNULL((SELECT B.DFLT_CMSN_RATE
+                         FROM VD_VENDOR_DEFAULT_COMMISSION B
+                        WHERE B.VNDR_NO = A.VNDR_NO
+                          AND B.VNDR_DFLT_CMSN_SEQ = (MAX(A.VNDR_DFLT_CMSN_SEQ) - 1)), 0) AS BEFORE_DFLT_CMSN_RATE,
+               ISNULL(A.DFLT_CMSN_RATE, 0) AS AFTER_CMSN_RATE,
+               A.RGST_DTM, 
+               A.RGSTER_NO, 
+               '기본' AS CMSN_KIND
+          FROM VD_VENDOR_DEFAULT_COMMISSION A WITH (NOLOCK),
+               PD_PRODUCT B WITH (NOLOCK)
+         WHERE A.APPLY_START_YMD BETWEEN #{bean.fromDate, jdbcType=VARCHAR} AND #{bean.toDate, jdbcType=VARCHAR}
+           AND A.VNDR_NO = B.VNDR_NO
+         GROUP BY B.PRDT_NO, A.VNDR_NO, A.DFLT_CMSN_RATE, A.RGST_DTM, A.RGSTER_NO
+         UNION ALL
+        --예외수수료
+        SELECT MAX(A.VNDR_EXCEPT_CMSN_SEQ) AS MAX_SEQ,
+               B.PRDT_NO,
+               A.VNDR_NO,
+               ISNULL((SELECT B.CMSN_RATE
+                         FROM VD_VENDOR_EXCEPTION_COMMISSION B
+                        WHERE B.VNDR_NO = A.VNDR_NO
+                          AND B.VNDR_EXCEPT_CMSN_SEQ = (MAX(A.VNDR_EXCEPT_CMSN_SEQ) - 1)), 0) AS BEFORE_DFLT_CMSN_RATE,
+               ISNULL(A.CMSN_RATE, 0) AS AFTER_CMSN_RATE,
+               A.RGST_DTM, 
+               A.RGSTER_NO, 
+               '예외' AS CMSN_KIND
+          FROM VD_VENDOR_EXCEPTION_COMMISSION A WITH (NOLOCK),
+               PD_PRODUCT B WITH (NOLOCK)
+         WHERE A.APPLY_START_YMD BETWEEN #{bean.fromDate, jdbcType=VARCHAR} AND #{bean.toDate, jdbcType=VARCHAR}
+           AND A.VNDR_NO = B.VNDR_NO
+           AND A.STD_CTGR_NO IN (SELECT STD_CTGR_NO FROM DBO.FN_STD_TOP_CTGR_GET_TABLE(A.STD_CTGR_NO)) --표준대카리턴 함수
+           AND A.BRAND_NO = B.BRAND_NO
+         GROUP BY B.PRDT_NO, A.VNDR_NO, A.CMSN_RATE, A.RGST_DTM, A.RGSTER_NO  
+         UNION ALL 
+        --프로모션수수료
+        SELECT '0' AS MAX_SEQ,
+               B.PRDT_NO,
+               C.VNDR_NO,
+               '0' AS BEFORE_DFLT_CMSN_RATE,
+               ISNULL(B.CMSN_RATE, 0) AS AFTER_CMSN_RATE,
+               A.MOD_DTM AS RGST_DTM,
+               A.MODER_NO AS RGSTER_NO,
+               '프로모션' AS CMSN_KIND
+          FROM PR_PROMOTION A WITH (NOLOCK),
+               PR_PROMOTION_TARGET_PRODUCT B WITH (NOLOCK),
+               PD_PRODUCT C WITH (NOLOCK)
+         WHERE A.PROMO_START_DTM BETWEEN #{bean.fromDate, jdbcType=VARCHAR} AND #{bean.toDate, jdbcType=VARCHAR}
+           AND A.PROMO_NO = B.PROMO_NO
+           AND B.PRDT_NO = C.PRDT_NO
+    )       
+    </sql>
+
+    <select id="cmsnStatsListCount" parameterType="pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaProductStatusDao.cmsnStatsListCount [입점사 수수료 변경이력 조회 count] [변지은] */
+    	<include refid="vdCmsnCte"/>
+    	SELECT
+    		<include refid="Paging.totalCount"/>
+		FROM PD_PRODUCT A WITH (NOLOCK)
+		INNER JOIN VD_CMSN_CTE B WITH (NOLOCK)
+		  ON A.PRDT_NO = B.PRDT_NO
+		<where>
+			<include refid="cmsn-stats-where"/>
+		</where>
+    </select>
+
+    <select id="cmsnStatsList" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaProductStats" >
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaProductStatusDao.cmsnStatsList [입점사 수수료 변경이력 조회] [변지은] */    	
+    	<include refid="vdCmsnCte"/>
+    	SELECT
+    		  ISNULL((SELECT SITE_NAME
+			  FROM SY_SITE WITH (NOLOCK)
+			  WHERE SITE_NO = A.SITE_NO), '기타') AS SITE_NAME,
+		      (SELECT VNDR_NAME
+		         FROM VD_VENDOR WITH(NOLOCK)
+		        WHERE VNDR_NO = A.VNDR_NO) AS VNDR_NAME,
+		      (SELECT BRAND_NAME
+		         FROM DP_BRAND WITH(NOLOCK)
+		        WHERE BRAND_NO = A.BRAND_NO) AS BRAND_NAME,
+		      (SELECT STD_CTGR_NAME FROM DBO.FN_STD_TOP_CTGR_GET_TABLE(A.STD_CTGR_NO)) AS STD_CTGR,
+		      A.VNDR_PRDT_NO_TEXT AS PD_CODE,
+		      A.PRDT_NO AS ON_PD_CODE,
+		      A.PRDT_NAME AS PD_NAME,
+		      (SELECT IMAGE_URL
+		         FROM PD_PRODUCT_RELATION_FILE WITH(NOLOCK)
+		        WHERE PRDT_NO = A.PRDT_NO
+		          AND PRDT_RLTN_FILE_SEQ = '1' ) AS PRDT_IMAGE_URL,
+		      (SELECT CODE_DTL_NAME
+		         FROM SY_CODE_DETAIL WITH(NOLOCK)
+		        WHERE CODE_FIELD = 'SELL_STAT_CODE'
+		          AND CODE_DTL_NO = A.SELL_STAT_CODE) AS SELL_YN,
+		      (CASE A.DISP_YN WHEN 'Y' THEN '전시' ELSE '전시안함' END) AS DISP_YN,
+		      CONCAT(B.BEFORE_DFLT_CMSN_RATE,'%') AS BEFORE_RATE,
+		      CONCAT(B.AFTER_CMSN_RATE,'%') AS AFTER_RATE,
+		      B.CMSN_KIND AS RATE_TYPE,
+		      B.RGST_DTM AS RGST_DATE,
+		      (SELECT CONCAT(LOGIN_ID, '(',ADMIN_NAME,')') FROM SY_ADMIN WITH(NOLOCK) WHERE ADMIN_NO = B.RGSTER_NO) AS RGSTER_NAME
+		      --B.RGSTER_NO
+	 	FROM PD_PRODUCT A WITH (NOLOCK)
+ 	    INNER JOIN VD_CMSN_CTE B WITH (NOLOCK)
+            ON A.PRDT_NO = B.PRDT_NO
+		<where>
+			<include refid="cmsn-stats-where"/>
+		</where>
+	     ORDER BY A.PRDT_NO DESC, B.CMSN_KIND, B.RGST_DTM DESC
+	    <if test='bean.isExcel == null or bean.isExcel == ""'>
+			<include refid="Paging.mssql" />
+		</if>
+    </select>
+
+</mapper>

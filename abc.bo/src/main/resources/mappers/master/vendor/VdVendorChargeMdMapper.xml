@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.vendor.repository.master.VdVendorChargeMdDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.vendor.model.master.VdVendorChargeMd">
+
+     /*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorChargeMdDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			vd_vendor_charge_md WITH (NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+	<select id="getVndrChargeMdSeqNextVal" parameterType="kr.co.abcmart.bo.vendor.model.master.VdVendorChargeMd" resultType="int">
+	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorChargeMdDao.getVndrChargeMdSeqNextVal [업체담당MD순번 조회] [유성민] */
+		SELECT ISNULL(MAX(VNDR_CHARGE_MD_SEQ), 0) + 1
+		  FROM VD_VENDOR_CHARGE_MD
+		 WHERE VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+		   AND CHNNL_NO = #{chnnlNo, jdbcType=VARCHAR}
+	</select>
+
+	<delete id="deleteVendorChargeMdByVndrNo" parameterType="String">
+	/*+ kr.co.abcmart.bo.vendor.repository.master.VdVendorChargeMdDao.deleteVendorChargeMdByVndrNo [업체담당MD삭제] [유성민] */
+		DELETE FROM VD_VENDOR_CHARGE_MD
+		 WHERE VNDR_NO = #{vndrNo, jdbcType=VARCHAR}
+	</delete>
+</mapper>

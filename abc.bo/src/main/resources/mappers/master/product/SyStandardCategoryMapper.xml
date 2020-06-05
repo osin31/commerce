@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.SyStandardCategoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.product.model.master.SyStandardCategory">
+
+     /*+ kr.co.abcmart.bo.product.repository.master.SyStandardCategoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			SY_STANDARD_CATEGORY WITH(NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectStandardCategoryList" parameterType="kr.co.abcmart.bo.product.model.master.SyStandardCategory" resultType="kr.co.abcmart.bo.product.model.master.SyStandardCategory">
+    	/*+ kr.co.abcmart.bo.product.repository.master.SyStandardCategoryDao.selectStandardCategoryList [표준 카테고리 리스트 조회] [이가영]*/
+		WITH CTGR_CTE (STD_CTGR_NO, UP_STD_CTGR_NO, STD_CTGR_NAME, ITEM_CODE, INSD_MGMT_INFO_TEXT,
+						SORT_SEQ, LEVEL, USE_YN, RGSTER_NO, RGST_DTM, MODER_NO, MOD_DTM, LEAF_CTGR_YN,
+<!-- 2019-11-25 양해상 차장 요청으로 샤방넷 관련 데이터 삭제
+						sabangnet_prdt_attr_text, sabangnet_ctgr1_text, sabangnet_ctgr2_text, sabangnet_ctgr3_text,
+						sabangnet_ctgr4_text
+ -->
+						SORT, NAME, NO_PATH)
+		AS (SELECT
+				a.STD_CTGR_NO,
+				a.UP_STD_CTGR_NO,
+				a.STD_CTGR_NAME,
+				a.ITEM_CODE,
+				a.INSD_MGMT_INFO_TEXT,
+				a.SORT_SEQ,
+				1 as LEVEL,
+				a.USE_YN,
+				a.RGSTER_NO,
+				a.RGST_DTM,
+				a.MODER_NO,
+				a.MOD_DTM,
+				a.LEAF_CTGR_YN,
+<!--
+				a.sabangnet_prdt_attr_text,
+				a.sabangnet_ctgr1_text,
+				a.sabangnet_ctgr2_text,
+				a.sabangnet_ctgr3_text,
+				a.sabangnet_ctgr4_text,
+ -->
+				CONVERT(VARCHAR(255), RIGHT('0000' + CONVERT(VARCHAR(4), a.SORT_SEQ), 4)) sort,
+				CONVERT(VARCHAR(255), a.STD_CTGR_NAME) name,
+				CONVERT(VARCHAR(255), a.STD_CTGR_NO) no_path
+			FROM
+				SY_STANDARD_CATEGORY a with (nolock)
+			WHERE
+				UP_STD_CTGR_NO is null OR UP_STD_CTGR_NO = ''
+			UNION ALL
+			SELECT
+				b.STD_CTGR_NO,
+				b.UP_STD_CTGR_NO,
+				b.STD_CTGR_NAME,
+				b.ITEM_CODE,
+				b.INSD_MGMT_INFO_TEXT,
+				b.SORT_SEQ,
+				c.LEVEL + 1 as LEVEL,
+				b.USE_YN,
+				b.RGSTER_NO,
+				b.RGST_DTM,
+				b.MODER_NO,
+				b.MOD_DTM,
+				b.LEAF_CTGR_YN,
+<!--
+				b.sabangnet_prdt_attr_text,
+				b.sabangnet_ctgr1_text,
+				b.sabangnet_ctgr2_text,
+				b.sabangnet_ctgr3_text,
+				b.sabangnet_ctgr4_text,
+ -->
+				CONVERT(VARCHAR(255), c.SORT + ' > ' + RIGHT('0000' + CONVERT(VARCHAR(4), b.SORT_SEQ), 4)) sort,
+				CONVERT(VARCHAR(255), CONVERT(VARCHAR(255), c.name) + ' > ' +  convert(VARCHAR(255), b.STD_CTGR_NAME)) name,
+				CONVERT(VARCHAR(255), CONVERT(VARCHAR(255), c.no_path) + ' > ' +  convert(VARCHAR(255), b.STD_CTGR_NO)) no_path
+			FROM
+				SY_STANDARD_CATEGORY b with(nolock), CTGR_CTE c
+			WHERE
+				b.UP_STD_CTGR_NO = c.STD_CTGR_NO)
+			SELECT
+				x.STD_CTGR_NO, x.UP_STD_CTGR_NO, x.STD_CTGR_NAME, x.ITEM_CODE, x.INSD_MGMT_INFO_TEXT,
+				x.SORT_SEQ, x.LEVEL, x.USE_YN, x.RGSTER_NO, x.RGST_DTM, x.MODER_NO, x.MOD_DTM, x.LEAF_CTGR_YN,
+<!--
+				x.sabangnet_prdt_attr_text, x.sabangnet_ctgr1_text, x.sabangnet_ctgr2_text, x.sabangnet_ctgr3_text,
+				x.sabangnet_ctgr4_text,
+-->
+				 x.sort, x.name, x.no_path,
+<!-- 			(SELECT y.STD_CTGR_NAME FROM SY_STANDARD_CATEGORY y WHERE y.STD_CTGR_NO = x.UP_STD_CTGR_NO) as UP_STD_CTGR_NAME,
+-->
+				CASE WHEN LEVEL = 1 THEN NULL ELSE DBO.FN_GET_IDXDATA_LIKE_SPLIT(X.NAME, LEVEL - 1, ' > ')  END AS UP_STD_CTGR_NAME,
+<!--
+				(SELECT ADMIN_NAME FROM SY_ADMIN z WHERE z.ADMIN_NO = x.RGSTER_NO) AS RGSTER_NAME,
+ -->
+				RA.ADMIN_NAME AS RGSTER_NAME,
+				RA.LOGIN_ID AS RGSTER_ID,
+				MA.ADMIN_NAME AS MODER_NAME,
+				MA.LOGIN_ID AS MODER_ID
+			FROM CTGR_CTE x
+			LEFT OUTER JOIN SY_ADMIN RA with(nolock) ON X.RGSTER_NO = RA.ADMIN_NO
+			LEFT OUTER JOIN SY_ADMIN MA with(nolock) ON X.MODER_NO = MA.ADMIN_NO
+			<if test="vndrNo != null and vndrNo != ''">
+				INNER JOIN VD_VENDOR_STANDARD_CATEGORY VSC WITH(NOLOCK) ON X.std_ctgr_no = VSC.std_ctgr_no AND VSC.vndr_no=#{vndrNo, jdbcType=VARCHAR}
+			</if>
+			WHERE
+				1 = 1
+				<if test="level != null and level != ''">
+					AND LEVEL = #{level, jdbcType=VARCHAR}
+				</if>
+				<if test="stdCtgrNo != null and stdCtgrNo != ''">
+					AND STD_CTGR_NO = #{stdCtgrNo, jdbcType=VARCHAR}
+				</if>
+				<if test="upStdCtgrNo != null and upStdCtgrNo != ''">
+					AND UP_STD_CTGR_NO = #{upStdCtgrNo, jdbcType=VARCHAR}
+				</if>
+				<if test="useYn != null and useYn != ''">
+					AND x.USE_YN = #{useYn, jdbcType=VARCHAR}
+				</if>
+				<if test="leafCtgrYn != null and leafCtgrYn != ''">
+					AND x.leaf_ctgr_yn = #{leafCtgrYn, jdbcType=VARCHAR}
+				</if>
+				<if test="sabangnetPrdtAttrText != null and sabangnetPrdtAttrText != ''">
+					AND x.sabangnet_prdt_attr_text = #{sabangnetPrdtAttrText, jdbcType=VARCHAR}
+				</if>
+				<if test="sabangnetCtgr1Text != null and sabangnetCtgr1Text != ''">
+					AND x.sabangnet_ctgr1_text = #{sabangnetCtgr1Text, jdbcType=VARCHAR}
+				</if>
+				<if test="sabangnetCtgr2Text != null and sabangnetCtgr2Text != ''">
+					AND x.sabangnet_ctgr2_text = #{sabangnetCtgr2Text, jdbcType=VARCHAR}
+				</if>
+				<if test="sabangnetCtgr3Text != null and sabangnetCtgr3Text != ''">
+					AND x.sabangnet_ctgr3_text = #{sabangnetCtgr3Text, jdbcType=VARCHAR}
+				</if>
+				<if test="sabangnetCtgr4Text != null and sabangnetCtgr4Text != ''">
+					AND x.sabangnet_ctgr4_text = #{sabangnetCtgr4Text, jdbcType=VARCHAR}
+				</if>
+			ORDER BY SORT
+    </select>
+
+    <select id="selectStandardCategory" parameterType="String" resultType="kr.co.abcmart.bo.product.model.master.SyStandardCategory">
+    	/*+ kr.co.abcmart.bo.product.repository.master.SyStandardCategoryDao.selectStandardCategory [표준 카테고리 조회] [이가영]*/
+		WITH CTGR_CTE (STD_CTGR_NO, UP_STD_CTGR_NO, STD_CTGR_NAME, ITEM_CODE, INSD_MGMT_INFO_TEXT,
+						SORT_SEQ, LEVEL, USE_YN, RGSTER_NO, RGST_DTM, MODER_NO, MOD_DTM, LEAF_CTGR_YN,
+<!-- 2019-11-25 양해상 차장 요청으로 샤방넷 관련 데이터 삭제
+						sabangnet_prdt_attr_text, sabangnet_ctgr1_text, sabangnet_ctgr2_text, sabangnet_ctgr3_text,
+						sabangnet_ctgr4_text
+ -->
+						SORT, NAME, NO_PATH)
+		AS (SELECT
+				a.STD_CTGR_NO,
+				a.UP_STD_CTGR_NO,
+				a.STD_CTGR_NAME,
+				a.ITEM_CODE,
+				a.INSD_MGMT_INFO_TEXT,
+				a.SORT_SEQ,
+				1 as LEVEL,
+				a.USE_YN,
+				a.RGSTER_NO,
+				a.RGST_DTM,
+				a.MODER_NO,
+				a.MOD_DTM,
+				a.LEAF_CTGR_YN,
+<!--
+				a.sabangnet_prdt_attr_text,
+				a.sabangnet_ctgr1_text,
+				a.sabangnet_ctgr2_text,
+				a.sabangnet_ctgr3_text,
+				a.sabangnet_ctgr4_text,
+ -->
+				CONVERT(VARCHAR(255), RIGHT('0000' + CONVERT(VARCHAR(4), a.SORT_SEQ), 4)) sort,
+				CONVERT(VARCHAR(255), a.STD_CTGR_NAME) name,
+				CONVERT(VARCHAR(255), a.STD_CTGR_NO) no_path
+			FROM
+				SY_STANDARD_CATEGORY a with (nolock)
+			WHERE
+				UP_STD_CTGR_NO is null OR UP_STD_CTGR_NO = ''
+			UNION ALL
+			SELECT
+				b.STD_CTGR_NO,
+				b.UP_STD_CTGR_NO,
+				b.STD_CTGR_NAME,
+				b.ITEM_CODE,
+				b.INSD_MGMT_INFO_TEXT,
+				b.SORT_SEQ,
+				c.LEVEL + 1 as LEVEL,
+				b.USE_YN,
+				b.RGSTER_NO,
+				b.RGST_DTM,
+				b.MODER_NO,
+				b.MOD_DTM,
+				b.LEAF_CTGR_YN,
+<!--
+				b.sabangnet_prdt_attr_text,
+				b.sabangnet_ctgr1_text,
+				b.sabangnet_ctgr2_text,
+				b.sabangnet_ctgr3_text,
+				b.sabangnet_ctgr4_text,
+ -->
+				CONVERT(VARCHAR(255), c.SORT + ' > ' + RIGHT('0000' + CONVERT(VARCHAR(4), b.SORT_SEQ), 4)) sort,
+				CONVERT(VARCHAR(255), CONVERT(VARCHAR(255), c.name) + ' > ' +  convert(VARCHAR(255), b.STD_CTGR_NAME)) name,
+				CONVERT(VARCHAR(255), CONVERT(VARCHAR(255), c.no_path) + ' > ' +  convert(VARCHAR(255), b.STD_CTGR_NO)) no_path
+			FROM
+				SY_STANDARD_CATEGORY b with (nolock), CTGR_CTE c
+			WHERE
+				b.UP_STD_CTGR_NO = c.STD_CTGR_NO)
+			SELECT
+				x.STD_CTGR_NO, x.UP_STD_CTGR_NO, x.STD_CTGR_NAME, x.ITEM_CODE, x.INSD_MGMT_INFO_TEXT,
+				x.SORT_SEQ, x.LEVEL, x.USE_YN, x.RGSTER_NO, x.RGST_DTM, x.MODER_NO, x.MOD_DTM, x.LEAF_CTGR_YN,
+<!--
+				x.sabangnet_prdt_attr_text, x.sabangnet_ctgr1_text, x.sabangnet_ctgr2_text, x.sabangnet_ctgr3_text,
+				x.sabangnet_ctgr4_text,
+-->
+				 x.sort, x.name, x.no_path,
+<!-- 			(SELECT y.STD_CTGR_NAME FROM SY_STANDARD_CATEGORY y WHERE y.STD_CTGR_NO = x.UP_STD_CTGR_NO) as UP_STD_CTGR_NAME,
+-->
+				CASE WHEN LEVEL = 1 THEN NULL ELSE DBO.FN_GET_IDXDATA_LIKE_SPLIT(X.NAME, LEVEL - 1, ' > ')  END AS UP_STD_CTGR_NAME,
+<!--
+				(SELECT ADMIN_NAME FROM SY_ADMIN z WHERE z.ADMIN_NO = x.RGSTER_NO) AS RGSTER_NAME,
+ -->
+				(SELECT ADMIN_NAME FROM SY_ADMIN z WHERE z.ADMIN_NO = x.MODER_NO) AS MODER_NAME
+			FROM CTGR_CTE x
+			WHERE
+				STD_CTGR_NO = #{stdCtgrNo, jdbcType=VARCHAR}
+    </select>
+
+    <insert id="insertStandardCategory" parameterType="kr.co.abcmart.bo.product.model.master.SyStandardCategory">
+    	/*+ kr.co.abcmart.bo.product.repository.master.SyStandardCategoryDao.insertStandardCategory [표준 카테고리 등록] [이가영]*/
+		<selectKey resultType="String" keyProperty="stdCtgrNo" order="BEFORE">
+			SELECT MAX(STD_CTGR_NO)+1 FROM SY_STANDARD_CATEGORY WITH(NOLOCK)
+		</selectKey>
+			
+		INSERT INTO SY_STANDARD_CATEGORY (
+			STD_CTGR_NO,
+			UP_STD_CTGR_NO,
+			STD_CTGR_NAME,
+			ITEM_CODE,
+			INSD_MGMT_INFO_TEXT,
+			SORT_SEQ,
+			LEAF_CTGR_YN,
+			SABANGNET_CTGR1_TEXT,
+			SABANGNET_CTGR2_TEXT,
+			SABANGNET_CTGR3_TEXT,
+			SABANGNET_CTGR4_TEXT,
+			SABANGNET_PRDT_ATTR_TEXT,
+			USE_YN,
+			RGSTER_NO,
+			RGST_DTM,
+			MODER_NO,
+			MOD_DTM
+		) VALUES (
+			<![CDATA[
+			#{stdCtgrNo, jdbcType=VARCHAR},
+			#{upStdCtgrNo, jdbcType=VARCHAR},
+			#{stdCtgrName, jdbcType=VARCHAR},
+			#{itemCode, jdbcType=VARCHAR},
+			#{insdMgmtInfoText, jdbcType=VARCHAR},
+			]]>
+			<if test="upStdCtgrNo != null">
+			(SELECT ISNULL(MAX(SORT_SEQ)+1, 1) FROM SY_STANDARD_CATEGORY WHERE UP_STD_CTGR_NO = #{upStdCtgrNo, jdbcType=VARCHAR}),
+			</if>
+			<if test="upStdCtgrNo == null">
+			(SELECT ISNULL(MAX(SORT_SEQ)+1, 1) FROM SY_STANDARD_CATEGORY WHERE UP_STD_CTGR_NO IS NULL),
+			</if>
+			<![CDATA[
+			#{leafCtgrYn, jdbcType=CHAR},
+			#{sabangnetCtgr1Text, jdbcType=CHAR},
+			#{sabangnetCtgr2Text, jdbcType=CHAR},
+			#{sabangnetCtgr3Text, jdbcType=CHAR},
+			#{sabangnetCtgr4Text, jdbcType=CHAR},
+			#{sabangnetPrdtAttrText, jdbcType=CHAR},
+			#{useYn, jdbcType=CHAR},
+			#{rgsterNo, jdbcType=VARCHAR},
+			GETDATE(),
+			#{moderNo, jdbcType=VARCHAR},
+			GETDATE()
+			]]>
+		)
+		
+    </insert>
+
+    <update id="updateStandardCategory" parameterType="kr.co.abcmart.bo.product.model.master.SyStandardCategory">
+    /*+ kr.co.abcmart.bo.product.repository.master.SyStandardCategoryDao.updateStandardCategory [표준 카테고리 수정] [이가영] */
+
+		UPDATE SY_STANDARD_CATEGORY
+		<set>
+			<if test="upStdCtgrNo != null">
+				up_std_ctgr_no = #{upStdCtgrNo, jdbcType=VARCHAR},
+			</if>
+			<if test="stdCtgrName != null">
+				std_ctgr_name = #{stdCtgrName, jdbcType=VARCHAR},
+			</if>
+			<if test="insdMgmtInfoText != null">
+				insd_mgmt_info_text = #{insdMgmtInfoText, jdbcType=VARCHAR},
+			</if>
+			<if test="sortSeq != null">
+				sort_seq = #{sortSeq, jdbcType=INTEGER},
+			</if>
+			<if test="useYn != null">
+				use_yn = #{useYn, jdbcType=CHAR},
+			</if>
+			<if test="moderNo != null">
+				moder_no = #{moderNo, jdbcType=VARCHAR},
+			</if>
+
+			<if test="leafCtgrYn != null">
+				leaf_ctgr_yn = #{leafCtgrYn, jdbcType=CHAR},
+			</if>
+<!-- 			<if test="sabangnetPrdtAttrText != null">  -->
+				sabangnet_prdt_attr_text = #{sabangnetPrdtAttrText, jdbcType=VARCHAR},
+<!-- 			</if> -->
+<!-- 			<if test="sabangnetCtgr1Text != null">  -->
+				sabangnet_ctgr1_text = #{sabangnetCtgr1Text, jdbcType=VARCHAR},
+<!-- 			</if> -->
+<!-- 			<if test="sabangnetCtgr2Text != null">  -->
+				sabangnet_ctgr2_text = #{sabangnetCtgr2Text, jdbcType=VARCHAR},
+<!-- 			</if> -->
+<!-- 			<if test="sabangnetCtgr3Text != null">  -->
+				sabangnet_ctgr3_text = #{sabangnetCtgr3Text, jdbcType=VARCHAR},
+<!-- 			</if> -->
+<!-- 			<if test="sabangnetCtgr4Text != null">  -->
+				sabangnet_ctgr4_text = #{sabangnetCtgr4Text, jdbcType=VARCHAR},
+<!-- 			</if> -->
+			item_code = #{itemCode, jdbcType=VARCHAR},
+			mod_dtm = getdate()
+		</set>
+		WHERE
+			 std_ctgr_no = #{stdCtgrNo, jdbcType=VARCHAR}
+    </update>
+
+    <select id="selectStandardCategoryName" parameterType="java.lang.String" resultType="String">
+   	/*+ kr.co.abcmart.bo.product.repository.master.SyStandardCategoryDao.selectStandardCategoryName [표준 카테고리 이름 조회] [변지은] */
+         SELECT
+            A.STD_CTGR_NAME
+          FROM SY_STANDARD_CATEGORY A WITH(NOLOCK)
+          where
+           A.use_yn = 'Y'
+            AND A.STD_CTGR_NO = #{stdCtgrNo, jdbcType=VARCHAR}
+   </select>
+
+	<select id="selectRootByStdCtgrNo" parameterType="java.lang.String" resultType="kr.co.abcmart.bo.product.model.master.SyStandardCategory">
+		/*+ kr.co.abcmart.bo.product.repository.master.SyStandardCategoryDao.selectRootByStdCtgrNo [상품번호에 대한 최상위 표준 카테고리 정보 조회] [김세훈] */
+		WITH ctgr_cte (std_ctgr_no, up_std_ctgr_no, std_ctgr_name, item_code, insd_mgmt_info_text, sort_seq, se_yn, rgster_no, rgst_dtm, moder_no, mod_dtm, leaf_ctgr_yn, sabangnet_prdt_attr_text, sabangnet_ctgr1_text, sabangnet_ctgr2_text, sabangnet_ctgr3_text, sabangnet_ctgr4_text)
+		AS
+		(
+			SELECT
+				a.std_ctgr_no,
+				a.up_std_ctgr_no,
+				a.std_ctgr_name,
+				a.item_code,
+				a.insd_mgmt_info_text,
+				a.sort_seq,
+				a.use_yn,
+				a.rgster_no,
+				a.rgst_dtm,
+				a.moder_no,
+				a.mod_dtm,
+				a.leaf_ctgr_yn,
+				a.sabangnet_prdt_attr_text,
+				a.sabangnet_ctgr1_text,
+				a.sabangnet_ctgr2_text,
+				a.sabangnet_ctgr3_text,
+				a.sabangnet_ctgr4_text
+			FROM
+				sy_standard_category A WITH(NOLOCK)
+			WHERE
+				A.std_ctgr_no = #{stdCtgrNo, jdbcType=VARCHAR}
+			UNION ALL
+			SELECT
+				b.std_ctgr_no,
+				b.up_std_ctgr_no,
+				b.std_ctgr_name,
+				b.item_code,
+				b.insd_mgmt_info_text,
+				b.sort_seq,
+				b.use_yn,
+				b.rgster_no,
+				b.rgst_dtm,
+				b.moder_no,
+				b.mod_dtm,
+				b.leaf_ctgr_yn,
+				b.sabangnet_prdt_attr_text,
+				b.sabangnet_ctgr1_text,
+				b.sabangnet_ctgr2_text,
+				b.sabangnet_ctgr3_text,
+				b.sabangnet_ctgr4_text
+			FROM
+				sy_standard_category B WITH (NOLOCK), ctgr_cte C
+			WHERE
+				C.up_std_ctgr_no = B.std_ctgr_no
+		)
+		SELECT
+			X.std_ctgr_no,
+			X.up_std_ctgr_no,
+			X.std_ctgr_name,
+			X.item_code,
+			X.insd_mgmt_info_text,
+			X.sort_seq,
+			X.se_yn,
+			X.rgster_no,
+			X.rgst_dtm,
+			X.moder_no,
+			X.mod_dtm,
+			X.leaf_ctgr_yn,
+			X.sabangnet_prdt_attr_text,
+			X.sabangnet_ctgr1_text,
+			X.sabangnet_ctgr2_text,
+			X.sabangnet_ctgr3_text,
+			X.sabangnet_ctgr4_text
+		FROM
+			ctgr_cte X
+		WHERE
+			X.up_std_ctgr_no IS NULL
+			OR X.up_std_ctgr_no = ''
+	</select>
+
+</mapper>

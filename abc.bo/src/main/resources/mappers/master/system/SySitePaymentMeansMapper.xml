@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SySitePaymentMeansDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+
+    <resultMap id="paymentResult" type="kr.co.abcmart.bo.system.model.master.SySitePaymentMeans">
+	    <id property="siteNo" column="site_no"/>
+	    <id property="sitePymntMeansSeq" column="site_pymnt_means_seq"/>
+
+	    <result property="memberTypeCode" column="member_type_code"/>
+	    <result property="empYn" column="emp_yn"/>
+	    <result property="orderType" column="order_type"/>
+	    <result property="mainPymntMeansYn" column="main_pymnt_means_yn"/>
+	    <result property="pymntMeansCode" column="pymnt_means_code"/>
+	    <result property="useYn" column="use_yn"/>
+	    <result property="rgstDtm" column="rgst_dtm"/>
+	    <result property="modDtm" column="mod_dtm"/>
+	    <association property="rgster" resultMap="rgsterResultMap"/>
+	    <association property="moder" resultMap="moderResultMap"/>
+	</resultMap>
+
+    <resultMap id="rgsterResultMap" type="kr.co.abcmart.bo.system.model.master.SyAdmin">
+    	<id property="adminNo" column="rgster_no"/>
+     	<result property="loginId" column="rgster_login_id"/>
+     	<result property="adminName" column="rgster_name"/>
+    </resultMap>
+
+    <resultMap id="moderResultMap" type="kr.co.abcmart.bo.system.model.master.SyAdmin">
+     	<id property="adminNo" column="moder_no"/>
+     	<result property="loginId" column="moder_login_id"/>
+     	<result property="adminName" column="moder_name"/>
+    </resultMap>
+
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.system.model.master.SySitePaymentMeans" resultType="kr.co.abcmart.bo.system.model.master.SySitePaymentMeans">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SySitePaymentMeansDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			sy_site_payment_means a with (nolock)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectPaymentBySiteNo" parameterType="kr.co.abcmart.bo.system.model.master.SySitePaymentMeans" resultMap="paymentResult">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SySitePaymentMeansDao.selectPaymentBySiteNo [site_no으로 결제수단 조회] [김영현] */
+
+		SELECT
+			a.site_no
+			, a.site_pymnt_means_seq
+			, a.member_type_code
+			, a.emp_yn
+			, a.order_type
+			, a.main_pymnt_means_yn
+			, a.pymnt_means_code
+			, a.use_yn
+			, a.rgster_no
+			, a.rgst_dtm
+			, a.moder_no
+			, a.mod_dtm
+			, b.admin_no as rgster_no
+			, b.login_id as rgster_login_id
+			, b.admin_name as rgster_name
+			, c.admin_no as moder_no
+			, c.login_id as moder_login_id
+			, c.admin_name as moder_name
+		FROM
+			sy_site_payment_means a with (nolock)
+		LEFT JOIN
+			sy_admin b with (nolock)
+		ON	a.rgster_no = b.admin_no
+		LEFT JOIN
+			sy_admin c with (nolock)
+		ON	a.moder_no = c.admin_no
+		WHERE
+			site_no = #{siteNo, jdbcType=VARCHAR}
+    </select>
+
+    <select id="deleteBySiteNo" parameterType="kr.co.abcmart.bo.system.model.master.SySitePaymentMeans" resultType="kr.co.abcmart.bo.system.model.master.SySitePaymentMeans">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SySitePaymentMeansDao.deleteBySiteNo [site_no으로 결제수단 삭제] [김영현] */
+
+		DELETE
+		FROM
+			sy_site_payment_means
+		WHERE
+			site_no = #{siteNo, jdbcType=VARCHAR}
+    </select>
+
+    <insert id="insertByMeansSeqMax" parameterType="kr.co.abcmart.bo.system.model.master.SySitePaymentMeans">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SySitePaymentMeansDao.insertByMeansSeqMax [site_no으로 결제수단 삭제] [김영현] */
+     	<selectKey keyProperty="sitePymntMeansSeq" resultType="int" order="BEFORE">
+			SELECT
+				ISNULL(MAX(site_pymnt_means_seq), 0)+1 AS sitePymntMeansSeq
+			FROM
+				sy_site_payment_means a
+			 WHERE
+			 	site_no = #{siteNo, jdbcType=VARCHAR}
+		</selectKey>
+
+		INSERT INTO sy_site_payment_means (
+			site_no
+			, site_pymnt_means_seq
+			, member_type_code
+			, emp_yn
+			, order_type
+			, main_pymnt_means_yn
+			, pymnt_means_code
+			, use_yn
+			, rgster_no
+			, rgst_dtm
+			, moder_no
+			, mod_dtm
+		) VALUES (
+			#{siteNo, jdbcType=VARCHAR}
+			, #{sitePymntMeansSeq, jdbcType=INTEGER}
+			, #{memberTypeCode, jdbcType=VARCHAR}
+			, #{empYn, jdbcType=CHAR}
+			, #{orderType, jdbcType=CHAR}
+			, #{mainPymntMeansYn, jdbcType=CHAR}
+			, #{pymntMeansCode, jdbcType=VARCHAR}
+			, #{useYn, jdbcType=CHAR}
+			, #{rgsterNo, jdbcType=VARCHAR}
+			, getdate()
+			, #{moderNo, jdbcType=VARCHAR}
+			, getdate()
+		)
+    </insert>
+
+</mapper>

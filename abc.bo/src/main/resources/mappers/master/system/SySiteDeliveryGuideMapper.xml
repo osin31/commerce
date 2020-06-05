@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SySiteDeliveryGuideDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <resultMap id="guideResult" type="kr.co.abcmart.bo.system.model.master.SySiteDeliveryGuide">
+	    <id property="siteNo" column="site_no"/>
+	    <id property="dlvyGuideBgnCode" column="dlvy_guide_bgn_code"/>
+	    <result property="dlvyGuideInfo" column="dlvy_guide_info"/>
+	    <result property="rgstDtm" column="rgst_dtm"/>
+	    <result property="modDtm" column="mod_dtm"/>
+	    <association property="rgster" resultMap="rgsterResultMap"/>
+	    <association property="moder" resultMap="moderResultMap"/>
+	</resultMap>
+
+    <resultMap id="rgsterResultMap" type="kr.co.abcmart.bo.system.model.master.SyAdmin">
+    	<id property="adminNo" column="rgster_no"/>
+     	<result property="loginId" column="rgster_login_id"/>
+     	<result property="adminName" column="rgster_name"/>
+    </resultMap>
+
+    <resultMap id="moderResultMap" type="kr.co.abcmart.bo.system.model.master.SyAdmin">
+     	<id property="adminNo" column="moder_no"/>
+     	<result property="loginId" column="moder_login_id"/>
+     	<result property="adminName" column="moder_name"/>
+    </resultMap>
+
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.system.model.master.SySiteDeliveryGuide" resultType="kr.co.abcmart.bo.system.model.master.SySiteDeliveryGuide">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteDeliveryGuideDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			sy_site_delivery_guide a with (nolock)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectWithSyAdminByPrimaryKey" parameterType="kr.co.abcmart.bo.system.model.master.SySiteDeliveryGuide" resultMap="guideResult">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteDeliveryGuideDao.selectWithSyAdminByPrimaryKey [기본 PK 조회 쿼리 with sy_admin] [김영현] */
+
+		SELECT
+			a.site_no
+			, a.dlvy_guide_bgn_code
+			, a.dlvy_guide_info
+			, a.rgster_no
+			, a.rgst_dtm
+			, a.moder_no
+			, a.mod_dtm
+			, b.admin_no as rgster_no
+			, b.login_id as rgster_login_id
+			, b.admin_name as rgster_name
+			, c.admin_no as moder_no
+			, c.login_id as moder_login_id
+			, c.admin_name as moder_name
+		FROM
+			sy_site_delivery_guide a with (nolock)
+		LEFT JOIN
+			sy_admin b with (nolock)
+		ON	a.rgster_no = b.admin_no
+		LEFT JOIN
+			sy_admin c with (nolock)
+		ON	a.moder_no = c.admin_no
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <insert id="insertGuide" parameterType="kr.co.abcmart.bo.system.model.master.SySiteDeliveryGuide">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteDeliveryGuideDao.insertGuide [기본 insert 쿼리] [김영현] */
+
+		INSERT INTO sy_site_delivery_guide
+			 ( site_no
+			 , dlvy_guide_bgn_code
+			 , dlvy_guide_info
+			 , rgster_no
+			 , rgst_dtm
+			 , moder_no
+			 , mod_dtm
+		) VALUES (
+			 #{siteNo, jdbcType=VARCHAR}
+			 , #{dlvyGuideBgnCode, jdbcType=VARCHAR}
+			 , #{dlvyGuideInfo, jdbcType=VARCHAR}
+			 , #{rgsterNo, jdbcType=VARCHAR}
+			 , getdate()
+			 , #{moderNo, jdbcType=VARCHAR}
+			 , getdate()
+		)
+    </insert>
+
+    <delete id="deleteBySiteNoAndCode" parameterType="String">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteDeliveryGuideDao.deleteBySiteNoAndCode [site_no, code로 정책 삭제] [김영현] */
+
+		DELETE
+		FROM
+			sy_site_delivery_guide
+		WHERE
+			site_no = #{siteNo, jdbcType=VARCHAR}
+		AND
+			dlvy_guide_bgn_code = #{dlvyGuideBgnCode, jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

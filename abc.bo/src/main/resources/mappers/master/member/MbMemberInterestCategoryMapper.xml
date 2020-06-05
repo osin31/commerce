@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.member.repository.master.MbMemberInterestCategoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.member.model.master.MbMemberInterestCategory">
+    
+     /*+ kr.co.abcmart.bo.member.repository.master.MbMemberInterestCategoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			mb_member_interest_category with (nolock)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    
+    <select id="selectMemberInterestCategory" parameterType="String" resultType="kr.co.abcmart.bo.member.model.master.MbMemberInterestCategory">
+    	/*+ kr.co.abcmart.bo.member.repository.master.MbMemberInterestCategoryDao.selectMemberInterestCategory [회원 카테고리 조회] [이동엽] */
+    	
+    	SELECT A.CTGR_NO
+             , B.CTGR_NAME
+          FROM MB_MEMBER_INTEREST_CATEGORY A WITH (NOLOCK)
+          JOIN DP_CATEGORY B WITH (NOLOCK)
+            ON A.CTGR_NO = B.CTGR_NO
+         WHERE A.MEMBER_NO = #{memberNo} 
+    </select>
+
+</mapper>

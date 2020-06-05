@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.order.repository.master.OcOrderReceiverChangeHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.order.model.master.OcOrderReceiverChangeHistory">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOrderReceiverChangeHistoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			OC_ORDER_RECEIVER_CHANGE_HISTORY
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+
+	<insert id="insertReceiverChangeHistory" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderReceiverChangeHistory">
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOrderReceiverChangeHistoryDao.insertReceiverChangeHistory [주문 수취인변경이력 insert] */
+		<selectKey keyProperty="rcvrChngHistSeq" resultType="short" order="BEFORE">
+			SELECT ISNULL(MAX(RCVR_CHNG_HIST_SEQ) + 1, 1) AS rcvrChngHistSeq
+    		  FROM OC_ORDER_RECEIVER_CHANGE_HISTORY
+    		 WHERE ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+		</selectKey>
+			INSERT INTO OC_ORDER_RECEIVER_CHANGE_HISTORY (
+				   ORDER_NO 
+				 , RCVR_CHNG_HIST_SEQ
+				 , DLVY_TYPE_CODE
+				 , STORE_NO
+				 , STORE_NAME
+				 , STORE_ADD_INFO
+				 , CVNSTR_SEQ
+				 , RCVR_NAME
+				 , RCVR_TEL_NO_TEXT
+				 , RCVR_HDPHN_NO_TEXT
+				 , RCVR_POST_CODE_TEXT
+				 , RCVR_POST_ADDR_TEXT
+				 , RCVR_DTL_ADDR_TEXT
+				 , RGSTER_NO
+				 , RGST_DTM
+			) VALUES (
+				   #{orderNo, jdbcType=VARCHAR }
+				 , #{rcvrChngHistSeq, jdbcType=TINYINT }
+				 , #{dlvyTypeCode, jdbcType=VARCHAR }
+				 , #{storeNo, jdbcType=VARCHAR }
+				 , #{storeName, jdbcType=VARCHAR }
+				 , #{storeAddInfo, jdbcType=VARCHAR }
+				 , #{cvnstrSeq, jdbcType=TINYINT }
+				 , #{rcvrName, jdbcType=VARCHAR }
+				 , #{rcvrTelNoText, jdbcType=VARCHAR }
+				 , #{rcvrHdphnNoText, jdbcType=VARCHAR }
+				 , #{rcvrPostCodeText, jdbcType=VARCHAR }
+				 , #{rcvrPostAddrText, jdbcType=VARCHAR }
+				 , #{rcvrDtlAddrText, jdbcType=VARCHAR }
+				 , #{rgsterNo, jdbcType=VARCHAR }
+				 , GETDATE()
+			)
+	</insert >    
+
+</mapper>

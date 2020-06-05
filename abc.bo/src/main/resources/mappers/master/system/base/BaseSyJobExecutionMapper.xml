@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyJobExecutionDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	job_execution_id, version, job_instance_id, create_time, start_time, end_time, status, exit_code, exit_message, last_updated, job_configuration_location
+    </sql>
+    
+    <sql id="pk-columns">
+    	
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.system.model.master.SyJobExecution" resultType="kr.co.abcmart.bo.system.model.master.SyJobExecution">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyJobExecutionDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			sy_job_execution WITH (NOLOCK)
+
+		<where> 
+			<if test="jobExecutionId != null"> 
+				 job_execution_id = #{jobExecutionId, jdbcType=BIGINT}
+			</if> 
+			<if test="version != null"> 
+				 AND version = #{version, jdbcType=BIGINT}
+			</if> 
+			<if test="jobInstanceId != null"> 
+				 AND job_instance_id = #{jobInstanceId, jdbcType=BIGINT}
+			</if> 
+			<if test="createTime != null"> 
+				 AND create_time = #{createTime, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="startTime != null"> 
+				 AND start_time = #{startTime, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="endTime != null"> 
+				 AND end_time = #{endTime, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="status != null"> 
+				 AND status = #{status, jdbcType=VARCHAR}
+			</if> 
+			<if test="exitCode != null"> 
+				 AND exit_code = #{exitCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="exitMessage != null"> 
+				 AND exit_message = #{exitMessage, jdbcType=VARCHAR}
+			</if> 
+			<if test="lastUpdated != null"> 
+				 AND last_updated = #{lastUpdated, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="jobConfigurationLocation != null"> 
+				 AND job_configuration_location = #{jobConfigurationLocation, jdbcType=VARCHAR}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <insert id="insert" parameterType="kr.co.abcmart.bo.system.model.master.SyJobExecution">	
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SyJobExecutionDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO sy_job_execution
+			 ( job_execution_id, version, job_instance_id, create_time, start_time, end_time, status, exit_code, exit_message, last_updated, job_configuration_location ) 
+
+		VALUES 
+			 ( #{jobExecutionId, jdbcType=BIGINT}, #{version, jdbcType=BIGINT}, #{jobInstanceId, jdbcType=BIGINT}, <choose><when test="createTime != null">#{createTime, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, <choose><when test="startTime != null">#{startTime, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, <choose><when test="endTime != null">#{endTime, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{status, jdbcType=VARCHAR}, #{exitCode, jdbcType=VARCHAR}, #{exitMessage, jdbcType=VARCHAR}, <choose><when test="lastUpdated != null">#{lastUpdated, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{jobConfigurationLocation, jdbcType=VARCHAR} )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.system.model.master.SyJobExecution">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyJobExecutionDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE sy_job_execution
+		<set> 
+			<if test="jobExecutionId != null"> 
+				job_execution_id = #{jobExecutionId, jdbcType=BIGINT}, 
+			</if> 
+			<if test="version != null"> 
+				version = #{version, jdbcType=BIGINT}, 
+			</if> 
+			<if test="jobInstanceId != null"> 
+				job_instance_id = #{jobInstanceId, jdbcType=BIGINT}, 
+			</if> 
+			<if test="createTime != null"> 
+				create_time = #{createTime, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="startTime != null"> 
+				start_time = #{startTime, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="endTime != null"> 
+				end_time = #{endTime, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="status != null"> 
+				status = #{status, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="exitCode != null"> 
+				exit_code = #{exitCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="exitMessage != null"> 
+				exit_message = #{exitMessage, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="lastUpdated != null"> 
+				last_updated = #{lastUpdated, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="jobConfigurationLocation != null"> 
+				job_configuration_location = #{jobConfigurationLocation, jdbcType=VARCHAR}, 
+			</if> 
+		</set> 
+   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.system.model.master.SyJobExecution">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyJobExecutionDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM sy_job_execution
+  
+    </delete>
+</mapper>

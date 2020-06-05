@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyStepExecutionDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	step_execution_id, version, step_name, job_execution_id, start_time, end_time, status, commit_count, read_count, filter_count, write_count, read_skip_count, write_skip_count, process_skip_count, rollback_count, exit_code, exit_message, last_updated
+    </sql>
+    
+    <sql id="pk-columns">
+    	
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.system.model.master.SyStepExecution" resultType="kr.co.abcmart.bo.system.model.master.SyStepExecution">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyStepExecutionDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			sy_step_execution WITH (NOLOCK)
+
+		<where> 
+			<if test="stepExecutionId != null"> 
+				 step_execution_id = #{stepExecutionId, jdbcType=BIGINT}
+			</if> 
+			<if test="version != null"> 
+				 AND version = #{version, jdbcType=BIGINT}
+			</if> 
+			<if test="stepName != null"> 
+				 AND step_name = #{stepName, jdbcType=VARCHAR}
+			</if> 
+			<if test="jobExecutionId != null"> 
+				 AND job_execution_id = #{jobExecutionId, jdbcType=BIGINT}
+			</if> 
+			<if test="startTime != null"> 
+				 AND start_time = #{startTime, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="endTime != null"> 
+				 AND end_time = #{endTime, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="status != null"> 
+				 AND status = #{status, jdbcType=VARCHAR}
+			</if> 
+			<if test="commitCount != null"> 
+				 AND commit_count = #{commitCount, jdbcType=BIGINT}
+			</if> 
+			<if test="readCount != null"> 
+				 AND read_count = #{readCount, jdbcType=BIGINT}
+			</if> 
+			<if test="filterCount != null"> 
+				 AND filter_count = #{filterCount, jdbcType=BIGINT}
+			</if> 
+			<if test="writeCount != null"> 
+				 AND write_count = #{writeCount, jdbcType=BIGINT}
+			</if> 
+			<if test="readSkipCount != null"> 
+				 AND read_skip_count = #{readSkipCount, jdbcType=BIGINT}
+			</if> 
+			<if test="writeSkipCount != null"> 
+				 AND write_skip_count = #{writeSkipCount, jdbcType=BIGINT}
+			</if> 
+			<if test="processSkipCount != null"> 
+				 AND process_skip_count = #{processSkipCount, jdbcType=BIGINT}
+			</if> 
+			<if test="rollbackCount != null"> 
+				 AND rollback_count = #{rollbackCount, jdbcType=BIGINT}
+			</if> 
+			<if test="exitCode != null"> 
+				 AND exit_code = #{exitCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="exitMessage != null"> 
+				 AND exit_message = #{exitMessage, jdbcType=VARCHAR}
+			</if> 
+			<if test="lastUpdated != null"> 
+				 AND last_updated = #{lastUpdated, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <insert id="insert" parameterType="kr.co.abcmart.bo.system.model.master.SyStepExecution">	
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SyStepExecutionDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO sy_step_execution
+			 ( step_execution_id, version, step_name, job_execution_id, start_time, end_time, status, commit_count, read_count, filter_count, write_count, read_skip_count, write_skip_count, process_skip_count, rollback_count, exit_code, exit_message, last_updated ) 
+
+		VALUES 
+			 ( #{stepExecutionId, jdbcType=BIGINT}, #{version, jdbcType=BIGINT}, #{stepName, jdbcType=VARCHAR}, #{jobExecutionId, jdbcType=BIGINT}, <choose><when test="startTime != null">#{startTime, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, <choose><when test="endTime != null">#{endTime, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{status, jdbcType=VARCHAR}, #{commitCount, jdbcType=BIGINT}, #{readCount, jdbcType=BIGINT}, #{filterCount, jdbcType=BIGINT}, #{writeCount, jdbcType=BIGINT}, #{readSkipCount, jdbcType=BIGINT}, #{writeSkipCount, jdbcType=BIGINT}, #{processSkipCount, jdbcType=BIGINT}, #{rollbackCount, jdbcType=BIGINT}, #{exitCode, jdbcType=VARCHAR}, #{exitMessage, jdbcType=VARCHAR}, <choose><when test="lastUpdated != null">#{lastUpdated, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.system.model.master.SyStepExecution">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyStepExecutionDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE sy_step_execution
+		<set> 
+			<if test="stepExecutionId != null"> 
+				step_execution_id = #{stepExecutionId, jdbcType=BIGINT}, 
+			</if> 
+			<if test="version != null"> 
+				version = #{version, jdbcType=BIGINT}, 
+			</if> 
+			<if test="stepName != null"> 
+				step_name = #{stepName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="jobExecutionId != null"> 
+				job_execution_id = #{jobExecutionId, jdbcType=BIGINT}, 
+			</if> 
+			<if test="startTime != null"> 
+				start_time = #{startTime, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="endTime != null"> 
+				end_time = #{endTime, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="status != null"> 
+				status = #{status, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="commitCount != null"> 
+				commit_count = #{commitCount, jdbcType=BIGINT}, 
+			</if> 
+			<if test="readCount != null"> 
+				read_count = #{readCount, jdbcType=BIGINT}, 
+			</if> 
+			<if test="filterCount != null"> 
+				filter_count = #{filterCount, jdbcType=BIGINT}, 
+			</if> 
+			<if test="writeCount != null"> 
+				write_count = #{writeCount, jdbcType=BIGINT}, 
+			</if> 
+			<if test="readSkipCount != null"> 
+				read_skip_count = #{readSkipCount, jdbcType=BIGINT}, 
+			</if> 
+			<if test="writeSkipCount != null"> 
+				write_skip_count = #{writeSkipCount, jdbcType=BIGINT}, 
+			</if> 
+			<if test="processSkipCount != null"> 
+				process_skip_count = #{processSkipCount, jdbcType=BIGINT}, 
+			</if> 
+			<if test="rollbackCount != null"> 
+				rollback_count = #{rollbackCount, jdbcType=BIGINT}, 
+			</if> 
+			<if test="exitCode != null"> 
+				exit_code = #{exitCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="exitMessage != null"> 
+				exit_message = #{exitMessage, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="lastUpdated != null"> 
+				last_updated = #{lastUpdated, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.system.model.master.SyStepExecution">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyStepExecutionDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM sy_step_execution
+  
+    </delete>
+</mapper>

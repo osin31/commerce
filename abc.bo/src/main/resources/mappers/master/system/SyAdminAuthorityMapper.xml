@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyAdminAuthorityDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.system.model.master.SyAdminAuthority" resultType="kr.co.abcmart.bo.system.model.master.SyAdminAuthority">
+		SELECT 
+			 admin_no, auth_no, rgster_name, rgster_no, rgst_dtm
+		FROM 
+			sy_admin_authority with (nolock)
+		WHERE 
+			 admin_no = #{adminNo, jdbcType=VARCHAR} AND auth_no = #{authNo, jdbcType=VARCHAR} 
+    </select>
+
+    <select id="getAdminAuthorities" parameterType="string" resultType="kr.co.abcmart.bo.system.model.master.SyAdminAuthority">
+		SELECT a.auth_no, b.up_auth_no
+		FROM sy_admin_authority a with (nolock)
+	   INNER JOIN sy_authority b with (nolock)
+		  ON a.auth_no = b.auth_no
+		 AND b.use_yn = 'Y'
+	   WHERE a.admin_no = #{adminNo, jdbcType=VARCHAR} 
+    </select>
+    
+    <insert id="insertAdminAuthority" parameterType="kr.co.abcmart.bo.system.model.master.SyAdminAuthority">
+    	/*+ kr.co.abcmart.bo.system.repository.master.SyAdminAuthorityDao.insertAdminAuthority [관리자 권한 등록][이동엽] */
+    	INSERT INTO SY_ADMIN_AUTHORITY(
+    		   ADMIN_NO
+    		 , AUTH_NO
+    		 , RGSTER_NO
+    		 , RGST_DTM
+    	)VALUES(
+    		   #{adminNo, jdbcType=VARCHAR}
+    		 , #{authNo, jdbcType=VARCHAR}
+    		 , #{rgsterNo, jdbcType=VARCHAR}
+    		 , GETDATE()
+    	)
+    	
+    </insert>
+    
+    <update id="updataAdminAuthority" parameterType="kr.co.abcmart.bo.system.model.master.SyAdminAuthority">
+    	/*+ kr.co.abcmart.bo.system.repository.master.SyAdminAuthorityDao.updataAdminAuthority [관리자 권한 수정][이동엽] */
+    	UPDATE SY_ADMIN_AUTHORITY
+    	<trim prefix="SET" prefixOverrides=",">
+    		<if test="authNo != null and authNo != ''">
+    		 , AUTH_NO = #{authNo}
+    		</if>
+    	</trim>
+   		 WHERE ADMIN_NO = #{adminNo}
+    </update>
+
+</mapper>

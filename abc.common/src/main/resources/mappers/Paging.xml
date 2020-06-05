@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Paging">
+
+	<!-- mssql 페이징 처리시 offset사용. -->
+	<sql id="mssql">
+		<if	test="usePage">
+			OFFSET (#{pageNum, jdbcType=NUMERIC} - 1) * #{rowsPerPage, jdbcType=NUMERIC} ROWS
+			FETCH NEXT #{rowsPerPage, jdbcType=NUMERIC} ROWS ONLY		
+		</if>
+	</sql>
+	
+	<!-- 전체 개수 조회 컬럼. -->
+	<sql id="totalCount">
+		count(1) as total_count
+	</sql>
+	
+</mapper>

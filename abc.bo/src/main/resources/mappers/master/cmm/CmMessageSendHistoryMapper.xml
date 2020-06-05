@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.cmm.repository.master.CmMessageSendHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.cmm.model.master.CmMessageSendHistory">
+
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmMessageSendHistoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			artkr_dm.dbo.cm_message_send_history with (nolock)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectMessageSendHistoryListCount" parameterType="pageable" resultType="int" >
+    	/*+ kr.co.abcmart.bo.cmm.repository.master.CmMessageSendHistoryDaoo.selectMessageSendHistoryListCount [메세지 발송이력 리스트 개수 조회][최경호] */
+	    SELECT <include refid="Paging.totalCount" />
+			FROM(
+		    	SELECT A.MESG_SEND_SEQ
+			     	 , A.RGST_DTM
+			     	 , A.SEND_DTM
+			     	 , A.RECV_TEL_NO_TEXT
+			     	 , A.MESG_CONT_TEXT
+				     , A.RGSTER_NO
+				     , A.SITE_NO
+				     , A.RCVR_NAME
+				     , A.ADMIN_SEND_YN
+				     , A.SEND_YN
+		    		 , C.LOGIN_ID AS ADMIN_ID
+				     , ISNULL(B.LEAVE_YN, 'Y') AS LEAVE_YN
+				     , B.LOGIN_ID
+				     , B.MEMBER_NO
+				     , C.ADMIN_NAME
+					FROM artkr_dm.dbo.CM_MESSAGE_SEND_HISTORY A with (nolock)
+				    LEFT OUTER JOIN MB_MEMBER B with (nolock) ON A.MEMBER_NO = B.MEMBER_NO
+				    LEFT OUTER JOIN SY_ADMIN C with (nolock) ON A.RGSTER_NO = C.ADMIN_NO
+				)X
+				INNER JOIN SY_SITE Y with (nolock) ON X.SITE_NO = Y.SITE_NO
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+		<if test="bean.dateSearchType eq 'sendDtm'">
+			AND X.SEND_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+			</if>
+			<if test="bean.dateSearchType eq 'rgstDtm'">
+			AND X.RGST_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+			</if>
+		  	<if test="bean.siteNo != null and bean.siteNo !=''">
+			AND X.SITE_NO = #{bean.siteNo}
+		  	</if>
+		  	<if test="bean.mesgContText != null and bean.mesgContText !=''">
+			AND X.MESG_CONT_TEXT LIKE '%'+ #{bean.mesgContText} +'%'
+		  	</if>
+		  	<if test="bean.adminSendYn != null and bean.adminSendYn !=''">
+			AND X.ADMIN_SEND_YN = #{bean.adminSendYn}
+		  	</if>
+		  	<if test="bean.rcvrSearchText != null and bean.rcvrSearchText != ''">
+		  		<if test="bean.rcvrSearchType eq 'rcvrName'">
+					AND X.RCVR_NAME = #{bean.rcvrSearchText}
+				</if>
+		  		<if test="bean.rcvrSearchType eq 'loginId'">
+					AND X.LOGIN_ID = #{bean.rcvrSearchText}
+				</if>
+		  		<if test="bean.rcvrSearchType eq 'recvTelNoText'">
+					AND X.RECV_TEL_NO_TEXT = #{bean.rcvrSearchText}
+				</if>
+		  	</if>
+			<if test="bean.arrSendYn != null and bean.arrSendYn.length > 0 !=''">
+			AND X.SEND_YN IN
+			 <foreach collection="bean.arrSendYn" item="sendYn" open="(" close=")" separator=",">
+				 #{sendYn}
+			 </foreach>
+		    </if>
+		</trim>
+    </select>
+
+    <select id="selectMessageSendHistoryList" parameterType="pageable" resultType="kr.co.abcmart.bo.cmm.model.master.CmMessageSendHistory">
+    	/*+ kr.co.abcmart.bo.cmm.repository.master.CmMessageSendHistoryDao.selectMessageSendHistoryList [메세지 발송이력 리스트 조회][최경호] */
+		SELECT X.*
+		     , Y.SITE_NAME
+		     , CASE WHEN X.ADMIN_SEND_YN = 'Y' THEN '관리자' ELSE '시스템' END AS ADMIN_SEND_YN_NAME
+			FROM(
+		    	SELECT A.MESG_SEND_SEQ
+				     , A.RGST_DTM
+				     , A.SEND_DTM
+				     , A.RECV_TEL_NO_TEXT
+				     , A.MESG_CONT_TEXT
+				     , A.RGSTER_NO
+				     , A.SITE_NO
+				     , A.RCVR_NAME
+				     , A.ADMIN_SEND_YN
+				     , A.SEND_YN
+		    		 , C.LOGIN_ID AS ADMIN_ID
+				     , ISNULL(B.LEAVE_YN, 'Y') AS LEAVE_YN
+				     , B.LOGIN_ID
+				     , B.MEMBER_NO
+				     , C.ADMIN_NAME
+					FROM artkr_dm.dbo.CM_MESSAGE_SEND_HISTORY A with (nolock)
+				    LEFT OUTER JOIN MB_MEMBER B with (nolock) ON A.MEMBER_NO = B.MEMBER_NO
+				    LEFT OUTER JOIN SY_ADMIN C with (nolock) ON A.RGSTER_NO = C.ADMIN_NO
+				)X
+				INNER JOIN SY_SITE Y with (nolock) ON X.SITE_NO = Y.SITE_NO
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+		<if test="bean.dateSearchType eq 'sendDtm'">
+			AND X.SEND_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+			</if>
+			<if test="bean.dateSearchType eq 'rgstDtm'">
+			AND X.RGST_DTM BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+			</if>
+		  	<if test="bean.siteNo != null and bean.siteNo !=''">
+			AND X.SITE_NO = #{bean.siteNo}
+		  	</if>
+		  	<if test="bean.mesgContText != null and bean.mesgContText !=''">
+			AND X.MESG_CONT_TEXT LIKE '%'+ #{bean.mesgContText} +'%'
+		  	</if>
+		  	<if test="bean.adminSendYn != null and bean.adminSendYn !=''">
+			AND X.ADMIN_SEND_YN = #{bean.adminSendYn}
+		  	</if>
+		  	<if test="bean.rcvrSearchText != null and bean.rcvrSearchText != ''">
+		  		<if test="bean.rcvrSearchType eq 'rcvrName'">
+					AND X.RCVR_NAME = #{bean.rcvrSearchText}
+				</if>
+		  		<if test="bean.rcvrSearchType eq 'loginId'">
+					AND X.LOGIN_ID = #{bean.rcvrSearchText}
+				</if>
+		  		<if test="bean.rcvrSearchType eq 'recvTelNoText'">
+					AND X.RECV_TEL_NO_TEXT = #{bean.rcvrSearchText}
+				</if>
+		  	</if>
+			<if test="bean.arrSendYn != null and bean.arrSendYn.length > 0 !=''">
+			AND X.SEND_YN IN
+			 <foreach collection="bean.arrSendYn" item="sendYn" open="(" close=")" separator=",">
+				 #{sendYn}
+			 </foreach>
+		    </if>
+			<choose>
+				<when test="sortColumn != null">
+				ORDER BY
+					<if test="sortColumn == 'rgstDtm'.toString()">
+			        X.RGST_DTM
+			 		</if>
+					<if test="sortColumn == 'sendDtm'.toString()">
+			        X.SEND_DTM
+			 		</if>
+					<if test="sortType == 'DESC'.toString()">
+			       DESC
+			 		</if>
+				</when>
+				<otherwise>
+			    ORDER BY X.MESG_SEND_SEQ DESC
+				</otherwise>
+			</choose>
+		</trim>
+		<include refid="Paging.mssql" />
+    </select>
+
+    <insert id="insertSendRealTimeSms" parameterType="kr.co.abcmart.bo.cmm.vo.MessageVO">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmMessageSendHistoryDao.insertSendRealTimeSms [SMS 즉시 발송 등록][최경호] */
+	INSERT INTO OPENQUERY(LINK_SMS,
+		  'SELECT REQDATE
+	            , STATUS
+	            , PHONE
+	            , CALLBACK
+	            , MSG
+	         FROM SMS_MSG
+	        WHERE 1 = 0'
+	)VALUES(
+	       GETDATE()
+	     , '1'
+	     , #{recvTelNoText}
+	     , #{sendTelNoText}
+	     , #{mesgContText})
+    </insert>
+
+    <insert id="insertSendRealTimeLms" parameterType="kr.co.abcmart.bo.cmm.vo.MessageVO">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmMessageSendHistoryDao.insertSendRealTimeSms [LMS 즉시 발송 등록][최경호] */
+	INSERT INTO OPENQUERY(LINK_SMS,
+		  'SELECT REQDATE
+	            , STATUS
+	            , PHONE
+	            , CALLBACK
+	            , SUBJECT
+	            , MSG
+				, FILE_TYPE1
+	            , FILE_PATH1
+	            , FILE_CNT
+	         FROM MMS_MSG
+	        WHERE 1 = 0'
+	)VALUES(
+	       GETDATE()
+	     , '1'
+	     , #{recvTelNoText}
+	     , #{sendTelNoText}
+	     , #{mesgTitleText}
+	     , #{mesgContText}
+	     , ''
+	     , ''
+	     , '1')
+    </insert>
+
+    <insert id="insertSendRealTimeKko" parameterType="kr.co.abcmart.bo.cmm.vo.MessageVO">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmMessageSendHistoryDao.insertSendRealTimeKko [KKO 즉시 발송 등록][최경호] */
+	INSERT INTO OPENQUERY(LINK_SMS,
+	      'SELECT REQDATE
+	            , STATUS
+	            , PHONE
+	            , CALLBACK
+	            , MSG
+	            , TEMPLATE_CODE
+	            , FAILED_TYPE
+	            , FAILED_SUBJECT
+	            , FAILED_MSG
+	            , PROFILE_KEY
+	         FROM KKO_MSG
+	        WHERE 1 = 0'
+	)VALUES(
+		   GETDATE()
+		 , '1'
+		 , #{recvTelNoText}
+		 , #{sendTelNoText}
+		 , #{mesgContText}
+		 , #{mesgId}
+		 , #{failedType}
+		 , #{failedSubject}
+		 , #{failedMsg}
+		 , #{profileKey}
+		 )
+    </insert>
+
+	<insert id="insertMessageSendHistory" parameterType="kr.co.abcmart.bo.cmm.model.master.CmMessageSendHistory">
+	/*+ kr.co.abcmart.bo.cmm.repository.master.CmMessageSendHistoryDao.insertMessageSendHistory [메세지 히스트 테이블 등록][최경호] */
+		INSERT INTO artkr_dm.dbo.cm_message_send_history
+			 ( send_tel_no_text, sndr_name, recv_tel_no_text, rcvr_name, mesg_title_text, mesg_cont_text, send_type_code, send_yn, send_dtm, resend_type_code, resend_mesg_cont_text, rsv_send_dtm, site_no, mesg_tmpl_seq, member_no, order_no, order_prdt_seq, cnsl_script_seq, mesg_id, admin_send_yn, rgster_no, rgst_dtm )
+		VALUES
+			 ( #{sendTelNoText, jdbcType=VARCHAR}, #{sndrName, jdbcType=VARCHAR}, #{recvTelNoText, jdbcType=VARCHAR}, #{rcvrName, jdbcType=VARCHAR}, #{mesgTitleText, jdbcType=VARCHAR}, #{mesgContText, jdbcType=VARCHAR}, #{sendTypeCode, jdbcType=VARCHAR}, #{sendYn, jdbcType=CHAR}, <choose><when test="sendYn eq 'Y'.toString()">GETDATE()</when><otherwise>NULL</otherwise></choose>, #{resendTypeCode, jdbcType=VARCHAR}, #{resendMesgContText, jdbcType=VARCHAR}, NULL, #{siteNo, jdbcType=VARCHAR}, #{mesgTmplSeq, jdbcType=INTEGER}, #{memberNo, jdbcType=VARCHAR}, #{orderNo, jdbcType=VARCHAR}, #{orderPrdtSeq, jdbcType=INTEGER}, #{cnslScriptSeq, jdbcType=VARCHAR}, #{mesgId, jdbcType=VARCHAR}, #{adminSendYn, jdbcType=CHAR}, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )
+    </insert>
+</mapper>

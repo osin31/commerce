@@ -1,0 +1,763 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.stats.repository.master.MemberStatsDao">
+	<select id="selectTodayJoinList" parameterType="kr.co.abcmart.bo.stats.vo.MemberStatsVO"  resultType="kr.co.abcmart.bo.stats.vo.MemberStatsVO">
+	/*+ kr.co.abcmart.bo.stats.repository.master.MemberStatsDao.selectTodayJoinList [당일 회원가입 리스트 조회 쿼리] [최경호] */
+	WITH AllTime AS (
+	      SELECT 0 AS JOIN_DTM, CONCAT(FORMAT(0, '00'), '~', FORMAT(1, '00'), '시') AS DTM_TITLE
+	       UNION ALL
+	      SELECT JOIN_DTM + 1, CONCAT(FORMAT(JOIN_DTM+1, '00'), '~', FORMAT(JOIN_DTM+2, '00'), '시') AS DTM_TITLE
+	        FROM AllTime
+	       WHERE JOIN_DTM <![CDATA[<]]> 23
+	), SearchData AS (
+	      SELECT DATEPART(HH, JOIN_DTM) AS JOIN_DTM
+	           , CASE WHEN MEMBER_TYPE_CODE = '10000' AND GENDER_TYPE = 'M' THEN 1 ELSE 0 END OMEN
+	           , CASE WHEN MEMBER_TYPE_CODE = '10000' AND GENDER_TYPE = 'F' THEN 1 ELSE 0 END OFEMALE
+	           , CASE WHEN MEMBER_TYPE_CODE = '10000' AND GENDER_TYPE IS NULL THEN 1 ELSE 0 END OETC
+	           , CASE WHEN MEMBER_TYPE_CODE = '10000' THEN 1 ELSE 0 END OTOT
+	           , CASE WHEN MEMBER_TYPE_CODE = '10001' AND GENDER_TYPE = 'M' THEN 1 ELSE 0 END MMEN
+	           , CASE WHEN MEMBER_TYPE_CODE = '10001' AND GENDER_TYPE = 'F' THEN 1 ELSE 0 END MFEMALE
+	           , CASE WHEN MEMBER_TYPE_CODE = '10001' THEN 1 ELSE 0 END MTOT
+	           , 0 MCMEN
+	           , 0 MCFEMALE
+	           , 0 MCTOT
+	        FROM MB_MEMBER with(nolock)
+	       WHERE LEAVE_YN = 'N'
+	         AND JOIN_DTM <![CDATA[>=]]> CONVERT(DATETIME, CONVERT(CHAR(8), getDate(), 112))
+	         <if test="deviceTypeCodeArr != null and deviceTypeCodeArr != ''">
+		         AND DEVICE_CODE IN
+		         <foreach item="item" index="index" collection="deviceTypeCodeArr" open="(" close=")" separator="," >
+		         #{item}
+		         </foreach>
+	         </if>
+	       UNION ALL
+	      SELECT DATEPART(HH, MBSHP_CNVRT_DTM) AS JOIN_DTM
+	           , 0 OMEN
+	           , 0 OFEMALE
+	           , 0 OETC
+	           , 0 OTOT
+	           , 0 MMEN
+	           , 0 MFEMALE
+	           , 0 MTOT
+	           , CASE WHEN MEMBER_TYPE_CODE = '10001' AND GENDER_TYPE = 'M' THEN 1 ELSE 0 END MCMEN
+	           , CASE WHEN MEMBER_TYPE_CODE = '10001' AND GENDER_TYPE = 'F' THEN 1 ELSE 0 END MCFEMALE
+	           , CASE WHEN MEMBER_TYPE_CODE = '10001' THEN 1 ELSE 0 END MCTOT
+	        FROM MB_MEMBER with(nolock)
+	       WHERE LEAVE_YN = 'N'
+	         AND MBSHP_CNVRT_DTM <![CDATA[>=]]> CONVERT(DATETIME, CONVERT(CHAR(8), getDate(), 112)) 
+	         <if test="deviceTypeCodeArr != null and deviceTypeCodeArr != ''">
+		         AND DEVICE_CODE IN
+		         <foreach item="item" index="index" collection="deviceTypeCodeArr" open="(" close=")" separator="," >
+		         #{item}
+		         </foreach>
+	         </if>
+	)
+	SELECT *
+        FROM(
+			SELECT '합계' AS TITLE
+			     , ISNULL(SUM(V.OTOT + V.MTOT + V.MCTOT),0) AS TOTAL
+			     , ISNULL(SUM(V.OTOT),0) AS TOTOT
+			     , ISNULL(SUM(V.OMEN),0) AS TOMEN
+			     , ISNULL(SUM(V.OFEMALE),0) AS TOFEMALE
+			     , ISNULL(SUM(V.OETC),0) AS TOETC
+			     , ISNULL(SUM(V.MMEN),0) AS TMMEN
+			     , ISNULL(SUM(V.MFEMALE),0) AS TMFEMALE
+			     , ISNULL(SUM(V.MTOT),0) AS TMTOT
+			     , ISNULL(SUM(V.MCMEN),0) AS TMCMEN
+			     , ISNULL(SUM(V.MCFEMALE),0) AS TMCFEMALE
+			     , ISNULL(SUM(V.MCTOT),0) AS TMCTOT
+			  FROM SearchData V with(nolock)
+				<trim prefix="WHERE" prefixOverrides="AND|OR">
+			  		<if test="startHour != null and startHour != '' and endHour != null and endHour != ''">
+			        V.JOIN_DTM BETWEEN #{startHour} AND #{endHour}
+			  		</if>
+				</trim>
+			 UNION ALL
+			SELECT A.DTM_TITLE AS TITLE
+			     , ISNULL(SUM(V.OTOT + V.MTOT + V.MCTOT),0) AS TOTAL
+			     , ISNULL(SUM(V.OTOT),0) AS TOTOT
+			     , ISNULL(SUM(V.OMEN),0) AS TOMEN
+			     , ISNULL(SUM(V.OFEMALE),0) AS TOFEMALE
+			     , ISNULL(SUM(V.OETC),0) AS TOETC
+			     , ISNULL(SUM(V.MMEN),0) AS TMMEN
+			     , ISNULL(SUM(V.MFEMALE),0) AS TMFEMALE
+			     , ISNULL(SUM(V.MTOT),0) AS TMTOT
+			     , ISNULL(SUM(V.MCMEN),0) AS TMCMEN
+			     , ISNULL(SUM(V.MCFEMALE),0) AS TMCFEMALE
+			     , ISNULL(SUM(V.MCTOT),0) AS TMCTOT
+			  FROM SearchData V with(nolock) RIGHT OUTER JOIN AllTime A with(nolock) ON V.JOIN_DTM = A.JOIN_DTM
+				<trim prefix="WHERE" prefixOverrides="AND|OR">
+			  		<if test="startHour != null and startHour != '' and endHour != null and endHour != ''">
+			        V.JOIN_DTM BETWEEN #{startHour} AND #{endHour}
+			  		</if>
+				</trim>
+			 GROUP BY A.DTM_TITLE
+	 		)A
+     ORDER BY (CASE A.TITLE WHEN '합계' THEN NULL ELSE A.TITLE END) ASC
+	</select>
+
+	<select id="selectMemberJoinListCount" parameterType="kr.co.abcmart.bo.stats.model.master.SaMemberJoinStatus"  resultType="int">
+	/*+ kr.co.abcmart.bo.stats.repository.master.MemberStatsDao.selectMemberJoinListCount [회원가입 리스트 조회 카운트 쿼리] [최경호] */
+	SELECT <include refid="Paging.totalCount" />
+	    FROM(
+	        SELECT <if test="bean.periodType == 'day'">
+               	   CONCAT(A.JOIN_DAY, '(', A.DOTW_NAME, ')') AS DATE_INFO
+               	   </if>
+               	   <if test="bean.periodType == 'month'">
+               	   CONVERT(VARCHAR(6), A.JOIN_DAY , 112) AS DATE_INFO
+               	   </if>
+               	   <if test="bean.periodType == 'year'">
+               	   CONVERT(VARCHAR(4), A.JOIN_DAY , 112) AS DATE_INFO
+               	   </if>
+	            FROM SA_MEMBER_JOIN_STATUS A with(nolock)
+	          WHERE A.STATUS_GBN_TYPE = 'J'
+				<if test="bean.deviceTypeCodeArr != null and bean.deviceTypeCodeArr != ''">
+			          AND DEVICE_CODE IN
+			         <foreach item="item" index="index" collection="bean.deviceTypeCodeArr" open="(" close=")" separator="," >
+			         #{item}
+			         </foreach>
+		         	</if>
+		         	<if test="bean.periodType == 'day'">
+		         	 AND A.JOIN_DAY BETWEEN CONVERT(DATE, CONCAT(#{bean.fromDate}, ' 00:00:00')) AND CONVERT(DATE, CONCAT(#{bean.toDate}, ' 23:59:59'))
+	                 GROUP BY A.JOIN_DAY, A.DOTW_NAME
+		         	</if>
+		         	<if test="bean.periodType == 'month'">
+		         	 AND CONVERT(VARCHAR(6), A.JOIN_DAY , 112) BETWEEN #{bean.periodMonthStart} AND #{bean.periodMonthEnd}
+		         	 GROUP BY CONVERT(VARCHAR(6), A.JOIN_DAY , 112) -- 월별
+		         	</if>
+		         	<if test="bean.periodType == 'year'">
+		         	 AND CONVERT(VARCHAR(4), A.JOIN_DAY , 112) BETWEEN #{bean.periodYearStart} AND #{bean.periodYearEnd}
+		         	 GROUP BY CONVERT(VARCHAR(4), A.JOIN_DAY , 112) -- 년별
+		         	</if>
+	        )X
+	</select>
+
+	<select id="selectMemberAgeJoinListCount" parameterType="kr.co.abcmart.bo.stats.model.master.SaMemberJoinStatus"  resultType="int">
+	/*+ kr.co.abcmart.bo.stats.repository.master.MemberStatsDao.selectMemberAgeJoinListCount [회원가입 연령별 리스트 조회 카운트 쿼리] [최경호] */
+	SELECT <include refid="Paging.totalCount" />
+	    FROM(
+	        SELECT <if test="bean.periodType == 'day'">
+               	   CONCAT(A.JOIN_DAY, '(', A.DOTW_NAME, ')') AS DATE_INFO
+               	   </if>
+               	   <if test="bean.periodType == 'month'">
+               	   CONVERT(VARCHAR(6), A.JOIN_DAY , 112) AS DATE_INFO
+               	   </if>
+               	   <if test="bean.periodType == 'year'">
+               	   CONVERT(VARCHAR(4), A.JOIN_DAY , 112) AS DATE_INFO
+               	   </if>
+	            FROM SA_MEMBER_JOIN_STATUS A with(nolock)
+	          WHERE A.STATUS_GBN_TYPE = 'A'
+				<if test="bean.deviceTypeCodeArr != null and bean.deviceTypeCodeArr != ''">
+			          AND DEVICE_CODE IN
+			         <foreach item="item" index="index" collection="bean.deviceTypeCodeArr" open="(" close=")" separator="," >
+			         #{item}
+			         </foreach>
+		         	</if>
+		         	<if test="bean.periodType == 'day'">
+		         	 AND A.JOIN_DAY BETWEEN CONVERT(DATE, CONCAT(#{bean.fromDate}, ' 00:00:00')) AND CONVERT(DATE, CONCAT(#{bean.toDate}, ' 23:59:59'))
+	                 GROUP BY A.JOIN_DAY, A.DOTW_NAME
+		         	</if>
+		         	<if test="bean.periodType == 'month'">
+		         	 AND CONVERT(VARCHAR(6), A.JOIN_DAY , 112) BETWEEN #{bean.periodMonthStart} AND #{bean.periodMonthEnd}
+		         	 GROUP BY CONVERT(VARCHAR(6), A.JOIN_DAY , 112) -- 월별
+		         	</if>
+		         	<if test="bean.periodType == 'year'">
+		         	 AND CONVERT(VARCHAR(4), A.JOIN_DAY , 112) BETWEEN #{bean.periodYearStart} AND #{bean.periodYearEnd}
+		         	 GROUP BY CONVERT(VARCHAR(4), A.JOIN_DAY , 112) -- 년별
+					</if>
+	        )X
+	</select>
+
+	<select id="selectMemberJoinList" parameterType="pageable"  resultType="kr.co.abcmart.bo.stats.model.master.SaMemberJoinStatus">
+	/*+ kr.co.abcmart.bo.stats.repository.master.MemberStatsDao.selectMemberJoinList [회원가입 리스트 조회 쿼리] [최경호] */
+	SELECT *
+	    FROM(
+	    	<if test='page.pageNum == 1'>
+	        SELECT '합계' AS DATE_INFO
+	            , ISNULL(SUM(A.STATUS_FIELD4_COUNT+STATUS_FIELD7_COUNT+STATUS_FIELD10_COUNT),0) AS TOTAL_CNT
+	            , ISNULL(SUM(A.STATUS_FIELD4_COUNT),0) AS STATUS_FIELD4_COUNT
+	            , ISNULL(SUM(A.STATUS_FIELD1_COUNT),0) AS STATUS_FIELD1_COUNT
+	            , ISNULL(SUM(A.STATUS_FIELD2_COUNT),0) AS STATUS_FIELD2_COUNT
+	            , ISNULL(SUM(A.STATUS_FIELD3_COUNT),0) AS STATUS_FIELD3_COUNT
+	            , ISNULL(SUM(A.STATUS_FIELD7_COUNT),0) AS STATUS_FIELD7_COUNT
+	            , ISNULL(SUM(A.STATUS_FIELD5_COUNT),0) AS STATUS_FIELD5_COUNT
+	            , ISNULL(SUM(A.STATUS_FIELD6_COUNT),0) AS STATUS_FIELD6_COUNT
+	            , ISNULL(SUM(A.STATUS_FIELD10_COUNT),0) AS STATUS_FIELD10_COUNT
+	            , ISNULL(SUM(A.STATUS_FIELD8_COUNT),0) AS STATUS_FIELD8_COUNT
+	            , ISNULL(SUM(A.STATUS_FIELD9_COUNT),0) AS STATUS_FIELD9_COUNT
+	            FROM SA_MEMBER_JOIN_STATUS A with(nolock)
+	          WHERE A.STATUS_GBN_TYPE = 'J'
+				<if test="bean.deviceTypeCodeArr != null and bean.deviceTypeCodeArr != ''">
+		          AND DEVICE_CODE IN
+		         <foreach item="item" index="index" collection="bean.deviceTypeCodeArr" open="(" close=")" separator="," >
+		         #{item}
+		         </foreach>
+	         	</if>
+	         	<if test="bean.periodType == 'day'">
+	         	 AND A.JOIN_DAY BETWEEN CONVERT(DATE, CONCAT(#{bean.fromDate}, ' 00:00:00')) AND CONVERT(DATE, CONCAT(#{bean.toDate}, ' 23:59:59'))
+	         	</if>
+	         	<if test="bean.periodType == 'month'">
+	         	 AND CONVERT(VARCHAR(6), A.JOIN_DAY , 112) BETWEEN #{bean.periodMonthStart} AND #{bean.periodMonthEnd}
+	         	</if>
+	         	<if test="bean.periodType == 'year'">
+	         	 AND CONVERT(VARCHAR(4), A.JOIN_DAY , 112) BETWEEN #{bean.periodYearStart} AND #{bean.periodYearEnd}
+	         	</if>
+	        GROUP BY A.STATUS_GBN_TYPE
+	        UNION ALL
+	        </if>
+	        SELECT *
+	            FROM(
+	                SELECT <if test="bean.periodType == 'day'">
+	                	   CONCAT(A.JOIN_DAY, '(', A.DOTW_NAME, ')') AS DATE_INFO
+	                	   </if>
+	                	   <if test="bean.periodType == 'month'">
+	                	   CONVERT(VARCHAR(6), A.JOIN_DAY , 112) AS DATE_INFO
+	                	   </if>
+	                	   <if test="bean.periodType == 'year'">
+	                	   CONVERT(VARCHAR(4), A.JOIN_DAY , 112) AS DATE_INFO
+	                	   </if>
+	                    , ISNULL(SUM(A.STATUS_FIELD4_COUNT+STATUS_FIELD7_COUNT+STATUS_FIELD10_COUNT),0) AS TOTAL_CNT
+	                    , ISNULL(SUM(A.STATUS_FIELD4_COUNT),0) AS STATUS_FIELD4_COUNT
+	                    , ISNULL(SUM(A.STATUS_FIELD1_COUNT),0) AS STATUS_FIELD1_COUNT
+	                    , ISNULL(SUM(A.STATUS_FIELD2_COUNT),0) AS STATUS_FIELD2_COUNT
+	                    , ISNULL(SUM(A.STATUS_FIELD3_COUNT),0) AS STATUS_FIELD3_COUNT
+	                    , ISNULL(SUM(A.STATUS_FIELD7_COUNT),0) AS STATUS_FIELD7_COUNT
+	                    , ISNULL(SUM(A.STATUS_FIELD5_COUNT),0) AS STATUS_FIELD5_COUNT
+	                    , ISNULL(SUM(A.STATUS_FIELD6_COUNT),0) AS STATUS_FIELD6_COUNT
+	                    , ISNULL(SUM(A.STATUS_FIELD10_COUNT),0) AS STATUS_FIELD10_COUNT
+	                    , ISNULL(SUM(A.STATUS_FIELD8_COUNT),0) AS STATUS_FIELD8_COUNT
+	                    , ISNULL(SUM(A.STATUS_FIELD9_COUNT),0) AS STATUS_FIELD9_COUNT
+	                    FROM SA_MEMBER_JOIN_STATUS A with(nolock)
+	                  WHERE A.STATUS_GBN_TYPE = 'J'
+						<if test="bean.deviceTypeCodeArr != null and bean.deviceTypeCodeArr != ''">
+				          AND DEVICE_CODE IN
+				         <foreach item="item" index="index" collection="bean.deviceTypeCodeArr" open="(" close=")" separator="," >
+				         #{item}
+				         </foreach>
+			         	</if>
+			         	<if test="bean.periodType == 'day'">
+			         	 AND A.JOIN_DAY BETWEEN CONVERT(DATE, CONCAT(#{bean.fromDate}, ' 00:00:00')) AND CONVERT(DATE, CONCAT(#{bean.toDate}, ' 23:59:59'))
+		                 GROUP BY A.JOIN_DAY, A.DOTW_NAME
+		                    <if	test="usePage">
+		                    ORDER BY JOIN_DAY DESC
+		                    </if>
+			         	</if>
+			         	<if test="bean.periodType == 'month'">
+			         	 AND CONVERT(VARCHAR(6), A.JOIN_DAY , 112) BETWEEN #{bean.periodMonthStart} AND #{bean.periodMonthEnd}
+			         	 GROUP BY CONVERT(VARCHAR(6), A.JOIN_DAY , 112) -- 월별
+			         	    <if test="usePage">
+		                    ORDER BY CONVERT(VARCHAR(6), A.JOIN_DAY , 112) DESC
+		                    </if>
+			         	</if>
+			         	<if test="bean.periodType == 'year'">
+			         	 AND CONVERT(VARCHAR(4), A.JOIN_DAY , 112) BETWEEN #{bean.periodYearStart} AND #{bean.periodYearEnd}
+			         	 GROUP BY CONVERT(VARCHAR(4), A.JOIN_DAY , 112) -- 년별
+			         	    <if test="usePage">
+		                    ORDER BY CONVERT(VARCHAR(4), A.JOIN_DAY , 112) DESC
+		                    </if>
+			         	</if>
+	                <include refid="Paging.mssql" />
+	                )X
+	        )Y
+	--ORDER BY(CASE Y.DATE_INFO WHEN '합계' THEN NULL ELSE Y.DATE_INFO END )ASC
+	</select>
+
+	<select id="selectMemberAgeJoinList" parameterType="pageable"  resultType="kr.co.abcmart.bo.stats.model.master.SaMemberJoinStatus">
+	/*+ kr.co.abcmart.bo.stats.repository.master.MemberStatsDao.selectMemberAgeJoinList [회원가입 연령별 리스트 조회 쿼리] [최경호] */
+	SELECT *
+	    FROM(
+	    	<if test='page.pageNum == 1'>
+	        SELECT '합계' AS DATE_INFO
+	             , ISNULL(SUM(STATUS_FIELD1_COUNT + STATUS_FIELD3_COUNT + STATUS_FIELD5_COUNT + STATUS_FIELD7_COUNT + STATUS_FIELD9_COUNT + STATUS_FIELD11_COUNT+STATUS_FIELD13_COUNT+STATUS_FIELD15_COUNT),0) AS TOTMALE
+                 , ISNULL(SUM(STATUS_FIELD2_COUNT+STATUS_FIELD4_COUNT+STATUS_FIELD6_COUNT+STATUS_FIELD8_COUNT+STATUS_FIELD10_COUNT+STATUS_FIELD12_COUNT+STATUS_FIELD14_COUNT+STATUS_FIELD16_COUNT), 0) AS TOTFEMALE
+                 , ISNULL(SUM(A.STATUS_FIELD1_COUNT),0) AS STATUS_FIELD1_COUNT
+                 , ISNULL(SUM(A.STATUS_FIELD2_COUNT),0) AS STATUS_FIELD2_COUNT
+                 , ISNULL(SUM(A.STATUS_FIELD3_COUNT),0) AS STATUS_FIELD3_COUNT
+                 , ISNULL(SUM(A.STATUS_FIELD4_COUNT),0) AS STATUS_FIELD4_COUNT
+                 , ISNULL(SUM(A.STATUS_FIELD5_COUNT),0) AS STATUS_FIELD5_COUNT
+                 , ISNULL(SUM(A.STATUS_FIELD6_COUNT),0) AS STATUS_FIELD6_COUNT
+                 , ISNULL(SUM(A.STATUS_FIELD7_COUNT),0) AS STATUS_FIELD7_COUNT
+                 , ISNULL(SUM(A.STATUS_FIELD8_COUNT),0) AS STATUS_FIELD8_COUNT
+                 , ISNULL(SUM(A.STATUS_FIELD9_COUNT),0) AS STATUS_FIELD9_COUNT
+                 , ISNULL(SUM(A.STATUS_FIELD10_COUNT),0) AS STATUS_FIELD10_COUNT
+                 , ISNULL(SUM(A.STATUS_FIELD11_COUNT),0) AS STATUS_FIELD11_COUNT
+                 , ISNULL(SUM(A.STATUS_FIELD12_COUNT),0) AS STATUS_FIELD12_COUNT
+                 , ISNULL(SUM(A.STATUS_FIELD13_COUNT),0) AS STATUS_FIELD13_COUNT
+                 , ISNULL(SUM(A.STATUS_FIELD14_COUNT),0) AS STATUS_FIELD14_COUNT
+                 , ISNULL(SUM(A.STATUS_FIELD15_COUNT),0) AS STATUS_FIELD15_COUNT
+                 , ISNULL(SUM(A.STATUS_FIELD16_COUNT),0) AS STATUS_FIELD16_COUNT
+	            FROM SA_MEMBER_JOIN_STATUS A with(nolock)
+	          WHERE A.STATUS_GBN_TYPE = 'A'
+				<if test="bean.deviceTypeCodeArr != null and bean.deviceTypeCodeArr != ''">
+		          AND DEVICE_CODE IN
+		         <foreach item="item" index="index" collection="bean.deviceTypeCodeArr" open="(" close=")" separator="," >
+		         #{item}
+		         </foreach>
+	         	</if>
+	         	<if test="bean.periodType == 'day'">
+	         	 AND A.JOIN_DAY BETWEEN CONVERT(DATE, CONCAT(#{bean.fromDate}, ' 00:00:00')) AND CONVERT(DATE, CONCAT(#{bean.toDate}, ' 23:59:59'))
+	         	</if>
+	         	<if test="bean.periodType == 'month'">
+	         	 AND CONVERT(VARCHAR(6), A.JOIN_DAY , 112) BETWEEN #{bean.periodMonthStart} AND #{bean.periodMonthEnd}
+	         	</if>
+	         	<if test="bean.periodType == 'year'">
+	         	 AND CONVERT(VARCHAR(4), A.JOIN_DAY , 112) BETWEEN #{bean.periodYearStart} AND #{bean.periodYearEnd}
+	         	</if>
+	        GROUP BY A.STATUS_GBN_TYPE
+	        UNION ALL
+	        </if>
+	        SELECT *
+	            FROM(
+	                SELECT <if test="bean.periodType == 'day'">
+	                	   CONCAT(A.JOIN_DAY, '(', A.DOTW_NAME, ')') AS DATE_INFO
+	                	   </if>
+	                	   <if test="bean.periodType == 'month'">
+	                	   CONVERT(VARCHAR(6), A.JOIN_DAY , 112) AS DATE_INFO
+	                	   </if>
+	                	   <if test="bean.periodType == 'year'">
+	                	   CONVERT(VARCHAR(4), A.JOIN_DAY , 112) AS DATE_INFO
+	                	   </if>
+	                     , ISNULL(SUM(STATUS_FIELD1_COUNT + STATUS_FIELD3_COUNT + STATUS_FIELD5_COUNT + STATUS_FIELD7_COUNT + STATUS_FIELD9_COUNT + STATUS_FIELD11_COUNT+STATUS_FIELD13_COUNT+STATUS_FIELD15_COUNT),0) AS TOTMALE
+                         , ISNULL(SUM(STATUS_FIELD2_COUNT+STATUS_FIELD4_COUNT+STATUS_FIELD6_COUNT+STATUS_FIELD8_COUNT+STATUS_FIELD10_COUNT+STATUS_FIELD12_COUNT+STATUS_FIELD14_COUNT+STATUS_FIELD16_COUNT), 0) AS TOTFEMALE
+                         , ISNULL(SUM(A.STATUS_FIELD1_COUNT),0) AS STATUS_FIELD1_COUNT
+                         , ISNULL(SUM(A.STATUS_FIELD2_COUNT),0) AS STATUS_FIELD2_COUNT
+                         , ISNULL(SUM(A.STATUS_FIELD3_COUNT),0) AS STATUS_FIELD3_COUNT
+                         , ISNULL(SUM(A.STATUS_FIELD4_COUNT),0) AS STATUS_FIELD4_COUNT
+                         , ISNULL(SUM(A.STATUS_FIELD5_COUNT),0) AS STATUS_FIELD5_COUNT
+                         , ISNULL(SUM(A.STATUS_FIELD6_COUNT),0) AS STATUS_FIELD6_COUNT
+                         , ISNULL(SUM(A.STATUS_FIELD7_COUNT),0) AS STATUS_FIELD7_COUNT
+                         , ISNULL(SUM(A.STATUS_FIELD8_COUNT),0) AS STATUS_FIELD8_COUNT
+                         , ISNULL(SUM(A.STATUS_FIELD9_COUNT),0) AS STATUS_FIELD9_COUNT
+                         , ISNULL(SUM(A.STATUS_FIELD10_COUNT),0) AS STATUS_FIELD10_COUNT
+                         , ISNULL(SUM(A.STATUS_FIELD11_COUNT),0) AS STATUS_FIELD11_COUNT
+                         , ISNULL(SUM(A.STATUS_FIELD12_COUNT),0) AS STATUS_FIELD12_COUNT
+                         , ISNULL(SUM(A.STATUS_FIELD13_COUNT),0) AS STATUS_FIELD13_COUNT
+                         , ISNULL(SUM(A.STATUS_FIELD14_COUNT),0) AS STATUS_FIELD14_COUNT
+                         , ISNULL(SUM(A.STATUS_FIELD15_COUNT),0) AS STATUS_FIELD15_COUNT
+                         , ISNULL(SUM(A.STATUS_FIELD16_COUNT),0) AS STATUS_FIELD16_COUNT
+	                    FROM SA_MEMBER_JOIN_STATUS A with(nolock)
+	                  WHERE A.STATUS_GBN_TYPE = 'A'
+						<if test="bean.deviceTypeCodeArr != null and bean.deviceTypeCodeArr != ''">
+				          AND DEVICE_CODE IN
+				         <foreach item="item" index="index" collection="bean.deviceTypeCodeArr" open="(" close=")" separator="," >
+				         #{item}
+				         </foreach>
+			         	</if>
+			         	<if test="bean.periodType == 'day'">
+			         	 AND A.JOIN_DAY BETWEEN CONVERT(DATE, CONCAT(#{bean.fromDate}, ' 00:00:00')) AND CONVERT(DATE, CONCAT(#{bean.toDate}, ' 23:59:59'))
+		                 GROUP BY A.JOIN_DAY, A.DOTW_NAME
+		                    <if	test="usePage">
+		                    ORDER BY JOIN_DAY DESC
+		                    </if>
+			         	</if>
+			         	<if test="bean.periodType == 'month'">
+			         	 AND CONVERT(VARCHAR(6), A.JOIN_DAY , 112) BETWEEN #{bean.periodMonthStart} AND #{bean.periodMonthEnd}
+			         	 GROUP BY CONVERT(VARCHAR(6), A.JOIN_DAY , 112) -- 월별
+			         	    <if test="usePage">
+		                    ORDER BY CONVERT(VARCHAR(6), A.JOIN_DAY , 112) DESC
+		                    </if>
+			         	</if>
+			         	<if test="bean.periodType == 'year'">
+			         	 AND CONVERT(VARCHAR(4), A.JOIN_DAY , 112) BETWEEN #{bean.periodYearStart} AND #{bean.periodYearEnd}
+			         	 GROUP BY CONVERT(VARCHAR(4), A.JOIN_DAY , 112) -- 년별
+			         	    <if test="usePage">
+		                    ORDER BY CONVERT(VARCHAR(4), A.JOIN_DAY , 112) DESC
+		                    </if>
+			         	</if>
+	                <include refid="Paging.mssql" />
+	                )X
+	        )Y
+	--ORDER BY(CASE Y.DATE_INFO WHEN '합계' THEN NULL ELSE Y.DATE_INFO END )ASC
+	</select>
+	
+	<select id="selectTodayLoginList" parameterType="kr.co.abcmart.bo.stats.vo.MemberStatsVO"  resultType="kr.co.abcmart.bo.stats.vo.MemberStatsVO">
+	/*+ kr.co.abcmart.bo.stats.repository.master.MemberStatsDao.selectTodayLoginList [회원가입 리스트 조회 쿼리] [최경호] */
+		WITH AllTime AS ( 
+	      SELECT 0 AS JOIN_DTM, CONCAT(FORMAT(0, '00'), '~', FORMAT(1, '00'), '시') AS DTM_TITLE
+	       UNION ALL 
+	      SELECT JOIN_DTM + 1, CONCAT(FORMAT(JOIN_DTM+1, '00'), '~', FORMAT(JOIN_DTM+2, '00'), '시') AS DTM_TITLE 
+	        FROM AllTime 
+	       WHERE JOIN_DTM <![CDATA[<]]> 23
+	), SearchData AS (
+	      SELECT DATEPART(HH, MH.CNNCTR_DTM) AS JOIN_DTM
+	           , CASE WHEN MB.MEMBER_TYPE_CODE = '10000' AND MB.GENDER_TYPE = 'M' THEN 1 ELSE 0 END OMEN
+	           , CASE WHEN MB.MEMBER_TYPE_CODE = '10000' AND MB.GENDER_TYPE = 'F' THEN 1 ELSE 0 END OFEMALE
+	           , CASE WHEN MB.MEMBER_TYPE_CODE = '10000' AND MB.GENDER_TYPE IS NULL THEN 1 ELSE 0 END OETC
+	           , CASE WHEN MB.MEMBER_TYPE_CODE = '10000' THEN 1 ELSE 0 END OTOT
+	           , CASE WHEN MB.MEMBER_TYPE_CODE = '10001' AND MB.GENDER_TYPE = 'M' THEN 1 ELSE 0 END MMEN
+	           , CASE WHEN MB.MEMBER_TYPE_CODE = '10001' AND MB.GENDER_TYPE = 'F' THEN 1 ELSE 0 END MFEMALE
+	           , CASE WHEN MB.MEMBER_TYPE_CODE = '10001' THEN 1 ELSE 0 END MTOT
+	        FROM MB_MEMBER_LOGIN_HISTORY MH with(nolock) INNER JOIN MB_MEMBER MB with(nolock)
+	          ON MH.MEMBER_NO = MB.MEMBER_NO
+	       WHERE MH.CNNCTR_DTM <![CDATA[>=]]> CONVERT(DATETIME, CONVERT(CHAR(8), getDate(), 112)) 
+	         AND MH.CNNCTR_DTM <![CDATA[<]]> CONVERT(DATETIME, CONVERT(CHAR(8), DATEADD(DD, 1, getDate()), 112)) 
+	         AND MH.CNNCTR_STAT_CODE = '10000'
+	       	   <if test='siteNo != null and siteNo != "" and siteNo != "All"'> 
+	           AND MH.SITE_NO = #{siteNo}
+	           </if>
+	           <if test="deviceTypeCodeArr != null and deviceTypeCodeArr != ''">
+			   AND MH.DEVICE_CODE IN
+			     <foreach item="item" index="index" collection="deviceTypeCodeArr" open="(" close=")" separator="," >
+			       #{item}
+			     </foreach>
+		       </if>
+	           <if test='chkSnsTypeCodeArr != null and chkSnsTypeCodeArr != "" and snsLoginYn == "Y"'>
+			   AND MH.SNS_GBN_CODE IN
+			     <foreach item="item" index="index" collection="chkSnsTypeCodeArr" open="(" close=")" separator="," >
+			       #{item}
+			     </foreach>
+		       </if>
+		       <if test='snsLoginYn != "Y"'>
+			   AND MH.SNS_GBN_CODE IS NULL
+		       </if>
+	)
+	SELECT '합계' AS DTM_TITLE
+	     , ISNULL(SUM(V.OTOT + V.MTOT),0) AS TOTAL
+	     , ISNULL(SUM(V.OMEN),0) AS TOMEN 
+	     , ISNULL(SUM(V.OFEMALE),0) AS TOFEMALE
+	     , ISNULL(SUM(V.OETC),0) AS TOETC    
+	     , ISNULL(SUM(V.OTOT),0) AS TOTOT
+	     , ISNULL(SUM(V.MMEN),0) AS TMMEN
+	     , ISNULL(SUM(V.MFEMALE),0) AS TMFEMALE
+	     , ISNULL(SUM(V.MTOT),0) AS TMTOT
+	  FROM SearchData V with(nolock)
+	 UNION ALL
+	SELECT A.DTM_TITLE
+	     , ISNULL(SUM(V.OTOT + V.MTOT),0) AS TOTAL 
+	     , ISNULL(SUM(V.OMEN),0) AS TOMEN 
+	     , ISNULL(SUM(V.OFEMALE),0) AS TOFEMALE
+	     , ISNULL(SUM(V.OETC),0) AS TOETC    
+	     , ISNULL(SUM(V.OTOT),0) AS TOTOT
+	     , ISNULL(SUM(V.MMEN),0) AS TMMEN
+	     , ISNULL(SUM(V.MFEMALE),0) AS TMFEMALE
+	     , ISNULL(SUM(V.MTOT),0) AS TMTOT
+	  FROM SearchData V with(nolock) RIGHT OUTER JOIN AllTime A with(nolock) ON V.JOIN_DTM = A.JOIN_DTM
+	 GROUP BY A.DTM_TITLE
+	</select>
+	
+	<select id="selectYesterdayMemberInfo" resultType="kr.co.abcmart.bo.stats.model.master.SaMemberJoinStatus">
+	/*+ kr.co.abcmart.bo.stats.repository.master.MemberStatsDao.selectYesterdayMemberInfo [전일기준 회원 현황 정보] [최경호] */
+	SELECT A.JOIN_DAY
+     	 , ISNULL(SUM(A.ONLN_TOTAL_MEMBER_COUNT),0) AS ONLN_TOTAL_MEMBER_COUNT
+     	 , ISNULL(SUM(A.MBSHP_TOTAL_MEMBER_COUNT),0) AS MBSHP_TOTAL_MEMBER_COUNT
+    	FROM SA_MEMBER_JOIN_STATUS A with(nolock)
+      WHERE A.JOIN_DAY = CONVERT(DATE, DATEADD(DAY, -1, getdate()))
+        AND A.STATUS_GBN_TYPE = 'J'
+	GROUP BY A.JOIN_DAY, A.STATUS_GBN_TYPE
+	</select>
+	
+	<select id="selectStoreTotalCount" resultType="int">
+	/*+ kr.co.abcmart.bo.stats.repository.master.MemberStatsDao.selectStoreTotalCount [단골 매장 현황 카운트] [신인철] */	
+		 SELECT COUNT(A.STORE_NAME) AS TOTAL_COUNT
+		   FROM (
+				SELECT S.STORE_NAME
+				  FROM MB_MEMBER_INTEREST_STORE A WITH(NOLOCK)
+				  JOIN CM_STORE S WITH(NOLOCK)
+					ON S.STORE_NO = A.STORE_NO
+				 GROUP BY S.STORE_NAME
+				)A
+	</select>
+	
+	<select id="selectInterestStoreList" resultType="kr.co.abcmart.bo.stats.vo.MemberInterestStoreVO">
+	/*+ kr.co.abcmart.bo.stats.repository.master.MemberStatsDao.selectStoreList [단골 매장 현황 그리드 조회] [신인철] */
+		 WITH V AS (
+				   SELECT S.STORE_NAME
+						, COUNT(A.STORE_NO) AS STORE_COUNT
+					 FROM MB_MEMBER_INTEREST_STORE A WITH(NOLOCK)
+					 JOIN CM_STORE S WITH(NOLOCK)
+					   ON S.STORE_NO = A.STORE_NO
+					GROUP BY S.STORE_NAME
+				   )
+			SELECT '합계' AS STORE_NAME
+				 , ISNULL(SUM(A.STORE_COUNT), 0 ) AS STORE_COUNT
+				 , '' AS NO_SEQ
+			  FROM V A
+			 UNION ALL
+			SELECT B.STORE_NAME AS STORE_NAME
+				 , B.STORE_COUNT AS STORE_COUNT
+				 , ROW_NUMBER() OVER (ORDER BY B.STORE_COUNT DESC) AS NO_SEQ
+			  FROM V B
+			 ORDER BY NO_SEQ
+	</select>
+	
+	<select id="selectBrandTotalCount" resultType="int">
+	/*+ kr.co.abcmart.bo.stats.repository.master.MemberStatsDao.selectBrandTotalCount [단골 매장 현황 카운트] [신인철] */	
+		 SELECT COUNT(A.BRAND_NAME) AS TOTAL_COUNT
+		   FROM (
+				SELECT D.BRAND_NAME
+				  FROM MB_MEMBER_INTEREST_BRAND A WITH(NOLOCK)
+				  JOIN DP_BRAND D WITH(NOLOCK)
+					ON A.BRAND_NO = D.BRAND_NO
+				 GROUP BY D.BRAND_NAME
+				)A
+	</select>
+	
+	<select id="selectInterestBrandList" resultType="kr.co.abcmart.bo.stats.vo.MemberInterestBrandVO">
+	/*+ kr.co.abcmart.bo.stats.repository.master.MemberStatsDao.selectInterestBrandList [단골 매장 현황 그리드 조회] [신인철] */
+		 WITH V AS (
+				   SELECT B.BRAND_NAME
+						, COUNT(A.BRAND_NO) AS BRAND_COUNT
+					 FROM MB_MEMBER_INTEREST_BRAND A WITH(NOLOCK)
+					 JOIN DP_BRAND B WITH(NOLOCK)
+					   ON B.BRAND_NO = A.BRAND_NO
+					GROUP BY B.BRAND_NAME
+				   )
+			SELECT '합계' AS BRAND_NAME
+				 , ISNULL(SUM(A.BRAND_COUNT), 0 ) AS BRAND_COUNT
+				 , '' AS NO_SEQ
+			  FROM V A
+			 UNION ALL
+			SELECT B.BRAND_NAME AS BRAND_NAME
+				 , B.BRAND_COUNT AS BRAND_COUNT
+				 , ROW_NUMBER() OVER (ORDER BY B.BRAND_COUNT DESC) AS NO_SEQ
+			  FROM V B
+			 ORDER BY NO_SEQ
+	</select>
+	
+	<sql id="pageableDayTypeConvert">
+		 <choose>
+			<when test="bean.periodType == 'day'.toString() and bean.periodType != null">
+		  LEFT(CONVERT(CHAR(10), A.TOTAL_DAY, 23), 10) AS DATE_AREA
+			</when>
+			<when test="bean.periodType == 'month'.toString() and bean.periodType != null">
+		  LEFT(CONVERT(CHAR(10), A.TOTAL_DAY, 23), 7) AS DATE_AREA
+			</when>
+			<otherwise>
+		  LEFT(CONVERT(CHAR(10), A.TOTAL_DAY, 23), 4) AS DATE_AREA
+			</otherwise>
+		</choose>
+	</sql>
+	
+	<sql id="pageableSearchKey">
+		WHERE
+		<choose>
+	 		<when test="bean.periodType != null and bean.periodType == 'day'.toString()">
+	 		A.TOTAL_DAY BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))		
+	 		</when>
+	 		<when test="bean.periodType != null and bean.periodType == 'month'.toString()">
+	 		CONVERT(VARCHAR(6), A.TOTAL_DAY , 112) BETWEEN #{bean.periodMonthStart} AND #{bean.periodMonthEnd}		
+	 		</when>
+	 		<otherwise>
+	 		CONVERT(VARCHAR(4), A.TOTAL_DAY , 112) BETWEEN #{bean.periodYearStart} AND #{bean.periodYearEnd}
+	 		</otherwise>
+	 	</choose>
+	</sql>
+	
+	<select id="selectPointGridCount" parameterType="pageable" resultType="int"> 
+	/*+ kr.co.abcmart.bo.stats.repository.master.MemberStatsDao.selectPointGridCount [포인트 현황 카운트] [신인철] */
+		SELECT COUNT(DATE_AREA)
+		  FROM (
+				SELECT DATE_AREA
+						 , SUM(POINT_TYPE0) AS TYPE_0
+						 , SUM(POINT_TYPE1) AS TYPE_1
+						 , SUM(POINT_TYPE2) AS TYPE_2
+						 , SUM(POINT_TYPE3) AS TYPE_3
+						 , SUM(POINT_TYPE4) AS TYPE_4
+						 , SUM(POINT_TYPE5) AS TYPE_5
+						 , SUM(POINT_TYPE8) AS TYPE_8
+						 , SUM(POINT_TYPE9) AS TYPE_9
+						 , SUM(POINT_TYPE11) AS TYPE_11
+						 , SUM(POINT_TYPE12) AS TYPE_12
+						 , SUM(POINT_TYPE13) AS TYPE_13
+						 , ISNULL(SUM(SAVE_AMT), 0) AS SAVED
+						 , ISNULL(SUM(USE_AMT), 0) AS USED
+					  FROM (
+							SELECT 
+								 <include refid="pageableDayTypeConvert"/>
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10000' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE0
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10001' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE1
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10002' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE2
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10003' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE3
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10004' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE4
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10005' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE5
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10006' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE6
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10007' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE7
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10008' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE8
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10009' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE9
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10010' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE10
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10011' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE11
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10012' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE12
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10013' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE13
+								 , A.SAVE_AMT
+								 , A.USE_AMT
+							  FROM SA_MEMBER_POINT_STATUS A WITH(NOLOCK)
+							 <include refid="pageableSearchKey"/>
+							) AS V
+					 GROUP BY DATE_AREA
+				)C
+	</select>
+	
+	<select id="selectPointGrid" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.vo.MemberPointStatusVO">
+	/*+ kr.co.abcmart.bo.stats.repository.master.MemberStatsDao.selectPointStatusList [포인트 현황 그리드 조회] [신인철] */
+		WITH SDATA AS( 
+					SELECT DATE_AREA
+						 , SUM(POINT_TYPE0) AS TYPE_0
+						 , SUM(POINT_TYPE1) AS TYPE_1
+						 , SUM(POINT_TYPE2) AS TYPE_2
+						 , SUM(POINT_TYPE3) AS TYPE_3
+						 , SUM(POINT_TYPE4) AS TYPE_4
+						 , SUM(POINT_TYPE5) AS TYPE_5
+						 , SUM(POINT_TYPE8) AS TYPE_8
+						 , SUM(POINT_TYPE9) AS TYPE_9
+						 , SUM(POINT_TYPE11) AS TYPE_11
+						 , SUM(POINT_TYPE12) AS TYPE_12
+						 , SUM(POINT_TYPE13) AS TYPE_13
+						 , ISNULL(SUM(SAVE_AMT), 0) AS SAVED
+						 , ISNULL(SUM(USE_AMT), 0) AS USED
+					  FROM (
+							SELECT 
+								 <include refid="pageableDayTypeConvert"/>
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10000' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE0
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10001' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE1
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10002' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE2
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10003' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE3
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10004' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE4
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10005' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE5
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10006' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE6
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10007' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE7
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10008' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE8
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10009' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE9
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10010' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE10
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10011' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE11
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10012' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE12
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10013' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE13
+								 , A.SAVE_AMT
+								 , A.USE_AMT
+							  FROM SA_MEMBER_POINT_STATUS A WITH(NOLOCK)
+							 <include refid="pageableSearchKey"/>
+							) AS V
+					 GROUP BY DATE_AREA
+							)
+					SELECT '합계' AS TOTAL_DAY_C
+						 , ISNULL(SUM(SD.SAVED), 0) AS TOTAL_PLUS
+						 , ISNULL(SUM(SD.USED), 0) AS TOTAL_MINUS
+						 , ISNULL(SUM(SD.TYPE_0), 0) AS TYPE0
+						 , ISNULL(SUM(SD.TYPE_1), 0) AS TYPE1
+						 , ISNULL(SUM(SD.TYPE_2), 0) AS TYPE2
+						 , ISNULL(SUM(SD.TYPE_3), 0) AS TYPE3
+						 , ISNULL(SUM(SD.TYPE_4), 0) AS TYPE4
+						 , ISNULL(SUM(SD.TYPE_5), 0) AS TYPE5
+						 , ISNULL(SUM(SD.TYPE_8), 0) AS TYPE8
+						 , ISNULL(SUM(SD.TYPE_9), 0) AS TYPE9
+						 , ISNULL(SUM(SD.TYPE_11), 0) AS TYPE11
+						 , ISNULL(SUM(SD.TYPE_12), 0) AS TYPE12
+						 , ISNULL(SUM(SD.TYPE_13), 0) AS TYPE13
+					  FROM SDATA SD
+					 UNION ALL
+					SELECT SD.DATE_AREA AS TOTAL_DAY_C
+						 , SD.SAVED AS TOTAL_PLUS
+						 , SD.USED AS TOTAL_MINUS
+						 , SD.TYPE_0 AS TYPE0
+						 , SD.TYPE_1 AS TYPE1
+						 , SD.TYPE_2 AS TYPE2
+						 , SD.TYPE_3 AS TYPE3
+						 , SD.TYPE_4 AS TYPE4
+						 , SD.TYPE_5 AS TYPE5
+						 , SD.TYPE_8 AS TYPE8
+						 , SD.TYPE_9 AS TYPE9
+						 , SD.TYPE_11 AS TYPE11
+						 , SD.TYPE_12 AS TYPE12
+						 , SD.TYPE_13 AS TYPE13
+					  FROM SDATA SD
+					 ORDER BY TOTAL_DAY_C DESC
+					 <include refid="Paging.mssql"/>
+	</select>
+	
+	<select id="selectPointExcelList" parameterType="kr.co.abcmart.bo.stats.vo.MemberPointStatusVO" resultType="kr.co.abcmart.bo.stats.vo.MemberPointStatusVO">
+	/*+ kr.co.abcmart.bo.stats.repository.master.MemberStatsDao.selectPointExcelList [포인트 현황 엑셀] [신인철] */
+		WITH SDATA AS( 
+					SELECT DATE_AREA
+						 , SUM(POINT_TYPE0) AS TYPE_0
+						 , SUM(POINT_TYPE1) AS TYPE_1
+						 , SUM(POINT_TYPE2) AS TYPE_2
+						 , SUM(POINT_TYPE3) AS TYPE_3
+						 , SUM(POINT_TYPE4) AS TYPE_4
+						 , SUM(POINT_TYPE5) AS TYPE_5
+						 , SUM(POINT_TYPE8) AS TYPE_8
+						 , SUM(POINT_TYPE9) AS TYPE_9
+						 , SUM(POINT_TYPE11) AS TYPE_11
+						 , SUM(POINT_TYPE12) AS TYPE_12
+						 , SUM(POINT_TYPE13) AS TYPE_13
+						 , ISNULL(SUM(SAVE_AMT), 0) AS SAVED
+						 , ISNULL(SUM(USE_AMT), 0) AS USED
+					  FROM (
+							SELECT 
+								 <choose>
+									<when test="periodType == 'day'.toString() and periodType != null">
+								  LEFT(CONVERT(CHAR(10), A.TOTAL_DAY, 23), 10) AS DATE_AREA
+									</when>
+									<when test="periodType == 'month'.toString() and periodType != null">
+								  LEFT(CONVERT(CHAR(10), A.TOTAL_DAY, 23), 7) AS DATE_AREA
+									</when>
+									<otherwise>
+								  LEFT(CONVERT(CHAR(10), A.TOTAL_DAY, 23), 4) AS DATE_AREA
+									</otherwise>
+								</choose>
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10000' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE0
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10001' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE1
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10002' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE2
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10003' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE3
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10004' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE4
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10005' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE5
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10006' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE6
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10007' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE7
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10008' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE8
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10009' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE9
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10010' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE10
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10011' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE11
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10012' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE12
+								 , CASE WHEN A.SAVE_TYPE_CODE ='10013' THEN A.SAVE_AMT + A.USE_AMT ELSE 0 END POINT_TYPE13
+								 , A.SAVE_AMT
+								 , A.USE_AMT
+							  FROM SA_MEMBER_POINT_STATUS A WITH(NOLOCK)
+							 WHERE
+								<choose>
+							 		<when test="periodType == 'day'.toString() and periodType != null">
+							 		A.TOTAL_DAY BETWEEN CONVERT(DATETIME, CONCAT(#{fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{toDate, jdbcType=VARCHAR}, ' 23:59:59'))		
+							 		</when>
+							 		<when test="periodType == 'month'.toString() and periodType != null">
+							 		CONVERT(VARCHAR(6), A.TOTAL_DAY , 112) BETWEEN #{bean.periodMonthStart} AND #{bean.periodMonthEnd}		
+							 		</when>
+							 		<otherwise>
+							 		CONVERT(VARCHAR(4), A.TOTAL_DAY , 112) BETWEEN #{bean.periodYearStart} AND #{bean.periodYearEnd}
+							 		</otherwise>
+							 	</choose>
+							) AS V
+					 GROUP BY DATE_AREA
+							)
+					SELECT '합계' AS TOTAL_DAY_C
+						 , ISNULL(SUM(SD.SAVED), 0) AS TOTAL_PLUS
+						 , ISNULL(SUM(SD.USED), 0) AS TOTAL_MINUS
+						 , ISNULL(SUM(SD.TYPE_0), 0) AS TYPE0
+						 , ISNULL(SUM(SD.TYPE_1), 0) AS TYPE1
+						 , ISNULL(SUM(SD.TYPE_2), 0) AS TYPE2
+						 , ISNULL(SUM(SD.TYPE_3), 0) AS TYPE3
+						 , ISNULL(SUM(SD.TYPE_4), 0) AS TYPE4
+						 , ISNULL(SUM(SD.TYPE_5), 0) AS TYPE5
+						 , ISNULL(SUM(SD.TYPE_8), 0) AS TYPE8
+						 , ISNULL(SUM(SD.TYPE_9), 0) AS TYPE9
+						 , ISNULL(SUM(SD.TYPE_11), 0) AS TYPE11
+						 , ISNULL(SUM(SD.TYPE_12), 0) AS TYPE12
+						 , ISNULL(SUM(SD.TYPE_13), 0) AS TYPE13
+					  FROM SDATA SD
+					 UNION ALL
+					SELECT SD.DATE_AREA AS TOTAL_DAY_C
+						 , SD.SAVED AS TOTAL_PLUS
+						 , SD.USED AS TOTAL_MINUS
+						 , SD.TYPE_0 AS TYPE0
+						 , SD.TYPE_1 AS TYPE1
+						 , SD.TYPE_2 AS TYPE2
+						 , SD.TYPE_3 AS TYPE3
+						 , SD.TYPE_4 AS TYPE4
+						 , SD.TYPE_5 AS TYPE5
+						 , SD.TYPE_8 AS TYPE8
+						 , SD.TYPE_9 AS TYPE9
+						 , SD.TYPE_11 AS TYPE11
+						 , SD.TYPE_12 AS TYPE12
+						 , SD.TYPE_13 AS TYPE13
+					  FROM SDATA SD
+					 ORDER BY TOTAL_DAY_C DESC
+	
+	</select>
+	
+</mapper>

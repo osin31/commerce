@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.afterService.repository.master.OcAsAcceptMemoDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptMemo">
+    
+     /*+ kr.co.abcmart.bo.afterService.repository.master.OcAsAcceptMemoDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			OC_AS_ACCEPT_MEMO
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+     <select id="selectOcAsAcceptMemoData" parameterType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptMemo" resultType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptMemo">
+    	/*+ kr.co.abcmart.bo.afterService.model.master.OcAsAcceptMemo.selectOcAsAcceptMemoData [As접수 메모 조회] [이상호] */
+    	
+	    	SELECT A.AS_ACCEPT_NO
+			     , A.AS_MEMO_SEQ
+			     , A.AS_ACCEPT_PRDT_SEQ
+			     , A.MEMO_TEXT
+			     , A.DEL_YN
+			     , A.RGSTER_NO
+			     , B.LOGIN_ID
+    	         , B.ADMIN_NAME
+			     , A.RGST_DTM 
+			FROM OC_AS_ACCEPT_MEMO A
+			LEFT JOIN SY_ADMIN B
+              ON A.RGSTER_NO = B.ADMIN_NO
+    	   WHERE A.AS_ACCEPT_NO = #{asAcceptNo}
+    	 <if test="asMemoSeq != null">
+    	   AND A.AS_MEMO_SEQ = #{asMemoSeq}
+    	 </if>
+    	 	 AND A.DEL_YN = 'N' 
+    	 ORDER BY A.RGST_DTM DESC
+    </select>
+    
+    <insert id="insertOcAsAcceptMemo" parameterType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptMemo">
+    	/*+kr.co.abcmart.bo.afterService.model.master.OcAsAcceptMemoDao.insertOcAsAcceptMemo [접수 관리자 메모 등록] [이상호] */
+    	
+    	<selectKey resultType="int" keyProperty="asMemoSeq" order="BEFORE">
+			SELECT ISNULL(MAX(AS_MEMO_SEQ), 0)+1 
+			  FROM OC_AS_ACCEPT_MEMO
+			 WHERE AS_ACCEPT_NO = #{asAcceptNo}
+		</selectKey>
+		
+        INSERT INTO OC_AS_ACCEPT_MEMO(
+			   AS_ACCEPT_NO
+			  ,AS_MEMO_SEQ
+			  ,AS_ACCEPT_PRDT_SEQ
+			  ,MEMO_TEXT
+			  ,RGSTER_NO
+			  ,RGST_DTM
+		) VALUES (
+			   #{asAcceptNo, jdbcType=VARCHAR} 
+			  ,#{asMemoSeq, jdbcType=NUMERIC}
+			  ,#{asAcceptPrdtSeq, jdbcType=TINYINT}
+			  ,#{memoText, jdbcType=VARCHAR} 
+			  ,#{rgsterNo}  
+			  ,GETDATE() 
+		)
+    </insert>
+    
+    <update id="updateOcAsAcceptMemo" parameterType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptMemo">
+    
+     /*+ kr.co.abcmart.bo.afterService.repository.master.OcAsAcceptMemoDao.updateOcAsAcceptMemo [접수메모  update 쿼리] [Generator] */
+    
+		UPDATE OC_AS_ACCEPT_MEMO
+		<set> 
+			<if test="delYn != null"> 
+				del_yn = #{delYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="rgsterNo != null"> 
+				rgster_no = #{rgsterNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 as_accept_no = #{asAcceptNo, jdbcType=VARCHAR} AND as_memo_seq = #{asMemoSeq, jdbcType=INTEGER}   
+    </update>
+
+</mapper>

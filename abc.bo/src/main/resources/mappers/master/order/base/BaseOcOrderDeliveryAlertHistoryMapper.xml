@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryAlertHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	order_dlvy_alert_hist_seq, order_no, order_prdt_seq, order_dlvy_hist_seq, dlvy_stat_code, dlvy_id_text, clm_no, add_info_text, send_yn, send_dtm, rgst_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	order_dlvy_alert_hist_seq = #{orderDlvyAlertHistSeq, jdbcType=BIGINT}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryAlertHistory" resultType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryAlertHistory">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryAlertHistoryDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			oc_order_delivery_alert_history
+		<where> 
+			<if test="orderDlvyAlertHistSeq != null"> 
+				 order_dlvy_alert_hist_seq = #{orderDlvyAlertHistSeq, jdbcType=BIGINT}
+			</if> 
+			<if test="orderNo != null"> 
+				 AND order_no = #{orderNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="orderPrdtSeq != null"> 
+				 AND order_prdt_seq = #{orderPrdtSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="orderDlvyHistSeq != null"> 
+				 AND order_dlvy_hist_seq = #{orderDlvyHistSeq, jdbcType=TINYINT}
+			</if> 
+			<if test="dlvyStatCode != null"> 
+				 AND dlvy_stat_code = #{dlvyStatCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="dlvyIdText != null"> 
+				 AND dlvy_id_text = #{dlvyIdText, jdbcType=VARCHAR}
+			</if> 
+			<if test="clmNo != null"> 
+				 AND clm_no = #{clmNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="addInfoText != null"> 
+				 AND add_info_text = #{addInfoText, jdbcType=VARCHAR}
+			</if> 
+			<if test="sendYn != null"> 
+				 AND send_yn = #{sendYn, jdbcType=CHAR}
+			</if> 
+			<if test="sendDtm != null"> 
+				 AND send_dtm = #{sendDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="rgstDtm != null"> 
+				 AND rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+	<insert id="insert" useGeneratedKeys="true" keyProperty="orderDlvyAlertHistSeq">
+
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryAlertHistoryDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO oc_order_delivery_alert_history
+			 ( order_no, order_prdt_seq, order_dlvy_hist_seq, dlvy_stat_code, dlvy_id_text, clm_no, add_info_text, send_yn, send_dtm, rgst_dtm ) 
+
+		VALUES 
+			 ( #{orderNo, jdbcType=VARCHAR}, #{orderPrdtSeq, jdbcType=INTEGER}, #{orderDlvyHistSeq, jdbcType=TINYINT}, #{dlvyStatCode, jdbcType=VARCHAR}, #{dlvyIdText, jdbcType=VARCHAR}, #{clmNo, jdbcType=VARCHAR}, #{addInfoText, jdbcType=VARCHAR}, #{sendYn, jdbcType=CHAR}, <choose><when test="sendDtm != null">#{sendDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryAlertHistory">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryAlertHistoryDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE oc_order_delivery_alert_history
+		<set> 
+			<if test="orderDlvyAlertHistSeq != null"> 
+				order_dlvy_alert_hist_seq = #{orderDlvyAlertHistSeq, jdbcType=BIGINT}, 
+			</if> 
+			<if test="orderNo != null"> 
+				order_no = #{orderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="orderPrdtSeq != null"> 
+				order_prdt_seq = #{orderPrdtSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="orderDlvyHistSeq != null"> 
+				order_dlvy_hist_seq = #{orderDlvyHistSeq, jdbcType=TINYINT}, 
+			</if> 
+			<if test="dlvyStatCode != null"> 
+				dlvy_stat_code = #{dlvyStatCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="dlvyIdText != null"> 
+				dlvy_id_text = #{dlvyIdText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="clmNo != null"> 
+				clm_no = #{clmNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="addInfoText != null"> 
+				add_info_text = #{addInfoText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="sendYn != null"> 
+				send_yn = #{sendYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="sendDtm != null"> 
+				send_dtm = #{sendDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 order_dlvy_alert_hist_seq = #{orderDlvyAlertHistSeq, jdbcType=BIGINT}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.order.model.master.OcOrderDeliveryAlertHistory">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.OcOrderDeliveryAlertHistoryDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM oc_order_delivery_alert_history
+		WHERE 
+			 order_dlvy_alert_hist_seq = #{orderDlvyAlertHistSeq, jdbcType=BIGINT}  
+    </delete>
+</mapper>

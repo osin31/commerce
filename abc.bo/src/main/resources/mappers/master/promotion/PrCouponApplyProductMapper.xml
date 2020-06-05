@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.promotion.repository.master.PrCouponApplyProductDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.promotion.model.master.PrCouponApplyProduct">
+
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponApplyProductDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			PR_COUPON_APPLY_PRODUCT
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectPrCouponApplyProductListByCpnNo" parameterType="String" resultType="kr.co.abcmart.bo.promotion.model.master.PrCouponApplyProduct">
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponApplyProductDao.selectPrCouponApplyProductListByCpnNo [쿠폰 상품 조회 쿼리] [이지훈] */
+    	SELECT
+    		PCAP.CPN_NO
+    		,PCAP.PRDT_TYPE
+			,PP.PRDT_NO
+			,PP.PRDT_TYPE_CODE
+			,PP.SITE_NO
+			,PP.CHNNL_NO
+			,PP.PRDT_NAME
+			,PP.ENG_PRDT_NAME
+			,PP.VNDR_NO
+			,PP.VNDR_PRDT_NO_TEXT
+			,PP.MMNY_PRDT_YN
+			,PP.BRAND_NO
+			,PP.ORG_PLACE_CODE
+			,PP.STYLE_INFO
+			,PP.PRDT_COLOR_INFO
+			,PP.MNFTR_NAME
+			,PP.STD_CTGR_NO
+			,PP.STDR_CTGR_NO
+			,PP.CNTC_PRDT_SETUP_YN
+			,PP.RLTN_GOODS_SETUP_YN
+			,PP.ADD_OPTN_SETUP_YN
+			,PP.SIZE_CHART_DISP_YN
+			,PP.SIZE_CHART_SEQ
+			,PP.EMP_DSCNT_YN
+			,PP.ORDER_MNFCT_YN
+			,PP.DPRC_EXCEPT_YN
+			,PP.STORE_PICKUP_PSBLT_YN
+			,PP.FREE_DLVY_YN
+			,PP.STOCK_INTGR_YN
+			,PP.STOCK_UN_INTGR_RSN_CODE
+			,PP.STOCK_MGMT_YN
+			,PP.BUY_LIMIT_YN
+			,PP.MIN_BUY_PSBLT_QTY
+			,PP.DAY_MAX_BUY_PSBLT_QTY
+			,PP.MAX_BUY_PSBLT_QTY
+			,PP.ITEM_CODE
+			,PP.GENDER_GBN_CODE
+			,PP.DISP_FLAG_TEXT
+			,PP.SRCH_PSBLT_YN
+			,PP.SRCH_KEY_WORD_TEXT
+			,PP.WRHS_ALERT_YN
+			,PP.SELL_START_DTM
+			,PP.SELL_END_DTM
+			,PP.RSV_PRDT_YN
+			,PP.RSV_DLVY_YMD
+			,PP.AFFLTS_SEND_YN
+			,PP.ACONNECT_DISP_YN
+			,PP.DISP_YN
+			,PP.IGRMALL_DISP_EXCEPT_YN
+			,PP.VNDR_SUSPD_YN
+			,PP.APRV_STAT_CODE
+			,PP.SELL_STAT_CODE
+			,PP.USE_YN
+			,PP.RGSTER_NO
+			,PP.RGST_DTM
+			,PP.APRVER_NO
+			,PP.APRVER_DTM
+			,PP.MODER_NO
+			,PP.MOD_DTM
+			, (SELECT CHNNL_NAME FROM SY_SITE_CHNNL WHERE CHNNL_NO = PP.CHNNL_NO) AS CHNNL_NAME
+			, (SELECT STD_CTGR_NAME FROM SY_STANDARD_CATEGORY WHERE STD_CTGR_NO = PP.STD_CTGR_NO) AS STD_CTGR_NAME
+		FROM
+			PR_COUPON_APPLY_PRODUCT PCAP WITH(NOLOCK)
+		INNER JOIN PD_PRODUCT PP WITH(NOLOCK)
+					ON PCAP.PRDT_NO = PP.PRDT_NO
+		WHERE
+			CPN_NO = #{cpnNo, jdbcType=VARCHAR}
+    </select>
+
+    <delete id="deleteByCpnNo" parameterType="String">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponApplyProductDao.deleteByCpnNo [쿠폰 상품 삭제 쿼리] [이지훈] */
+    	DELETE FROM PR_COUPON_APPLY_PRODUCT
+    	WHERE CPN_NO = #{cpnNo, jdbcType=VARCHAR}
+    </delete>
+
+    <delete id="deleteCouponProduct" parameterType="Map">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponApplyProductDao.deleteCouponProduct [쿠폰 상품 삭제] [2020.02.14 김진성] */
+    	DELETE FROM PR_COUPON_APPLY_PRODUCT
+    	 WHERE CPN_NO = #{cpnNo, jdbcType=VARCHAR}
+    	   AND PRDT_NO IN
+	<foreach item="couponProduct" collection="couponProductList" open="		                  (" close="		                  )" separator="		                   , ">
+    	                   #{couponProduct.prdtNo, jdbcType=VARCHAR}
+	</foreach>
+    </delete>
+
+    <delete id="deleteCouponProductList" parameterType="Map">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponApplyProductDao.deleteCouponProduct [쿠폰 상품 삭제] [2020.02.14 김진성] */
+    	DELETE FROM PR_COUPON_APPLY_PRODUCT
+    	 WHERE CPN_NO = #{cpnNo, jdbcType=VARCHAR}
+    	   AND PRDT_NO IN
+	<foreach item="couponProduct" collection="couponProductList" open="		                  (" close="		                  )" separator="		                   , ">
+    	                   #{couponProduct, jdbcType=VARCHAR}
+	</foreach>
+    </delete>
+
+</mapper>

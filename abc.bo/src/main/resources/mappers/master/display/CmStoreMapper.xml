@@ -1,0 +1,920 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.display.repository.master.CmStoreDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.display.model.master.CmStore">
+
+     /*+ kr.co.abcmart.bo.display.repository.master.CmStoreDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		 FROM
+			CM_STORE
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+	<select id="selectCmStoreInfo" parameterType="kr.co.abcmart.bo.display.model.master.CmStore" resultType="kr.co.abcmart.bo.display.model.master.CmStore">
+	/*+ kr.co.abcmart.bo.display.repository.master.CmStoreDao.selectCmStoreInfo [오프라인 매장 정보 조회] */
+		SELECT
+			<include refid="select-columns" />
+		  FROM CM_STORE with (nolock)
+		 WHERE STORE_NO = #{storeNo, jdbcType=VARCHAR}
+	</select>
+
+	<select id="selectCmStoreList" parameterType="kr.co.abcmart.bo.display.model.master.CmStore" resultType="kr.co.abcmart.bo.display.model.master.CmStore">
+	/*+ kr.co.abcmart.bo.display.repository.master.CmStoreDao.selectCmStoreList [오프라인 매장 리스트 조회] [이가영] */
+		WITH STORE AS (
+		SELECT
+			A.store_no,
+			A.site_no,
+			A.store_name,
+			A.tel_no_text,
+			A.post_code_text,
+			A.post_addr_text,
+			A.dtl_addr_text,
+			A.find_go_strt_text,
+			A.area_no,
+			A.area_dtl_seq,
+			A.direct_yn,
+			A.x_point_text,
+			A.y_point_text,
+			A.store_id_text,
+			convert(char(5),A.business_start_time,8) as business_start_time_string,
+			convert(char(5),A.business_end_time,8)   as business_end_time_string,
+			A.open_ymd,
+			A.pc_image_name,
+			A.pc_image_path_text,
+			A.pc_image_url,
+			A.pc_altrn_text,
+			A.mobile_image_name,
+			A.mobile_image_path_text,
+			A.mobile_image_url,
+			A.mobile_altrn_text,
+			A.store_etc_text,
+			A.store_url,
+			A.store_gbn_code,
+			A.store_type_code,
+			A.pickup_psblt_yn,
+			A.business_stop_rsn_code,
+			A.business_stop_ymd,
+			A.emp_price_buy_psblt_yn,
+			A.disp_yn,
+			A.rgster_no,
+			A.rgst_dtm,
+			A.moder_no,
+			A.mod_dtm,
+			B.ADMIN_NAME AS RGSTER_NAME,
+			B.LOGIN_ID AS RGSTER_ID,
+			C.ADMIN_NAME AS MODER_NAME,
+			C.LOGIN_ID AS MODER_ID,
+    	    D.AREA_NAME,
+    	    (
+			select
+				STUFF((
+				select
+					DISTINCT ',' + DBO.FN_CODE_VALUE('STORE_SERVICE_CODE', AA.STORE_SERVICE_CODE)
+				from
+					cm_store_service AA WITH(NOLOCK)
+				WHERE
+					AA.STORE_NO = a.STORE_NO and AA.psblt_yn = 'Y' for xml path('') ),
+				1,
+				1,
+				'') ) as STORE_SERVICE_ARR,
+			(
+			select
+				STUFF((
+				select
+					DISTINCT ',' + AA.STORE_SERVICE_CODE
+				from
+					cm_store_service AA WITH(NOLOCK)
+				WHERE
+					AA.STORE_NO = a.STORE_NO and AA.psblt_yn = 'Y' for xml path('') ),
+				1,
+				1,
+				'') ) as STORE_SERVICE_ID_ARR
+		FROM
+			CM_STORE A WITH(NOLOCK)
+		LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON A.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON A.MODER_NO = C.ADMIN_NO
+		INNER JOIN CM_AREA D WITH(NOLOCK) ON A.AREA_NO = D.AREA_NO
+		<where>
+			<if test="bean.storeNo != null and bean.storeNo != ''">
+				 A.store_no = #{bean.storeNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.siteNo != null and bean.siteNo != ''">
+				 AND A.site_no = #{bean.siteNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.storeName != null and bean.storeName != ''">
+				 AND A.store_name = #{bean.storeName, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.telNoText != null and bean.telNoText != ''">
+				 AND A.tel_no_text = #{bean.telNoText, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.postCodeText != null and bean.postCodeText != ''">
+				 AND A.post_code_text = #{bean.postCodeText, jdbcType=CHAR}
+			</if>
+			<if test="bean.postAddrText != null and bean.postAddrText != ''">
+				 AND A.post_addr_text = #{bean.postAddrText, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.dtlAddrText != null and bean.dtlAddrText != ''">
+				 AND A.dtl_addr_text = #{bean.dtlAddrText, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.findGoStrtText != null and bean.findGoStrtText != ''">
+				 AND A.find_go_strt_text = #{bean.findGoStrtText, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.areaNo != null and bean.areaNo != ''">
+				 AND A.area_no = #{bean.areaNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.areaDtlSeq != null and bean.areaDtlSeq != ''">
+				 AND A.area_dtl_seq = #{bean.areaDtlSeq, jdbcType=INTEGER}
+			</if>
+			<if test="bean.directYn != null and bean.directYn != ''">
+				 AND A.direct_yn = #{bean.directYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.storeIdText != null and bean.storeIdText != ''">
+				 AND A.store_id_text = #{bean.storeIdText, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.storeEtcText != null and bean.storeEtcText != ''">
+				 AND A.store_etc_text = #{bean.storeEtcText, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.storeUrl != null and bean.storeUrl != ''">
+				 AND A.store_url = #{bean.storeUrl, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.storeGbnCode != null and bean.storeGbnCode != ''">
+				 AND A.store_gbn_code = #{bean.storeGbnCode, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.storeTypeCode != null and bean.storeTypeCode != ''">
+				 AND A.store_type_code = #{bean.storeTypeCode, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.pickupPsbltYn != null and bean.pickupPsbltYn != ''">
+				 AND A.pickup_psblt_yn = #{bean.pickupPsbltYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.empPriceBuyPsbltYn != null and bean.empPriceBuyPsbltYn != ''">
+				 AND A.emp_price_buy_psblt_yn = #{bean.empPriceBuyPsbltYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.dispYn != null and bean.dispYn != ''">
+				 AND A.disp_yn = #{bean.dispYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.searchWord != null and bean.searchWord != ''">
+				 <choose>
+				 	<when test='bean.searchType == "N"'>
+				 		AND A.store_name LIKE '%' + #{bean.searchWord, jdbcType=VARCHAR} + '%'
+				 	</when>
+				 	<when test='bean.searchType == "I"'>
+				 		AND A.store_id_text LIKE '%' + #{bean.searchWord, jdbcType=VARCHAR} + '%'
+				 	</when>
+				 	<when test='bean.searchType == "A"'>
+				 		AND (A.post_addr_text LIKE '%' + #{bean.searchWord, jdbcType=VARCHAR} + '%'
+				 		OR A.dtl_addr_text LIKE '%' + #{bean.searchWord, jdbcType=VARCHAR} + '%')
+				 	</when>
+				 	<when test='bean.searchType == "R"'>
+				 		AND (B.ADMIN_NAME LIKE '%' + #{bean.searchWord, jdbcType=VARCHAR} + '%'
+				 		OR B.LOGIN_ID LIKE '%'+#{bean.searchWord, jdbcType=VARCHAR}+'%')
+				 	</when>
+				 	<when test='bean.searchType == "M"'>
+				 		AND (C.ADMIN_NAME LIKE '%' + #{bean.searchWord, jdbcType=VARCHAR} + '%'
+				 		OR C.LOGIN_ID LIKE '%'+#{bean.searchWord, jdbcType=VARCHAR}+'%')
+				 	</when>
+				 </choose>
+			</if>
+		</where>
+		)
+		SELECT
+			B.store_no, B.site_no, B.store_name, B.tel_no_text, B.post_code_text, B.post_addr_text, B.dtl_addr_text, B.find_go_strt_text,
+			B.area_no, B.area_dtl_seq, B.direct_yn, B.x_point_text, B.y_point_text, B.store_id_text, B.business_start_time_string, B.business_end_time_string,
+			B.open_ymd, B.pc_image_name, B.pc_image_path_text, B.pc_image_url, B.pc_altrn_text, B.mobile_image_name, B.mobile_image_path_text,
+			B.mobile_image_url, B.mobile_altrn_text, B.store_etc_text, B.store_url, B.store_gbn_code, B.store_type_code, B.pickup_psblt_yn,
+			B.business_stop_rsn_code, B.business_stop_ymd, B.emp_price_buy_psblt_yn, B.disp_yn, B.rgster_no, B.rgst_dtm, B.moder_no,
+			B.mod_dtm, B.RGSTER_NAME, B.RGSTER_ID, B.MODER_NAME, B.MODER_ID, B.AREA_NAME, B.STORE_SERVICE_ARR
+		FROM STORE B
+		<where>
+			<if test="bean.storeServiceCode != null and bean.storeServiceCode.length > 0">
+			(
+				<foreach collection="bean.storeServiceCode" item="item" index="index">
+					<choose>
+						<when test="index == 0">
+							B.store_service_id_arr LIKE '%' + #{item, jdbcType=VARCHAR} + '%'
+						</when>
+						<otherwise>
+							OR B.store_service_id_arr LIKE '%' + #{item, jdbcType=VARCHAR} + '%'
+						</otherwise>
+					</choose>
+				</foreach>
+			)
+			</if>
+			<if test="bean.storeTypeCodes != null and bean.storeTypeCodes.length > 0">
+				AND store_type_code IN
+				<foreach collection="bean.storeTypeCodes" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		ORDER BY
+			<choose>
+    			<when test="sortColumn != null">
+    				<if test="sortColumn == 'storeName'.toString()">
+    					B.store_name
+    				</if>
+    				<if test="sortColumn == 'rgstDtm'.toString()">
+    					B.rgst_dtm
+    				</if>
+    				<if test="sortColumn == 'modDtm'.toString()">
+    					B.mod_dtm
+    				</if>
+    				<if test="sortType == 'DESC'.toString()">
+				 		DESC
+				 	</if>
+    			</when>
+    			<otherwise>B.RGST_DTM DESC</otherwise>
+    		</choose>
+		<include refid="Paging.mssql" />
+	</select>
+
+	<select id="selectCmStoreDetail" parameterType="kr.co.abcmart.bo.display.model.master.CmStore" resultType="kr.co.abcmart.bo.display.model.master.CmStore">
+	/*+ kr.co.abcmart.bo.display.repository.master.CmStoreDao.selectCmStoreDetail [오프라인 매장 상세 조회] */
+		SELECT
+			TOP 1
+			A.store_no,
+			A.site_no,
+			A.store_name,
+			A.tel_no_text,
+			A.post_code_text,
+			A.post_addr_text,
+			A.dtl_addr_text,
+			A.find_go_strt_text,
+			A.area_no,
+			A.area_dtl_seq,
+			A.direct_yn,
+			A.x_point_text,
+			A.y_point_text,
+			A.store_id_text,
+			A.business_start_time,
+			A.business_end_time,
+			A.open_ymd,
+			A.pc_image_name,
+			A.pc_image_path_text,
+			A.pc_image_url,
+			A.pc_altrn_text,
+			A.mobile_image_name,
+			A.mobile_image_path_text,
+			A.mobile_image_url,
+			A.mobile_altrn_text,
+			A.store_etc_text,
+			A.store_url,
+			A.store_gbn_code,
+			A.store_type_code,
+			A.pickup_psblt_yn,
+			A.business_stop_rsn_code,
+			A.business_stop_ymd,
+			A.emp_price_buy_psblt_yn,
+			A.disp_yn,
+			A.rgster_no,
+			A.rgst_dtm,
+			A.moder_no,
+			A.mod_dtm,
+			B.ADMIN_NAME AS RGSTER_NAME,
+			B.LOGIN_ID AS RGSTER_ID,
+			C.ADMIN_NAME AS MODER_NAME,
+			C.LOGIN_ID AS MODER_ID
+		FROM
+			CM_STORE A WITH(NOLOCK)
+		LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON A.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON A.MODER_NO = C.ADMIN_NO
+		<where>
+			<if test="searchStoreName != null and searchStoreName != ''">
+			A.STORE_NAME LIKE '%' + #{searchStoreName, jdbcType=VARCHAR} + '%'
+			</if>
+			<if test="searchStoreName == null or searchStoreName == ''">
+			A.STORE_NO = #{storeNo, jdbcType=VARCHAR}
+			</if>
+		</where>
+		ORDER BY A.store_no
+	</select>
+
+	<select id="selectCmStoreCount" parameterType="kr.co.abcmart.bo.display.model.master.CmStore" resultType="int">
+	/*+ kr.co.abcmart.bo.display.repository.master.CmStoreDao.selectCmStoreCount [오프라인 매장 카운트 조회] */
+
+		WITH STORE AS (
+		SELECT
+			A.store_no,
+			A.site_no,
+			A.store_name,
+			A.tel_no_text,
+			A.post_code_text,
+			A.post_addr_text,
+			A.dtl_addr_text,
+			A.find_go_strt_text,
+			A.area_no,
+			A.area_dtl_seq,
+			A.direct_yn,
+			A.x_point_text,
+			A.y_point_text,
+			A.store_id_text,
+			A.business_start_time,
+			A.business_end_time,
+			A.open_ymd,
+			A.pc_image_name,
+			A.pc_image_path_text,
+			A.pc_image_url,
+			A.pc_altrn_text,
+			A.mobile_image_name,
+			A.mobile_image_path_text,
+			A.mobile_image_url,
+			A.mobile_altrn_text,
+			A.store_etc_text,
+			A.store_url,
+			A.store_gbn_code,
+			A.store_type_code,
+			A.pickup_psblt_yn,
+			A.business_stop_rsn_code,
+			A.business_stop_ymd,
+			A.emp_price_buy_psblt_yn,
+			A.disp_yn,
+			A.rgster_no,
+			A.rgst_dtm,
+			A.moder_no,
+			A.mod_dtm,
+			B.ADMIN_NAME AS RGSTER_NAME,
+			B.LOGIN_ID AS RGSTER_ID,
+			C.ADMIN_NAME AS MODER_NAME,
+			C.LOGIN_ID AS MODER_ID,
+    	    D.AREA_NAME,
+    	    (
+			select
+				STUFF((
+				select
+					DISTINCT ',' + DBO.FN_CODE_VALUE('STORE_SERVICE_CODE', AA.STORE_SERVICE_CODE)
+				from
+					cm_store_service AA WITH(NOLOCK)
+				WHERE
+					AA.STORE_NO = a.STORE_NO and AA.psblt_yn = 'Y' for xml path('') ),
+				1,
+				1,
+				'') ) as STORE_SERVICE_ARR,
+			(
+			select
+				STUFF((
+				select
+					DISTINCT ',' + AA.STORE_SERVICE_CODE
+				from
+					cm_store_service AA WITH(NOLOCK)
+				WHERE
+					AA.STORE_NO = a.STORE_NO and AA.psblt_yn = 'Y' for xml path('') ),
+				1,
+				1,
+				'') ) as STORE_SERVICE_ID_ARR
+		FROM
+			CM_STORE A WITH(NOLOCK)
+		LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON A.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON A.MODER_NO = C.ADMIN_NO
+		INNER JOIN CM_AREA D WITH(NOLOCK) ON A.AREA_NO = D.AREA_NO
+		<where>
+			<if test="bean.storeNo != null and bean.storeNo != ''">
+				 A.store_no = #{bean.storeNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.siteNo != null and bean.siteNo != ''">
+				 AND A.site_no = #{bean.siteNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.storeName != null and bean.storeName != ''">
+				 AND A.store_name = #{bean.storeName, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.telNoText != null and bean.telNoText != ''">
+				 AND A.tel_no_text = #{bean.telNoText, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.postCodeText != null and bean.postCodeText != ''">
+				 AND A.post_code_text = #{bean.postCodeText, jdbcType=CHAR}
+			</if>
+			<if test="bean.postAddrText != null and bean.postAddrText != ''">
+				 AND A.post_addr_text = #{bean.postAddrText, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.dtlAddrText != null and bean.dtlAddrText != ''">
+				 AND A.dtl_addr_text = #{bean.dtlAddrText, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.findGoStrtText != null and bean.findGoStrtText != ''">
+				 AND A.find_go_strt_text = #{bean.findGoStrtText, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.areaNo != null and bean.areaNo != ''">
+				 AND A.area_no = #{bean.areaNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.areaDtlSeq != null and bean.areaDtlSeq != ''">
+				 AND A.area_dtl_seq = #{bean.areaDtlSeq, jdbcType=INTEGER}
+			</if>
+			<if test="bean.directYn != null and bean.directYn != ''">
+				 AND A.direct_yn = #{bean.directYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.storeIdText != null and bean.storeIdText != ''">
+				 AND A.store_id_text = #{bean.storeIdText, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.storeEtcText != null and bean.storeEtcText != ''">
+				 AND A.store_etc_text = #{bean.storeEtcText, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.storeUrl != null and bean.storeUrl != ''">
+				 AND A.store_url = #{bean.storeUrl, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.storeGbnCode != null and bean.storeGbnCode != ''">
+				 AND A.store_gbn_code = #{bean.storeGbnCode, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.storeTypeCode != null and bean.storeTypeCode != ''">
+				 AND A.store_type_code = #{bean.storeTypeCode, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.pickupPsbltYn != null and bean.pickupPsbltYn != ''">
+				 AND A.pickup_psblt_yn = #{bean.pickupPsbltYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.empPriceBuyPsbltYn != null and bean.empPriceBuyPsbltYn != ''">
+				 AND A.emp_price_buy_psblt_yn = #{bean.empPriceBuyPsbltYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.dispYn != null and bean.dispYn != ''">
+				 AND A.disp_yn = #{bean.dispYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.searchWord != null and bean.searchWord != ''">
+				 <choose>
+				 	<when test='bean.searchType == "N"'>
+				 		AND A.store_name LIKE '%' + #{bean.searchWord, jdbcType=VARCHAR} + '%'
+				 	</when>
+				 	<when test='bean.searchType == "I"'>
+				 		AND A.store_id_text LIKE '%' + #{bean.searchWord, jdbcType=VARCHAR} + '%'
+				 	</when>
+				 	<when test='bean.searchType == "A"'>
+				 		AND (A.post_addr_text LIKE '%' + #{bean.searchWord, jdbcType=VARCHAR} + '%'
+				 		OR A.dtl_addr_text LIKE '%' + #{bean.searchWord, jdbcType=VARCHAR} + '%')
+				 	</when>
+				 	<when test='bean.searchType == "R"'>
+				 		AND (B.ADMIN_NAME LIKE '%' + #{bean.searchWord, jdbcType=VARCHAR} + '%'
+				 		OR B.LOGIN_ID LIKE '%'+#{bean.searchWord, jdbcType=VARCHAR}+'%')
+				 	</when>
+				 	<when test='bean.searchType == "M"'>
+				 		AND (C.ADMIN_NAME LIKE '%' + #{bean.searchWord, jdbcType=VARCHAR} + '%'
+				 		OR C.LOGIN_ID LIKE '%'+#{bean.searchWord, jdbcType=VARCHAR}+'%')
+				 	</when>
+				 </choose>
+			</if>
+		</where>
+		)
+		SELECT
+			<include refid="Paging.totalCount" />
+		FROM
+			STORE B
+		<where>
+			<if test="bean.storeServiceCode != null and bean.storeServiceCode.length > 0">
+			(
+				<foreach collection="bean.storeServiceCode" item="item" index="index">
+					<choose>
+						<when test="index == 0">
+							B.store_service_id_arr LIKE '%' + #{item, jdbcType=VARCHAR} + '%'
+						</when>
+						<otherwise>
+							OR B.store_service_id_arr LIKE '%' + #{item, jdbcType=VARCHAR} + '%'
+						</otherwise>
+					</choose>
+				</foreach>
+			)
+			</if>
+			<if test="bean.storeTypeCodes != null and bean.storeTypeCodes.length > 0">
+				AND store_type_code IN
+				<foreach collection="bean.storeTypeCodes" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<insert id="insertCmStore" parameterType="kr.co.abcmart.bo.display.model.master.CmStore">
+	/*+ kr.co.abcmart.bo.display.repository.master.CmStoreDao.insertCmStore [오프라인 매장 등록] [이가영] */
+
+		<selectKey resultType="String" keyProperty="storeNo" order="BEFORE">
+			SELECT ISNULL(RIGHT('0000' + CONVERT(VARCHAR(4), MAX(store_no)+1), 4), '0001') FROM CM_STORE
+		</selectKey>
+
+		INSERT INTO CM_STORE (
+			store_no,
+			site_no,
+			store_name,
+			tel_no_text,
+			tel_no_text1,
+			tel_no_text2,
+			tel_no_text3,
+			post_code_text,
+			post_addr_text,
+			dtl_addr_text,
+			find_go_strt_text,
+			area_no,
+			area_dtl_seq,
+			direct_yn,
+			x_point_text,
+			y_point_text,
+			store_id_text,
+			business_start_time,
+			business_end_time,
+			open_ymd,
+			pc_image_name,
+			pc_image_path_text,
+			pc_image_url,
+			pc_altrn_text,
+			mobile_image_name,
+			mobile_image_path_text,
+			mobile_image_url,
+			mobile_altrn_text,
+			store_etc_text,
+			store_url,
+			store_gbn_code,
+			store_type_code,
+			pickup_psblt_yn,
+			business_stop_rsn_code,
+			business_stop_ymd,
+			emp_price_buy_psblt_yn,
+			disp_yn,
+			rgster_no,
+			rgst_dtm,
+			moder_no,
+			mod_dtm
+		) VALUES (
+			#{storeNo, jdbcType=VARCHAR},
+			#{siteNo, jdbcType=VARCHAR},
+			#{storeName, jdbcType=VARCHAR},
+			#{telNoText, jdbcType=VARCHAR},
+			#{telNoText1, jdbcType=VARCHAR},
+			#{telNoText2, jdbcType=VARCHAR},
+			#{telNoText3, jdbcType=VARCHAR},
+			#{postCodeText, jdbcType=CHAR},
+			#{postAddrText, jdbcType=VARCHAR},
+			#{dtlAddrText, jdbcType=VARCHAR},
+			#{findGoStrtText, jdbcType=VARCHAR},
+			#{areaNo, jdbcType=VARCHAR},
+			#{areaDtlSeq, jdbcType=INTEGER},
+			#{directYn, jdbcType=CHAR},
+			#{pointX, jdbcType=REAL},
+			#{pointY, jdbcType=REAL},
+			#{storeIdText, jdbcType=VARCHAR},
+			CAST(#{businessStartTime, jdbcType=VARCHAR} + ':' + #{businessStartMinute, jdbcType=VARCHAR} + ':00' AS time(7)),
+			CAST(#{businessEndTime, jdbcType=VARCHAR} + ':' + #{businessEndMinute, jdbcType=VARCHAR} + ':00' AS time(7)),
+			#{openYmd, jdbcType=DATE},
+			#{pcImageName, jdbcType=VARCHAR},
+			#{pcImagePathText, jdbcType=VARCHAR},
+			#{pcImageUrl, jdbcType=VARCHAR},
+			#{pcAltrnText, jdbcType=VARCHAR},
+			#{mobileImageName, jdbcType=VARCHAR},
+			#{mobileImagePathText, jdbcType=VARCHAR},
+			#{mobileImageUrl, jdbcType=VARCHAR},
+			#{mobileAltrnText, jdbcType=VARCHAR},
+			#{storeEtcText, jdbcType=VARCHAR},
+			#{storeUrl, jdbcType=VARCHAR},
+			#{storeGbnCode, jdbcType=VARCHAR},
+			#{storeTypeCode, jdbcType=VARCHAR},
+			#{pickupPsbltYn, jdbcType=CHAR},
+			#{businessStopRsnCode, jdbcType=VARCHAR},
+			#{businessStopYmd, jdbcType=DATE},
+			#{empPriceBuyPsbltYn, jdbcType=CHAR},
+			#{dispYn, jdbcType=CHAR},
+			#{rgsterNo, jdbcType=VARCHAR},
+			getdate(),
+			#{moderNo, jdbcType=VARCHAR},
+			getdate()
+		)
+	</insert>
+
+	<update id="updateCmStore" parameterType="kr.co.abcmart.bo.display.model.master.CmStore">
+	/*+ kr.co.abcmart.bo.display.repository.master.CmStoreDao.updateCmStore [오프라인 매장 수정] [이가영] */
+		UPDATE CM_STORE
+		<set>
+			<if test="siteNo != null">
+				site_no = #{siteNo, jdbcType=VARCHAR},
+			</if>
+			<if test="storeName != null">
+				store_name = #{storeName, jdbcType=VARCHAR},
+			</if>
+			<if test="telNoText != null">
+				tel_no_text = #{telNoText, jdbcType=VARCHAR},
+			</if>
+			<if test="telNoText1 != null">
+				tel_no_text1 = #{telNoText1, jdbcType=VARCHAR},
+			</if>
+			<if test="telNoText2 != null">
+				tel_no_text2 = #{telNoText2, jdbcType=VARCHAR},
+			</if>
+			<if test="telNoText3 != null">
+				tel_no_text3 = #{telNoText3, jdbcType=VARCHAR},
+			</if>
+			<if test="postCodeText != null">
+				post_code_text = #{postCodeText, jdbcType=CHAR},
+			</if>
+			<if test="postAddrText != null">
+				post_addr_text = #{postAddrText, jdbcType=VARCHAR},
+			</if>
+			<if test="areaNo != null">
+				area_no = #{areaNo, jdbcType=VARCHAR},
+			</if>
+			<if test="areaDtlSeq != null">
+				area_dtl_seq = #{areaDtlSeq, jdbcType=INTEGER},
+			</if>
+			<if test="directYn != null">
+				direct_yn = #{directYn, jdbcType=CHAR},
+			</if>
+			<if test="pointX != null">
+				x_point_text = #{pointX, jdbcType=REAL},
+			</if>
+			<if test="pointY != null">
+				y_point_text = #{pointY, jdbcType=REAL},
+			</if>
+			<if test="storeIdText != null">
+				store_id_text = #{storeIdText, jdbcType=VARCHAR},
+			</if>
+			<if test="businessStartHour != null">
+				business_start_time = #{businessStartHour, jdbcType=CHAR} + ':' + #{businessStartMinute, jdbcType=CHAR} + ':00',
+			</if>
+			<if test="businessEndHour != null">
+				business_end_time = #{businessEndHour, jdbcType=CHAR} + ':' + #{businessEndMinute, jdbcType=CHAR} + ':00',
+			</if>
+			
+			open_ymd = #{openYmd, jdbcType=DATE},
+			pc_image_name = #{pcImageName, jdbcType=VARCHAR},
+			pc_image_path_text = #{pcImagePathText, jdbcType=VARCHAR},
+			pc_image_url = #{pcImageUrl, jdbcType=VARCHAR},
+			pc_altrn_text = #{pcAltrnText, jdbcType=VARCHAR},
+			mobile_image_name = #{mobileImageName, jdbcType=VARCHAR},
+			mobile_image_path_text = #{mobileImagePathText, jdbcType=VARCHAR},
+			mobile_image_url = #{mobileImageUrl, jdbcType=VARCHAR},
+			mobile_altrn_text = #{mobileAltrnText, jdbcType=VARCHAR},
+			<if test="storeGbnCode != null">
+				store_gbn_code = #{storeGbnCode, jdbcType=VARCHAR},
+			</if>
+			<if test="storeTypeCode != null">
+				store_type_code = #{storeTypeCode, jdbcType=VARCHAR},
+			</if>
+			<if test="pickupPsbltYn != null">
+				pickup_psblt_yn = #{pickupPsbltYn, jdbcType=CHAR},
+			</if>
+			<if test="empPriceBuyPsbltYn != null">
+				emp_price_buy_psblt_yn = #{empPriceBuyPsbltYn, jdbcType=CHAR},
+			</if>
+			<if test="dispYn != null">
+				disp_yn = #{dispYn, jdbcType=CHAR},
+			</if>
+			<if test="moderNo != null">
+				moder_no = #{moderNo, jdbcType=VARCHAR},
+			</if>
+			find_go_strt_text = #{findGoStrtText, jdbcType=VARCHAR},
+			business_stop_rsn_code = #{businessStopRsnCode, jdbcType=VARCHAR},
+			business_stop_ymd = #{businessStopYmd, jdbcType=DATE},
+			dtl_addr_text = #{dtlAddrText, jdbcType=VARCHAR},
+			store_etc_text = #{storeEtcText, jdbcType=VARCHAR},
+			store_url = #{storeUrl, jdbcType=VARCHAR},
+			mod_dtm = getdate()
+		</set>
+		WHERE
+			 store_no = #{storeNo, jdbcType=VARCHAR}
+	</update>
+
+	<delete id="deleteCmStoreByStoreNo" parameterType="String">
+	/*+ kr.co.abcmart.bo.display.repository.master.CmStoreDao.deleteCmStoreByStoreNo [오프라인 매장 삭제] [이가영] */
+
+		DELETE FROM cm_store
+		WHERE store_no = #{storeNo, jdbcType=VARCHAR}
+	</delete>
+	
+	<select id="selectStoreExcelList" parameterType="kr.co.abcmart.bo.display.model.master.CmStore" resultType="kr.co.abcmart.bo.display.model.master.CmStore">
+	/*+ kr.co.abcmart.bo.display.repository.master.CmStoreDao.selectCmStoreList [오프라인 매장 엑셀리스트 조회] [신인철] */
+		WITH STORE AS (
+		SELECT
+			A.STORE_NO,
+			A.SITE_NO,
+			A.STORE_NAME,
+			A.TEL_NO_TEXT,
+			A.POST_CODE_TEXT,
+			A.POST_ADDR_TEXT,
+			A.DTL_ADDR_TEXT,
+			A.FIND_GO_STRT_TEXT,
+			A.AREA_NO,
+			A.AREA_DTL_SEQ,
+			A.DIRECT_YN,
+			A.X_POINT_TEXT,
+			A.Y_POINT_TEXT,
+			A.STORE_ID_TEXT,
+			A.BUSINESS_START_TIME,
+			A.BUSINESS_END_TIME,
+			A.OPEN_YMD,
+			A.PC_IMAGE_NAME,
+			A.PC_IMAGE_PATH_TEXT,
+			A.PC_IMAGE_URL,
+			A.PC_ALTRN_TEXT,
+			A.MOBILE_IMAGE_NAME,
+			A.MOBILE_IMAGE_PATH_TEXT,
+			A.MOBILE_IMAGE_URL,
+			A.MOBILE_ALTRN_TEXT,
+			A.STORE_ETC_TEXT,
+			A.STORE_URL,
+			A.STORE_GBN_CODE,
+			A.STORE_TYPE_CODE,
+			A.PICKUP_PSBLT_YN,
+			A.BUSINESS_STOP_RSN_CODE,
+			A.BUSINESS_STOP_YMD,
+			A.EMP_PRICE_BUY_PSBLT_YN,
+			A.DISP_YN,
+			A.RGSTER_NO,
+			A.RGST_DTM,
+			A.MODER_NO,
+			A.MOD_DTM,
+			B.ADMIN_NAME AS RGSTER_NAME,
+			B.LOGIN_ID AS RGSTER_ID,
+			C.ADMIN_NAME AS MODER_NAME,
+			C.LOGIN_ID AS MODER_ID,
+    	    D.AREA_NAME,
+    	    (
+			select
+				STUFF((
+				select
+					DISTINCT ',' + DBO.FN_CODE_VALUE('STORE_SERVICE_CODE', AA.STORE_SERVICE_CODE)
+				FROM
+					CM_STORE_SERVICE AA WITH(NOLOCK)
+				WHERE
+					AA.STORE_NO = A.STORE_NO AND AA.PSBLT_YN = 'Y' FOR XML PATH('') ),
+				1,
+				1,
+				'') ) AS STORE_SERVICE_ARR,
+			(
+			select
+				STUFF((
+				select
+					DISTINCT ',' + AA.STORE_SERVICE_CODE
+				from
+					CM_STORE_SERVICE AA WITH(NOLOCK)
+				WHERE
+					AA.STORE_NO = A.STORE_NO AND AA.PSBLT_YN = 'Y' FOR XML PATH('') ),
+				1,
+				1,
+				'') ) AS STORE_SERVICE_ID_ARR
+		FROM
+			CM_STORE A WITH(NOLOCK)
+		LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON A.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON A.MODER_NO = C.ADMIN_NO
+		INNER JOIN CM_AREA D WITH(NOLOCK) ON A.AREA_NO = D.AREA_NO
+		<where>
+			<if test="storeNo != null and storeNo != ''">
+				 A.STORE_NO = #{storeNo, jdbcType=VARCHAR}
+			</if>
+			<if test="siteNo != null and siteNo != ''">
+				 AND A.SITE_NO = #{siteNo, jdbcType=VARCHAR}
+			</if>
+			<if test="storeName != null and storeName != ''">
+				 AND A.STORE_NAME = #{storeName, jdbcType=VARCHAR}
+			</if>
+			<if test="telNoText != null and telNoText != ''">
+				 AND A.TEL_NO_TEXT = #{telNoText, jdbcType=VARCHAR}
+			</if>
+			<if test="postCodeText != null and postCodeText != ''">
+				 AND A.POST_CODE_TEXT = #{postCodeText, jdbcType=CHAR}
+			</if>
+			<if test="postAddrText != null and postAddrText != ''">
+				 AND A.POST_ADDR_TEXT = #{postAddrText, jdbcType=VARCHAR}
+			</if>
+			<if test="dtlAddrText != null and dtlAddrText != ''">
+				 AND A.DTL_ADDR_TEXT = #{dtlAddrText, jdbcType=VARCHAR}
+			</if>
+			<if test="findGoStrtText != null and findGoStrtText != ''">
+				 AND A.FIND_GO_STRT_TEXT = #{findGoStrtText, jdbcType=VARCHAR}
+			</if>
+			<if test="areaNo != null and areaNo != ''">
+				 AND A.AREA_NO = #{areaNo, jdbcType=VARCHAR}
+			</if>
+			<if test="areaDtlSeq != null and areaDtlSeq != ''">
+				 AND A.AREA_DTL_SEQ = #{areaDtlSeq, jdbcType=INTEGER}
+			</if>
+			<if test="directYn != null and directYn != ''">
+				 AND A.DIRECT_YN = #{directYn, jdbcType=CHAR}
+			</if>
+			<if test="storeIdText != null and storeIdText != ''">
+				 AND A.STORE_ID_TEXT = #{storeIdText, jdbcType=VARCHAR}
+			</if>
+			<if test="storeEtcText != null and storeEtcText != ''">
+				 AND A.STORE_ETC_TEXT = #{storeEtcText, jdbcType=VARCHAR}
+			</if>
+			<if test="storeUrl != null and storeUrl != ''">
+				 AND A.STORE_URL = #{storeUrl, jdbcType=VARCHAR}
+			</if>
+			<if test="storeGbnCode != null and storeGbnCode != ''">
+				 AND A.STORE_GBN_CODE = #{storeGbnCode, jdbcType=VARCHAR}
+			</if>
+			<if test="storeTypeCode != null and storeTypeCode != ''">
+				 AND A.STORE_TYPE_CODE = #{storeTypeCode, jdbcType=VARCHAR}
+			</if>
+			<if test="pickupPsbltYn != null and pickupPsbltYn != ''">
+				 AND A.PICKUP_PSBLT_YN = #{pickupPsbltYn, jdbcType=CHAR}
+			</if>
+			<if test="empPriceBuyPsbltYn != null and empPriceBuyPsbltYn != ''">
+				 AND A.EMP_PRICE_BUY_PSBLT_YN = #{empPriceBuyPsbltYn, jdbcType=CHAR}
+			</if>
+			<if test="dispYn != null and dispYn != ''">
+				 AND A.DISP_YN = #{dispYn, jdbcType=CHAR}
+			</if>
+			<if test="searchWord != null and searchWord != ''">
+				 <choose>
+				 	<when test='searchType == "N"'>
+				 		AND A.STORE_NAME LIKE '%' + #{searchWord, jdbcType=VARCHAR} + '%'
+				 	</when>
+				 	<when test='searchType == "I"'>
+				 		AND A.STORE_ID_TEXT LIKE '%' + #{searchWord, jdbcType=VARCHAR} + '%'
+				 	</when>
+				 	<when test='searchType == "A"'>
+				 		AND (A.POST_ADDR_TEXT LIKE '%' + #{searchWord, jdbcType=VARCHAR} + '%'
+				 		OR A.dtl_addr_text LIKE '%' + #{searchWord, jdbcType=VARCHAR} + '%')
+				 	</when>
+				 	<when test='searchType == "R"'>
+				 		AND (B.ADMIN_NAME LIKE '%' + #{searchWord, jdbcType=VARCHAR} + '%'
+				 		OR B.LOGIN_ID LIKE '%'+#{searchWord, jdbcType=VARCHAR}+'%')
+				 	</when>
+				 	<when test='searchType == "M"'>
+				 		AND (C.ADMIN_NAME LIKE '%' + #{searchWord, jdbcType=VARCHAR} + '%'
+				 		OR C.LOGIN_ID LIKE '%'+#{searchWord, jdbcType=VARCHAR}+'%')
+				 	</when>
+				 </choose>
+			</if>
+		</where>
+		)
+		SELECT B.STORE_NO
+			 , B.SITE_NO
+			 , B.STORE_NAME
+			 , B.TEL_NO_TEXT
+			 , B.POST_CODE_TEXT
+			 , B.POST_ADDR_TEXT
+			 , B.DTL_ADDR_TEXT
+			 , B.FIND_GO_STRT_TEXT
+			 , B.AREA_NO
+			 , B.AREA_DTL_SEQ
+			 , B.DIRECT_YN
+			 , B.X_POINT_TEXT
+			 , B.Y_POINT_TEXT
+			 , B.STORE_ID_TEXT
+			 , CONVERT(VARCHAR(5), B.BUSINESS_START_TIME, 8) AS BUSINESS_START_TIME_STRING
+			 , CONVERT(VARCHAR(5), B.BUSINESS_END_TIME, 8)   AS BUSINESS_END_TIME_STRING 
+			 , B.OPEN_YMD
+			 , B.PC_IMAGE_NAME
+			 , B.PC_IMAGE_PATH_TEXT
+			 , B.PC_IMAGE_URL
+			 , B.PC_ALTRN_TEXT
+			 , B.MOBILE_IMAGE_NAME
+			 , B.MOBILE_IMAGE_PATH_TEXT
+			 , B.MOBILE_IMAGE_URL
+			 , B.MOBILE_ALTRN_TEXT
+			 , B.STORE_ETC_TEXT
+			 , B.STORE_URL
+			 , dbo.FN_CODE_VALUE('STORE_GBN_CODE', B.STORE_GBN_CODE) AS STORE_GBN_CODE
+			 , dbo.FN_CODE_VALUE('STORE_TYPE_CODE', B.STORE_TYPE_CODE) AS STORE_TYPE_CODE
+			 , CASE WHEN B.PICKUP_PSBLT_YN = 'Y'
+			 		THEN '가능'
+			 		ELSE '불가능'
+			 	END AS PICKUP_PSBLT_YN
+			 , B.BUSINESS_STOP_RSN_CODE
+			 , B.BUSINESS_STOP_YMD
+			 , CASE WHEN B.EMP_PRICE_BUY_PSBLT_YN = 'Y'
+			 		THEN '가능'
+			 		ELSE '불가능'
+			 	END AS EMP_PRICE_BUY_PSBLT_YN
+			 , CASE WHEN B.DISP_YN = 'Y'
+			 		THEN '전시'
+			 		ELSE '전시안함'
+			 	END AS DISP_YN
+			 , B.RGSTER_NO
+			 , B.RGST_DTM
+			 , CONVERT(VARCHAR(19), B.RGST_DTM, 121) AS RGST_DTM_STRING
+			 , B.MODER_NO
+			 , B.MOD_DTM
+			 , CONVERT(VARCHAR(19), B.MOD_DTM, 121) AS MOD_DTM_STRING
+			 , B.RGSTER_NAME
+			 , B.RGSTER_ID
+			 , B.MODER_NAME
+			 , B.MODER_ID
+			 , B.AREA_NAME
+			 , B.STORE_SERVICE_ARR
+		FROM STORE B
+		<where>
+			<if test="storeServiceCode != null and storeServiceCode.length > 0">
+			(
+				<foreach collection="storeServiceCode" item="item" index="index">
+					<choose>
+						<when test="index == 0">
+							B.STORE_SERVICE_ID_ARR LIKE '%' + #{item, jdbcType=VARCHAR} + '%'
+						</when>
+						<otherwise>
+							OR B.STORE_SERVICE_ID_ARR LIKE '%' + #{item, jdbcType=VARCHAR} + '%'
+						</otherwise>
+					</choose>
+				</foreach>
+			)
+			</if>
+			<if test="storeTypeCodes != null and storeTypeCodes.length > 0">
+				AND STORE_TYPE_CODE IN
+				<foreach collection="storeTypeCodes" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		ORDER BY B.RGST_DTM DESC
+	</select>
+
+</mapper>

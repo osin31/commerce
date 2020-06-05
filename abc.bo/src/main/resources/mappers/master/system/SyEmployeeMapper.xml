@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyEmployeeDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.system.model.master.SyEmployee">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SyEmployeeDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			sy_employee with (nolock)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectEmployee" parameterType="kr.co.abcmart.bo.system.model.master.SyEmployee" resultType="kr.co.abcmart.bo.system.model.master.SyEmployee">
+    	/*+ kr.co.abcmart.bo.system.repository.master.SyEmployeeDao.selectEmployee [임직원 상세 조회] [이동엽] */
+
+    	SELECT A.EMP_SEQ
+             , A.COMPNY_NAME
+             , A.DVSN_NAME
+             , A.POSTN_NAME
+             , A.EMP_NAME
+             , A.EMP_NO_TEXT
+             , A.HDPHN_NO_TEXT
+             , A.EMAIL_ADDR_TEXT
+             , A.JOIN_COMPNY_YMD
+             , A.CRTFC_FAIL_COUNT
+             , A.CRTFC_FAIL_YN
+             , A.CERT_FAIL_ADMIN_NO
+             , A.CRTFC_FAIL_DTM
+             , A.CRTFC_DTM
+             , A.RESIGN_YN
+             , A.RESIGN_YMD
+             , A.RESIGN_OPETR_NO
+             , A.RESIGN_PROC_DTM
+             , A.INSD_MGMT_INFO_TEXT
+             , A.RGSTER_NO
+             , A.RGST_DTM
+             , A.MODER_NO
+             , A.MOD_DTM
+          FROM SY_EMPLOYEE A with (nolock)
+         WHERE A.EMP_SEQ = #{empSeq, jdbcType=INTEGER}
+    </select>
+
+    <update id="updateEmployee" parameterType="kr.co.abcmart.bo.system.model.master.SyEmployee">
+    	/*+ kr.co.abcmart.bo.system.repository.master.SyEmployeeDao.updateEmployee [임직원 정보 수정] [이동엽] */
+
+    	UPDATE SY_EMPLOYEE
+    	<trim prefix="SET" prefixOverrides=",">
+    		<if test="compnyName != null">
+			, COMPNY_NAME = #{compnyName, jdbcType=VARCHAR}
+    		</if>
+    		<if test="dvsnName != null">
+			, DVSN_NAME = #{dvsnName, jdbcType=VARCHAR}
+    		</if>
+    		<if test="postnName != null">
+			, POSTN_NAME = #{postnName, jdbcType=VARCHAR}
+    		</if>
+    		<if test="empName != null">
+			, EMP_NAME = #{empName, jdbcType=VARCHAR}
+    		</if>
+    		<if test="empNoText != null">
+			, EMP_NO_TEXT = #{empNoText, jdbcType=VARCHAR}
+    		</if>
+    		<if test="hdphnNoText != null">
+			, HDPHN_NO_TEXT = #{hdphnNoText, jdbcType=VARCHAR}
+    		</if>
+    		<if test="emailAddrText != null">
+			, EMAIL_ADDR_TEXT = #{emailAddrText, jdbcType=VARCHAR}
+    		</if>
+    		<if test="joinCompnyYmd != null">
+			, JOIN_COMPNY_YMD = #{joinCompnyYmd, jdbcType=CHAR}
+    		</if>
+    		<if test="crtfcFailCount != null">
+			, CRTFC_FAIL_COUNT = #{crtfcFailCount, jdbcType=TINYINT}
+    		</if>
+    		<if test="crtfcFailYn != null">
+			, CRTFC_FAIL_YN = #{crtfcFailYn, jdbcType=CHAR}
+    		</if>
+    		<if test="certFailAdminNo != null">
+			, CERT_FAIL_ADMIN_NO = #{certFailAdminNo, jdbcType=VARCHAR}
+    		</if>
+    		<if test="crtfcFailChngYn == 'Y'.toString()">
+			, CRTFC_FAIL_DTM = GETDATE()
+    		</if>
+    		<if test="crtfcDtm != null">
+			, CRTFC_DTM = #{crtfcDtm, jdbcType=TIMESTAMP}
+    		</if>
+    		<if test="resignYn != null">
+			, RESIGN_YN = #{resignYn, jdbcType=CHAR}
+    		</if>
+    		<if test="resignYmd != null">
+			, RESIGN_YMD = #{resignYmd, jdbcType=CHAR}
+    		</if>
+    		<if test="resignOpetrNo != null">
+			, RESIGN_OPETR_NO = #{resignOpetrNo, jdbcType=VARCHAR}
+    		</if>
+    		<if test="resignProcDtm != null">
+    		, RESIGN_PROC_DTM = #{resignProcDtm, jdbcType=TIMESTAMP}
+    		</if>
+    		<if test="insdMgmtInfoText != null">
+			, INSD_MGMT_INFO_TEXT = #{insdMgmtInfoText, jdbcType=VARCHAR}
+    		</if>
+			, MODER_NO = #{moderNo, jdbcType=VARCHAR}
+			, MOD_DTM = GETDATE()
+    	</trim>
+    	WHERE EMP_SEQ = #{empSeq, jdbcType=INTEGER}
+    </update>
+
+</mapper>

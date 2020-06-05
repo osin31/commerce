@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayCornerProductDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayCornerProduct">
+    
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayCornerProductDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			PR_PLANNING_DISPLAY_CORNER_PRODUCT
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <delete id="deletePrPlanningDisplayCornerProduct" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayCornerProduct">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayCornerProductDao.deletePrPlanningDisplayCornerProduct [기획전 코너 상품 삭제] [이가영] */
+    	
+    	DELETE FROM
+    		PR_PLANNING_DISPLAY_CORNER_PRODUCT
+    	WHERE PLNDP_NO = #{plndpNo, jdbcType=VARCHAR}
+    	<if test="cornerSeqArr != null and cornerSeqArr.length > 0">
+		  AND PLNDP_CORNER_SEQ IN 
+			<foreach item="item" index="index" collection="cornerSeqArr" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if> 
+    </delete>
+    
+    <delete id="deletePrPlanningDisplayCornerProductByPlndpNo" parameterType="String">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayCornerProductDao.deletePrPlanningDisplayCornerProductByPlndpNo [기획전 코너 상품 삭제 By plndpNo] [이가영] */
+    	
+    	DELETE FROM
+    		PR_PLANNING_DISPLAY_CORNER_PRODUCT
+    	WHERE
+    		plndp_no = #{plndpNo, jdbcType=VARCHAR}
+    </delete>
+    
+    <delete id="deletePrPlanningDisplayCornerProductByPlndpCornerSeq" parameterType="int">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayCornerProductDao.deletePrPlanningDisplayCornerProductByPlndpCornerSeq [기획전 코너 상품 삭제 By cornerSeq] [이가영] */
+    	
+    	DELETE FROM
+    		PR_PLANNING_DISPLAY_CORNER_PRODUCT
+    	WHERE
+    		plndp_corner_seq = #{plndpCornerSeq, jdbcType=VARCHAR}
+    </delete>
+    
+    <select id="selectPrPlanningDisplayCornerProductListCount" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayCornerProduct" resultType="Integer">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayCornerProductDao.selectPrPlanningDisplayCornerProductListCount [기획전 코너 대상 상품 리스트 카운트 조회] [이가영] */
+    	
+    	select
+			count(A.plndp_no)
+		from
+			pr_planning_display_corner_product A with(nolock)
+			INNER JOIN pd_product B with(nolock) ON A.prdt_no = B.prdt_no
+			INNER JOIN sy_standard_category C with(nolock) ON B.std_ctgr_no = C.std_ctgr_no
+			INNER JOIN sy_site_chnnl D with(nolock) ON B.chnnl_no = D.chnnl_no
+			INNER JOIN pd_product_relation_file E with(nolock) ON B.prdt_no = E.prdt_no and E.prdt_rltn_file_seq = 1
+			INNER JOIN DP_BRAND F with (nolock) ON B.BRAND_NO = F.BRAND_NO
+		WHERE
+			A.plndp_corner_seq = #{bean.plndpCornerSeq, jdbcType=VARCHAR}
+			AND A.plndp_no = #{bean.plndpNo, jdbcType=VARCHAR}
+    </select>
+    
+    <select id="selectPrPlanningDisplayCornerProductList" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayCornerProduct" resultType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayCornerProduct">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayCornerProductDao.selectPrPlanningDisplayCornerProductList [기획전 코너 대상 상품 리스트 조회] [이가영] */
+    	
+    	SELECT
+			A.plndp_no,
+			A.plndp_corner_seq,
+			A.prdt_no,
+			A.sort_seq,
+			B.prdt_no,
+			B.prdt_name,
+			B.vndr_prdt_no_text,
+			E.image_name as title_image_name,
+			E.image_path_text as title_image_path_text,
+			E.image_url as title_image_url,
+			B.std_ctgr_no,
+			C.std_ctgr_name,
+			D.chnnl_name,
+			B.sell_stat_code,
+			B.disp_yn,
+			F.brand_name
+		FROM
+			pr_planning_display_corner_product A with(nolock)
+			INNER JOIN pd_product B with(nolock) ON A.prdt_no = B.prdt_no
+			INNER JOIN sy_standard_category C with(nolock) ON B.std_ctgr_no = C.std_ctgr_no
+			INNER JOIN sy_site_chnnl D with(nolock) ON B.chnnl_no = D.chnnl_no
+			INNER JOIN pd_product_relation_file E with(nolock) ON B.prdt_no = E.prdt_no and E.prdt_rltn_file_seq = 1
+			INNER JOIN DP_BRAND F with (nolock) ON B.BRAND_NO = F.BRAND_NO
+		WHERE
+			A.plndp_corner_seq = #{bean.plndpCornerSeq, jdbcType=VARCHAR}
+			AND A.plndp_no = #{bean.plndpNo, jdbcType=VARCHAR}
+		ORDER BY
+			A.sort_seq
+		<include refid="Paging.mssql" />
+	</select>
+	
+	<insert id="insertPrPlanningDisplayCornerProduct" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayCornerProduct">
+	/*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayCornerProductDao.insertPrPlanningDisplayCornerProduct [기획전 코너 대상 상품 등록] [이가영] */		
+		
+		INSERT INTO PR_PLANNING_DISPLAY_CORNER_PRODUCT (
+			plndp_no,
+			plndp_corner_seq,
+			prdt_no,
+			sort_seq
+		) VALUES (
+			#{plndpNo, jdbcType=VARCHAR},
+			#{plndpCornerSeq, jdbcType=INTEGER},
+			#{prdtNo, jdbcType=VARCHAR},
+			#{sortSeq, jdbcType=INTEGER}
+		) 
+	</insert>
+	
+	<update id="updatePrPlanningDisplayCornerProduct" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayCornerProduct">
+	/*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayCornerProductDao.updatePrPlanningDisplayCornerProduct [기획전 코너 대상 상품 수정] [이가영] */		
+		
+		UPDATE PR_PLANNING_DISPLAY_CORNER_PRODUCT
+		<set>
+			<if test="sortSeq != null"> 
+				sort_seq = #{sortSeq, jdbcType=INTEGER},
+			</if> 
+		</set> 
+		WHERE 
+			 plndp_corner_seq = #{plndpCornerSeq, jdbcType=INTEGER}
+			 AND plndp_no = #{plndpNo, jdbcType=VARCHAR}
+			 AND prdt_no = #{prdtNo, jdbcType=VARCHAR}
+	</update>
+
+</mapper>

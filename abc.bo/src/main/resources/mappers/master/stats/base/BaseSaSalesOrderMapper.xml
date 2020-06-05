@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	sales_seq, order_no, order_dtm, order_timeslot_value, site_no, chnnl_no, member_type_code, emp_yn, device_code, gender_type, age_count, dlvy_type_code, prdt_no, prdt_optn_no, prdt_name, eng_prdt_name, optn_name, style_info, prdt_color_code, vndr_no, vndr_name, vndr_prdt_no_text, brand_no, std_ctgr_no, rsv_prdt_yn, gender_gbn_code, dlvy_amt_yn, order_qty, prdt_normal_amt, prdt_sell_amt, optn_add_amt, sell_amt, emp_amt, total_dscnt_amt, cpn_dscnt_amt, order_amt, sales_cncl_gbn_type, stock_gbn_code, rgst_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	sales_seq = #{salesSeq, jdbcType=BIGINT}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder" resultType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder">
+    
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			sa_sales_order
+		<where> 
+			<if test="salesSeq != null"> 
+				 sales_seq = #{salesSeq, jdbcType=BIGINT}
+			</if> 
+			<if test="orderNo != null"> 
+				 AND order_no = #{orderNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="orderDtm != null"> 
+				 AND order_dtm = #{orderDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="orderTimeslotValue != null"> 
+				 AND order_timeslot_value = #{orderTimeslotValue, jdbcType=TINYINT}
+			</if> 
+			<if test="siteNo != null"> 
+				 AND site_no = #{siteNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="chnnlNo != null"> 
+				 AND chnnl_no = #{chnnlNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="memberTypeCode != null"> 
+				 AND member_type_code = #{memberTypeCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="empYn != null"> 
+				 AND emp_yn = #{empYn, jdbcType=CHAR}
+			</if> 
+			<if test="deviceCode != null"> 
+				 AND device_code = #{deviceCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="genderType != null"> 
+				 AND gender_type = #{genderType, jdbcType=CHAR}
+			</if> 
+			<if test="ageCount != null"> 
+				 AND age_count = #{ageCount, jdbcType=TINYINT}
+			</if> 
+			<if test="dlvyTypeCode != null"> 
+				 AND dlvy_type_code = #{dlvyTypeCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="prdtNo != null"> 
+				 AND prdt_no = #{prdtNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="prdtOptnNo != null"> 
+				 AND prdt_optn_no = #{prdtOptnNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="prdtName != null"> 
+				 AND prdt_name = #{prdtName, jdbcType=VARCHAR}
+			</if> 
+			<if test="engPrdtName != null"> 
+				 AND eng_prdt_name = #{engPrdtName, jdbcType=VARCHAR}
+			</if> 
+			<if test="optnName != null"> 
+				 AND optn_name = #{optnName, jdbcType=VARCHAR}
+			</if> 
+			<if test="styleInfo != null"> 
+				 AND style_info = #{styleInfo, jdbcType=VARCHAR}
+			</if> 
+			<if test="prdtColorCode != null"> 
+				 AND prdt_color_code = #{prdtColorCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="vndrNo != null"> 
+				 AND vndr_no = #{vndrNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="vndrName != null"> 
+				 AND vndr_name = #{vndrName, jdbcType=VARCHAR}
+			</if> 
+			<if test="vndrPrdtNoText != null"> 
+				 AND vndr_prdt_no_text = #{vndrPrdtNoText, jdbcType=VARCHAR}
+			</if> 
+			<if test="brandNo != null"> 
+				 AND brand_no = #{brandNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="stdCtgrNo != null"> 
+				 AND std_ctgr_no = #{stdCtgrNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="rsvPrdtYn != null"> 
+				 AND rsv_prdt_yn = #{rsvPrdtYn, jdbcType=CHAR}
+			</if> 
+			<if test="genderGbnCode != null"> 
+				 AND gender_gbn_code = #{genderGbnCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="dlvyAmtYn != null"> 
+				 AND dlvy_amt_yn = #{dlvyAmtYn, jdbcType=CHAR}
+			</if> 
+			<if test="orderQty != null"> 
+				 AND order_qty = #{orderQty, jdbcType=INTEGER}
+			</if> 
+			<if test="prdtNormalAmt != null"> 
+				 AND prdt_normal_amt = #{prdtNormalAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="prdtSellAmt != null"> 
+				 AND prdt_sell_amt = #{prdtSellAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="optnAddAmt != null"> 
+				 AND optn_add_amt = #{optnAddAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="sellAmt != null"> 
+				 AND sell_amt = #{sellAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="empAmt != null"> 
+				 AND emp_amt = #{empAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="totalDscntAmt != null"> 
+				 AND total_dscnt_amt = #{totalDscntAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="cpnDscntAmt != null"> 
+				 AND cpn_dscnt_amt = #{cpnDscntAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="orderAmt != null"> 
+				 AND order_amt = #{orderAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="salesCnclGbnType != null"> 
+				 AND sales_cncl_gbn_type = #{salesCnclGbnType, jdbcType=CHAR}
+			</if> 
+			<if test="stockGbnCode != null"> 
+				 AND stock_gbn_code = #{stockGbnCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="rgstDtm != null"> 
+				 AND rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+	<insert id="insert" useGeneratedKeys="true" keyProperty="salesSeq">
+
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO sa_sales_order
+			 ( order_no, order_dtm, order_timeslot_value, site_no, chnnl_no, member_type_code, emp_yn, device_code, gender_type, age_count, dlvy_type_code, prdt_no, prdt_optn_no, prdt_name, eng_prdt_name, optn_name, style_info, prdt_color_code, vndr_no, vndr_name, vndr_prdt_no_text, brand_no, std_ctgr_no, rsv_prdt_yn, gender_gbn_code, dlvy_amt_yn, order_qty, prdt_normal_amt, prdt_sell_amt, optn_add_amt, sell_amt, emp_amt, total_dscnt_amt, cpn_dscnt_amt, order_amt, sales_cncl_gbn_type, stock_gbn_code, rgst_dtm ) 
+
+		VALUES 
+			 ( #{orderNo, jdbcType=VARCHAR}, <choose><when test="orderDtm != null">#{orderDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{orderTimeslotValue, jdbcType=TINYINT}, #{siteNo, jdbcType=VARCHAR}, #{chnnlNo, jdbcType=VARCHAR}, #{memberTypeCode, jdbcType=VARCHAR}, #{empYn, jdbcType=CHAR}, #{deviceCode, jdbcType=VARCHAR}, #{genderType, jdbcType=CHAR}, #{ageCount, jdbcType=TINYINT}, #{dlvyTypeCode, jdbcType=VARCHAR}, #{prdtNo, jdbcType=VARCHAR}, #{prdtOptnNo, jdbcType=VARCHAR}, #{prdtName, jdbcType=VARCHAR}, #{engPrdtName, jdbcType=VARCHAR}, #{optnName, jdbcType=VARCHAR}, #{styleInfo, jdbcType=VARCHAR}, #{prdtColorCode, jdbcType=VARCHAR}, #{vndrNo, jdbcType=VARCHAR}, #{vndrName, jdbcType=VARCHAR}, #{vndrPrdtNoText, jdbcType=VARCHAR}, #{brandNo, jdbcType=VARCHAR}, #{stdCtgrNo, jdbcType=VARCHAR}, #{rsvPrdtYn, jdbcType=CHAR}, #{genderGbnCode, jdbcType=VARCHAR}, #{dlvyAmtYn, jdbcType=CHAR}, #{orderQty, jdbcType=INTEGER}, #{prdtNormalAmt, jdbcType=INTEGER}, #{prdtSellAmt, jdbcType=INTEGER}, #{optnAddAmt, jdbcType=INTEGER}, #{sellAmt, jdbcType=INTEGER}, #{empAmt, jdbcType=INTEGER}, #{totalDscntAmt, jdbcType=INTEGER}, #{cpnDscntAmt, jdbcType=INTEGER}, #{orderAmt, jdbcType=INTEGER}, #{salesCnclGbnType, jdbcType=CHAR}, #{stockGbnCode, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder">
+    
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE sa_sales_order
+		<set> 
+			<if test="salesSeq != null"> 
+				sales_seq = #{salesSeq, jdbcType=BIGINT}, 
+			</if> 
+			<if test="orderNo != null"> 
+				order_no = #{orderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="orderDtm != null"> 
+				order_dtm = #{orderDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="orderTimeslotValue != null"> 
+				order_timeslot_value = #{orderTimeslotValue, jdbcType=TINYINT}, 
+			</if> 
+			<if test="siteNo != null"> 
+				site_no = #{siteNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="chnnlNo != null"> 
+				chnnl_no = #{chnnlNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="memberTypeCode != null"> 
+				member_type_code = #{memberTypeCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="empYn != null"> 
+				emp_yn = #{empYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="deviceCode != null"> 
+				device_code = #{deviceCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="genderType != null"> 
+				gender_type = #{genderType, jdbcType=CHAR}, 
+			</if> 
+			<if test="ageCount != null"> 
+				age_count = #{ageCount, jdbcType=TINYINT}, 
+			</if> 
+			<if test="dlvyTypeCode != null"> 
+				dlvy_type_code = #{dlvyTypeCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="prdtNo != null"> 
+				prdt_no = #{prdtNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="prdtOptnNo != null"> 
+				prdt_optn_no = #{prdtOptnNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="prdtName != null"> 
+				prdt_name = #{prdtName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="engPrdtName != null"> 
+				eng_prdt_name = #{engPrdtName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="optnName != null"> 
+				optn_name = #{optnName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="styleInfo != null"> 
+				style_info = #{styleInfo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="prdtColorCode != null"> 
+				prdt_color_code = #{prdtColorCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="vndrNo != null"> 
+				vndr_no = #{vndrNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="vndrName != null"> 
+				vndr_name = #{vndrName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="vndrPrdtNoText != null"> 
+				vndr_prdt_no_text = #{vndrPrdtNoText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="brandNo != null"> 
+				brand_no = #{brandNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="stdCtgrNo != null"> 
+				std_ctgr_no = #{stdCtgrNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rsvPrdtYn != null"> 
+				rsv_prdt_yn = #{rsvPrdtYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="genderGbnCode != null"> 
+				gender_gbn_code = #{genderGbnCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="dlvyAmtYn != null"> 
+				dlvy_amt_yn = #{dlvyAmtYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="orderQty != null"> 
+				order_qty = #{orderQty, jdbcType=INTEGER}, 
+			</if> 
+			<if test="prdtNormalAmt != null"> 
+				prdt_normal_amt = #{prdtNormalAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="prdtSellAmt != null"> 
+				prdt_sell_amt = #{prdtSellAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="optnAddAmt != null"> 
+				optn_add_amt = #{optnAddAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="sellAmt != null"> 
+				sell_amt = #{sellAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="empAmt != null"> 
+				emp_amt = #{empAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="totalDscntAmt != null"> 
+				total_dscnt_amt = #{totalDscntAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="cpnDscntAmt != null"> 
+				cpn_dscnt_amt = #{cpnDscntAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="orderAmt != null"> 
+				order_amt = #{orderAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="salesCnclGbnType != null"> 
+				sales_cncl_gbn_type = #{salesCnclGbnType, jdbcType=CHAR}, 
+			</if> 
+			<if test="stockGbnCode != null"> 
+				stock_gbn_code = #{stockGbnCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 sales_seq = #{salesSeq, jdbcType=BIGINT}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.stats.model.master.SaSalesOrder">
+    
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaSalesOrderDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM sa_sales_order
+		WHERE 
+			 sales_seq = #{salesSeq, jdbcType=BIGINT}  
+    </delete>
+</mapper>

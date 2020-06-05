@@ -1,0 +1,767 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationBrandProductDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandProduct">
+    
+     /*+ kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationBrandProductDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			SE_EXACT_CALCULATION_BRAND_PRODUCT
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectSeExactCalcSellAmtCount" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculation"  resultType="int">
+	/*+ kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandProductDao.selectSeExactCalcSellAmtCount [판매수수료 목록 카운트 쿼리] [이상호] */
+		SELECT <include refid="Paging.totalCount" />
+	     FROM SE_EXACT_CALCULATION_BRAND_PRODUCT SECBP
+         JOIN SE_EXACT_CALCULATION SEC WITH(NOLOCK) ON SECBP.EXCCLC_SEQ = SEC.EXCCLC_SEQ
+	     WHERE SECBP.EXCCLC_SEQ = #{bean.excclcSeq}
+	       AND SEC.EXCCLC_YM = #{bean.excclcYm} 
+			<if test="bean.orderNo != null and bean.orderNo != '' "> 
+	            AND SECBP.ORDER_NO = #{bean.orderNo}
+	        </if>
+	        <if test="bean.prdtNo != null and bean.prdtNo != '' "> 
+	            AND SECBP.ORDER_NO = #{bean.prdtNo}
+	        </if>
+			<if test="bean.brandName != null and bean.brandName != '' "> 
+			    AND SECBP.BRAND_NAME = #{bean.brandName}
+			</if>
+        	<if test="bean.chkCalceArr != null and bean.chkCalceArr != ''">
+	        AND  SEC.EXCCLC_DCSN_YN IN
+	         <foreach item="item" index="index" collection="bean.chkCalceArr" open="(" close=")" separator="," >
+	        	 #{item}
+	         </foreach>
+        	</if>
+   			<if test='bean.salesCnclGbnType == "order"'>
+   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D')
+   			</if>
+   			<if test='bean.salesCnclGbnType == "return"'>
+   				AND SECBP.SALES_CNCL_GBN_TYPE IN('C','R')
+   			</if>
+   			<if test='bean.salesCnclGbnType == "all"'>
+   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D','C','R')
+   			</if>
+	</select>
+
+	<select id="selectSeExactCalcSellAmtList" parameterType="pageable"  resultType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandProduct">
+	/*+ kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandProductDao.selectSeExactCalcSellAmtList [판매수수료  리스트 조회 쿼리] [이상호] */
+	SELECT *
+  FROM(
+	<if test='page.pageNum == 1'>
+     SELECT '합계' AS EXCCLC_YM
+           , '' AS SALES_CNCL_GBN_TYPE_NAME
+           , '' AS SALES_CNCL_GBN_TYPE
+           , '' AS ORDER_NO
+           , '' AS BRAND_NAME
+           , '' AS BRAND_NO
+           , '' AS VNDR_PRDT_NO_TEXT
+           , '' AS PRDT_NAME
+           , ISNULL(SUM(SECBP.PRDT_NORMAL_AMT),0) AS PRDT_NORMAL_AMT
+           , ISNULL(SUM(SECBP.SELL_AMT),0) AS SELL_AMT
+           , '' AS DELAY_DAY_YN
+           , '' AS CPN_USE_YN
+           , '' AS CPN_NAME
+           , ISNULL(SUM(SECBP.CPN_DSCNT_AMT),0) AS  CPN_DSCNT_AMT
+           , ISNULL(SUM(SECBP.CPN_DSCNT_AMT - SECBP.CPN_SHARE_AMT),0) AS ABC_AMT
+           , ISNULL(SUM(SECBP.CPN_SHARE_AMT),0) AS CPN_SHARE_AMT
+           , ''AS  PLUS_CPN_NAME
+           , 0 AS  PLUS_CPN_DSCNT_AMT
+           , '' AS  PLUS_CPN_DSCNT_AMT_TEMP
+           , ISNULL(SUM(SECBP.PLUS_CPN_DSCNT_AMT-SECBP.PLUS_CPN_SHARE_AMT),0) AS PLUS_ABC_AMT
+           , ISNULL(SUM(SECBP.PLUS_CPN_SHARE_AMT),0) AS PLUS_CPN_SHARE_AMT
+           , 0 AS SUPPLY_AMT
+           , '' AS SUPPLY_AMT_TEMP
+           , 0 AS VAT_AMT
+           , '' AS VAT_AMT_TEMP
+           , ISNULL(SUM(SECBP.SELL_AMT),0) AS ACT_PYMNT
+           , 0 AS VNDR_CMSN_RATE
+           , '' AS VNDR_CMSN_RATE_TEMP
+           , 0 AS VNDR_SUPPLY_AMT
+           , '' AS VNDR_SUPPLY_AMT_TEMP
+           , 0 AS VNDR_VAT_AMT
+           , '' AS VNDR_VAT_AMT_TEMP
+           , ISNULL(SUM(SECBP.VNDR_CMSN_AMT),0) AS VNDR_CMSN_AMT
+           , 0 AS BUY_POINT_SAVE_RATE
+           , '' AS BUY_POINT_SAVE_RATE_TEMP
+           , ISNULL(SUM(SECBP.BUY_POINT_SAVE_AMT),0) AS BUY_POINT_SAVE_AMT
+           , ISNULL(SUM(SECBP.EXCCLC_AMT),0) AS EXCCLC_AMT
+           , '' AS EXCCLC_DCSN_YN
+           , '' AS EXCCLC_DTM
+           , '' AS MODER_ID
+           , '' AS MODER_NAME
+           , '' AS FINAL_MOD_DTM
+        FROM SE_EXACT_CALCULATION_BRAND_PRODUCT SECBP
+        JOIN SE_EXACT_CALCULATION SEC WITH(NOLOCK) ON SECBP.EXCCLC_SEQ = SEC.EXCCLC_SEQ
+         WHERE SECBP.EXCCLC_SEQ = #{bean.excclcSeq}
+	     AND SEC.EXCCLC_YM = #{bean.excclcYm} 
+	 		<if test="bean.orderNo != null and bean.orderNo != '' "> 
+	            AND SECBP.ORDER_NO = #{bean.orderNo}
+	        </if>
+	        <if test="bean.prdtNo != null and bean.prdtNo != '' "> 
+	            AND SECBP.ORDER_NO = #{bean.prdtNo}
+	        </if>
+	        <if test="bean.brandName != null and bean.brandName != '' "> 
+	            AND SECBP.BRAND_NAME = #{bean.brandName}
+	        </if>
+        	<if test="bean.chkCalceArr != null and bean.chkCalceArr != ''">
+	        AND  SEC.EXCCLC_DCSN_YN IN
+	         <foreach item="item" index="index" collection="bean.chkCalceArr" open="(" close=")" separator="," >
+	        	 #{item}
+	         </foreach>
+        	</if>
+        	<if test='bean.salesCnclGbnType == "order"'>
+   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D')
+   			</if>
+   			<if test='bean.salesCnclGbnType == "return"'>
+   				AND SECBP.SALES_CNCL_GBN_TYPE IN('C','R')
+   			</if>
+   			<if test='bean.salesCnclGbnType == "all"'>
+   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D','C','R')
+   			</if>
+      GROUP BY SEC.EXCCLC_YM
+      UNION ALL
+      </if>
+      SELECT *
+        FROM(
+            SELECT SEC.EXCCLC_YM
+                 , CASE WHEN SECBP.SALES_CNCL_GBN_TYPE IN('S','D')  
+                        THEN '주문'
+                        ELSE '반품' 
+                   END AS SALES_CNCL_GBN_TYPE_NAME
+                 , SECBP.SALES_CNCL_GBN_TYPE
+                 , SECBP.ORDER_NO
+                 , SECBP.BRAND_NAME
+                 , SECBP.BRAND_NO
+                 , SECBP.VNDR_PRDT_NO_TEXT
+                 , SECBP.PRDT_NAME+'/'+SECBP.OPTN_NAME+'/'+CONVERT(NVARCHAR(10),SECBP.ORDER_QTY) AS PRDT_NAME
+                 , SECBP.PRDT_NORMAL_AMT
+                 , SECBP.SELL_AMT
+                 , CASE WHEN SECBP.DELAY_DAY_COUNT > 0 
+                        THEN 'Y' 
+                        ELSE 'N'
+                   END DELAY_DAY_YN
+                 , SECBP.CPN_USE_YN
+                 , (SELECT CPN_NAME FROM PR_COUPON PC WHERE PC.CPN_NO = SECBP.CPN_NO) AS CPN_NAME
+                 , SECBP.CPN_DSCNT_AMT
+                 , SECBP.CPN_DSCNT_AMT - SECBP.CPN_SHARE_AMT AS ABC_AMT
+                 , SECBP.CPN_SHARE_AMT
+                 , (SELECT CPN_NAME FROM PR_COUPON PC WHERE PC.CPN_NO = SECBP.PLUS_CPN_NO) AS PLUS_CPN_NAME
+                 , SECBP.PLUS_CPN_DSCNT_AMT
+                 , CONVERT(NVARCHAR(10),SECBP.PLUS_CPN_DSCNT_AMT) AS PLUS_CPN_DSCNT_AMT_TEMP
+                 , SECBP.PLUS_CPN_DSCNT_AMT-SECBP.PLUS_CPN_SHARE_AMT AS PLUS_ABC_AMT
+                 , SECBP.PLUS_CPN_SHARE_AMT
+                 , ISNULL((SECBP.SELL_AMT- ISNULL(FLOOR(ROUND(SECBP.SELL_AMT/11.0,-1)),0)),0) AS SUPPLY_AMT
+                 , CONVERT(NVARCHAR(10),ISNULL((SECBP.SELL_AMT- ISNULL(FLOOR(ROUND(SECBP.SELL_AMT/11.0,-1)),0)),0)) AS SUPPLY_AMT_TEMP
+                 , ISNULL(FLOOR(ROUND(SECBP.SELL_AMT/11.0,-1)),0) AS VAT_AMT
+                 , CONVERT(NVARCHAR(10),ISNULL(FLOOR(ROUND(SECBP.SELL_AMT/11.0,-1)),0)) AS VAT_AMT_TEMP
+                 , SECBP.SELL_AMT AS ACT_PYMNT
+                 , SECBP.VNDR_CMSN_RATE
+                 , CONVERT(NVARCHAR(10),SECBP.VNDR_CMSN_RATE) AS VNDR_CMSN_RATE_TEMP
+                 , ISNULL((SECBP.VNDR_CMSN_AMT - ISNULL(FLOOR(ROUND(SECBP.VNDR_CMSN_AMT/11.0,-1)),0)),0) AS VNDR_SUPPLY_AMT
+                 , CONVERT(NVARCHAR(10),ISNULL((SECBP.VNDR_CMSN_AMT - ISNULL(FLOOR(ROUND(SECBP.VNDR_CMSN_AMT/11.0,-1)),0)),0)) AS VNDR_SUPPLY_AMT_TEMP
+                 , ISNULL(FLOOR(ROUND(SECBP.VNDR_CMSN_AMT/11.0,-1)),0) AS VNDR_VAT_AMT
+                 , CONVERT(NVARCHAR(10),ISNULL(FLOOR(ROUND(SECBP.VNDR_CMSN_AMT/11.0,-1)),0)) AS VNDR_VAT_AMT_TEMP
+                 , SECBP.VNDR_CMSN_AMT
+                 , SECBP.BUY_POINT_SAVE_RATE
+                 , CONVERT(NVARCHAR(10),SECBP.BUY_POINT_SAVE_RATE) AS BUY_POINT_SAVE_RATE_TEMP
+                 , SECBP.BUY_POINT_SAVE_AMT
+                 , SECBP.EXCCLC_AMT
+                 , CASE WHEN SEC.EXCCLC_DCSN_YN = 'Y'
+                        THEN '정산확정'
+                        ELSE '정산대기'
+                   END EXCCLC_DCSN_YN
+                 , CONVERT(CHAR(10), SEC.EXCCLC_DCSN_DTM, 102) AS EXCCLC_DTM
+                 , CASE WHEN SEC.MODER_NO IS NOT NULL
+        	    			    THEN (
+              	    					SELECT LOGIN_ID
+              	    					  FROM SY_ADMIN WITH (NOLOCK)
+              	    					 WHERE ADMIN_NO = SEC.MODER_NO
+              	    				 )
+        	    		   ELSE ''
+        	    		   END MODER_ID
+    	          	, CASE WHEN SEC.MODER_NO IS NOT NULL
+    	    		 	         THEN (
+                	    					SELECT ADMIN_NAME
+                	    					  FROM SY_ADMIN WITH (NOLOCK)
+                	    					 WHERE ADMIN_NO = SEC.MODER_NO
+                	    				 )
+                	  ELSE ''
+                	  END AS MODER_NAME 
+                 , CONVERT(CHAR(19), SEC.MOD_DTM , 20) AS FINAL_MOD_DTM
+              FROM SE_EXACT_CALCULATION_BRAND_PRODUCT SECBP
+              JOIN SE_EXACT_CALCULATION SEC WITH(NOLOCK) ON SECBP.EXCCLC_SEQ = SEC.EXCCLC_SEQ
+             WHERE SECBP.EXCCLC_SEQ = #{bean.excclcSeq}
+	     	   AND SEC.EXCCLC_YM = #{bean.excclcYm} 
+	         	<if test="bean.orderNo != null and bean.orderNo != '' "> 
+		            AND SECBP.ORDER_NO = #{bean.orderNo}
+		        </if>
+		        <if test="bean.prdtNo != null and bean.prdtNo != '' "> 
+		            AND SECBP.ORDER_NO = #{bean.prdtNo}
+		        </if>
+		        <if test="bean.brandName != null and bean.brandName != '' "> 
+		            AND SECBP.BRAND_NAME = #{bean.brandName}
+		        </if>
+	         	<if test="bean.chkCalceArr != null and bean.chkCalceArr != ''">
+			        AND  SEC.EXCCLC_DCSN_YN IN
+			         <foreach item="item" index="index" collection="bean.chkCalceArr" open="(" close=")" separator="," >
+			        	 #{item}
+			         </foreach>
+	         	</if>
+	         	<if test='bean.salesCnclGbnType == "order"'>
+	   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D')
+	   			</if>
+	   			<if test='bean.salesCnclGbnType == "return"'>
+	   				AND SECBP.SALES_CNCL_GBN_TYPE IN('C','R')
+	   			</if>
+	   			<if test='bean.salesCnclGbnType == "all"'>
+	   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D','C','R')
+	   			</if>
+				<if test="usePage">
+					ORDER BY SEC.EXCCLC_YM
+				</if>
+	         <include refid="Paging.mssql" />
+          )X     
+      )Y
+  ORDER BY(CASE Y.EXCCLC_YM WHEN '합계' THEN NULL ELSE Y.EXCCLC_YM END )ASC
+	</select>
+	
+	  <select id="selectSeExactCalcDlvyAmtCount" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculation"  resultType="int">
+	/*+ kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandProductDao.selectSeExactCalcDlvyAmt [배송비  목록 카운트 쿼리] [이상호] */
+		SELECT <include refid="Paging.totalCount" />
+	      FROM SE_EXACT_CALCULATION_BRAND_PRODUCT SECBP
+          JOIN SE_EXACT_CALCULATION_DELIVERY_AMOUNT SCDA WITH(NOLOCK) ON  SECBP.EXCCLC_SEQ = SCDA.EXCCLC_SEQ AND SECBP.ORDER_NO = SCDA.ORDER_NO AND SECBP.ORDER_PRDT_SEQ = SCDA.ORDER_PRDT_SEQ
+	      JOIN SE_EXACT_CALCULATION SEC WITH(NOLOCK) ON SECBP.EXCCLC_SEQ = SEC.EXCCLC_SEQ
+	     WHERE SECBP.EXCCLC_SEQ = #{bean.excclcSeq}
+	       AND SEC.EXCCLC_YM = #{bean.excclcYm} 
+			<if test="bean.orderNo != null and bean.orderNo != '' "> 
+	            AND SECBP.ORDER_NO = #{bean.orderNo}
+	        </if>
+	        <if test="bean.prdtNo != null and bean.prdtNo != '' "> 
+	            AND SECBP.ORDER_NO = #{bean.prdtNo}
+	        </if>
+	        <if test="bean.brandName != null and bean.brandName != '' "> 
+	            AND SECBP.BRAND_NAME = #{bean.brandName}
+	        </if>
+        	<if test="bean.chkCalceArr != null and bean.chkCalceArr != ''">
+	        AND  SEC.EXCCLC_DCSN_YN IN
+	         <foreach item="item" index="index" collection="bean.chkCalceArr" open="(" close=")" separator="," >
+	        	 #{item}
+	         </foreach>
+        	</if>
+   			<if test='bean.salesCnclGbnType == "order"'>
+   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D')
+   			</if>
+   			<if test='bean.salesCnclGbnType == "return"'>
+   				AND SECBP.SALES_CNCL_GBN_TYPE IN('C','R')
+   			</if>
+   			<if test='bean.salesCnclGbnType == "all"'>
+   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D','C','R')
+   			</if>
+	</select>
+	
+	<select id="selectSeExactCalcDlvyAmtList" parameterType="pageable"  resultType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandProduct">
+		/*+ kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandProductDao.selectSeExactCalcDlvyAmtList [배송비  리스트 조회 쿼리] [이상호] */
+		SELECT *
+	 	 FROM(
+	      SELECT 	'합계' AS EXCCLC_YM
+		           , '' AS SALES_CNCL_GBN_TYPE_NAME
+		           , '' AS SALES_CNCL_GBN_TYPE
+		           , '' AS ORDER_NO
+		           , ISNULL(SUM(SCDA.ORDER_AMT),0) AS ORDER_AMT
+		           , '' AS EXCCLC_DCSN_YN
+		           , '' AS EXCCLC_DTM
+		           , '' AS MODER_ID
+           		   , '' AS MODER_NAME
+		           , '' AS FINAL_MOD_DTM
+        	  FROM SE_EXACT_CALCULATION_BRAND_PRODUCT SECBP
+              JOIN SE_EXACT_CALCULATION_DELIVERY_AMOUNT SCDA WITH(NOLOCK) ON  SECBP.EXCCLC_SEQ = SCDA.EXCCLC_SEQ AND SECBP.ORDER_NO = SCDA.ORDER_NO AND SECBP.ORDER_PRDT_SEQ = SCDA.ORDER_PRDT_SEQ
+	          JOIN SE_EXACT_CALCULATION SEC WITH(NOLOCK) ON SECBP.EXCCLC_SEQ = SEC.EXCCLC_SEQ
+	          LEFT OUTER JOIN SY_ADMIN SA WITH (NOLOCK) ON SEC.MODER_NO = SA.ADMIN_NO
+	         WHERE SECBP.EXCCLC_SEQ = #{bean.excclcSeq}
+		     AND SEC.EXCCLC_YM = #{bean.excclcYm} 
+		 		<if test="bean.orderNo != null and bean.orderNo != '' "> 
+		            AND SECBP.ORDER_NO = #{bean.orderNo}
+		        </if>
+		        <if test="bean.prdtNo != null and bean.prdtNo != '' "> 
+		            AND SECBP.ORDER_NO = #{bean.prdtNo}
+		        </if>
+		        <if test="bean.brandName != null and bean.brandName != '' "> 
+		            AND SECBP.BRAND_NAME = #{bean.brandName}
+		        </if>
+	        	<if test="bean.chkCalceArr != null and bean.chkCalceArr != ''">
+		        AND  SEC.EXCCLC_DCSN_YN IN
+		         <foreach item="item" index="index" collection="bean.chkCalceArr" open="(" close=")" separator="," >
+		        	 #{item}
+		         </foreach>
+	        	</if>
+	        	<if test='bean.salesCnclGbnType == "order"'>
+	   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D')
+	   			</if>
+	   			<if test='bean.salesCnclGbnType == "return"'>
+	   				AND SECBP.SALES_CNCL_GBN_TYPE IN('C','R')
+	   			</if>
+	   			<if test='bean.salesCnclGbnType == "all"'>
+	   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D','C','R')
+	   			</if>
+	      GROUP BY SEC.EXCCLC_YM
+	      UNION ALL
+	      SELECT *
+	        FROM(
+	            SELECT SEC.EXCCLC_YM
+	                 , CASE WHEN SECBP.SALES_CNCL_GBN_TYPE IN('S','D')  
+	                        THEN '주문'
+	                        ELSE '반품' 
+	                   END AS SALES_CNCL_GBN_TYPE_NAME
+	                 , SECBP.SALES_CNCL_GBN_TYPE
+	                 , SECBP.ORDER_NO
+	                 , SCDA.ORDER_AMT
+	                 , CASE WHEN SEC.EXCCLC_DCSN_YN = 'Y'
+	                        THEN '정산확정'
+	                        ELSE '정산대기'
+	                   END EXCCLC_DCSN_YN
+	                 , CONVERT(CHAR(10), SEC.EXCCLC_DCSN_DTM, 102) AS EXCCLC_DTM
+	                 , CASE WHEN SEC.MODER_NO IS NOT NULL
+        	    			    THEN (
+              	    					SELECT LOGIN_ID
+              	    					  FROM SY_ADMIN WITH (NOLOCK)
+              	    					 WHERE ADMIN_NO = SEC.MODER_NO
+              	    				 )
+        	    		   ELSE ''
+        	    		   END MODER_ID
+    	          	 , CASE WHEN SEC.MODER_NO IS NOT NULL
+    	    		 	         THEN (
+                	    					SELECT ADMIN_NAME
+                	    					  FROM SY_ADMIN WITH (NOLOCK)
+                	    					 WHERE ADMIN_NO = SEC.MODER_NO
+                	    				 )
+                	  ELSE ''
+                	  END AS MODER_NAME
+	                 , CONVERT(CHAR(19), SEC.MOD_DTM , 20) AS FINAL_MOD_DTM
+	              FROM SE_EXACT_CALCULATION_BRAND_PRODUCT SECBP
+                  JOIN SE_EXACT_CALCULATION_DELIVERY_AMOUNT SCDA WITH(NOLOCK) ON  SECBP.EXCCLC_SEQ = SCDA.EXCCLC_SEQ AND SECBP.ORDER_NO = SCDA.ORDER_NO AND SECBP.ORDER_PRDT_SEQ = SCDA.ORDER_PRDT_SEQ
+	              JOIN SE_EXACT_CALCULATION SEC WITH(NOLOCK) ON SECBP.EXCCLC_SEQ = SEC.EXCCLC_SEQ
+	             WHERE SECBP.EXCCLC_SEQ = #{bean.excclcSeq}
+		     	   AND SEC.EXCCLC_YM = #{bean.excclcYm} 
+		         	<if test="bean.orderNo != null and bean.orderNo != '' "> 
+			            AND SECBP.ORDER_NO = #{bean.orderNo}
+			        </if>
+			        <if test="bean.prdtNo != null and bean.prdtNo != '' "> 
+			            AND SECBP.ORDER_NO = #{bean.prdtNo}
+			        </if>
+			        <if test="bean.brandName != null and bean.brandName != '' "> 
+			            AND SECBP.BRAND_NAME = #{bean.brandName}
+			        </if>
+		         	<if test="bean.chkCalceArr != null and bean.chkCalceArr != ''">
+				        AND  SEC.EXCCLC_DCSN_YN IN
+				         <foreach item="item" index="index" collection="bean.chkCalceArr" open="(" close=")" separator="," >
+				        	 #{item}
+				         </foreach>
+		         	</if>
+		         	<if test='bean.salesCnclGbnType == "order"'>
+		   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D')
+		   			</if>
+		   			<if test='bean.salesCnclGbnType == "return"'>
+		   				AND SECBP.SALES_CNCL_GBN_TYPE IN('C','R')
+		   			</if>
+		   			<if test='bean.salesCnclGbnType == "all"'>
+		   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D','C','R')
+		   			</if>
+		   			<if test="usePage">
+						ORDER BY SEC.EXCCLC_YM
+					</if>
+		         <include refid="Paging.mssql" />
+	          )X     
+	      )Y
+	  ORDER BY(CASE Y.EXCCLC_YM WHEN '합계' THEN NULL ELSE Y.EXCCLC_YM END )ASC
+	</select>
+	
+	
+	<select id="selectSeExactCalcPromoAmtCount" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculation"  resultType="int">
+		/*+ kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandProductDao.selectSeExactCalcPromoAmtCount [프로모션 비용  목록 카운트 쿼리] [이상호] */
+		SELECT <include refid="Paging.totalCount" />
+	     FROM SE_EXACT_CALCULATION_BRAND_PRODUCT SECBP
+         JOIN SE_EXACT_CALCULATION SEC WITH(NOLOCK) ON SECBP.EXCCLC_SEQ = SEC.EXCCLC_SEQ
+	     WHERE SECBP.EXCCLC_SEQ = #{bean.excclcSeq}
+	       AND SEC.EXCCLC_YM = #{bean.excclcYm} 
+			<if test="bean.orderNo != null and bean.orderNo != '' "> 
+	            AND SECBP.ORDER_NO = #{bean.orderNo}
+	        </if>
+	        <if test="bean.prdtNo != null and bean.prdtNo != '' "> 
+	            AND SECBP.ORDER_NO = #{bean.prdtNo}
+	        </if>
+	        <if test="bean.brandName != null and bean.brandName != '' "> 
+	            AND SECBP.BRAND_NAME = #{bean.brandName}
+	        </if>
+        	<if test="bean.chkCalceArr != null and bean.chkCalceArr != ''">
+	        AND  SEC.EXCCLC_DCSN_YN IN
+	         <foreach item="item" index="index" collection="bean.chkCalceArr" open="(" close=")" separator="," >
+	        	 #{item}
+	         </foreach>
+        	</if>
+   			<if test='bean.salesCnclGbnType == "order"'>
+   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D')
+   			</if>
+   			<if test='bean.salesCnclGbnType == "return"'>
+   				AND SECBP.SALES_CNCL_GBN_TYPE IN('C','R')
+   			</if>
+   			<if test='bean.salesCnclGbnType == "all"'>
+   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D','C','R')
+   			</if>
+	</select>
+
+	<select id="selectSeExactCalcPromoAmtList" parameterType="pageable"  resultType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandProduct">
+	/*+ kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandProductDao.selectSeExactCalcPromoAmtList [프로모션비용   리스트 조회 쿼리] [이상호] */
+	SELECT *
+  FROM(
+ 	 <if test='page.pageNum == 1'>
+		SELECT    '합계' AS EXCCLC_YM
+				, '' AS SALES_CNCL_GBN_TYPE_NAME
+				, '' AS SALES_CNCL_GBN_TYPE
+				, '' AS ORDER_NO
+				, '' AS BRAND_NAME
+				, '' AS BRAND_NO
+				, '' AS VNDR_PRDT_NO_TEXT
+				, '' AS PRDT_NAME
+				, ISNULL(SUM(SECBP.PRDT_NORMAL_AMT),0) AS PRDT_NORMAL_AMT
+				, ISNULL(SUM(SECBP.SELL_AMT),0) AS SELL_AMT
+				, '' AS CPN_USE_YN
+				, '' AS CPN_NAME
+				, ISNULL(SUM(SECBP.CPN_DSCNT_AMT),0) AS  CPN_DSCNT_AMT
+				, ISNULL(SUM(SECBP.CPN_DSCNT_AMT - SECBP.CPN_SHARE_AMT),0) AS ABC_AMT
+				, ISNULL(SUM(SECBP.CPN_SHARE_AMT),0) AS CPN_SHARE_AMT
+				, ''AS  PLUS_CPN_NAME
+				, 0 AS  PLUS_CPN_DSCNT_AMT
+				, '' AS  PLUS_CPN_DSCNT_AMT_TEMP
+				, ISNULL(SUM(SECBP.PLUS_CPN_DSCNT_AMT-SECBP.PLUS_CPN_SHARE_AMT),0) AS PLUS_ABC_AMT
+				, ISNULL(SUM(SECBP.PLUS_CPN_SHARE_AMT),0) AS PLUS_CPN_SHARE_AMT
+				, 0 AS SUPPLY_AMT
+				, '' AS SUPPLY_AMT_TEMP
+				, 0 AS VAT_AMT
+				, '' AS VAT_AMT_TEMP
+				, ISNULL(SUM(SECBP.SELL_AMT),0) AS ACT_PYMNT
+				, ISNULL(SUM(SECBP.EXCCLC_AMT),0) AS EXCCLC_AMT
+				, '' AS EXCCLC_DCSN_YN
+				, '' AS EXCCLC_DTM
+				, '' AS MODER_ID
+				, '' AS MODER_NAME
+				, '' AS FINAL_MOD_DTM
+	        FROM SE_EXACT_CALCULATION_BRAND_PRODUCT SECBP
+	        JOIN SE_EXACT_CALCULATION SEC WITH(NOLOCK) ON SECBP.EXCCLC_SEQ = SEC.EXCCLC_SEQ
+	         WHERE SECBP.EXCCLC_SEQ = #{bean.excclcSeq}
+		     AND SEC.EXCCLC_YM = #{bean.excclcYm} 
+		 		<if test="bean.orderNo != null and bean.orderNo != '' "> 
+		            AND SECBP.ORDER_NO = #{bean.orderNo}
+		        </if>
+		        <if test="bean.prdtNo != null and bean.prdtNo != '' "> 
+		            AND SECBP.ORDER_NO = #{bean.prdtNo}
+		        </if>
+		        <if test="bean.brandName != null and bean.brandName != '' "> 
+		            AND SECBP.BRAND_NAME = #{bean.brandName}
+		        </if>
+	        	<if test="bean.chkCalceArr != null and bean.chkCalceArr != ''">
+		        AND  SEC.EXCCLC_DCSN_YN IN
+		         <foreach item="item" index="index" collection="bean.chkCalceArr" open="(" close=")" separator="," >
+		        	 #{item}
+		         </foreach>
+	        	</if>
+	        	<if test='bean.salesCnclGbnType == "order"'>
+	   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D')
+	   			</if>
+	   			<if test='bean.salesCnclGbnType == "return"'>
+	   				AND SECBP.SALES_CNCL_GBN_TYPE IN('C','R')
+	   			</if>
+	   			<if test='bean.salesCnclGbnType == "all"'>
+	   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D','C','R')
+	   			</if>
+	      GROUP BY SEC.EXCCLC_YM
+	      UNION ALL
+	     </if>
+      SELECT *
+        FROM(
+            SELECT SEC.EXCCLC_YM
+                 , CASE WHEN SECBP.SALES_CNCL_GBN_TYPE IN('S','D')  
+                        THEN '주문'
+                        ELSE '반품' 
+                   END AS SALES_CNCL_GBN_TYPE_NAME
+                 , SECBP.SALES_CNCL_GBN_TYPE
+                 , SECBP.ORDER_NO
+                 , SECBP.BRAND_NAME
+                 , SECBP.BRAND_NO
+                 , SECBP.VNDR_PRDT_NO_TEXT
+                 , SECBP.PRDT_NAME+'/'+SECBP.OPTN_NAME+'/'+CONVERT(NVARCHAR(10),SECBP.ORDER_QTY) AS PRDT_NAME
+                 , SECBP.PRDT_NORMAL_AMT
+                 , SECBP.SELL_AMT
+                 , SECBP.CPN_USE_YN
+                 , (SELECT CPN_NAME FROM PR_COUPON PC WHERE PC.CPN_NO = SECBP.CPN_NO) AS CPN_NAME
+                 , SECBP.CPN_DSCNT_AMT
+                 , SECBP.CPN_DSCNT_AMT - SECBP.CPN_SHARE_AMT AS ABC_AMT
+                 , SECBP.CPN_SHARE_AMT
+                 , (SELECT CPN_NAME FROM PR_COUPON PC WHERE PC.CPN_NO = SECBP.PLUS_CPN_NO) AS PLUS_CPN_NAME
+                 , SECBP.PLUS_CPN_DSCNT_AMT
+                 , CONVERT(NVARCHAR(10),SECBP.PLUS_CPN_DSCNT_AMT) AS PLUS_CPN_DSCNT_AMT_TEMP
+                 , SECBP.PLUS_CPN_DSCNT_AMT-SECBP.PLUS_CPN_SHARE_AMT AS PLUS_ABC_AMT
+                 , SECBP.PLUS_CPN_SHARE_AMT
+                 , ISNULL((SECBP.SELL_AMT- ISNULL(FLOOR(ROUND(SECBP.SELL_AMT/11.0,-1)),0)),0) AS SUPPLY_AMT
+                 , CONVERT(NVARCHAR(10),ISNULL((SECBP.SELL_AMT- ISNULL(FLOOR(ROUND(SECBP.SELL_AMT/11.0,-1)),0)),0)) AS SUPPLY_AMT_TEMP
+                 , ISNULL(FLOOR(ROUND(SECBP.SELL_AMT/11.0,-1)),0) AS VAT_AMT
+                 , CONVERT(NVARCHAR(10),ISNULL(FLOOR(ROUND(SECBP.SELL_AMT/11.0,-1)),0)) AS VAT_AMT_TEMP
+                 , SECBP.SELL_AMT AS ACT_PYMNT
+                 , SECBP.EXCCLC_AMT
+                 , CASE WHEN SEC.EXCCLC_DCSN_YN = 'Y'
+                        THEN '정산확정'
+                        ELSE '정산대기'
+                   END EXCCLC_DCSN_YN
+                 , CONVERT(CHAR(10), SEC.EXCCLC_DCSN_DTM, 102) AS EXCCLC_DTM
+                 , CASE WHEN SEC.MODER_NO IS NOT NULL
+        	    	    THEN (
+      	    					SELECT LOGIN_ID
+      	    					  FROM SY_ADMIN WITH (NOLOCK)
+      	    					 WHERE ADMIN_NO = SEC.MODER_NO
+      	    				 )
+            		    ELSE ''
+            	   END MODER_ID
+    	         , CASE WHEN SEC.MODER_NO IS NOT NULL
+						THEN (
+						    	SELECT ADMIN_NAME
+								  FROM SY_ADMIN WITH (NOLOCK)
+								 WHERE ADMIN_NO = SEC.MODER_NO
+							 )
+						 ELSE ''
+                   END AS MODER_NAME
+                 , CONVERT(CHAR(19), SEC.MOD_DTM , 20) AS FINAL_MOD_DTM
+              FROM SE_EXACT_CALCULATION_BRAND_PRODUCT SECBP
+              JOIN SE_EXACT_CALCULATION SEC WITH(NOLOCK) ON SECBP.EXCCLC_SEQ = SEC.EXCCLC_SEQ
+             WHERE SECBP.EXCCLC_SEQ = #{bean.excclcSeq}
+	     	   AND SEC.EXCCLC_YM = #{bean.excclcYm} 
+	         	<if test="bean.orderNo != null and bean.orderNo != '' "> 
+		            AND SECBP.ORDER_NO = #{bean.orderNo}
+		        </if>
+		        <if test="bean.prdtNo != null and bean.prdtNo != '' "> 
+		            AND SECBP.ORDER_NO = #{bean.prdtNo}
+		        </if>
+				<if test="bean.brandName != null and bean.brandName != '' "> 
+				    AND SECBP.BRAND_NAME = #{bean.brandName}
+				</if>
+	         	<if test="bean.chkCalceArr != null and bean.chkCalceArr != ''">
+			        AND  SEC.EXCCLC_DCSN_YN IN
+			         <foreach item="item" index="index" collection="bean.chkCalceArr" open="(" close=")" separator="," >
+			        	 #{item}
+			         </foreach>
+	         	</if>
+	         	<if test='bean.salesCnclGbnType == "order"'>
+	   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D')
+	   			</if>
+	   			<if test='bean.salesCnclGbnType == "return"'>
+	   				AND SECBP.SALES_CNCL_GBN_TYPE IN('C','R')
+	   			</if>
+	   			<if test='bean.salesCnclGbnType == "all"'>
+	   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D','C','R')
+	   			</if>
+	   			<if test="usePage">
+					ORDER BY SEC.EXCCLC_YM
+				</if>
+	         <include refid="Paging.mssql" />
+          )X     
+      )Y
+ 	 ORDER BY(CASE Y.EXCCLC_YM WHEN '합계' THEN NULL ELSE Y.EXCCLC_YM END )ASC
+	</select>
+	
+	
+	<select id="selectSeExactCalcPenltyAmtCount" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculation"  resultType="int">
+	/*+ kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandProductDao.selectSeExactCalcPenltyAmtCount [태널티산정 정산  목록 카운트 쿼리] [이상호] */
+		SELECT <include refid="Paging.totalCount" />
+	     FROM SE_EXACT_CALCULATION_BRAND_PRODUCT SECBP
+         JOIN SE_EXACT_CALCULATION SEC WITH(NOLOCK) ON SECBP.EXCCLC_SEQ = SEC.EXCCLC_SEQ
+	     WHERE SECBP.EXCCLC_SEQ = #{bean.excclcSeq}
+	       AND SEC.EXCCLC_YM = #{bean.excclcYm} 
+			<if test="bean.orderNo != null and bean.orderNo != '' "> 
+	            AND SECBP.ORDER_NO = #{bean.orderNo}
+	        </if>
+	        <if test="bean.prdtNo != null and bean.prdtNo != '' "> 
+	            AND SECBP.ORDER_NO = #{bean.prdtNo}
+	        </if>
+			<if test="bean.brandName != null and bean.brandName != '' "> 
+			    AND SECBP.BRAND_NAME = #{bean.brandName}
+			</if>
+        	<if test="bean.chkCalceArr != null and bean.chkCalceArr != ''">
+	        AND  SEC.EXCCLC_DCSN_YN IN
+	         <foreach item="item" index="index" collection="bean.chkCalceArr" open="(" close=")" separator="," >
+	        	 #{item}
+	         </foreach>
+        	</if>
+   			<if test='bean.salesCnclGbnType == "order"'>
+   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D')
+   			</if>
+   			<if test='bean.salesCnclGbnType == "return"'>
+   				AND SECBP.SALES_CNCL_GBN_TYPE IN('C','R')
+   			</if>
+   			<if test='bean.salesCnclGbnType == "all"'>
+   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D','C','R')
+   			</if>
+	</select>
+
+	<select id="selectSeExactCalcPenltyAmtList" parameterType="pageable"  resultType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandProduct">
+	/*+ kr.co.abcmart.bo.settlement.model.master.SeExactCalculationBrandProductDao.selectSeExactCalcPenltyAmtList [패널티산정 정산 리스트 조회 쿼리] [이상호] */
+	SELECT *
+  FROM(
+   	<if test='page.pageNum == 1'>
+      SELECT '합계' AS EXCCLC_YM
+           , '' AS SALES_CNCL_GBN_TYPE_NAME
+           , '' AS SALES_CNCL_GBN_TYPE
+           , '' AS ORDER_NO
+           , '' AS BRAND_NAME
+           , '' AS BRAND_NO
+           , '' AS VNDR_PRDT_NO_TEXT
+           , '' AS PRDT_NAME
+           , ISNULL(SUM(SECBP.PRDT_NORMAL_AMT),0) AS PRDT_NORMAL_AMT
+           , ISNULL(SUM(SECBP.SELL_AMT),0) AS SELL_AMT
+           , '' AS DELAY_DAY_YN
+           , 0 AS DELAY_DAY_COUNT
+           , '' AS DELAY_DAY_COUNT_TEMP
+           , 0 AS PENLTY_LEVY_RATE
+           , '' AS PENLTY_LEVY_RATE_TEMP
+           , 0 AS PENLTY_AMT
+           , '' AS PENLTY_AMT_TEMP
+           , 0 AS SUPPLY_AMT
+           , '' AS SUPPLY_AMT_TEMP
+		   , 0 AS VAT_AMT
+		   , '' AS VAT_AMT_TEMP
+		   , ISNULL(SUM(SECBP.SELL_AMT),0) AS ACT_PYMNT
+           , ISNULL(SUM(SECBP.EXCCLC_AMT),0) AS EXCCLC_AMT
+           , '' AS EXCCLC_DCSN_YN
+           , '' AS EXCCLC_DTM
+           , '' AS MODER_ID
+           , '' AS MODER_NAME
+           , '' AS FINAL_MOD_DTM
+        FROM SE_EXACT_CALCULATION_BRAND_PRODUCT SECBP
+        JOIN SE_EXACT_CALCULATION SEC WITH(NOLOCK) ON SECBP.EXCCLC_SEQ = SEC.EXCCLC_SEQ
+       WHERE SECBP.EXCCLC_SEQ = #{bean.excclcSeq}
+	     AND SEC.EXCCLC_YM = #{bean.excclcYm} 
+	 		<if test="bean.orderNo != null and bean.orderNo != '' "> 
+	            AND SECBP.ORDER_NO = #{bean.orderNo}
+	        </if>
+	        <if test="bean.prdtNo != null and bean.prdtNo != '' "> 
+	            AND SECBP.ORDER_NO = #{bean.prdtNo}
+	        </if>
+			<if test="bean.brandName != null and bean.brandName != '' "> 
+			    AND SECBP.BRAND_NAME = #{bean.brandName}
+			</if>
+        	<if test="bean.chkCalceArr != null and bean.chkCalceArr != ''">
+	       		AND  SEC.EXCCLC_DCSN_YN IN
+	         <foreach item="item" index="index" collection="bean.chkCalceArr" open="(" close=")" separator="," >
+	        	 #{item}
+	         </foreach>
+        	</if>
+        	<if test='bean.salesCnclGbnType == "order"'>
+   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D')
+   			</if>
+   			<if test='bean.salesCnclGbnType == "return"'>
+   				AND SECBP.SALES_CNCL_GBN_TYPE IN('C','R')
+   			</if>
+   			<if test='bean.salesCnclGbnType == "all"'>
+   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D','C','R')
+   			</if>
+      GROUP BY SEC.EXCCLC_YM
+      UNION ALL
+      </if>
+      SELECT *
+        FROM(
+            SELECT SEC.EXCCLC_YM
+			     , CASE WHEN SECBP.SALES_CNCL_GBN_TYPE IN('S','D')  
+			            THEN '주문'
+			            ELSE '반품' 
+			       END AS SALES_CNCL_GBN_TYPE_NAME
+			     , SECBP.SALES_CNCL_GBN_TYPE
+			     , SECBP.ORDER_NO
+			     , SECBP.BRAND_NAME
+			     , SECBP.BRAND_NO
+			     , SECBP.VNDR_PRDT_NO_TEXT
+			     , SECBP.PRDT_NAME+'/'+SECBP.OPTN_NAME+'/'+CONVERT(NVARCHAR(10),SECBP.ORDER_QTY) AS PRDT_NAME
+			     , SECBP.PRDT_NORMAL_AMT
+			     , SECBP.SELL_AMT
+			     , CASE WHEN SECBP.DELAY_DAY_COUNT > 0 
+			            THEN 'Y' 
+			            ELSE 'N'
+			       END DELAY_DAY_YN
+			     , SECBP.DELAY_DAY_COUNT
+			     , CONVERT(NVARCHAR(10),SECBP.DELAY_DAY_COUNT) AS DELAY_DAY_COUNT_TEMP
+			     , SECBP.PENLTY_LEVY_RATE
+			     , CONVERT(NVARCHAR(10),SECBP.PENLTY_LEVY_RATE) AS PENLTY_LEVY_RATE_TEMP
+			     , SECBP.PENLTY_AMT AS PENLTY_AMT
+			     , CONVERT(NVARCHAR(10),SECBP.PENLTY_AMT) AS PENLTY_AMT_TEMP
+			     , ISNULL((SECBP.SELL_AMT- ISNULL(FLOOR(ROUND(SECBP.SELL_AMT/11.0,-1)),0)),0) AS SUPPLY_AMT
+			     , CONVERT(NVARCHAR(10),ISNULL((SECBP.SELL_AMT- ISNULL(FLOOR(ROUND(SECBP.SELL_AMT/11.0,-1)),0)),0)) AS SUPPLY_AMT_TEMP
+				 , ISNULL(FLOOR(ROUND(SECBP.SELL_AMT/11.0,-1)),0) AS VAT_AMT
+				 , CONVERT(NVARCHAR(10),ISNULL(FLOOR(ROUND(SECBP.SELL_AMT/11.0,-1)),0)) AS VAT_AMT_TEMP
+				 , SECBP.SELL_AMT AS ACT_PYMNT
+			     , SECBP.EXCCLC_AMT
+			     , CASE WHEN SEC.EXCCLC_DCSN_YN = 'Y'
+			            THEN '정산확정'
+			            ELSE '정산대기'
+			       END EXCCLC_DCSN_YN
+			     , CONVERT(CHAR(10), SEC.EXCCLC_DCSN_DTM, 102) AS EXCCLC_DTM
+			     , CASE WHEN SEC.MODER_NO IS NOT NULL
+       	    			    THEN (
+             	    					SELECT LOGIN_ID
+             	    					  FROM SY_ADMIN WITH (NOLOCK)
+             	    					 WHERE ADMIN_NO = SEC.MODER_NO
+             	    				 )
+       	    		   ELSE ''
+       	    		   END MODER_ID
+   	          	, CASE WHEN SEC.MODER_NO IS NOT NULL
+   	    		 	         THEN (
+               	    					SELECT ADMIN_NAME
+               	    					  FROM SY_ADMIN WITH (NOLOCK)
+               	    					 WHERE ADMIN_NO = SEC.MODER_NO
+               	    				 )
+               	  ELSE ''
+               	  END AS MODER_NAME 
+			     , CONVERT(CHAR(19), SEC.MOD_DTM , 20) AS FINAL_MOD_DTM
+			FROM SE_EXACT_CALCULATION_BRAND_PRODUCT SECBP
+			JOIN SE_EXACT_CALCULATION SEC WITH(NOLOCK) ON SECBP.EXCCLC_SEQ = SEC.EXCCLC_SEQ
+           WHERE SECBP.EXCCLC_SEQ = #{bean.excclcSeq}
+	     	   AND SEC.EXCCLC_YM = #{bean.excclcYm} 
+	         	<if test="bean.orderNo != null and bean.orderNo != '' "> 
+		            AND SECBP.ORDER_NO = #{bean.orderNo}
+		        </if>
+		        <if test="bean.prdtNo != null and bean.prdtNo != '' "> 
+		            AND SECBP.ORDER_NO = #{bean.prdtNo}
+		        </if>
+				<if test="bean.brandName != null and bean.brandName != '' "> 
+				    AND SECBP.BRAND_NAME = #{bean.brandName}
+				</if>
+	         	<if test="bean.chkCalceArr != null and bean.chkCalceArr != ''">
+			        AND  SEC.EXCCLC_DCSN_YN IN
+			         <foreach item="item" index="index" collection="bean.chkCalceArr" open="(" close=")" separator="," >
+			        	 #{item}
+			         </foreach>
+	         	</if>
+	         	<if test='bean.salesCnclGbnType == "order"'>
+	   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D')
+	   			</if>
+	   			<if test='bean.salesCnclGbnType == "return"'>
+	   				AND SECBP.SALES_CNCL_GBN_TYPE IN('C','R')
+	   			</if>
+	   			<if test='bean.salesCnclGbnType == "all"'>
+	   				AND SECBP.SALES_CNCL_GBN_TYPE IN('S','D','C','R')
+	   			</if>
+	   			<if test="usePage">
+					ORDER BY SEC.EXCCLC_YM
+				</if>
+	         <include refid="Paging.mssql" />
+          )X     
+      )Y
+  ORDER BY(CASE Y.EXCCLC_YM WHEN '합계' THEN NULL ELSE Y.EXCCLC_YM END )ASC
+	</select>
+
+</mapper>

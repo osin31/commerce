@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.event.repository.master.EvEventImageDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	event_no, device_code, image_gbn_type, image_name, image_path_text, image_url, altrn_text
+    </sql>
+    
+    <sql id="pk-columns">
+    	device_code = #{deviceCode, jdbcType=VARCHAR} AND event_no = #{eventNo, jdbcType=VARCHAR} AND image_gbn_type = #{imageGbnType, jdbcType=CHAR}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.event.model.master.EvEventImage" resultType="kr.co.abcmart.bo.event.model.master.EvEventImage">
+    
+     /*+ kr.co.abcmart.bo.event.repository.master.EvEventImageDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			EV_EVENT_IMAGE
+		<where> 
+			<if test="eventNo != null"> 
+				 event_no = #{eventNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="deviceCode != null"> 
+				 AND device_code = #{deviceCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="imageGbnType != null"> 
+				 AND image_gbn_type = #{imageGbnType, jdbcType=CHAR}
+			</if> 
+			<if test="imageName != null"> 
+				 AND image_name = #{imageName, jdbcType=VARCHAR}
+			</if> 
+			<if test="imagePathText != null"> 
+				 AND image_path_text = #{imagePathText, jdbcType=VARCHAR}
+			</if> 
+			<if test="imageUrl != null"> 
+				 AND image_url = #{imageUrl, jdbcType=VARCHAR}
+			</if> 
+			<if test="altrnText != null"> 
+				 AND altrn_text = #{altrnText, jdbcType=VARCHAR}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <insert id="insert" parameterType="kr.co.abcmart.bo.event.model.master.EvEventImage">	
+
+     /*+ kr.co.abcmart.bo.event.repository.master.EvEventImageDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO EV_EVENT_IMAGE
+			 ( event_no, device_code, image_gbn_type, image_name, image_path_text, image_url, altrn_text ) 
+
+		VALUES 
+			 ( #{eventNo, jdbcType=VARCHAR}, #{deviceCode, jdbcType=VARCHAR}, #{imageGbnType, jdbcType=CHAR}, #{imageName, jdbcType=VARCHAR}, #{imagePathText, jdbcType=VARCHAR}, #{imageUrl, jdbcType=VARCHAR}, #{altrnText, jdbcType=VARCHAR} )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.event.model.master.EvEventImage">
+    
+     /*+ kr.co.abcmart.bo.event.repository.master.EvEventImageDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE EV_EVENT_IMAGE
+		<set> 
+			<if test="eventNo != null"> 
+				event_no = #{eventNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="deviceCode != null"> 
+				device_code = #{deviceCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="imageGbnType != null"> 
+				image_gbn_type = #{imageGbnType, jdbcType=CHAR}, 
+			</if> 
+			<if test="imageName != null"> 
+				image_name = #{imageName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="imagePathText != null"> 
+				image_path_text = #{imagePathText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="imageUrl != null"> 
+				image_url = #{imageUrl, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="altrnText != null"> 
+				altrn_text = #{altrnText, jdbcType=VARCHAR}, 
+			</if> 
+		</set> 
+		WHERE 
+			 device_code = #{deviceCode, jdbcType=VARCHAR} AND event_no = #{eventNo, jdbcType=VARCHAR} AND image_gbn_type = #{imageGbnType, jdbcType=CHAR}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.event.model.master.EvEventImage">
+    
+     /*+ kr.co.abcmart.bo.event.repository.master.EvEventImageDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM EV_EVENT_IMAGE
+		WHERE 
+			 device_code = #{deviceCode, jdbcType=VARCHAR} AND event_no = #{eventNo, jdbcType=VARCHAR} AND image_gbn_type = #{imageGbnType, jdbcType=CHAR}  
+    </delete>
+</mapper>

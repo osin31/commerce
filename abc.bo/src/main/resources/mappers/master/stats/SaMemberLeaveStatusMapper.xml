@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.stats.repository.master.SaMemberLeaveStatusDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.stats.model.master.SaMemberLeaveStatus">
+    
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaMemberLeaveStatusDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			sa_member_leave_status
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+	
+	<sql id="pageableSearchKey">
+		WHERE
+		<choose>
+	 		<when test="bean.periodType == 'day'.toString() and bean.periodType != null">
+	 		A.TOTAL_DAY BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))		
+	 		</when>
+	 		<when test="bean.periodType == 'month'.toString() and bean.periodType != null">
+	 		CONVERT(VARCHAR(6), A.TOTAL_DAY , 112) BETWEEN #{bean.periodMonthStart} AND #{bean.periodMonthEnd}		
+	 		</when>
+	 		<otherwise>
+	 		CONVERT(VARCHAR(4), A.TOTAL_DAY , 112) BETWEEN #{bean.periodYearStart} AND #{bean.periodYearEnd}
+	 		</otherwise>
+	 	</choose>
+		<if test="bean.memberTypeCode != null">
+			AND A.MEMBER_TYPE_CODE = #{bean.memberTypeCode}
+		</if>
+	</sql>
+	
+	<sql id="searchKey">
+		 WHERE
+		<choose>
+	 		<when test="periodType == 'day'.toString() and periodType != null">
+	 		A.TOTAL_DAY BETWEEN CONVERT(DATETIME, CONCAT(#{fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{toDate, jdbcType=VARCHAR}, ' 23:59:59'))		
+	 		</when>
+	 		<when test="periodType == 'month'.toString() and periodType != null">
+	 		CONVERT(VARCHAR(6), A.TOTAL_DAY , 112) BETWEEN (#{bean.periodMonthStart} AND #{bean.periodMonthEnd})		
+	 		</when>
+	 		<otherwise>
+	 		CONVERT(VARCHAR(4), A.TOTAL_DAY , 112) BETWEEN (#{bean.periodYearStart} AND #{bean.periodYearEnd})
+	 		</otherwise>
+	 	</choose>
+		<if test="memberTypeCode != null">
+			AND A.MEMBER_TYPE_CODE = #{memberTypeCode}
+		</if>
+	</sql>
+	
+	<sql id="pageableDayTypeConvert">
+		 <choose>
+			<when test="bean.periodType == 'day'.toString() and bean.periodType != null">
+		  CONCAT (A.TOTAL_DAY, '(', A.DOTW_NAME, ')') AS DATE_AREA
+			</when>
+			<when test="bean.periodType == 'month'.toString() and bean.periodType != null">
+		  LEFT(CONVERT(CHAR(10), A.TOTAL_DAY, 23), 7) AS DATE_AREA
+			</when>
+			<otherwise>
+		  LEFT(CONVERT(CHAR(10), A.TOTAL_DAY, 23), 4) AS DATE_AREA
+			</otherwise>
+		</choose>
+	</sql>
+	
+	<sql id="dayTypeConvert">
+		 <choose>
+			<when test="periodType == 'day'.toString() and periodType != null">
+		  CONCAT (A.TOTAL_DAY, '(', A.DOTW_NAME, ')') AS DATE_AREA
+			</when>
+			<when test="periodType == 'month'.toString() and periodType != null">
+		  LEFT(CONVERT(CHAR(10), A.TOTAL_DAY, 23), 7) AS DATE_AREA
+			</when>
+			<otherwise>
+		  LEFT(CONVERT(CHAR(10), A.TOTAL_DAY, 23), 4) AS DATE_AREA
+			</otherwise>
+		</choose>
+	</sql>
+	
+	<select id="selectLeaveGridCount" parameterType="pageable" resultType="int"> 
+	/*+ kr.co.abcmart.bo.stats.repository.master.SaMemberLeaveStatusDao.selectLeaveGridCount [grid 카운트] [신인철] */
+		SELECT COUNT(DATE_AREA)
+		  FROM (
+				SELECT DATE_AREA
+					 , ISNULL(SUM(MEMBER_TYPE0), 0) AS TYPE_0
+					 , ISNULL(SUM(MEMBER_TYPE1), 0) AS TYPE_1
+					 , ISNULL(SUM(MEMBER_TYPE2), 0) AS TYPE_2
+					 , ISNULL(SUM(MEMBER_TYPE3), 0) AS TYPE_3
+					 , ISNULL(SUM(MEMBER_TYPE4), 0) AS TYPE_4
+					 , ISNULL(SUM(MEMBER_TYPE5), 0) AS TYPE_5
+					 , ISNULL(SUM(MEMBER_TYPE6), 0) AS TYPE_6
+					 , ISNULL(SUM(MEMBER_TYPE7), 0) AS TYPE_7
+					 , ISNULL(SUM(MEMBER_TYPE8), 0) AS TYPE_8
+					 , ISNULL(SUM(MEMBER_TYPE9), 0) AS TYPE_9
+					 , ISNULL(SUM(MEMBER_TYPE10), 0) AS TYPE_10
+					 , ISNULL(SUM(MEMBER_TYPE11), 0) AS TYPE_11
+					 , ISNULL(SUM(MEMBER_TYPE0+MEMBER_TYPE1+MEMBER_TYPE2+MEMBER_TYPE3+MEMBER_TYPE4+MEMBER_TYPE5+MEMBER_TYPE6+MEMBER_TYPE7+MEMBER_TYPE8+MEMBER_TYPE9+MEMBER_TYPE10+MEMBER_TYPE11), 0) AS TOTAL
+				  FROM (
+						SELECT <include refid="pageableDayTypeConvert" />
+							 , CASE WHEN A.LEAVE_RSN_CODE ='10000' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE0
+							 , CASE WHEN A.LEAVE_RSN_CODE ='10001' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE1
+							 , CASE WHEN A.LEAVE_RSN_CODE ='10002' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE2
+							 , CASE WHEN A.LEAVE_RSN_CODE ='10003' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE3
+							 , CASE WHEN A.LEAVE_RSN_CODE ='10004' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE4
+							 , CASE WHEN A.LEAVE_RSN_CODE ='10005' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE5
+							 , CASE WHEN A.LEAVE_RSN_CODE ='10006' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE6
+							 , CASE WHEN A.LEAVE_RSN_CODE ='10007' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE7
+							 , CASE WHEN A.LEAVE_RSN_CODE ='10008' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE8
+							 , CASE WHEN A.LEAVE_RSN_CODE ='10009' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE9
+							 , CASE WHEN A.LEAVE_RSN_CODE ='10010' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE10
+							 , CASE WHEN A.LEAVE_RSN_CODE ='10011' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE11
+						  FROM SA_MEMBER_LEAVE_STATUS A WITH(NOLOCK)
+						 <include refid="pageableSearchKey" />
+						) AS V
+				 GROUP BY DATE_AREA
+				) C
+	</select>
+	
+	
+	<select id="selectLeaveGrid" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaMemberLeaveStatus"> 
+	/*+ kr.co.abcmart.bo.stats.repository.master.SaMemberLeaveStatusDao.selectLeaveGrid [grid 조회] [신인철] */
+	   WITH SDATA AS( 
+			SELECT DATE_AREA
+				 , ISNULL(SUM(MEMBER_TYPE0), 0) AS TYPE_0
+				 , ISNULL(SUM(MEMBER_TYPE1), 0) AS TYPE_1
+				 , ISNULL(SUM(MEMBER_TYPE2), 0) AS TYPE_2
+				 , ISNULL(SUM(MEMBER_TYPE3), 0) AS TYPE_3
+				 , ISNULL(SUM(MEMBER_TYPE4), 0) AS TYPE_4
+				 , ISNULL(SUM(MEMBER_TYPE5), 0) AS TYPE_5
+				 , ISNULL(SUM(MEMBER_TYPE6), 0) AS TYPE_6
+				 , ISNULL(SUM(MEMBER_TYPE7), 0) AS TYPE_7
+				 , ISNULL(SUM(MEMBER_TYPE8), 0) AS TYPE_8
+				 , ISNULL(SUM(MEMBER_TYPE9), 0) AS TYPE_9
+				 , ISNULL(SUM(MEMBER_TYPE10), 0) AS TYPE_10
+				 , ISNULL(SUM(MEMBER_TYPE11), 0) AS TYPE_11
+				 , ISNULL(SUM(MEMBER_TYPE0+MEMBER_TYPE1+MEMBER_TYPE2+MEMBER_TYPE3+MEMBER_TYPE4+MEMBER_TYPE5+MEMBER_TYPE6+MEMBER_TYPE7+MEMBER_TYPE8+MEMBER_TYPE9+MEMBER_TYPE10+MEMBER_TYPE11), 0) AS TOTAL
+			  FROM (
+					SELECT 
+						<include refid="pageableDayTypeConvert" />
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10000' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE0
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10001' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE1
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10002' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE2
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10003' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE3
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10004' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE4
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10005' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE5
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10006' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE6
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10007' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE7
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10008' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE8
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10009' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE9
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10010' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE10
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10011' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE11
+					  FROM SA_MEMBER_LEAVE_STATUS A WITH(NOLOCK)
+					 <include refid="pageableSearchKey" />
+					) AS V
+			GROUP BY DATE_AREA
+					)
+			<if test='page.pageNum == 1'>
+			SELECT '합계' AS TOTAL_DAY_C
+				 , ISNULL(SUM(SD.TOTAL), 0) AS TOTAL
+				 , ISNULL(SUM(SD.TYPE_0), 0) AS TYPE0
+				 , ISNULL(SUM(SD.TYPE_1), 0) AS TYPE1
+				 , ISNULL(SUM(SD.TYPE_2), 0) AS TYPE2
+				 , ISNULL(SUM(SD.TYPE_3), 0) AS TYPE3
+				 , ISNULL(SUM(SD.TYPE_4), 0) AS TYPE4
+				 , ISNULL(SUM(SD.TYPE_5), 0) AS TYPE5
+				 , ISNULL(SUM(SD.TYPE_6), 0) AS TYPE6
+				 , ISNULL(SUM(SD.TYPE_7), 0) AS TYPE7
+				 , ISNULL(SUM(SD.TYPE_8), 0) AS TYPE8
+				 , ISNULL(SUM(SD.TYPE_9), 0) AS TYPE9
+				 , ISNULL(SUM(SD.TYPE_10), 0) AS TYPE10
+				 , ISNULL(SUM(SD.TYPE_11), 0) AS TYPE11
+			  FROM SDATA SD
+			 UNION ALL
+			</if>
+			SELECT SD.DATE_AREA AS TOTAL_DAY_C
+				 , SD.TOTAL AS TOTAL
+				 , SD.TYPE_0 AS TYPE0
+				 , SD.TYPE_1 AS TYPE1
+				 , SD.TYPE_2 AS TYPE2
+				 , SD.TYPE_3 AS TYPE3
+				 , SD.TYPE_4 AS TYPE4
+				 , SD.TYPE_5 AS TYPE5
+				 , SD.TYPE_6 AS TYPE6
+				 , SD.TYPE_7 AS TYPE7
+				 , SD.TYPE_8 AS TYPE8
+				 , SD.TYPE_9 AS TYPE9
+				 , SD.TYPE_10 AS TYPE10
+				 , SD.TYPE_11 AS TYPE11
+			  FROM SDATA SD
+			 ORDER BY TOTAL_DAY_C DESC
+			 <include refid="Paging.mssql" />
+	</select>
+	
+	
+	<select id="selectExcelList" parameterType="kr.co.abcmart.bo.stats.model.master.SaMemberLeaveStatus" resultType="kr.co.abcmart.bo.stats.model.master.SaMemberLeaveStatus"> 
+	/*+ kr.co.abcmart.bo.stats.repository.master.SaMemberLeaveStatusDao.selectExcelList [Excel 다운 리스트] [신인철] */
+	   WITH SDATA AS( 
+			SELECT DATE_AREA
+				 , ISNULL(SUM(MEMBER_TYPE0), 0) AS TYPE_0
+				 , ISNULL(SUM(MEMBER_TYPE1), 0) AS TYPE_1
+				 , ISNULL(SUM(MEMBER_TYPE2), 0) AS TYPE_2
+				 , ISNULL(SUM(MEMBER_TYPE3), 0) AS TYPE_3
+				 , ISNULL(SUM(MEMBER_TYPE4), 0) AS TYPE_4
+				 , ISNULL(SUM(MEMBER_TYPE5), 0) AS TYPE_5
+				 , ISNULL(SUM(MEMBER_TYPE6), 0) AS TYPE_6
+				 , ISNULL(SUM(MEMBER_TYPE7), 0) AS TYPE_7
+				 , ISNULL(SUM(MEMBER_TYPE8), 0) AS TYPE_8
+				 , ISNULL(SUM(MEMBER_TYPE9), 0) AS TYPE_9
+				 , ISNULL(SUM(MEMBER_TYPE10), 0) AS TYPE_10
+				 , ISNULL(SUM(MEMBER_TYPE11), 0) AS TYPE_11
+				 , ISNULL(SUM(MEMBER_TYPE0+MEMBER_TYPE1+MEMBER_TYPE2+MEMBER_TYPE3+MEMBER_TYPE4+MEMBER_TYPE5+MEMBER_TYPE6+MEMBER_TYPE7+MEMBER_TYPE8+MEMBER_TYPE9+MEMBER_TYPE10+MEMBER_TYPE11), 0) AS TOTAL
+			  FROM (
+					SELECT 
+						<include refid="dayTypeConvert" />
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10000' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE0
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10001' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE1
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10002' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE2
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10003' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE3
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10004' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE4
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10005' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE5
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10006' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE6
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10007' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE7
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10008' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE8
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10009' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE9
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10010' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE10
+						 , CASE WHEN A.LEAVE_RSN_CODE ='10011' THEN A.LEAVE_COUNT ELSE 0 END MEMBER_TYPE11
+					  FROM SA_MEMBER_LEAVE_STATUS A WITH(NOLOCK)
+					 <include refid="searchKey" />
+					) AS V
+			GROUP BY DATE_AREA
+					) 
+			SELECT '합계' AS TOTAL_DAY_C
+				 , ISNULL(SUM(SD.TOTAL), 0) AS TOTAL
+				 , ISNULL(SUM(SD.TYPE_0), 0) AS TYPE0
+				 , ISNULL(SUM(SD.TYPE_1), 0) AS TYPE1
+				 , ISNULL(SUM(SD.TYPE_2), 0) AS TYPE2
+				 , ISNULL(SUM(SD.TYPE_3), 0) AS TYPE3
+				 , ISNULL(SUM(SD.TYPE_4), 0) AS TYPE4
+				 , ISNULL(SUM(SD.TYPE_5), 0) AS TYPE5
+				 , ISNULL(SUM(SD.TYPE_6), 0) AS TYPE6
+				 , ISNULL(SUM(SD.TYPE_7), 0) AS TYPE7
+				 , ISNULL(SUM(SD.TYPE_8), 0) AS TYPE8
+				 , ISNULL(SUM(SD.TYPE_9), 0) AS TYPE9
+				 , ISNULL(SUM(SD.TYPE_10), 0) AS TYPE10
+				 , ISNULL(SUM(SD.TYPE_11), 0) AS TYPE11
+			  FROM SDATA SD
+			 UNION ALL
+			SELECT SD.DATE_AREA AS TOTAL_DAY_C
+				 , SD.TOTAL AS TOTAL
+				 , SD.TYPE_0 AS TYPE0
+				 , SD.TYPE_1 AS TYPE1
+				 , SD.TYPE_2 AS TYPE2
+				 , SD.TYPE_3 AS TYPE3
+				 , SD.TYPE_4 AS TYPE4
+				 , SD.TYPE_5 AS TYPE5
+				 , SD.TYPE_6 AS TYPE6
+				 , SD.TYPE_7 AS TYPE7
+				 , SD.TYPE_8 AS TYPE8
+				 , SD.TYPE_9 AS TYPE9
+				 , SD.TYPE_10 AS TYPE10
+				 , SD.TYPE_11 AS TYPE11
+			  FROM SDATA SD
+			 ORDER BY TOTAL_DAY_C DESC
+	</select>
+	
+
+</mapper>

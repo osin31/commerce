@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.promotion.repository.master.PrPromotionTargetProductDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.promotion.model.master.PrPromotionTargetProduct">
+    
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionTargetProductDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			PR_PROMOTION_TARGET_PRODUCT
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectByPromoNo" parameterType="Object" resultType="kr.co.abcmart.bo.promotion.model.master.PrPromotionTargetProduct">
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionTargetProductDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			PR_PROMOTION_TARGET_PRODUCT WITH(NOLOCK)
+		WHERE 
+			promo_no = #{promoNo, jdbcType=VARCHAR} 
+    </select>
+    
+    <select id="selectPromotionPrdtNoByPromoNo" parameterType="String" resultType="String">
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionTargetProductDao.selectPromotionPrdtNoByPromoNo [프로모션 상품 번호 조회] [이지훈] */  
+    
+		SELECT 
+			PRDT_NO
+		FROM 
+			PR_PROMOTION_TARGET_PRODUCT WITH(NOLOCK)
+		WHERE 
+			promo_no = #{promoNo, jdbcType=VARCHAR} 
+    </select>
+    
+    <select id="selectPromotionDuplProduct" parameterType="Map" resultType="String">
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionTargetProductDao.selectPromotionDuplProduct [상품 중복 프로모션 조회 쿼리] [이지훈] */  
+     SELECT
+		STUFF((
+			SELECT 
+				CONCAT(',', PPTP.PROMO_NO) FROM PR_PROMOTION_TARGET_PRODUCT PPTP WITH(NOLOCK)
+			INNER JOIN PR_PROMOTION PP WITH(NOLOCK)
+						ON PP.PROMO_NO = PPTP.PROMO_NO
+						AND PP.USE_YN = 'Y' 
+						AND PP.PROMO_START_DTM <![CDATA[<=]]> getDate() AND PP.PROMO_END_DTM <![CDATA[>=]]> getDate()
+			WHERE PPTP.PRDT_NO = #{prdtNo, jdbcType=VARCHAR}  
+					<if test='promoNo != null and promoNo != "" '>
+						AND PPTP.PROMO_NO != #{promoNo, jdbcType=VARCHAR}
+					</if>
+					FOR XML PATH('')),1, 1,'') AS DUPL_PROMO_NO
+    </select>
+    
+    <delete id="deleteByPromoNo" parameterType="String">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionTargetProductDao.deleteByPromoNo [프로모션 상품 삭제 쿼리] [이지훈] */
+    	DELETE FROM PR_PROMOTION_TARGET_PRODUCT
+    	WHERE PROMO_NO = #{promoNo, jdbcType=VARCHAR}
+    </delete>
+    
+    <delete id="deleteTargetProduct" parameterType="Map">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionTargetProductDao.deleteTargetProduct [프로모션 상품 삭제 쿼리] [이지훈] */
+    	DELETE FROM PR_PROMOTION_TARGET_PRODUCT
+    	WHERE PROMO_NO = #{promoNo, jdbcType=VARCHAR}
+    		AND PRDT_NO = #{prdtNo, jdbcType=VARCHAR}
+    </delete>
+    
+    <insert id="insertPrPromotionTargetProduct" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPromotionTargetProduct">
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionTargetProductDao.insertPrPromotionTargetProduct [프로모션 상품 등록 쿼리] [이지훈] */
+    	INSERT 
+    		INTO 
+    			PR_PROMOTION_TARGET_PRODUCT
+		( 
+			PROMO_NO
+			,PRDT_NO
+			,PRDT_TYPE
+			<if test='eventLimitQty != null and eventLimitQty != "" '>
+			,EVENT_LIMIT_QTY
+			</if>
+			<if test='maxEventLimitQty != null and maxEventLimitQty != "" '>
+			,MAX_EVENT_LIMIT_QTY
+			</if>
+			<if test='cmsnRate != null and cmsnRate != "" '>
+			,CMSN_RATE
+			</if> 
+		) 
+		VALUES 
+		( 
+			#{promoNo, jdbcType=VARCHAR}
+			,#{prdtNo, jdbcType=VARCHAR}
+			,#{prdtType, jdbcType=CHAR}
+			<if test='eventLimitQty != null and eventLimitQty != "" '>
+			,#{eventLimitQty, jdbcType=INTEGER}
+			</if>
+			<if test='maxEventLimitQty != null and maxEventLimitQty != "" '>
+			,#{maxEventLimitQty, jdbcType=INTEGER}
+			</if>
+			<if test='cmsnRate != null and cmsnRate != "" '>
+			,#{cmsnRate, jdbcType=TINYINT}
+			</if>
+		)  
+    </insert>
+    
+    <update id="updatePrPromotionTargetProduct" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPromotionTargetProduct">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionTargetProductDao.updatePrPromotionTargetProduct [프로모션 상품 수정 쿼리] [이지훈] */
+    UPDATE PR_PROMOTION_TARGET_PRODUCT
+		SET EVENT_LIMIT_QTY = EVENT_LIMIT_QTY + CHANGE_PRODUCT.CHANGE_QTY
+			   ,MAX_EVENT_LIMIT_QTY = #{maxEventLimitQty, jdbcType=INTEGER}
+				<if test='cmsnRate != null and cmsnRate != "" '>
+				,CMSN_RATE = #{cmsnRate, jdbcType=TINYINT}
+				</if>
+			FROM PR_PROMOTION_TARGET_PRODUCT AS PPTP JOIN (SELECT #{maxEventLimitQty, jdbcType=INTEGER} - CHANGE_PPTP.MAX_EVENT_LIMIT_QTY AS CHANGE_QTY, CHANGE_PPTP.PROMO_NO, CHANGE_PPTP.PRDT_NO, CHANGE_PPTP.PRDT_TYPE  
+							FROM PR_PROMOTION_TARGET_PRODUCT CHANGE_PPTP WITH(NOLOCK) 
+							WHERE CHANGE_PPTP.PROMO_NO = #{promoNo, jdbcType=VARCHAR} 
+							AND CHANGE_PPTP.PRDT_NO = #{prdtNo, jdbcType=VARCHAR} 
+							AND CHANGE_PPTP.PRDT_TYPE = #{prdtType, jdbcType=CHAR}) AS CHANGE_PRODUCT
+			ON PPTP.PROMO_NO = CHANGE_PRODUCT.PROMO_NO
+			AND PPTP.PRDT_NO = CHANGE_PRODUCT.PRDT_NO
+			AND PPTP.PRDT_TYPE = CHANGE_PRODUCT.PRDT_TYPE
+    </update>
+    
+    <select id="selectDuplPrdtNo" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPromotionTargetProduct" resultType="kr.co.abcmart.bo.promotion.model.master.PrPromotionTargetProduct">
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrPromotionTargetProductDao.selectDuplPrdtNo [상품 중복 프로모션 조회 쿼리(타임특가, 다족구매)] [이지훈] */  
+     SELECT 
+		PRDT_NO
+		,COUNT(PRDT_NO) AS PROMO_DUPL_COUNT
+	 FROM PR_PROMOTION_TARGET_PRODUCT PPTP WITH(NOLOCK)
+	 INNER JOIN PR_PROMOTION PP WITH(NOLOCK)
+				ON PP.PROMO_NO = PPTP.PROMO_NO
+				AND PP.USE_YN = 'Y' 
+				AND 
+				(
+					(PP.PROMO_START_DTM <![CDATA[<=]]> getDate() AND PP.PROMO_END_DTM <![CDATA[>=]]> getDate()) OR
+					getDate() <![CDATA[<]]> PP.PROMO_START_DTM
+				)
+				<if test='promoNo != null and promoNo != "" '>
+					AND PPTP.PROMO_NO != #{promoNo, jdbcType=VARCHAR}
+				</if>
+				<choose>
+					<when test='promoTypeCode != null and promoTypeCode == "10004" '>
+						AND 
+						(
+							PP.PROMO_TYPE_CODE = '${@kr.co.abcmart.constant.CommonCode@PROMO_TYPE_CODE_SPECIAL_PRICE_TIME}' OR
+							PP.PROMO_TYPE_CODE = '${@kr.co.abcmart.constant.CommonCode@PROMO_TYPE_CODE_DISCOUNT_MULTI_SHOUES}'
+						)
+					</when>
+					<otherwise>
+						AND PP.PROMO_TYPE_CODE = '${@kr.co.abcmart.constant.CommonCode@PROMO_TYPE_CODE_DISCOUNT_MULTI_SHOUES}'
+					</otherwise>
+				</choose>
+	 <where>
+		<if test="targetPrdtNos.size() > 0">
+ 			AND PPTP.PRDT_NO IN
+	 		<foreach collection="targetPrdtNos" item="prdtNo" open="(" close=")" separator=",">
+				 #{prdtNo}
+			</foreach>
+		</if>
+	</where>
+	GROUP BY PRDT_NO
+    </select>
+
+</mapper>

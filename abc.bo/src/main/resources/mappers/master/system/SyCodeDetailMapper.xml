@@ -1,0 +1,608 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.system.model.master.SyCodeDetail" resultType="kr.co.abcmart.bo.system.model.master.SyCodeDetail">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			sy_code_detail
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+
+	<select id="selectCodeDetailListCount" parameterType="pageable" resultType="int">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao.selectCodeDetailListCount [상위,하위코드 개수 체크] [신인철] */
+		SELECT <include refid="Paging.totalCount" />
+		  FROM SY_CODE_DETAIL 
+		 WHERE CODE_FIELD=#{bean.codeField, jdbcType=VARCHAR}
+	</select>
+
+	<select id="selectRemoveCheck" parameterType="kr.co.abcmart.bo.system.model.master.SyCodeDetail" resultType="int">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao.removeCheck [삭제시에 상위,하위코드가지는지 체크] [신인철] */
+		SELECT COUNT(1)
+		  FROM SY_CODE_DETAIL
+		 WHERE CODE_FIELD=#{codeField, jdbcType=VARCHAR}
+	</select>
+
+	<select id="selectRemoveUpCodeCheck" parameterType="kr.co.abcmart.bo.system.model.master.SyCodeDetail" resultType="int">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao.removeCheck [삭제시에 하위코드가지는지 체크] [신인철] */
+		SELECT COUNT(1)
+		  FROM SY_CODE_DETAIL
+		 WHERE CODE_FIELD=#{codeField, jdbcType=VARCHAR}
+		   AND UP_CODE_DTL_NO=#{codeDtlNo, jdbcType=VARCHAR};
+	</select>
+
+	<select id="selectUpDownCode" parameterType="pageable" resultType="kr.co.abcmart.bo.system.model.master.SyCodeDetail">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao.selectUpDownCode [상위,하위코드 리스트 그리드조회] [신인철] */
+		WITH V_TBL 
+		  AS (
+	  SELECT CODE_FIELD
+		   , CODE_DTL_NO
+		   , UP_CODE_DTL_NO
+		   , CODE_DTL_NAME
+		   , SORT_SEQ
+		   , USE_YN
+		   , CONVERT(VARCHAR(100), FORMAT(SORT_SEQ, '000') + ':' + CODE_DTL_NO ) AS SORT_KEY
+		FROM SY_CODE_DETAIL WITH(NOLOCK)
+	   WHERE CODE_FIELD = #{bean.codeField}
+		 AND UP_CODE_DTL_NO IS NULL   
+	   UNION ALL
+	  SELECT CD.CODE_FIELD
+		   , CD.CODE_DTL_NO
+		   , CD.UP_CODE_DTL_NO
+		   , CD.CODE_DTL_NAME
+		   , CD.SORT_SEQ
+		   , CD.USE_YN
+		   , CONVERT(VARCHAR(100), V.SORT_KEY + '>' + FORMAT(CD.SORT_SEQ, '000') + ':' + CD.CODE_DTL_NO ) AS SORT_KEY
+		FROM SY_CODE_DETAIL CD WITH(NOLOCK)
+		JOIN V_TBL V 
+		  ON CD.UP_CODE_DTL_NO = V.CODE_DTL_NO
+	   WHERE CD.CODE_FIELD = #{bean.codeField}
+		 AND CD.UP_CODE_DTL_NO IS NOT NULL
+			 )
+	  SELECT A.CODE_FIELD
+	  	   , A.CODE_DTL_NO
+		   , A.UP_CODE_DTL_NO
+		   , A.SORT_SEQ
+		   , A.USE_YN
+		   , CASE WHEN A.UP_CODE_DTL_NO IS NOT NULL AND A.UP_CODE_DTL_NO !=''
+				  THEN NULL
+				  ELSE A.CODE_DTL_NAME
+			  END UP_CODE_DTL_NAME
+		   , CASE WHEN A.UP_CODE_DTL_NO IS NULL OR A.UP_CODE_DTL_NO =''
+				  THEN NULL
+				  ELSE A.CODE_DTL_NAME
+				   END CODE_DTL_NAME
+		FROM V_TBL A 
+	   <choose>
+			<when test="sortColumn != null">
+				ORDER BY
+			 	<if test="sortColumn == 'useYn'.toString()">
+			 		USE_YN
+			 	</if>
+				<if test="sortType == 'DESC'.toString()">
+			 		DESC
+				</if>
+			</when>
+			<otherwise>
+				ORDER BY SORT_KEY
+			</otherwise>
+		  </choose>
+ 	   <include refid="Paging.mssql" />
+	</select>
+
+	<!-- 미사용 -->
+	<select id="selectCodeNoName" parameterType="java.lang.String" resultType="kr.co.abcmart.bo.system.model.master.SyCodeDetail">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao.selectCodeNoName [코드필드로 상위,하위코드  번호 이름검색] [신인철]*/
+		SELECT A.CODE_FIELD
+			 , A.CODE_DTL_NO
+			 , A.UP_CODE_DTL_NO
+			 , A.CODE_DTL_NAME
+			 , A.NOTE_TEXT
+			 , A.SORT_SEQ
+			 , A.ADD_INFO1
+			 , A.ADD_INFO2
+			 , A.ADD_INFO3
+			 , A.ADD_INFO4
+			 , A.ADD_INFO5
+			 , A.ADD_INFO6
+			 , A.INSD_MGMT_INFO_TEXT
+			 , A.USE_YN
+			 , A.RGSTER_NO
+			 , A.RGST_DTM
+			 , A.MODER_NO
+			 , A.MOD_DTM
+		  FROM SY_CODE_DETAIL A With(nolock)
+		  JOIN SY_CODE B  WITH(NOLOCK)
+			ON A.CODE_FIELD = B.CODE_FIELD
+		 WHERE A.CODE_FIELD = #{codeField, jdbcType = VARCHAR}
+		   AND A.USE_YN = 'Y'
+		   AND B.USE_YN = 'Y'
+		 ORDER BY A.SORT_SEQ
+	</select>
+
+	<!-- 미사용 -->
+	<select id="selectAllCodeNoName" parameterType="java.lang.String" resultType="kr.co.abcmart.bo.system.model.master.SyCodeDetail">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao.selectCodeNoName [코드필드로 상위,하위코드  번호 이름검색] [신인철]*/
+		SELECT A.CODE_FIELD
+			 , A.CODE_DTL_NO
+			 , A.UP_CODE_DTL_NO
+			 , A.CODE_DTL_NAME
+			 , A.NOTE_TEXT
+			 , A.SORT_SEQ
+			 , A.ADD_INFO1
+			 , A.ADD_INFO2
+			 , A.ADD_INFO3
+			 , A.ADD_INFO4
+			 , A.ADD_INFO5
+			 , A.ADD_INFO6
+			 , A.INSD_MGMT_INFO_TEXT
+			 , A.USE_YN
+			 , A.RGSTER_NO
+			 , A.RGST_DTM
+			 , A.MODER_NO
+			 , A.MOD_DTM
+		  FROM SY_CODE_DETAIL A With(nolock)
+		  JOIN SY_CODE B WITH(NOLOCK)
+			ON A.CODE_FIELD = B.CODE_FIELD
+		 WHERE A.CODE_FIELD = #{codeField, jdbcType = VARCHAR}
+		 ORDER BY A.SORT_SEQ
+	</select>
+
+	<select id="selectCodeDtlInfoList" parameterType="kr.co.abcmart.bo.system.model.master.SyCodeDetail" resultType="kr.co.abcmart.bo.system.model.master.SyCodeDetail">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao.selectCodeDtlInfoList [codeField와addinfo로 코드 번호와 이름 조회] [신인철]*/
+		SELECT A.CODE_FIELD
+			 , A.CODE_DTL_NO
+			 , A.UP_CODE_DTL_NO
+			 , A.CODE_DTL_NAME
+			 , A.NOTE_TEXT
+			 , A.SORT_SEQ
+			 , A.ADD_INFO1
+			 , A.ADD_INFO2
+			 , A.ADD_INFO3
+			 , A.ADD_INFO4
+			 , A.ADD_INFO5
+			 , A.ADD_INFO6
+			 , A.INSD_MGMT_INFO_TEXT
+			 , A.USE_YN
+		  FROM SY_CODE_DETAIL A With(nolock)
+		  JOIN SY_CODE B With(nolock)
+			ON A.CODE_FIELD = B.CODE_FIELD
+		 WHERE A.CODE_FIELD = #{codeField, jdbcType = VARCHAR}
+		 <if test="addInfo1 != null and addInfo1 != ''">
+		   AND A.ADD_INFO1 = #{addInfo1, jdbcType = VARCHAR}
+		 </if>
+		 <if test="useYn != null and  useYn != ''">
+		   AND A.USE_YN = #{useYn, jdbcType = CHAR}
+		   AND B.USE_YN = #{useYn, jdbcType = CHAR}
+		 </if>
+		 <if test="addInfo2 != null and addInfo2 != ''">
+		   AND A.ADD_INFO2 = #{addInfo2, jdbcType = VARCHAR}
+		 </if>
+		 ORDER BY A.SORT_SEQ
+	</select>
+
+	<select id="selectSysCodeDetialList" parameterType="java.util.HashMap" resultType="kr.co.abcmart.bo.system.model.master.SyCodeDetail">
+	/* kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao.selectSysCodeDetialList [codeField, addinfo1, addinfo2, use_yn 조건으로 여러개의 코드 조회 ] [신인철]*/
+		SELECT Z.CODE_FIELD
+			 , Z.CODE_DTL_NO
+			 , Z.UP_CODE_DTL_NO
+			 , Z.CODE_DTL_NAME
+			 , Z.NOTE_TEXT
+			 , Z.SORT_SEQ
+			 , Z.ADD_INFO1
+			 , Z.ADD_INFO2
+			 , Z.ADD_INFO3
+			 , Z.ADD_INFO4
+			 , Z.ADD_INFO5
+			 , Z.ADD_INFO6
+			 , Z.INSD_MGMT_INFO_TEXT
+			 , Z.USE_YN
+		  FROM (
+				<foreach collection="list" item="sycodedetail" open="" close="" separator="UNION ALL">
+					SELECT ISNULL(#{sycodedetail.dispCodeField, jdbcType = CHAR}, A.CODE_FIELD) AS CODE_FIELD
+						 , A.CODE_DTL_NO
+						 , A.UP_CODE_DTL_NO
+						 , A.CODE_DTL_NAME
+						 , A.NOTE_TEXT
+						 , A.SORT_SEQ
+						 , A.ADD_INFO1
+						 , A.ADD_INFO2
+						 , A.ADD_INFO3
+						 , A.ADD_INFO4
+						 , A.ADD_INFO5
+						 , A.ADD_INFO6
+						 , A.INSD_MGMT_INFO_TEXT
+						 , A.USE_YN
+					  FROM SY_CODE_DETAIL A With(nolock)
+					  JOIN SY_CODE B With(nolock)
+						ON A.CODE_FIELD = B.CODE_FIELD
+					 WHERE A.CODE_FIELD = #{sycodedetail.codeField, jdbcType = VARCHAR}
+					 <if test="sycodedetail.addInfo1 != null and sycodedetail.addInfo1 != ''">
+					   AND A.ADD_INFO1 = #{sycodedetail.addInfo1, jdbcType = VARCHAR}
+					 </if>
+					 <if test="sycodedetail.useYn != null and sycodedetail.useYn != ''">
+					   AND A.USE_YN = #{sycodedetail.useYn, jdbcType = CHAR}
+					   AND B.USE_YN = #{sycodedetail.useYn, jdbcType = CHAR}
+					 </if>
+					 <if test="sycodedetail.addInfo2 != null and sycodedetail.addInfo2 != ''">
+					   AND A.ADD_INFO2 = #{sycodedetail.addInfo2, jdbcType = VARCHAR}
+					 </if>
+				</foreach>
+				) Z
+
+	</select>
+
+	<select id="selectUpCodeList" parameterType="kr.co.abcmart.bo.system.model.master.SyCodeDetail" resultType="kr.co.abcmart.bo.system.model.master.SyCodeDetail">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao.selectUpCodeList [하위코드 등록시에 상위코드 목록검색] [신인철]*/
+		SELECT CODE_FIELD
+			 , CODE_DTL_NO
+			 , UP_CODE_DTL_NO
+			 , CODE_DTL_NAME
+			 , NOTE_TEXT
+			 , SORT_SEQ
+			 , ADD_INFO1
+			 , ADD_INFO2
+			 , ADD_INFO3
+			 , ADD_INFO4
+			 , ADD_INFO5
+			 , ADD_INFO6
+			 , INSD_MGMT_INFO_TEXT
+			 , USE_YN
+			 , RGSTER_NO
+			 , RGST_DTM
+			 , MODER_NO
+			 , MOD_DTM
+		  FROM SY_CODE_DETAIL WITH(NOLOCK)
+		 WHERE CODE_FIELD=#{codeField, jdbcType=VARCHAR}
+		   AND (UP_CODE_DTL_NO IS NULL OR UP_CODE_DTL_NO='')
+		 ORDER BY CODE_DTL_NO
+	</select>
+
+
+	<select id="selectUpDownDetail" parameterType="kr.co.abcmart.bo.system.model.master.SyCodeDetail" resultType="kr.co.abcmart.bo.system.model.master.SyCodeDetail">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao.selectUpDownDetail [상위,하위코드 상세조회] [신인철] */
+		SELECT A.CODE_FIELD
+			 , A.CODE_DTL_NO
+			 , A.UP_CODE_DTL_NO
+			 , A.CODE_DTL_NAME
+			 , A.ADD_INFO1
+			 , A.ADD_INFO2
+			 , A.ADD_INFO3
+			 , A.ADD_INFO4
+			 , A.ADD_INFO5
+			 , A.ADD_INFO6
+			 , A.INSD_MGMT_INFO_TEXT
+			 , A.SORT_SEQ
+			 , A.USE_YN
+			 , A.NOTE_TEXT
+			 , ISNULL((SELECT RADI.LOGIN_ID FROM SY_ADMIN RADI WITH(NOLOCK)
+			 			WHERE RADI.ADMIN_NO = A.RGSTER_NO), '-') AS RGSTER_ID
+			 , ISNULL((SELECT RADI.ADMIN_NAME FROM SY_ADMIN RADI WITH(NOLOCK)
+			 			WHERE RADI.ADMIN_NO = A.RGSTER_NO), '-') AS RGSTER_NAME
+			 , A.RGSTER_NO
+			 , CONVERT(VARCHAR(19), A.RGST_DTM, 120 ) AS RGST_DTM
+			 , ISNULL((SELECT MADI.LOGIN_ID FROM SY_ADMIN MADI WITH(NOLOCK)
+			 			WHERE MADI.ADMIN_NO = A.MODER_NO), '-') AS MODER_ID
+			 , ISNULL((SELECT MADI.ADMIN_NAME FROM SY_ADMIN MADI WITH(NOLOCK)
+			 			WHERE MADI.ADMIN_NO = A.MODER_NO), '-') AS MODER_NAME
+			 , A.MODER_NO
+			 , CONVERT(VARCHAR(19), A.MOD_DTM, 120 ) AS MOD_DTM
+		  FROM SY_CODE_DETAIL A 
+		 WHERE CODE_FIELD=#{codeField, jdbcType=VARCHAR}
+		   AND CODE_DTL_NO=#{codeDtlNo, jdbcType=VARCHAR}
+	</select>
+
+	<update id="updateUpDownCodeGrid" parameterType="kr.co.abcmart.bo.system.model.master.SyCodeDetail">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao.updateUpDownCodeGrid [상위,하위코드 그리드에서  수정] [신인철] */
+		UPDATE SY_CODE_DETAIL
+			<trim prefix="SET" prefixOverrides=",">
+			<if test="codeField != null and codeField != ''">
+				, CODE_FIELD = #{codeField, jdbcType=VARCHAR}
+			</if>
+			<if test="codeDtlNo != null and codeDtlNo != ''">
+				, CODE_DTL_NO = #{codeDtlNo, jdbcType=VARCHAR}
+			</if>
+			<if test="upCodeDtlNo != null and upCodeDtlNo != ''">
+				, UP_CODE_DTL_NO = #{upCodeDtlNo, jdbcType=VARCHAR}
+			</if>
+			<if test="codeDtlName != null and codeDtlName != ''">
+				, CODE_DTL_NAME = #{codeDtlName, jdbcType=VARCHAR}
+			</if>
+				, SORT_SEQ = #{sortSeq, jdbcType=INTEGER}
+				, USE_YN = #{useYn, jdbcType=CHAR}
+				, MODER_NO = #{moderNo, jdbcType=VARCHAR}
+				, MOD_DTM = CONVERT(VARCHAR(19), GETDATE(), 120 )
+			</trim>
+		WHERE CODE_FIELD = #{codeField, jdbcType=VARCHAR}
+		  AND CODE_DTL_NO = #{codeDtlNo, jdbcType=VARCHAR}
+	</update>
+
+	<update id="updateUpDownCodeDetail" parameterType="kr.co.abcmart.bo.system.model.master.SyCodeDetail">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao.updateUpDownCodeDetail [상위하위코드 상세 수정] [신인철]*/
+		UPDATE SY_CODE_DETAIL
+		<trim prefix="SET" prefixOverrides=",">
+		<if test="codeField != null and codeField != ''">
+			, CODE_FIELD = #{codeField, jdbcType=VARCHAR}
+		</if>
+		<if test="codeDtlNo != null and codeDtlNo != ''">
+			, CODE_DTL_NO = #{codeDtlNo, jdbcType=VARCHAR}
+		</if>
+		<if test="upCodeDtlNo != null and upCodeDtlNo != ''">
+			, UP_CODE_DTL_NO = #{upCodeDtlNo, jdbcType=VARCHAR}
+		</if>
+		<if test="codeDtlName != null and codeDtlName != ''">
+			, CODE_DTL_NAME = #{codeDtlName, jdbcType=VARCHAR}
+		</if>
+			, ADD_INFO1 = #{addInfo1, jdbcType=VARCHAR}
+			, ADD_INFO2 = #{addInfo2, jdbcType=VARCHAR}
+			, ADD_INFO3 = #{addInfo3, jdbcType=VARCHAR}
+			, ADD_INFO4 = #{addInfo4, jdbcType=VARCHAR}
+			, ADD_INFO5 = #{addInfo5, jdbcType=VARCHAR}
+			, ADD_INFO6 = #{addInfo6, jdbcType=VARCHAR}
+		<if test="insdMgmtInfoText != null and insdMgmtInfoText != ''">
+			, INSD_MGMT_INFO_TEXT = #{insdMgmtInfoText, jdbcType=VARCHAR}
+		</if>
+		<if test="sortSeq != null and sortSeq != ''">
+			, SORT_SEQ = #{sortSeq, jdbcType=INTEGER}
+		</if>
+		<if test="useYn != null and useYn != ''">
+			, USE_YN = #{useYn, jdbcType=CHAR}
+		</if>
+			, NOTE_TEXT = #{noteText, jdbcType=VARCHAR}
+			, MODER_NO = #{moderNo, jdbcType=VARCHAR}
+			, MOD_DTM = CONVERT(VARCHAR(19), GETDATE(), 120)
+		</trim>
+		WHERE CODE_FIELD = #{codeField, jdbcType=VARCHAR}
+		  AND CODE_DTL_NO = #{codeDtlNo, jdbcType=VARCHAR}
+	</update>
+
+	<delete id="deleteUpDownCode" parameterType="kr.co.abcmart.bo.system.model.master.SyCodeDetail">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao.deleteUpDownCode [상위,하위코드 삭제] [신인철]*/
+		DELETE FROM SY_CODE_DETAIL
+		 WHERE CODE_FIELD=#{codeField, jdbcType=VARCHAR}
+		   AND CODE_DTL_NO = #{codeDtlNo, jdbcType=VARCHAR}
+	</delete>
+
+
+	<insert id="insertUpCodeDetail" parameterType="kr.co.abcmart.bo.system.model.master.SyCodeDetail">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao.insertUpCodeDetail [상위코드 등록] [신인철]*/
+		<selectKey resultType="String" keyProperty="codeDtlNo" order="BEFORE">
+			SELECT ISNULL(MAX(CODE_DTL_NO), 0)+1
+			  FROM SY_CODE_DETAIL
+			 WHERE CODE_FIELD = #{codeField, jdbcType=VARCHAR}
+		</selectKey>
+		IF EXISTS(
+		   SELECT CODE_DTL_NO
+			 FROM SY_CODE_DETAIL
+			WHERE CODE_FIELD = #{codeField, jdbcType=VARCHAR}
+		   )
+			BEGIN
+			   INSERT INTO SY_CODE_DETAIL(
+						   CODE_FIELD
+						 , CODE_DTL_NO
+						 , UP_CODE_DTL_NO
+						 , CODE_DTL_NAME
+						 , NOTE_TEXT
+						 , SORT_SEQ
+						 , ADD_INFO1
+						 , ADD_INFO2
+						 , ADD_INFO3
+						 , ADD_INFO4
+						 , ADD_INFO5
+						 , ADD_INFO6
+						 , INSD_MGMT_INFO_TEXT
+						 , USE_YN
+						 , RGSTER_NO
+						 , RGST_DTM
+						 , MODER_NO
+						 , MOD_DTM)
+					VALUES (
+						   #{codeField, jdbcType=VARCHAR}
+						 , #{codeDtlNo, jdbcType=VARCHAR}
+						 , #{upCodeDtlNo, jdbcType=VARCHAR}
+						 , #{codeDtlName, jdbcType=VARCHAR}
+						 , #{noteText, jdbcType=VARCHAR}
+						 , #{sortSeq, jdbcType=INTEGER}
+						 , #{addInfo1, jdbcType=VARCHAR}
+						 , #{addInfo2, jdbcType=VARCHAR}
+						 , #{addInfo3, jdbcType=VARCHAR}
+						 , #{addInfo4, jdbcType=VARCHAR}
+						 , #{addInfo5, jdbcType=VARCHAR}
+						 , #{addInfo6, jdbcType=VARCHAR}
+						 , #{insdMgmtInfoText, jdbcType=VARCHAR}
+						 , #{useYn, jdbcType=CHAR}
+						 , #{rgsterNo, jdbcType=VARCHAR}
+						 , CONVERT(VARCHAR(19), GETDATE(), 120 )
+						 , #{moderNo, jdbcType=VARCHAR}
+						 , CONVERT(VARCHAR(19), GETDATE(), 120 ) )
+			END
+
+			ELSE
+				  BEGIN
+				  	INSERT INTO SY_CODE_DETAIL(
+						   CODE_FIELD
+						 , CODE_DTL_NO
+						 , UP_CODE_DTL_NO
+						 , CODE_DTL_NAME
+						 , NOTE_TEXT
+						 , SORT_SEQ
+						 , ADD_INFO1
+						 , ADD_INFO2
+						 , ADD_INFO3
+						 , ADD_INFO4
+						 , ADD_INFO5
+						 , ADD_INFO6
+						 , INSD_MGMT_INFO_TEXT
+						 , USE_YN
+						 , RGSTER_NO
+						 , RGST_DTM
+						 , MODER_NO
+						 , MOD_DTM)
+					VALUES (
+						   #{codeField, jdbcType=VARCHAR}
+						 , '10000'
+						 , #{upCodeDtlNo, jdbcType=VARCHAR}
+						 , #{codeDtlName, jdbcType=VARCHAR}
+						 , #{noteText, jdbcType=VARCHAR}
+						 , #{sortSeq, jdbcType=INTEGER}
+						 , #{addInfo1, jdbcType=VARCHAR}
+						 , #{addInfo2, jdbcType=VARCHAR}
+						 , #{addInfo3, jdbcType=VARCHAR}
+						 , #{addInfo4, jdbcType=VARCHAR}
+						 , #{addInfo5, jdbcType=VARCHAR}
+						 , #{addInfo6, jdbcType=VARCHAR}
+						 , #{insdMgmtInfoText, jdbcType=VARCHAR}
+						 , #{useYn, jdbcType=CHAR}
+						 , #{rgsterNo, jdbcType=VARCHAR}
+						 , GETDATE()
+						 , #{moderNo, jdbcType=VARCHAR}
+						 , GETDATE() )
+				  END
+	</insert>
+
+	<insert id="insertDownCodeDetail" parameterType="kr.co.abcmart.bo.system.model.master.SyCodeDetail">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao.insertDownCodeDetail [하위코드 등록] [신인철] */
+		<selectKey resultType="String" keyProperty="codeDtlNo" order="BEFORE">
+			SELECT MAX(CODE_DTL_NO)+1
+			  FROM SY_CODE_DETAIL
+			 WHERE CODE_FIELD = #{codeField, jdbcType=VARCHAR}
+		</selectKey>
+		INSERT INTO SY_CODE_DETAIL(
+			   CODE_FIELD
+			 , CODE_DTL_NO
+			 , UP_CODE_DTL_NO
+			 , CODE_DTL_NAME
+			 , NOTE_TEXT
+			 , SORT_SEQ
+			 , ADD_INFO1
+			 , ADD_INFO2
+			 , ADD_INFO3
+			 , ADD_INFO4
+			 , ADD_INFO5
+			 , ADD_INFO6
+			 , INSD_MGMT_INFO_TEXT
+			 , USE_YN
+			 , RGSTER_NO
+			 , RGST_DTM
+			 , MODER_NO
+			 , MOD_DTM)
+		VALUES (
+			   #{codeField, jdbcType=VARCHAR}
+			 , #{codeDtlNo, jdbcType=VARCHAR}
+			 , #{upCodeDtlNo, jdbcType=VARCHAR}
+			 , #{codeDtlName, jdbcType=VARCHAR}
+			 , #{noteText, jdbcType=VARCHAR}
+			 , #{sortSeq, jdbcType=INTEGER}
+			 , #{addInfo1, jdbcType=VARCHAR}
+			 , #{addInfo2, jdbcType=VARCHAR}
+			 , #{addInfo3, jdbcType=VARCHAR}
+			 , #{addInfo4, jdbcType=VARCHAR}
+			 , #{addInfo5, jdbcType=VARCHAR}
+			 , #{addInfo6, jdbcType=VARCHAR}
+			 , #{insdMgmtInfoText, jdbcType=VARCHAR}
+			 , #{useYn, jdbcType=CHAR}
+			 , #{rgsterNo, jdbcType=VARCHAR}
+			 , GETDATE()
+			 , #{moderNo, jdbcType=VARCHAR}
+			 , GETDATE() )
+	</insert>
+
+	<select id="selectAllCodeListByGroup" parameterType="java.util.HashMap" resultType="kr.co.abcmart.bo.system.model.master.SyCodeDetail">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao.selectCodeListByGroup [코드필드로 상위,하위코드  번호 이름검색] [신인철]*/
+		SELECT A.CODE_FIELD
+			 , A.CODE_DTL_NO
+			 , A.UP_CODE_DTL_NO
+			 , A.CODE_DTL_NAME
+			 , A.NOTE_TEXT
+			 , A.SORT_SEQ
+			 , A.ADD_INFO1
+			 , A.ADD_INFO2
+			 , A.ADD_INFO3
+			 , A.ADD_INFO4
+			 , A.ADD_INFO5
+			 , A.ADD_INFO6
+			 , A.INSD_MGMT_INFO_TEXT
+			 , A.USE_YN
+		  FROM SY_CODE_DETAIL A With(nolock)
+		  JOIN SY_CODE B WITH(NOLOCK)
+			ON A.CODE_FIELD = B.CODE_FIELD
+		<where>
+			AND A.CODE_FIELD IN
+				<foreach collection="array" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+		</where>
+		  ORDER BY A.CODE_FIELD, A.SORT_SEQ
+	</select>
+	
+	
+	<select id="selectCodeDetailByFiledAddInfo" parameterType="kr.co.abcmart.bo.system.model.master.SyCodeDetail" resultType="kr.co.abcmart.bo.system.model.master.SyCodeDetail">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao.selectCodeDetailByFiledAddInfo [코드필드와 추가정보로 코드 조회] [신인철]*/
+		SELECT A.CODE_FIELD
+			 , A.CODE_DTL_NO
+			 , A.UP_CODE_DTL_NO
+			 , A.CODE_DTL_NAME
+			 , A.NOTE_TEXT
+			 , A.SORT_SEQ
+			 , A.ADD_INFO1
+			 , A.ADD_INFO2
+			 , A.ADD_INFO3
+			 , A.ADD_INFO4
+			 , A.ADD_INFO5
+			 , A.ADD_INFO6
+			 , A.INSD_MGMT_INFO_TEXT
+			 , A.USE_YN
+		  FROM SY_CODE_DETAIL A With(nolock)
+		 WHERE A.CODE_FIELD = #{codeField}
+		 <if test="addInfo1 != null and addInfo1 != ''">
+		   AND A.ADD_INFO1 = #{addInfo1}
+		 </if>
+		 <if test="addInfo2 != null and addInfo2 != ''">
+		   AND A.ADD_INFO1 = #{addInfo1}
+		 </if>
+		 <if test="addInfo3 != null and addInfo3 != ''">
+		   AND A.ADD_INFO1 = #{addInfo1}
+		 </if>
+	</select>
+
+	<select id="selectCodeListByGroup" parameterType="java.util.HashMap" resultType="kr.co.abcmart.bo.system.model.master.SyCodeDetail">
+		/* kr.co.abcmart.bo.system.repository.master.SyCodeDetailDao.selectCodeListByGroup [코드필드로 상위,하위코드  번호 이름검색] [신인철]*/
+		SELECT A.CODE_FIELD
+			 , A.CODE_DTL_NO
+			 , A.UP_CODE_DTL_NO
+			 , A.CODE_DTL_NAME
+			 , A.NOTE_TEXT
+			 , A.SORT_SEQ
+			 , A.ADD_INFO1
+			 , A.ADD_INFO2
+			 , A.ADD_INFO3
+			 , A.ADD_INFO4
+			 , A.ADD_INFO5
+			 , A.ADD_INFO6
+			 , A.INSD_MGMT_INFO_TEXT
+			 , A.USE_YN
+		  FROM SY_CODE_DETAIL A With(nolock)
+		  JOIN SY_CODE B WITH(NOLOCK)
+			ON A.CODE_FIELD = B.CODE_FIELD
+			AND B.USE_YN = 'Y'
+		<where>
+			AND A.CODE_FIELD IN
+				<foreach collection="array" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			AND A.USE_YN = 'Y'
+		</where>
+	</select>
+</mapper>

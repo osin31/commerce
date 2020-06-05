@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.PdProductBulkUpdateDao">
+
+	<update id="updateProduct" parameterType="kr.co.abcmart.bo.product.model.master.PdProductBulkUpdateWrapper">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductBulkUpdateDao.updateProduct [상품 정보 대량 수정 쿼리] [김세훈] */
+		UPDATE
+    		pd_product
+		<set>
+			<!-- Tab 1 : 기본 정보 -->
+			<if test="sellStatCode != null and sellStatCode != ''">sell_stat_code = #{sellStatCode, jdbcType=VARCHAR},</if><!-- 판매상태 -->
+			<if test="sellStartDtm != null">sell_start_dtm = #{sellStartDtm, jdbcType=TIMESTAMP},</if><!-- 판매기간 - 시작 -->
+			<if test="sellEndDtm != null">sell_end_dtm = #{sellEndDtm, jdbcType=TIMESTAMP},</if><!-- 판매기간 - 종료 -->
+			<if test="rsvPrdtYn != null and rsvPrdtYn != ''">rsv_prdt_yn = #{rsvPrdtYn, jdbcType=VARCHAR},</if><!-- 예약상품여부 -->
+			<if test="rsvDlvyYmd != null">rsv_dlvy_ymd = #{rsvDlvyYmd, jdbcType=TIMESTAMP},</if><!-- 예상출고일 -->
+			<if test="freeDlvyYn != null and freeDlvyYn != ''">free_dlvy_yn = #{freeDlvyYn, jdbcType=VARCHAR},</if><!-- 무료배송상품여부 -->
+			<if test="empDscntYn != null and empDscntYn != ''">emp_dscnt_yn = #{empDscntYn, jdbcType=VARCHAR},</if><!-- 임직원할인여부 -->
+			<if test="dprcExceptYn != null and dprcExceptYn != ''">dprc_except_yn = #{dprcExceptYn, jdbcType=VARCHAR},</if><!-- 감가제외여부 -->
+			<if test="storePickupPsbltYn != null and storePickupPsbltYn != ''">store_pickup_psblt_yn = #{storePickupPsbltYn, jdbcType=VARCHAR},</if><!-- 매장픽업가능여부 -->
+			<if test="orderMnfctYn != null and orderMnfctYn != ''">order_mnfct_yn = #{orderMnfctYn, jdbcType=VARCHAR},</if><!-- 주문제작여부 -->
+			<if test="affltsSendYn != null and affltsSendYn != ''">afflts_send_yn = #{affltsSendYn, jdbcType=VARCHAR},</if><!-- 제휴사전송여부 -->
+
+			<!-- Tab 2 : 전시 정보 -->
+			<if test="dispYn != null and dispYn != ''">disp_yn = #{dispYn, jdbcType=VARCHAR},</if><!-- 전시여부 -->
+			<if test="stdrCtgrNo != null and stdrCtgrNo != ''">stdr_ctgr_no = #{stdrCtgrNo, jdbcType=VARCHAR},</if><!-- 기준카테고리 -->
+			<if test="srchPsbltYn != null and srchPsbltYn != ''">srch_psblt_yn = #{srchPsbltYn, jdbcType=VARCHAR},</if><!-- 검색가능여부 -->
+			<if test="srchKeyWordText != null and srchKeyWordText != ''">srch_key_word_text = #{srchKeyWordText, jdbcType=VARCHAR},</if><!-- 검색키워드 -->
+
+			<!-- Tab 3 : 재고/옵션 정보 -->
+			<if test="buyLimitYn != null and buyLimitYn != ''">buy_limit_yn = #{buyLimitYn, jdbcType=VARCHAR},</if><!-- 구매수량제한여부 -->
+			<if test="minBuyPsbltQty != null">min_buy_psblt_qty = #{minBuyPsbltQty, jdbcType=INTEGER},</if><!-- 구매수량제한여부 - 최소구매수량 -->
+			<if test="maxBuyPsbltQty != null">max_buy_psblt_qty = #{maxBuyPsbltQty, jdbcType=INTEGER},</if><!-- 구매수량제한여부 - 최대구매수량 -->
+			<if test="dayMaxBuyPsbltQty != null">day_max_buy_psblt_qty = #{dayMaxBuyPsbltQty, jdbcType=INTEGER},</if><!-- 구매수량제한여부 - 1일최대구매수량 -->
+			<if test="wrhsAlertYn != null and wrhsAlertYn != ''">wrhs_alert_yn = #{wrhsAlertYn, jdbcType=VARCHAR},</if><!-- 재입고알림여부 -->
+			<if test="stockIntgrYn != null and stockIntgrYn != ''">stock_intgr_yn = #{stockIntgrYn, jdbcType=VARCHAR},</if><!-- 재고통합여부 -->
+			<if test="stockUnIntgrRsnCode != null and stockUnIntgrRsnCode != ''">stock_un_intgr_rsn_code = #{stockUnIntgrRsnCode, jdbcType=VARCHAR},</if><!-- 재고통합여부 - 미연동사유코드 -->
+
+			<!-- 공통사항 -->
+			<if test="aprvStatCode != null and aprvStatCode != ''">aprv_stat_code = #{aprvStatCode, jdbcType=VARCHAR},</if><!-- 승인상태코드 -->
+			<if test="aprverNo != null and aprverNo != ''">aprver_no = #{aprverNo, jdbcType=VARCHAR},</if><!-- 승인자번호 -->
+			<if test="aprverDtm != null">aprver_dtm = #{aprverDtm, jdbcType=TIMESTAMP},</if><!-- 승인일자 -->
+			<if test="moderNo != null and moderNo != ''">moder_no = #{moderNo, jdbcType=VARCHAR},</if><!-- 수정자번호 -->
+			<if test="modDtm != null">mod_dtm = #{modDtm, jdbcType=TIMESTAMP},</if><!-- 수정일시 -->
+		</set>
+		WHERE
+			prdt_no IN <foreach collection="products" item="item" open="(" separator="," close=")">#{item.prdtNo, jdbcType=VARCHAR}</foreach>
+	</update>
+
+	<update id="updateProductOption" parameterType="kr.co.abcmart.bo.product.model.master.PdProductBulkUpdateWrapper">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductBulkUpdateDao.updateProductOption [상품옵션 정보 대량 수정 쿼리] [김세훈] */
+		UPDATE PD_PRODUCT_OPTION
+		<set>
+			<!-- Tab 1 : 기본 정보 -->
+			<if test="sellStatCode != null and sellStatCode != ''">sell_stat_code = #{sellStatCode, jdbcType=VARCHAR},</if><!-- 판매상태 -->
+			<if test="moderNo != null and moderNo != ''">moder_no = #{moderNo, jdbcType=VARCHAR},</if><!-- 수정자번호 -->
+			<if test="modDtm != null">mod_dtm = #{modDtm, jdbcType=TIMESTAMP},</if><!-- 수정일시 -->
+		</set>
+		WHERE
+			prdt_no IN <foreach collection="products" item="item" open="(" separator="," close=")">#{item.prdtNo, jdbcType=VARCHAR}</foreach>
+	</update>
+
+	<delete id="deleteProductIcon" parameterType="kr.co.abcmart.bo.product.model.master.PdProductBulkUpdateWrapper">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductBulkUpdateDao.deleteProductIcon [상품 아이콘 전체 삭제 쿼리] [김세훈] */
+		DELETE
+		FROM
+			pd_product_icon
+		WHERE
+			prdt_no IN <foreach collection="products" item="item" open="(" separator="," close=")">#{item.prdtNo, jdbcType=VARCHAR}</foreach>
+	</delete>
+
+	<insert id="insertProductIcon" parameterType="kr.co.abcmart.bo.product.model.master.PdProductBulkUpdateWrapper">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductBulkUpdateDao.insertProductIcon [상품 아이콘 일괄 등록 쿼리] [김세훈] */
+		INSERT INTO
+			pd_product_icon ( prdt_no, prdt_icon_seq, use_yn, rgster_no, rgst_dtm, moder_no, mod_dtm )
+		VALUES
+			<foreach collection="productIcon" item="item" separator=",">
+				(
+					#{item.prdtNo, jdbcType=VARCHAR},
+					#{item.prdtIconSeq, jdbcType=INTEGER},
+					'Y',<!-- use_yn -->
+					#{item.rgsterNo, jdbcType=VARCHAR},
+					#{item.rgstDtm, jdbcType=TIMESTAMP},
+					#{item.moderNo, jdbcType=VARCHAR},
+					#{item.modDtm, jdbcType=TIMESTAMP}
+				)
+			</foreach>
+    </insert>
+
+	<delete id="deleteDisplayCategory" parameterType="kr.co.abcmart.bo.product.model.master.PdProductBulkUpdateWrapper">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductBulkUpdateDao.deleteDisplayCategory [전시카테고리 전체 삭제 쿼리] [김세훈] */
+		DELETE
+		FROM
+			dp_category_product
+		WHERE
+			prdt_no IN <foreach collection="products" item="item" open="(" separator="," close=")">#{item.prdtNo, jdbcType=VARCHAR}</foreach>
+	</delete>
+
+	<insert id="insertDisplayCategory" parameterType="kr.co.abcmart.bo.product.model.master.PdProductBulkUpdateWrapper">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductBulkUpdateDao.insertDisplayCategory [전시카테고리 일괄 등록 쿼리] [김세훈] */
+		INSERT INTO
+			dp_category_product ( ctgr_no, prdt_no, sort_seq, rgster_no, rgst_dtm )
+		VALUES
+			<foreach collection="displayCategories" item="item" index="index" separator=",">
+				(
+					#{item.ctgrNo, jdbcType=VARCHAR},
+					#{item.prdtNo, jdbcType=VARCHAR},
+					#{index, jdbcType=INTEGER} + 1,<!-- sort_seq -->
+					#{item.rgsterNo, jdbcType=VARCHAR},
+					#{item.rgstDtm, jdbcType=TIMESTAMP}
+				)
+			</foreach>
+    </insert>
+
+	<delete id="deleteProductColor" parameterType="kr.co.abcmart.bo.product.model.master.PdProductBulkUpdateWrapper">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductBulkUpdateDao.deleteProductColor [상품 색상 전체 삭제 쿼리] [김세훈] */
+		DELETE
+		FROM
+			pd_product_color
+		WHERE
+			prdt_no IN <foreach collection="products" item="item" open="(" separator="," close=")">#{item.prdtNo, jdbcType=VARCHAR}</foreach>
+	</delete>
+
+	<insert id="insertProductColor" parameterType="kr.co.abcmart.bo.product.model.master.PdProductBulkUpdateWrapper">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductBulkUpdateDao.insertProductColor [상품 색상 일괄 등록 쿼리] [김세훈] */
+		INSERT INTO
+			pd_product_color ( prdt_no, prdt_color_code, use_yn, rgster_no, rgst_dtm, moder_no, mod_dtm )
+		VALUES
+			<foreach collection="productColor" item="item" separator=",">
+				(
+					#{item.prdtNo, jdbcType=VARCHAR},
+					#{item.prdtColorCode, jdbcType=VARCHAR},
+					'Y',<!-- use_yn -->
+					#{item.rgsterNo, jdbcType=VARCHAR},
+					#{item.rgstDtm, jdbcType=TIMESTAMP},
+					#{item.moderNo, jdbcType=VARCHAR},
+					#{item.modDtm, jdbcType=TIMESTAMP}
+				)
+			</foreach>
+    </insert>
+
+	<delete id="deleteRelationProductGoods" parameterType="kr.co.abcmart.bo.product.model.master.PdProductBulkUpdateWrapper">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductBulkUpdateDao.deleteRelationProductGoods [관련용품 전체 삭제 쿼리] [김세훈] */
+		DELETE
+		FROM
+			pd_relation_product
+		WHERE
+			prdt_no IN <foreach collection="products" item="item" open="(" separator="," close=")">#{item.prdtNo, jdbcType=VARCHAR}</foreach>
+			AND rltn_prdt_type_code = '${@kr.co.abcmart.constant.CommonCode@RLTN_PRDT_TYPE_CODE_GOODS}'<!-- 관련용품코드 -->
+	</delete>
+
+	<insert id="insertRelationProductGoods" parameterType="kr.co.abcmart.bo.product.model.master.PdProductBulkUpdateWrapper">
+		/*+ kr.co.abcmart.bo.product.repository.master.PdProductBulkUpdateDao.insertRelationProductGoods [관련용품 일괄 등록 쿼리] [김세훈] */
+		INSERT INTO
+			pd_relation_product ( prdt_no, rltn_prdt_type_code, rltn_prdt_no, sort_seq, rgster_no, rgst_dtm )
+		VALUES
+			<foreach collection="relationProducts" item="item" index="index" separator=",">
+				(
+					#{item.prdtNo, jdbcType=VARCHAR},
+					'${@kr.co.abcmart.constant.CommonCode@RLTN_PRDT_TYPE_CODE_GOODS}',<!-- rltn_prdt_type_code -->
+					#{item.rltnPrdtNo, jdbcType=VARCHAR},
+					#{index, jdbcType=INTEGER} + 1,<!-- sort_seq -->
+					#{item.rgsterNo, jdbcType=VARCHAR},
+					#{item.rgstDtm, jdbcType=TIMESTAMP}
+				)
+			</foreach>
+    </insert>
+
+</mapper>

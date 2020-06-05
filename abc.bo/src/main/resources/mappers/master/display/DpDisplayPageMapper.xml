@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.display.repository.master.DpDisplayPageDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.display.model.master.DpDisplayPage">
+    
+     /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayPageDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			DP_DISPLAY_PAGE
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectDpDisplayPageList" parameterType="kr.co.abcmart.bo.display.model.master.DpDisplayPage" resultType="kr.co.abcmart.bo.display.model.master.DpDisplayPage">
+    
+    /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayPageDao.selectDpDisplayPageList [전시 페이지 목록 조회] [이가영] */
+    	WITH PAGE_CTE (
+			DISP_PAGE_NO,SITE_NO,CHNNL_NO,DISP_PAGE_TYPE_CODE,DISP_PAGE_NAME,UP_DISP_PAGE_NO,DISP_START_DTM,
+			PC_DISP_TMPL_NO,PC_DISP_URL,MOBILE_DISP_TMPL_NO,MOBILE_DISP_URL,DISP_YN,USE_YN,RGSTER_NO,RGST_DTM,
+			MODER_NO,MOD_DTM,LEVEL, SORT
+		)
+		AS (
+			SELECT
+	    		A.DISP_PAGE_NO,
+				A.SITE_NO,
+				A.CHNNL_NO,
+				A.DISP_PAGE_TYPE_CODE,
+				A.DISP_PAGE_NAME,
+				A.UP_DISP_PAGE_NO,
+				A.DISP_START_DTM,
+				A.PC_DISP_TMPL_NO,
+				A.PC_DISP_URL,
+				A.MOBILE_DISP_TMPL_NO,
+				A.MOBILE_DISP_URL,
+				A.DISP_YN,
+				A.USE_YN,
+				A.RGSTER_NO,
+				A.RGST_DTM,
+				A.MODER_NO,
+				A.MOD_DTM,
+	    		2 AS LEVEL,
+	    		CONVERT(VARCHAR(255), A.DISP_PAGE_NO) AS SORT
+	    	FROM
+	    		DP_DISPLAY_PAGE A WITH (NOLOCK)
+			<where> 
+				UP_DISP_PAGE_NO IS NULL
+				<if test="dispPageNo != null and dispPageNo != ''"> 
+					 A.disp_page_no = #{dispPageNo, jdbcType=VARCHAR}
+				</if> 
+				<if test="siteNo != null and siteNo != ''"> 
+					 AND A.site_no = #{siteNo, jdbcType=VARCHAR}
+				</if> 
+				<if test="chnnlNo != null and chnnlNo != ''"> 
+					 AND A.chnnl_no = #{chnnlNo, jdbcType=VARCHAR}
+				</if>
+				<if test="dispPageTypeCode != null and dispPageTypeCode != ''"> 
+					 AND A.disp_page_type_code = #{dispPageTypeCode, jdbcType=VARCHAR}
+				</if> 
+				<if test="dispPageName != null and dispPageName != ''"> 
+					 AND A.disp_page_name = #{dispPageName, jdbcType=VARCHAR}
+				</if>
+				<if test="pcDispTmplNo != null and pcDispTmplNo != ''"> 
+					 AND A.pc_disp_tmpl_no = #{pcDispTmplNo, jdbcType=VARCHAR}
+				</if> 
+				<if test="mobileDispTmplNo != null and mobileDispTmplNo != ''"> 
+					 AND A.mobile_disp_tmpl_no = #{mobileDispTmplNo, jdbcType=VARCHAR}
+				</if>
+				<if test="dispYn != null and dispYn != ''"> 
+					 AND A.disp_yn = #{dispYn, jdbcType=CHAR}
+				</if> 
+				<if test="useYn != null and useYn != ''"> 
+					 AND A.use_yn = #{useYn, jdbcType=CHAR}
+				</if>
+			</where>
+			UNION ALL
+			SELECT
+	    		A.DISP_PAGE_NO,
+				A.SITE_NO,
+				A.CHNNL_NO,
+				A.DISP_PAGE_TYPE_CODE,
+				A.DISP_PAGE_NAME,
+				A.UP_DISP_PAGE_NO,
+				A.DISP_START_DTM,
+				A.PC_DISP_TMPL_NO,
+				A.PC_DISP_URL,
+				A.MOBILE_DISP_TMPL_NO,
+				A.MOBILE_DISP_URL,
+				A.DISP_YN,
+				A.USE_YN,
+				A.RGSTER_NO,
+				A.RGST_DTM,
+				A.MODER_NO,
+				A.MOD_DTM,
+	    		3 as LEVEL,
+	    		CONVERT(VARCHAR(255), CONVERT(NVARCHAR,P.SORT) + ' > ' + CONVERT(VARCHAR(255), A.DISP_PAGE_NO)) SORT
+	    	FROM
+	    		DP_DISPLAY_PAGE A WITH (NOLOCK), PAGE_CTE P
+			<where> 
+			 A.UP_DISP_PAGE_NO = P.DISP_PAGE_NO
+			<if test="siteNo != null and siteNo != ''"> 
+				 AND A.site_no = #{siteNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="chnnlNo != null and chnnlNo != ''"> 
+				 AND A.chnnl_no = #{chnnlNo, jdbcType=VARCHAR}
+			</if>
+			<if test="dispPageTypeCode != null and dispPageTypeCode != ''"> 
+				 AND A.disp_page_type_code = #{dispPageTypeCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="dispPageName != null and dispPageName != ''"> 
+				 AND A.disp_page_name = #{dispPageName, jdbcType=VARCHAR}
+			</if>
+			<if test="pcDispTmplNo != null and pcDispTmplNo != ''"> 
+				 AND A.pc_disp_tmpl_no = #{pcDispTmplNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="mobileDispTmplNo != null and mobileDispTmplNo != ''"> 
+				 AND A.mobile_disp_tmpl_no = #{mobileDispTmplNo, jdbcType=VARCHAR}
+			</if>
+			<if test="dispYn != null and dispYn != ''"> 
+				 AND A.disp_yn = #{dispYn, jdbcType=CHAR}
+			</if> 
+			<if test="useYn != null and useYn != ''"> 
+				 AND A.use_yn = #{useYn, jdbcType=CHAR}
+			</if>
+		</where>
+		) 
+		SELECT A.DISP_PAGE_NO,
+			A.SITE_NO,
+			A.CHNNL_NO,
+			A.DISP_PAGE_TYPE_CODE,
+			A.DISP_PAGE_NAME,
+			A.UP_DISP_PAGE_NO,
+			A.DISP_START_DTM,
+			A.PC_DISP_TMPL_NO,
+			A.PC_DISP_URL,
+			A.MOBILE_DISP_TMPL_NO,
+			A.MOBILE_DISP_URL,
+			A.DISP_YN,
+			A.USE_YN,
+			A.RGSTER_NO,
+			A.RGST_DTM,
+			A.MODER_NO,
+			A.MOD_DTM,
+			A.LEVEL,
+			A.SORT,
+			B.ADMIN_NAME AS RGSTER_NAME,
+			B.LOGIN_ID AS RGSTER_ID,
+			C.ADMIN_NAME AS MODER_NAME,
+			C.LOGIN_ID AS MODER_ID,
+			D.TMPL_NAME AS PC_DISP_TMPL_NAME,
+			D.IMAGE_URL AS PC_PREVIEW_IMAGE_URL,
+			E.TMPL_NAME AS MOBILE_DISP_TMPL_NAME,
+			E.IMAGE_URL AS MOBILE_PREVIEW_IMAGE_URL
+		FROM PAGE_CTE AS A WITH (NOLOCK)
+		LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON A.RGSTER_NO = B.ADMIN_NO
+		LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON A.MODER_NO = C.ADMIN_NO
+		LEFT OUTER JOIN DP_DISPLAY_TEMPLATE D WITH(NOLOCK) ON A.PC_DISP_TMPL_NO = D.DISP_TMPL_NO
+		LEFT OUTER JOIN DP_DISPLAY_TEMPLATE E WITH(NOLOCK) ON A.MOBILE_DISP_TMPL_NO = E.DISP_TMPL_NO
+		<choose>
+			<when test='useYn != null and useYn != "" and useYn == "N"'>
+				UNION ALL
+				select
+					child.DISP_PAGE_NO,
+					child.SITE_NO,
+					child.CHNNL_NO,
+					child.DISP_PAGE_TYPE_CODE,
+					child.DISP_PAGE_NAME,
+					child.UP_DISP_PAGE_NO,
+					child.DISP_START_DTM,
+					child.PC_DISP_TMPL_NO,
+					child.PC_DISP_URL,
+					child.MOBILE_DISP_TMPL_NO,
+					child.MOBILE_DISP_URL,
+					child.DISP_YN,
+					child.USE_YN,
+					child.RGSTER_NO,
+					child.RGST_DTM,
+					child.MODER_NO,
+					child.MOD_DTM,
+					2 as LEVEL,
+					CONVERT(VARCHAR(255), child.DISP_PAGE_NO) AS SORT,
+					B.ADMIN_NAME AS RGSTER_NAME,
+					B.LOGIN_ID AS RGSTER_ID,
+					C.ADMIN_NAME AS MODER_NAME,
+					C.LOGIN_ID AS MODER_ID,
+					D.TMPL_NAME AS PC_DISP_TMPL_NAME,
+					D.IMAGE_URL AS PC_PREVIEW_IMAGE_URL,
+					E.TMPL_NAME AS MOBILE_DISP_TMPL_NAME,
+					E.IMAGE_URL AS MOBILE_PREVIEW_IMAGE_URL
+				from
+					dp_display_page child with(nolock)
+				join dp_display_page parents on child.up_disp_page_no = parents.disp_page_no
+				LEFT OUTER JOIN SY_ADMIN B WITH(NOLOCK) ON child.RGSTER_NO = B.ADMIN_NO
+				LEFT OUTER JOIN SY_ADMIN C WITH(NOLOCK) ON child.MODER_NO = C.ADMIN_NO
+				LEFT OUTER JOIN DP_DISPLAY_TEMPLATE D WITH(NOLOCK) ON child.PC_DISP_TMPL_NO = D.DISP_TMPL_NO
+				LEFT OUTER JOIN DP_DISPLAY_TEMPLATE E WITH(NOLOCK) ON child.MOBILE_DISP_TMPL_NO = E.DISP_TMPL_NO
+				where
+					child.up_disp_page_no is not null
+					and child.use_yn = 'N'
+					and parents.use_yn = 'Y'
+					and child.chnnl_no = '10000'
+					and child.disp_page_type_code = '10000'
+				order by sort
+			</when>
+			<otherwise>ORDER BY A.SORT</otherwise>
+		</choose>		
+    </select>
+	
+	<select id="selectDisplayPageList" parameterType="kr.co.abcmart.bo.display.model.master.DpDisplayPage" resultType="kr.co.abcmart.bo.display.model.master.DpDisplayPage">
+	/*+ kr.co.abcmart.bo.display.repository.master.DpDisplayPageDao.selectDisplayPageList [전시 페이지 목록 조회] [신인철] */
+		WITH PAGE_TYPE_CODE_LIST AS (
+			SELECT A.CODE_DTL_NO
+				 , A.UP_CODE_DTL_NO
+				 , CASE WHEN A.ADD_INFO2 = 'Y' 
+				 	 	THEN A.CODE_DTL_NAME + ' (공통)'
+				 	 	ELSE A.CODE_DTL_NAME
+				 	END CODE_DTL_NAME
+				 , CONVERT(VARCHAR(MAX), A.SORT_SEQ) AS SORT_SEQ
+				 , 1 AS CODE_LEVEL
+				 , A.ADD_INFO2
+			  FROM SY_CODE_DETAIL A WITH(NOLOCK)
+			 WHERE A.CODE_FIELD = 'DISP_PAGE_TYPE_CODE'
+			   AND A.UP_CODE_DTL_NO IS NULL
+			   AND A.USE_YN = 'Y'
+			 UNION ALL
+			SELECT B.CODE_DTL_NO
+				 , B.UP_CODE_DTL_NO
+				 , CASE WHEN B.ADD_INFO2 = 'Y' 
+				 	 	THEN B.CODE_DTL_NAME + ' (공통)'
+				 	 	ELSE B.CODE_DTL_NAME
+				 	END CODE_DTL_NAME
+				 , CONVERT(VARCHAR(MAX), CONCAT(CONVERT(VARCHAR(MAX), C.SORT_SEQ), ' > ', CONVERT(VARCHAR(MAX), B.SORT_SEQ))) AS SORT_SEQ
+				 , C.CODE_LEVEL + 1 AS CODE_LEVEL
+				 , B.ADD_INFO2
+			  FROM SY_CODE_DETAIL B WITH(NOLOCK)
+			  JOIN PAGE_TYPE_CODE_LIST C
+				ON B.UP_CODE_DTL_NO = C.CODE_DTL_NO
+			 WHERE B.CODE_FIELD = 'DISP_PAGE_TYPE_CODE'        
+		)
+		SELECT X.CODE_DTL_NO
+			 , X.CODE_DTL_NAME
+			 , X.SORT_SEQ
+			 , X.UP_CODE_DTL_NO
+			 , X.CODE_LEVEL AS LEVEL
+			 , X.ADD_INFO2
+			 , CASE WHEN Y.DISP_PAGE_NAME IS NULL
+			 		THEN X.CODE_DTL_NAME
+			 		ELSE Y.DISP_PAGE_NAME
+			 	END DISP_PAGE_NAME
+			 , Y.DISP_PAGE_NO
+			 , Y.SITE_NO
+			 , Y.CHNNL_NO
+			 , Y.DISP_PAGE_TYPE_CODE
+			 , Y.UP_DISP_PAGE_NO
+			 , Y.PC_DISP_TMPL_NO
+			 , Y.PC_DISP_IMAGE_NAME
+			 , Y.PC_DISP_IMAGE_PATH_TEXT
+			 , Y.PC_DISP_IMAGE_URL
+			 , Y.PC_DISP_URL
+			 , Y.MOBILE_DISP_TMPL_NO
+			 , Y.MOBILE_DISP_TMPL_IMAGE_NAME
+			 , Y.MOBILE_DISP_TMPL_IMAGE_PATH_TEXT
+			 , Y.MOBILE_DISP_TMPL_IMAGE_URL
+			 , Y.MOBILE_DISP_URL
+			 , Y.DISP_START_DTM
+			 , Y.DISP_YN
+			 , Y.USE_YN
+			 , Y.RGSTER_NO
+			 , Y.RGST_DTM
+			 , Y.MODER_NO
+			 , Y.MOD_DTM
+			 , RAD.LOGIN_ID AS RGSTER_ID
+			 , RAD.ADMIN_NAME AS RGSTER_NAME
+			 , MAD.LOGIN_ID AS MODER_ID
+			 , MAD.ADMIN_NAME AS MODER_NAME
+			 , PCTMP.TMPL_NAME AS PC_DISP_TMPL_NAME
+			 , PCTMP.IMAGE_URL AS PC_PREVIEW_IMAGE_URL
+			 , MOTMP.TMPL_NAME AS MOBILE_DISP_TMPL_NAME
+			 , MOTMP.IMAGE_URL AS MOBILE_PREVIEW_IMAGE_URL
+		  FROM (
+				SELECT T.CODE_DTL_NO
+					 , T.UP_CODE_DTL_NO
+					 , T.CODE_DTL_NAME
+					 , T.SORT_SEQ
+					 , T.CODE_LEVEL
+					 , T.ADD_INFO2
+				  FROM PAGE_TYPE_CODE_LIST T WITH(NOLOCK)
+				 UNION ALL
+				SELECT CODE_DTL_NO
+					 , UP_CODE_DTL_NO
+					 , CODE_DTL_NAME
+					 , SORT_SEQ
+					 , 3 CODE_LEVEL
+					 , ADD_INFO2
+				  FROM PAGE_TYPE_CODE_LIST  WITH(NOLOCK)
+				 WHERE CODE_LEVEL = 2 
+			   ) X
+		  LEFT OUTER JOIN DP_DISPLAY_PAGE Y WITH(NOLOCK)
+		    ON X.CODE_DTL_NO = Y.DISP_PAGE_TYPE_CODE
+		   AND X.CODE_LEVEL = 3
+		   AND Y.SITE_NO = #{siteNo}
+		   AND Y.CHNNL_NO = #{chnnlNo}
+		    <if test="useYn != null">
+		   AND Y.USE_YN = #{useYn}
+		   </if>
+		  LEFT OUTER JOIN SY_ADMIN RAD WITH(NOLOCK)
+		    ON Y.RGSTER_NO = RAD.ADMIN_NO  
+		  LEFT OUTER JOIN SY_ADMIN MAD WITH(NOLOCK)
+		    ON Y.MODER_NO = MAD.ADMIN_NO 
+		  LEFT OUTER JOIN DP_DISPLAY_TEMPLATE PCTMP WITH(NOLOCK) 
+		    ON Y.PC_DISP_TMPL_NO = PCTMP.DISP_TMPL_NO  
+		  LEFT OUTER JOIN DP_DISPLAY_TEMPLATE MOTMP WITH(NOLOCK) 
+		    ON Y.MOBILE_DISP_TMPL_NO = MOTMP.DISP_TMPL_NO  
+		 WHERE 1 = CASE WHEN  (X.CODE_LEVEL = 3 AND Y.DISP_PAGE_NO IS NULL) 
+						THEN 0 
+						ELSE 1 
+					END
+		  <if test="dispPageTypeCode != null">
+		   AND (Y.DISP_PAGE_TYPE_CODE = #{dispPageTypeCode} OR X.UP_CODE_DTL_NO = #{dispPageTypeCode} OR X.CODE_DTL_NO = #{dispPageTypeCode})
+		  </if>
+		 ORDER BY SORT_SEQ, LEVEL, Y.DISP_PAGE_NO
+	</select>
+	
+    <select id="selectDpTmplCountInDisplayPage" parameterType="String" resultType="int">
+    
+    /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayPageDao.selectDpTmplCountInDisplayPage [사용 중인 전시 템플릿 카운트 조회] [이가영] */
+    
+    	SELECT <include refid="Paging.totalCount" />
+    	  FROM DP_DISPLAY_PAGE with(nolock)
+    	 WHERE (pc_disp_tmpl_no = #{dispTmplNo, jdbcType=VARCHAR} OR mobile_disp_tmpl_no = #{dispTmplNo, jdbcType=VARCHAR})
+		   AND DISP_YN = 'Y'
+    </select>
+    
+    <insert id="insertDpDisplayPage" parameterType="kr.co.abcmart.bo.display.model.master.DpDisplayPage">
+    
+    /*+ kr.co.abcmart.bo.display.repository.master.DpDisplayPageDao.insertDpDisplayPage [전시 페이지 등록] [이가영] */
+    
+    	<selectKey resultType="String" keyProperty="dispPageNo" order="BEFORE">
+			SELECT ISNULL(MAX(DISP_PAGE_NO)+1, 1000000) FROM DP_DISPLAY_PAGE
+		</selectKey>
+    
+		INSERT INTO DP_DISPLAY_PAGE (
+			DISP_PAGE_NO,
+			SITE_NO,
+			CHNNL_NO,
+			DISP_PAGE_TYPE_CODE,
+			DISP_PAGE_NAME,
+			UP_DISP_PAGE_NO,
+			DISP_START_DTM,
+			PC_DISP_TMPL_NO,
+			PC_DISP_URL,
+			MOBILE_DISP_TMPL_NO,
+			MOBILE_DISP_URL,
+			DISP_YN,
+			USE_YN,
+			RGSTER_NO,
+			RGST_DTM,
+			MODER_NO,
+			MOD_DTM
+		) VALUES (
+			#{dispPageNo, jdbcType=VARCHAR},
+			(SELECT SITE_NO FROM SY_SITE_CHNNL WHERE CHNNL_NO=#{chnnlNo, jdbcType=VARCHAR}),
+			#{chnnlNo, jdbcType=VARCHAR},
+			#{dispPageTypeCode, jdbcType=VARCHAR},
+			#{dispPageName, jdbcType=VARCHAR},
+			#{upDispPageNo, jdbcType=VARCHAR},
+			#{dispStartDtm, jdbcType=TIMESTAMP},
+			#{pcDispTmplNo, jdbcType=VARCHAR},
+			#{pcDispUrl, jdbcType=VARCHAR},
+			#{mobileDispTmplNo, jdbcType=VARCHAR},
+			#{mobileDispUrl, jdbcType=VARCHAR},
+			#{dispYn, jdbcType=CHAR},
+			#{useYn, jdbcType=CHAR},
+			#{rgsterNo, jdbcType=VARCHAR},
+			getdate(),
+			#{moderNo, jdbcType=VARCHAR},
+			getdate()
+		)
+    </insert>
+    
+    <update id="updateDpDisplayPage" parameterType="kr.co.abcmart.bo.display.model.master.DpDisplayPage">
+	
+	/*+ kr.co.abcmart.bo.display.repository.master.DpDisplayPageDao.updateDpDisplayPage [전시 페이지 수정] [이가영] */
+
+		UPDATE DP_DISPLAY_PAGE
+		<set>
+			<if test="siteNo != null and siteNo != ''"> 
+				site_no = #{siteNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="chnnlNo != null and chnnlNo != ''"> 
+				chnnl_no = #{chnnlNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="dispPageTypeCode != null and dispPageTypeCode != ''"> 
+				disp_page_type_code = #{dispPageTypeCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="dispPageName != null and dispPageName != ''">
+				disp_page_name = #{dispPageName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="upDispPageNo != null and upDispPageNo != ''">
+				UP_DISP_PAGE_NO = #{upDispPageNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="dispStartDtm != null">
+				DISP_START_DTM = #{dispStartDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="dispYn != null and dispYn != ''"> 
+				disp_yn = #{dispYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="useYn != null and useYn != ''"> 
+				use_yn = #{useYn, jdbcType=CHAR}, 
+			</if>
+			<if test="moderNo != null and moderNo != ''"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR},
+			</if>
+			<choose>
+				<when test="modDtm != null and modDtm != ''">mod_dtm = #{modDtm, jdbcType=TIMESTAMP},</when>
+				<otherwise>mod_dtm = getdate(),</otherwise>
+			</choose>
+			pc_disp_tmpl_no = #{pcDispTmplNo, jdbcType=VARCHAR}, 
+			pc_disp_url = #{pcDispUrl, jdbcType=VARCHAR}, 
+			mobile_disp_tmpl_no = #{mobileDispTmplNo, jdbcType=VARCHAR},
+			mobile_disp_url = #{mobileDispUrl, jdbcType=VARCHAR}
+		</set> 
+		WHERE 
+			 disp_page_no = #{dispPageNo, jdbcType=VARCHAR}    
+    </update>
+
+</mapper>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.afterService.repository.master.OcAsAcceptAttachFileDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptAttachFile">
+    
+     /*+ kr.co.abcmart.bo.afterService.repository.master.OcAsAcceptAttachFileDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			OC_AS_ACCEPT_ATTACH_FILE
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+     <select id="selectAtchFileSeqNextVal" resultType="int">
+		/*+ kr.co.abcmart.bo.system.repository.afterservice.OcAsAcceptAttachFileDao.selectAtchFileSeqNextVal [파일 시퀀스 번호] [이상호]*/
+		SELECT ISNULL(MAX(RIGHT(ATCH_FILE_SEQ, 1)),0)+1 
+		  FROM OC_AS_ACCEPT_ATTACH_FILE
+		 WHERE LEFT(AS_ACCEPT_NO,8) = LEFT(convert(varchar, getdate(), 112),8) 
+		   AND AS_ACCEPT_PRDT_SEQ	= 1 
+	</select>
+	
+	<insert id="insertAfterServiceAttachFile" parameterType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptAttachFile">
+
+		/*+ kr.co.abcmart.bo.afterService.repository.master.OcAsAcceptAttachFileDao.insertAfterServiceAttachFile [ AS 첨부파일을 등록하는 쿼리  ] [이상호] */
+
+		<selectKey keyProperty="atchFileSeq" resultType="Integer" order="BEFORE">
+			SELECT ISNULL(MAX(ATCH_FILE_SEQ) + 1, 1) AS atchFileSeq FROM OC_AS_ACCEPT_ATTACH_FILE WHERE AS_ACCEPT_NO = #{asAcceptNo ,jdbcType=VARCHAR} AND AS_ACCEPT_PRDT_SEQ	= #{asAcceptPrdtSeq ,jdbcType=TINYINT}
+
+		</selectKey>
+
+		INSERT INTO OC_AS_ACCEPT_ATTACH_FILE 
+											( 
+		                 AS_ACCEPT_NO
+						,AS_ACCEPT_PRDT_SEQ
+						,ATCH_FILE_SEQ
+						,ATCH_FILE_NAME
+						,ATCH_FILE_PATH_TEXT
+						,ATCH_FILE_URL
+											)
+				VALUES (  
+						#{asAcceptNo, jdbcType=VARCHAR}
+					  , #{asAcceptPrdtSeq, jdbcType=TINYINT} 
+					  , #{atchFileSeq,      jdbcType=INTEGER}
+					  , #{atchFileName,     jdbcType=VARCHAR}
+					  , #{atchFilePathText, jdbcType=VARCHAR}
+					  , #{atchFileUrl,      jdbcType=VARCHAR} 
+						 )
+
+	</insert>
+	
+	<select id="selectAfterServiceAttachFileList" parameterType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptAttachFile" resultType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptAttachFile">
+	/*+ kr.co.abcmart.bo.afterService.repository.master.OcAsAcceptAttachFileDao.selectAfterServiceAttachFileList [ AS 첨부파일을 조화하는 쿼리  ] [이상호] */
+	
+		SELECT AS_ACCEPT_NO
+		     , AS_ACCEPT_PRDT_SEQ
+		     , ATCH_FILE_SEQ
+		     , ATCH_FILE_NAME
+		     , ATCH_FILE_PATH_TEXT
+		     , ATCH_FILE_URL 
+		 FROM OC_AS_ACCEPT_ATTACH_FILE
+		WHERE AS_ACCEPT_NO = #{asAcceptNo, jdbcType=VARCHAR} 
+		  AND AS_ACCEPT_PRDT_SEQ = #{asAcceptPrdtSeq, jdbcType=TINYINT}     
+	</select>
+	
+	<delete id="deleteAfterServiceAttachAttachFileByAsAcceptNo" parameterType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptAttachFile">
+
+		/*+ kr.co.abcmart.bo.afterService.model.master.OcAsAcceptAttachFile.deleteAfterServiceAttachAttachFileByAsAcceptNo [ asAcceptNo 키로 AS 삭제 시, 해당 공지의 첨부파일을 삭제하는 쿼리  ] [이상호] */
+
+		DELETE FROM OC_AS_ACCEPT_ATTACH_FILE
+		 WHERE AS_ACCEPT_NO = #{asAcceptNo, jdbcType=VARCHAR} 
+		   AND AS_ACCEPT_PRDT_SEQ = #{asAcceptPrdtSeq, jdbcType=TINYINT}     
+
+	</delete>
+
+	<delete id="deleteAfterServiceAttachFileByAtchFileSeq" parameterType="kr.co.abcmart.bo.afterService.model.master.OcAsAcceptAttachFile">
+		/*+ kr.co.abcmart.bo.afterService.repository.master.OcAsAcceptAttachFileDao.deleteAfterServiceAttachFileByAtchFileSeq [ removeAtchFileSeq를 키로 관리자공지의 첨부파일 하나를 삭제하는 쿼리  ] [이상호] */
+
+		DELETE FROM OC_AS_ACCEPT_ATTACH_FILE
+		 WHERE AS_ACCEPT_NO = #{asAcceptNo, jdbcType=VARCHAR} 
+		   AND AS_ACCEPT_PRDT_SEQ = #{asAcceptPrdtSeq, jdbcType=TINYINT}     
+		   AND ATCH_FILE_SEQ  = #{atchFileSeq,		 jdbcType=INTEGER}
+
+	</delete>
+	
+
+</mapper>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SySiteChnnlImageDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.system.model.master.SySiteChnnlImage">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SySiteChnnlImageDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			sy_site_chnnl_image
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <insert id="insertSiteChnnlImg" parameterType="kr.co.abcmart.bo.system.model.master.SySiteChnnlImage">
+    /*+ kr.co.abcmart.bo.system.repository.master.SySiteChnnlImageDao.insertSiteChnnlImg [로고 이미지 등록] [이동엽] */
+    
+		INSERT INTO sy_site_chnnl_image (
+			  chnnl_no
+			, device_code
+			, image_type
+			, image_name
+			, image_path_text
+			, image_url
+			, altrn_text
+			, rgster_no
+			, rgst_dtm
+			, moder_no
+			, mod_dtm
+		) VALUES (
+			  #{chnnlNo, jdbcType=VARCHAR}
+			, #{deviceCode, jdbcType=VARCHAR}
+			, #{imageType, jdbcType=CHAR}
+			, #{imageName, jdbcType=VARCHAR}
+			, #{imagePathText, jdbcType=VARCHAR}
+			, #{imageUrl, jdbcType=VARCHAR}
+			, #{altrnText, jdbcType=VARCHAR}
+			, #{rgsterNo, jdbcType=VARCHAR}
+			, getdate()
+			, #{moderNo, jdbcType=VARCHAR}
+			, getdate()
+		)
+    </insert>
+    
+    <delete id="deleteChnnlImg" parameterType="kr.co.abcmart.bo.system.model.master.SySiteChnnlImage">
+    /*+ kr.co.abcmart.bo.system.repository.master.SySiteChnnlImageDao.deleteChnnlImg [로고 이미지 삭제] [이동엽] */
+    	DELETE
+    	FROM
+    		sy_site_chnnl_image
+    	WHERE
+    		chnnl_no = #{chnnlNo}
+    	AND
+    		device_code = #{deviceCode}
+    	AND
+    		image_type = #{imageType}
+    </delete>
+
+</mapper>

@@ -1,0 +1,773 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.display.repository.master.DpCategoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.display.model.master.DpCategory">
+
+     /*+ kr.co.abcmart.bo.display.repository.master.DpCategoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			DP_CATEGORY
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+	<select id="selectDpCategory" parameterType="kr.co.abcmart.bo.display.model.master.DpCategory" resultType="kr.co.abcmart.bo.display.model.master.DpCategory">
+		/*+ kr.co.abcmart.bo.display.repository.master.DpCategoryDao.selectDpCategory [전시 카테고리 기본 조회 쿼리] [이가영] */
+			SELECT A.*
+			     , B.CTGR_NAME_PATH
+			     , C.CHNNL_NAME
+			  FROM DP_CATEGORY A WITH(NOLOCK)
+			  JOIN DBO.VIEW_CATEGORY B WITH(NOLOCK)
+			    ON A.CTGR_NO = B.CTGR_NO
+			  JOIN SY_SITE_CHNNL C WITH(NOLOCK)
+			    ON A.CHNNL_NO = C.CHNNL_NO
+			 WHERE A.ctgr_no = #{ctgrNo, jdbcType=VARCHAR}
+		<if test="upCtgrNo != null">
+			   AND A.up_ctgr_no = #{upCtgrNo, jdbcType=VARCHAR}
+		</if>
+		<if test="siteNo != null">
+			   AND A.site_no = #{siteNo, jdbcType=VARCHAR}
+		</if>
+		<if test="chnnlNo != null">
+			   AND A.chnnl_no = #{chnnlNo, jdbcType=VARCHAR}
+		</if>
+		<if test="ctgrName != null">
+		 	  AND A.ctgr_name = #{ctgrName, jdbcType=VARCHAR}
+		</if>
+		<if test="leafCtgrYn != null">
+			   AND A.leaf_ctgr_yn = #{leafCtgrYn, jdbcType=CHAR}
+		</if>
+		<if test="ctgrLevel != null">
+		 	  AND A.ctgr_level = #{ctgrLevel, jdbcType=TINYINT}
+		</if>
+		<if test="stdCtgrNo != null">
+		 	  AND A.std_ctgr_no = #{stdCtgrNo, jdbcType=VARCHAR}
+		</if>
+		<if test="sortSeq != null">
+		 	  AND A.sort_seq = #{sortSeq, jdbcType=INTEGER}
+		</if>
+		<if test="dispYn != null">
+		 	  AND A.disp_yn = #{dispYn, jdbcType=CHAR}
+		</if>
+		<if test="useYn != null">
+		 	  AND A.use_yn = #{useYn, jdbcType=CHAR}
+		</if>
+    </select>
+
+    <select id="selectDpCategoryList" parameterType="kr.co.abcmart.bo.display.model.master.DpCategory" resultType="kr.co.abcmart.bo.display.model.master.DpCategory">
+
+    /*+ kr.co.abcmart.bo.display.repository.master.DpCategoryDao.selectDpCategoryList [전시 카테고리 목록 조회] [이가영] */
+
+		WITH CTGR_CTE (
+			CTGR_NO, UP_CTGR_NO, SITE_NO, CHNNL_NO, CTGR_NAME, LEAF_CTGR_YN, CTGR_LEVEL
+			, STD_CTGR_NO, PC_DISP_TMPL_NO, MOBILE_DISP_TMPL_NO, CTGR_NAME_DISP_TYPE
+			, PC_IMAGE_NAME, PC_IMAGE_PATH_TEXT, PC_IMAGE_URL, PC_ALTRN_TEXT
+			, MOBILE_IMAGE_NAME, MOBILE_IMAGE_PATH_TEXT, MOBILE_IMAGE_URL, MOBILE_ALTRN_TEXT
+			, SRCH_FILTER_USE_YN, SORT_SEQ, DISP_YN, USE_YN, RGSTER_NO, RGST_DTM, MODER_NO, MOD_DTM
+			, SORT, CTGR_NAME_PATH, CTGR_NO_PATH, LEVEL
+		)
+		AS (
+			SELECT
+				A.CTGR_NO,
+				A.UP_CTGR_NO,
+				A.SITE_NO,
+				A.CHNNL_NO,
+				A.CTGR_NAME,
+				A.LEAF_CTGR_YN,
+				A.CTGR_LEVEL,
+				A.STD_CTGR_NO,
+				A.PC_DISP_TMPL_NO,
+				A.MOBILE_DISP_TMPL_NO,
+				A.CTGR_NAME_DISP_TYPE,
+				A.PC_IMAGE_NAME,
+				A.PC_IMAGE_PATH_TEXT,
+				A.PC_IMAGE_URL,
+				A.PC_ALTRN_TEXT,
+				A.MOBILE_IMAGE_NAME,
+				A.MOBILE_IMAGE_PATH_TEXT,
+				A.MOBILE_IMAGE_URL,
+				A.MOBILE_ALTRN_TEXT,
+				A.SRCH_FILTER_USE_YN,
+				A.SORT_SEQ,
+				A.DISP_YN,
+				A.USE_YN,
+				A.RGSTER_NO,
+				A.RGST_DTM,
+				A.MODER_NO,
+				A.MOD_DTM,
+				CONVERT(VARCHAR(255), RIGHT('0000' + CONVERT(VARCHAR(4), A.SORT_SEQ), 4)) SORT,
+				CONVERT(VARCHAR(255), A.CTGR_NAME) CTGR_NAME_PATH,
+				CONVERT(VARCHAR(255), A.CTGR_NO) CTGR_NO_PATH,
+				A.CTGR_LEVEL AS LEVEL
+			FROM DP_CATEGORY A WITH (NOLOCK)
+			WHERE
+				(A.UP_CTGR_NO IS NULL OR A.UP_CTGR_NO = '')
+				<if test="siteNo != null and siteNo != ''">
+				 	AND A.site_no = #{siteNo, jdbcType=VARCHAR}
+				</if>
+				<if test="chnnlNo != null and chnnlNo != ''">
+					AND A.chnnl_no = #{chnnlNo, jdbcType=VARCHAR}
+				</if>
+				<if test="useYn != null and useYn != ''">
+					AND A.use_yn = #{useYn, jdbcType=CHAR}
+				</if>
+			UNION ALL
+			SELECT
+				B.CTGR_NO,
+				B.UP_CTGR_NO,
+				B.SITE_NO,
+				B.CHNNL_NO,
+				B.CTGR_NAME,
+				B.LEAF_CTGR_YN,
+				B.CTGR_LEVEL,
+				B.STD_CTGR_NO,
+				B.PC_DISP_TMPL_NO,
+				B.MOBILE_DISP_TMPL_NO,
+				B.CTGR_NAME_DISP_TYPE,
+				B.PC_IMAGE_NAME,
+				B.PC_IMAGE_PATH_TEXT,
+				B.PC_IMAGE_URL,
+				B.PC_ALTRN_TEXT,
+				B.MOBILE_IMAGE_NAME,
+				B.MOBILE_IMAGE_PATH_TEXT,
+				B.MOBILE_IMAGE_URL,
+				B.MOBILE_ALTRN_TEXT,
+				B.SRCH_FILTER_USE_YN,
+				B.SORT_SEQ,
+				B.DISP_YN,
+				B.USE_YN,
+				B.RGSTER_NO,
+				B.RGST_DTM,
+				B.MODER_NO,
+				B.MOD_DTM,
+				CONVERT(VARCHAR(255), C.SORT + ' > ' + RIGHT('0000' + CONVERT(VARCHAR(4), B.SORT_SEQ), 4)) SORT,
+				CONVERT(VARCHAR(255), CONVERT(VARCHAR(255), C.CTGR_NAME_PATH) + ' > ' +  convert(VARCHAR(255), B.CTGR_NAME)) CTGR_NAME_PATH,
+				CONVERT(VARCHAR(255), CONVERT(VARCHAR(255), C.CTGR_NO_PATH) + ' > ' +  convert(VARCHAR(255), B.CTGR_NO)) CTGR_NO_PATH,
+				B.CTGR_LEVEL AS LEVEL
+			FROM DP_CATEGORY B WITH (NOLOCK), CTGR_CTE C
+			WHERE B.UP_CTGR_NO = C.CTGR_NO
+		)
+		SELECT
+			X.CTGR_NO,
+			X.UP_CTGR_NO,
+			X.SITE_NO,
+			X.CHNNL_NO,
+			X.CTGR_NAME,
+			X.LEAF_CTGR_YN,
+			X.CTGR_LEVEL ,
+			X.STD_CTGR_NO,
+			X.PC_DISP_TMPL_NO,
+			X.MOBILE_DISP_TMPL_NO,
+			X.CTGR_NAME_DISP_TYPE ,
+			X.PC_IMAGE_NAME,
+			X.PC_IMAGE_PATH_TEXT,
+			X.PC_IMAGE_URL,
+			X.PC_ALTRN_TEXT ,
+			X.MOBILE_IMAGE_NAME,
+			X.MOBILE_IMAGE_PATH_TEXT,
+			X.MOBILE_IMAGE_URL,
+			X.MOBILE_ALTRN_TEXT ,
+			X.SRCH_FILTER_USE_YN,
+			X.SORT_SEQ,
+			X.DISP_YN,
+			X.USE_YN,
+			X.RGSTER_NO,
+			X.RGST_DTM,
+			X.MODER_NO,
+			X.MOD_DTM ,
+			X.SORT,
+			X.CTGR_NAME_PATH,
+			X.CTGR_NO_PATH,
+			X.LEVEL,
+			Y.SITE_NAME, Z.CHNNL_NAME,
+			CONVERT(VARCHAR(255), Y.SITE_NAME + ' > ' + Z.CHNNL_NAME) AS CHNNL_PATH,
+			P.TMPL_NAME AS PC_DISP_TMPL_NAME,
+			P.IMAGE_URL AS PC_PREVIEW_IMAGE_URL,
+			M.TMPL_NAME AS MOBILE_DISP_TMPL_NAME,
+			M.IMAGE_URL AS MOBILE_PREVIEW_IMAGE_URL
+		FROM CTGR_CTE X WITH(NOLOCK)
+		JOIN SY_SITE Y with(nolock) ON X.SITE_NO = Y.SITE_NO
+		JOIN SY_SITE_CHNNL Z with(nolock) ON X.CHNNL_NO = Z.CHNNL_NO
+		LEFT OUTER JOIN DP_DISPLAY_TEMPLATE P with(nolock) ON P.DISP_TMPL_NO = X.PC_DISP_TMPL_NO
+		LEFT OUTER JOIN DP_DISPLAY_TEMPLATE M with(nolock) ON M.DISP_TMPL_NO = X.MOBILE_DISP_TMPL_NO
+		<where>
+			<if test="ctgrNo != null and ctgrNo != ''">
+				 X.ctgr_no = #{ctgrNo, jdbcType=VARCHAR}
+			</if>
+			<if test="upCtgrNo != null and upCtgrNo != ''">
+				 AND X.up_ctgr_no = #{upCtgrNo, jdbcType=VARCHAR}
+			</if>
+			<if test="ctgrName != null and ctgrName != ''">
+				 AND X.ctgr_name = #{ctgrName, jdbcType=VARCHAR}
+			</if>
+			<if test="leafCtgrYn != null and leafCtgrYn != ''">
+				 AND X.leaf_ctgr_yn = #{leafCtgrYn, jdbcType=CHAR}
+			</if>
+			<if test="ctgrLevel != null and ctgrLevel != ''">
+				 AND X.ctgr_level = #{ctgrLevel, jdbcType=TINYINT}
+			</if>
+			<if test="stdCtgrNo != null and stdCtgrNo != ''">
+			<!-- PO 상품 등록/수정 페이지에서 전시 카테고리 조회 용 2019-12-30 by 김진성 -->
+				<choose>
+					<when test='vndrNo != null and vndrNo != ""'>
+				AND EXISTS (
+								SELECT 1
+								  FROM (
+								  			SELECT DBO.FN_GET_IDXDATA_LIKE_SPLIT(CONCAT(MIN(X.CTGR_NO_PATH), ' > '), T_COPY.SEQ, ' > ') AS CTGR_NO
+								  			  FROM VIEW_CATEGORY X
+												 , (SELECT 1 SEQ UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4) AS T_COPY
+											 WHERE X.STD_CTGR_NO = #{stdCtgrNo, jdbcType=VARCHAR}
+						<if test='siteNo != null and siteNo != ""'>
+											   AND X.SITE_NO = #{siteNo, jdbcType=VARCHAR}
+						</if>
+						<if test='chnnlNo != null and chnnlNo != ""'>
+											   AND X.CHNNL_NO = #{chnnlNo, jdbcType=VARCHAR}
+						</if>
+											   AND X.CTGR_LEVEL >= T_COPY.SEQ
+											 GROUP BY X.CTGR_NO, T_COPY.SEQ
+								       ) Z
+								 WHERE Z.CTGR_NO = X.CTGR_NO
+		 				   )
+					</when>
+					<otherwise>
+				 AND X.std_ctgr_no = #{stdCtgrNo, jdbcType=VARCHAR}
+				 	</otherwise>
+				 </choose>
+			<!-- PO 상품 등록/수정 페이지에서 전시 카테고리 조회 용 2019-12-30 by 김진성 -->
+			</if>
+			<if test="stdCtgrNo == null or stdCtgrNo == ''">
+			<!-- PO 상품 등록/수정 페이지에서 전시 카테고리 조회 용 2019-12-30 by 김진성 -->
+				<choose>
+					<when test='vndrNo != null and vndrNo != ""'>
+				AND EXISTS (
+								SELECT 1
+								  FROM (
+								  			SELECT DBO.FN_GET_IDXDATA_LIKE_SPLIT(CONCAT(MIN(X.CTGR_NO_PATH), ' > '), T_COPY.SEQ, ' > ') AS CTGR_NO
+								  			  FROM VIEW_CATEGORY X
+												 , (SELECT 1 SEQ UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4) AS T_COPY
+						<trim prefix="WHERE" prefixOverrides="AND|OR">
+							<if test='chnnlNo != null and chnnlNo != ""'>
+											 X.CHNNL_NO = #{chnnlNo, jdbcType=VARCHAR}
+							</if>
+							<if test='siteNo != null and siteNo != ""'>
+											   AND X.SITE_NO = #{siteNo, jdbcType=VARCHAR}
+							</if>
+											   AND X.CTGR_LEVEL >= T_COPY.SEQ
+						</trim>
+											 GROUP BY X.CTGR_NO, T_COPY.SEQ
+								       ) Z
+								 WHERE Z.CTGR_NO = X.CTGR_NO
+		 				   )
+					</when>
+				 </choose>
+			<!-- PO 상품 등록/수정 페이지에서 전시 카테고리 조회 용 2019-12-30 by 김진성 -->
+			</if>
+			<if test="pcDispTmplNo != null and pcDispTmplNo != ''">
+				 AND X.pc_disp_tmpl_no = #{pcDispTmplNo, jdbcType=VARCHAR}
+			</if>
+			<if test="mobileDispTmplNo != null and mobileDispTmplNo != ''">
+				 AND X.mobile_disp_tmpl_no = #{mobileDispTmplNo, jdbcType=VARCHAR}
+			</if>
+			<if test="ctgrNameDispType != null and ctgrNameDispType != ''">
+				 AND X.ctgr_name_disp_type = #{ctgrNameDispType, jdbcType=CHAR}
+			</if>
+			<if test="pcImageName != null and pcImageName != ''">
+				 AND X.pc_image_name = #{pcImageName, jdbcType=VARCHAR}
+			</if>
+			<if test="pcImagePathText != null and pcImagePathText != ''">
+				 AND X.pc_image_path_text = #{pcImagePathText, jdbcType=VARCHAR}
+			</if>
+			<if test="pcImageUrl != null and pcImageUrl != ''">
+				 AND X.pc_image_url = #{pcImageUrl, jdbcType=VARCHAR}
+			</if>
+			<if test="pcAltrnText != null and pcAltrnText != ''">
+				 AND X.pc_altrn_text = #{pcAltrnText, jdbcType=VARCHAR}
+			</if>
+			<if test="mobileImageName != null and mobileImageName != ''">
+				 AND X.mobile_image_name = #{mobileImageName, jdbcType=VARCHAR}
+			</if>
+			<if test="mobileImagePathText != null and mobileImagePathText != ''">
+				 AND X.mobile_image_path_text = #{mobileImagePathText, jdbcType=VARCHAR}
+			</if>
+			<if test="mobileImageUrl != null and mobileImageUrl != ''">
+				 AND X.mobile_image_url = #{mobileImageUrl, jdbcType=VARCHAR}
+			</if>
+			<if test="mobileAltrnText != null and mobileAltrnText != ''">
+				 AND X.mobile_altrn_text = #{mobileAltrnText, jdbcType=VARCHAR}
+			</if>
+			<if test="srchFilterUseYn != null and srchFilterUseYn != ''">
+				 AND X.srch_filter_use_yn = #{srchFilterUseYn, jdbcType=CHAR}
+			</if>
+			<if test="sortSeq != null and sortSeq != ''">
+				 AND X.sort_seq = #{sortSeq, jdbcType=INTEGER}
+			</if>
+			<if test="dispYn != null and dispYn != ''">
+				 AND X.disp_yn = #{dispYn, jdbcType=CHAR}
+			</if>
+			<if test="useYn != null and useYn != ''">
+				 AND X.use_yn = #{useYn, jdbcType=CHAR}
+			</if>
+			<if test="rgsterNo != null and rgsterNo != ''">
+				 AND X.rgster_no = #{rgsterNo, jdbcType=VARCHAR}
+			</if>
+			<if test="moderNo != null and moderNo != ''">
+				 AND X.moder_no = #{moderNo, jdbcType=VARCHAR}
+			</if>
+		</where>
+		ORDER BY SORT
+    </select>
+
+    <select id="selectDpCategoryListForGridCount" parameterType="pageable" resultType="int">
+
+    /*+ kr.co.abcmart.bo.display.repository.master.DpCategoryDao.selectDpCategoryListForGridCount [전시 카테고리 목록 카운트 조회] [이가영] */
+
+		SELECT
+			<include refid="Paging.totalCount" />
+		FROM
+			DP_CATEGORY X WITH (NOLOCK)
+		<where>
+			<if test="bean.ctgrNo != null and bean.ctgrNo != ''">
+				 X.ctgr_no = #{bean.ctgrNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.upCtgrNo != null and bean.upCtgrNo != ''">
+				 AND X.up_ctgr_no = #{bean.upCtgrNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.siteNo != null and bean.siteNo != ''">
+				 AND X.site_no = #{bean.siteNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.chnnlNo != null and bean.chnnlNo != ''">
+				 AND X.chnnl_no = #{bean.chnnlNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.ctgrName != null and bean.ctgrName != ''">
+				 AND X.ctgr_name = #{bean.ctgrName, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.leafCtgrYn != null and bean.leafCtgrYn != ''">
+				 AND X.leaf_ctgr_yn = #{bean.leafCtgrYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.ctgrLevel != null and bean.ctgrLevel != ''">
+				 AND X.ctgr_level = #{bean.ctgrLevel, jdbcType=TINYINT}
+			</if>
+			<if test="bean.stdCtgrNo != null and bean.stdCtgrNo != ''">
+				 AND X.std_ctgr_no = #{bean.stdCtgrNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.pcDispTmplNo != null and bean.pcDispTmplNo != ''">
+				 AND X.pc_disp_tmpl_no = #{bean.pcDispTmplNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.mobileDispTmplNo != null and bean.mobileDispTmplNo != ''">
+				 AND X.mobile_disp_tmpl_no = #{bean.mobileDispTmplNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.ctgrNameDispType != null and bean.ctgrNameDispType != ''">
+				 AND X.ctgr_name_disp_type = #{bean.ctgrNameDispType, jdbcType=CHAR}
+			</if>
+			<if test="bean.srchFilterUseYn != null and bean.srchFilterUseYn != ''">
+				 AND X.srch_filter_use_yn = #{srchFilterUseYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.sortSeq != null and bean.sortSeq != ''">
+				 AND X.sort_seq = #{bean.sortSeq, jdbcType=INTEGER}
+			</if>
+			<if test="bean.dispYn != null and bean.dispYn != ''">
+				 AND X.disp_yn = #{bean.dispYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.useYn != null and bean.useYn != ''">
+				 AND X.use_yn = #{bean.useYn, jdbcType=CHAR}
+			</if>
+		</where>
+    </select>
+
+    <select id="selectDpCategoryListForGrid" parameterType="pageable" resultType="kr.co.abcmart.bo.display.model.master.DpCategory">
+
+    /*+ kr.co.abcmart.bo.display.repository.master.DpCategoryDao.selectDpCategoryListForGrid [전시 카테고리 목록 조회] [이가영] */
+
+		WITH CTGR_CTE (
+			CTGR_NO, UP_CTGR_NO, SITE_NO, CHNNL_NO, CTGR_NAME, LEAF_CTGR_YN, CTGR_LEVEL
+			, STD_CTGR_NO, PC_DISP_TMPL_NO, MOBILE_DISP_TMPL_NO, CTGR_NAME_DISP_TYPE
+			, PC_IMAGE_NAME, PC_IMAGE_PATH_TEXT, PC_IMAGE_URL, PC_ALTRN_TEXT
+			, MOBILE_IMAGE_NAME, MOBILE_IMAGE_PATH_TEXT, MOBILE_IMAGE_URL, MOBILE_ALTRN_TEXT
+			, SRCH_FILTER_USE_YN, SORT_SEQ, DISP_YN, USE_YN, RGSTER_NO, RGST_DTM, MODER_NO, MOD_DTM
+			, SORT, CTGR_NAME_PATH, CTGR_NO_PATH, LEVEL
+		)
+		AS (
+			SELECT
+				A.CTGR_NO,
+				A.UP_CTGR_NO,
+				A.SITE_NO,
+				A.CHNNL_NO,
+				A.CTGR_NAME,
+				A.LEAF_CTGR_YN,
+				A.CTGR_LEVEL,
+				A.STD_CTGR_NO,
+				A.PC_DISP_TMPL_NO,
+				A.MOBILE_DISP_TMPL_NO,
+				A.CTGR_NAME_DISP_TYPE,
+				A.PC_IMAGE_NAME,
+				A.PC_IMAGE_PATH_TEXT,
+				A.PC_IMAGE_URL,
+				A.PC_ALTRN_TEXT,
+				A.MOBILE_IMAGE_NAME,
+				A.MOBILE_IMAGE_PATH_TEXT,
+				A.MOBILE_IMAGE_URL,
+				A.MOBILE_ALTRN_TEXT,
+				A.SRCH_FILTER_USE_YN,
+				A.SORT_SEQ,
+				A.DISP_YN,
+				A.USE_YN,
+				A.RGSTER_NO,
+				A.RGST_DTM,
+				A.MODER_NO,
+				A.MOD_DTM,
+				CONVERT(VARCHAR(255), RIGHT('0000' + CONVERT(VARCHAR(4), A.SORT_SEQ), 4)) SORT,
+				CONVERT(VARCHAR(255), A.CTGR_NAME) CTGR_NAME_PATH,
+				CONVERT(VARCHAR(255), A.CTGR_NO) CTGR_NO_PATH,
+				A.CTGR_LEVEL AS LEVEL
+			FROM DP_CATEGORY A WITH (NOLOCK)
+			WHERE
+				(A.UP_CTGR_NO IS NULL OR A.UP_CTGR_NO = '')
+				<if test="siteNo != null and siteNo != ''">
+				 	AND A.site_no = #{siteNo, jdbcType=VARCHAR}
+				</if>
+				<if test="chnnlNo != null and chnnlNo != ''">
+					AND A.chnnl_no = #{chnnlNo, jdbcType=VARCHAR}
+				</if>
+				<if test="useYn != null and useYn != ''">
+					AND A.use_yn = #{useYn, jdbcType=CHAR}
+				</if>
+			UNION ALL
+			SELECT
+				B.CTGR_NO,
+				B.UP_CTGR_NO,
+				B.SITE_NO,
+				B.CHNNL_NO,
+				B.CTGR_NAME,
+				B.LEAF_CTGR_YN,
+				B.CTGR_LEVEL,
+				B.STD_CTGR_NO,
+				B.PC_DISP_TMPL_NO,
+				B.MOBILE_DISP_TMPL_NO,
+				B.CTGR_NAME_DISP_TYPE,
+				B.PC_IMAGE_NAME,
+				B.PC_IMAGE_PATH_TEXT,
+				B.PC_IMAGE_URL,
+				B.PC_ALTRN_TEXT,
+				B.MOBILE_IMAGE_NAME,
+				B.MOBILE_IMAGE_PATH_TEXT,
+				B.MOBILE_IMAGE_URL,
+				B.MOBILE_ALTRN_TEXT,
+				B.SRCH_FILTER_USE_YN,
+				B.SORT_SEQ,
+				B.DISP_YN,
+				B.USE_YN,
+				B.RGSTER_NO,
+				B.RGST_DTM,
+				B.MODER_NO,
+				B.MOD_DTM,
+				CONVERT(VARCHAR(255), C.SORT + ' > ' + RIGHT('0000' + CONVERT(VARCHAR(4), B.SORT_SEQ), 4)) SORT,
+				CONVERT(VARCHAR(255), CONVERT(VARCHAR(255), C.CTGR_NAME_PATH) + ' > ' +  convert(VARCHAR(255), B.CTGR_NAME)) CTGR_NAME_PATH,
+				CONVERT(VARCHAR(255), CONVERT(VARCHAR(255), C.CTGR_NO_PATH) + ' > ' +  convert(VARCHAR(255), B.CTGR_NO)) CTGR_NO_PATH,
+				B.CTGR_LEVEL AS LEVEL
+			FROM DP_CATEGORY B WITH (NOLOCK), CTGR_CTE C
+			WHERE B.UP_CTGR_NO = C.CTGR_NO
+		)
+		SELECT
+			X.CTGR_NO,
+			X.UP_CTGR_NO,
+			X.SITE_NO,
+			X.CHNNL_NO,
+			X.CTGR_NAME,
+			X.LEAF_CTGR_YN,
+			X.CTGR_LEVEL ,
+			X.STD_CTGR_NO,
+			X.PC_DISP_TMPL_NO,
+			X.MOBILE_DISP_TMPL_NO,
+			X.CTGR_NAME_DISP_TYPE ,
+			X.PC_IMAGE_NAME,
+			X.PC_IMAGE_PATH_TEXT,
+			X.PC_IMAGE_URL,
+			X.PC_ALTRN_TEXT ,
+			X.MOBILE_IMAGE_NAME,
+			X.MOBILE_IMAGE_PATH_TEXT,
+			X.MOBILE_IMAGE_URL,
+			X.MOBILE_ALTRN_TEXT ,
+			X.SRCH_FILTER_USE_YN,
+			X.SORT_SEQ,
+			X.DISP_YN,
+			X.USE_YN,
+			X.RGSTER_NO,
+			X.RGST_DTM,
+			X.MODER_NO,
+			X.MOD_DTM ,
+			X.SORT,
+			X.CTGR_NAME_PATH,
+			X.CTGR_NO_PATH,
+			X.LEVEL,
+			Y.SITE_NAME, Z.CHNNL_NAME,
+			CONVERT(VARCHAR(255), Y.SITE_NAME + ' > ' + Z.CHNNL_NAME) AS CHNNL_PATH,
+			P.TMPL_NAME AS PC_DISP_TMPL_NAME,
+			M.TMPL_NAME AS MOBILE_DISP_TMPL_NAME
+		FROM CTGR_CTE X WITH(NOLOCK)
+		JOIN SY_SITE Y with(nolock) ON X.SITE_NO = Y.SITE_NO
+		JOIN SY_SITE_CHNNL Z with(nolock) ON X.CHNNL_NO = Z.CHNNL_NO
+		LEFT OUTER JOIN DP_DISPLAY_TEMPLATE P with(nolock) ON P.DISP_TMPL_NO = X.PC_DISP_TMPL_NO
+		LEFT OUTER JOIN DP_DISPLAY_TEMPLATE M with(nolock) ON M.DISP_TMPL_NO = X.MOBILE_DISP_TMPL_NO
+		<where>
+			<if test="bean.ctgrNo != null and bean.ctgrNo != ''">
+				 X.ctgr_no = #{bean.ctgrNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.upCtgrNo != null and bean.upCtgrNo != ''">
+				 AND X.up_ctgr_no = #{bean.upCtgrNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.ctgrName != null and bean.ctgrName != ''">
+				 AND X.ctgr_name = #{bean.ctgrName, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.leafCtgrYn != null and bean.leafCtgrYn != ''">
+				 AND X.leaf_ctgr_yn = #{bean.leafCtgrYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.ctgrLevel != null and bean.ctgrLevel != ''">
+				 AND X.ctgr_level = #{bean.ctgrLevel, jdbcType=TINYINT}
+			</if>
+			<if test="bean.stdCtgrNo != null and bean.stdCtgrNo != ''">
+				 AND X.std_ctgr_no = #{bean.stdCtgrNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.pcDispTmplNo != null and bean.pcDispTmplNo != ''">
+				 AND X.pc_disp_tmpl_no = #{bean.pcDispTmplNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.mobileDispTmplNo != null and bean.mobileDispTmplNo != ''">
+				 AND X.mobile_disp_tmpl_no = #{bean.mobileDispTmplNo, jdbcType=VARCHAR}
+			</if>
+			<if test="bean.ctgrNameDispType != null and bean.ctgrNameDispType != ''">
+				 AND X.ctgr_name_disp_type = #{bean.ctgrNameDispType, jdbcType=CHAR}
+			</if>
+			<if test="bean.srchFilterUseYn != null and bean.srchFilterUseYn != ''">
+				 AND X.srch_filter_use_yn = #{srchFilterUseYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.sortSeq != null and bean.sortSeq != ''">
+				 AND X.sort_seq = #{bean.sortSeq, jdbcType=INTEGER}
+			</if>
+			<if test="bean.dispYn != null and bean.dispYn != ''">
+				 AND X.disp_yn = #{bean.dispYn, jdbcType=CHAR}
+			</if>
+		</where>
+		ORDER BY SORT
+		<include refid="Paging.mssql" />
+    </select>
+
+    <select id="selectDpTmplCountInDisplayCtgr" parameterType="String" resultType="int">
+
+     /*+ kr.co.abcmart.bo.display.repository.master.DpCategoryDao.selectDpTmplCountInDisplayCtgr [사용 중인 전시 템플릿 카운트 조회] [이가영] */
+
+     	SELECT <include refid="Paging.totalCount" />
+    	  FROM DP_CATEGORY with(nolock)
+    	 WHERE (pc_disp_tmpl_no = #{dispTmplNo, jdbcType=VARCHAR} OR mobile_disp_tmpl_no = #{dispTmplNo, jdbcType=VARCHAR})
+		   AND DISP_YN = 'Y'
+    </select>
+
+    <insert id="insertDpCategory" parameterType="kr.co.abcmart.bo.display.model.master.DpCategory">
+
+    /*+ kr.co.abcmart.bo.display.repository.master.DpCategoryDao.insertDpCategory [전시 카테고리 등록] [이가영] */
+
+    	<selectKey resultType="String" keyProperty="ctgrNo" order="BEFORE">
+			SELECT ISNULL(MAX(CTGR_NO)+1, 1000000000) FROM DP_CATEGORY
+		</selectKey>
+
+    	INSERT INTO DP_CATEGORY (
+    		CTGR_NO,
+    		UP_CTGR_NO,
+    		SITE_NO,
+    		CHNNL_NO,
+    		CTGR_NAME,
+    		LEAF_CTGR_YN,
+    		CTGR_LEVEL,
+    		STD_CTGR_NO,
+    		PC_DISP_TMPL_NO,
+    		MOBILE_DISP_TMPL_NO,
+    		CTGR_NAME_DISP_TYPE,
+    		PC_IMAGE_NAME,
+    		PC_IMAGE_PATH_TEXT,
+    		PC_IMAGE_URL,
+    		PC_ALTRN_TEXT,
+    		MOBILE_IMAGE_NAME,
+    		MOBILE_IMAGE_PATH_TEXT,
+    		MOBILE_IMAGE_URL,
+    		MOBILE_ALTRN_TEXT,
+    		SRCH_FILTER_USE_YN,
+    		SORT_SEQ,
+    		DISP_YN,
+    		USE_YN,
+    		RGSTER_NO,
+    		RGST_DTM,
+    		MODER_NO,
+    		MOD_DTM
+    	) VALUES (
+    		#{ctgrNo, jdbcType=VARCHAR},
+    		#{upCtgrNo, jdbcType=VARCHAR},
+    		#{siteNo, jdbcType=VARCHAR},
+    		#{chnnlNo, jdbcType=VARCHAR},
+    		#{ctgrName, jdbcType=VARCHAR},
+    		#{leafCtgrYn, jdbcType=CHAR},
+    		#{ctgrLevel, jdbcType=TINYINT},
+    		#{stdCtgrNo, jdbcType=VARCHAR},
+    		#{pcDispTmplNo, jdbcType=VARCHAR},
+    		#{mobileDispTmplNo, jdbcType=VARCHAR},
+    		#{ctgrNameDispType, jdbcType=CHAR},
+    		#{pcImageName, jdbcType=VARCHAR},
+    		#{pcImagePathText, jdbcType=VARCHAR},
+    		#{pcImageUrl, jdbcType=VARCHAR},
+    		ISNULL(#{pcAltrnText, jdbcType=VARCHAR}, #{pcImageName, jdbcType=VARCHAR}),
+    		#{mobileImageName, jdbcType=VARCHAR},
+    		#{mobileImagePathText, jdbcType=VARCHAR},
+    		#{mobileImageUrl, jdbcType=VARCHAR},
+    		ISNULL(#{mobileAltrnText, jdbcType=VARCHAR}, #{mobileImageName, jdbcType=VARCHAR}),
+    		#{srchFilterUseYn, jdbcType=CHAR},
+    		(SELECT ISNULL(MAX(SORT_SEQ)+1, 1) FROM DP_CATEGORY WHERE CTGR_LEVEL = #{ctgrLevel, jdbcType=TINYINT} OR UP_CTGR_NO = #{upCtgrNo, jdbcType=VARCHAR}),
+    		#{dispYn, jdbcType=CHAR},
+    		#{useYn, jdbcType=CHAR},
+    		#{rgsterNo, jdbcType=VARCHAR},
+    		<choose>
+    			<when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when>
+    			<otherwise>getdate()</otherwise>
+    		</choose>,
+    		#{moderNo, jdbcType=VARCHAR},
+    		<choose>
+	    		<when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when>
+	    		<otherwise>getdate()</otherwise>
+    		</choose>
+    	)
+    </insert>
+
+    <update id="updateDpCategory" parameterType="kr.co.abcmart.bo.display.model.master.DpCategory">
+
+    /*+ kr.co.abcmart.bo.display.repository.master.DpCategoryDao.updateDpCategory [전시 카테고리 수정] [이가영] */
+
+    	UPDATE DP_CATEGORY
+		<set>
+			<if test="upCtgrNo != null and upCtgrNo != ''">
+				up_ctgr_no = #{upCtgrNo, jdbcType=VARCHAR},
+			</if>
+			<if test="siteNo != null and siteNo != ''">
+				site_no = #{siteNo, jdbcType=VARCHAR},
+			</if>
+			<if test="chnnlNo != null and chnnlNo != ''">
+				chnnl_no = #{chnnlNo, jdbcType=VARCHAR},
+			</if>
+			<if test="ctgrName != null and ctgrName != ''">
+				ctgr_name = #{ctgrName, jdbcType=VARCHAR},
+			</if>
+			<if test="leafCtgrYn != null and leafCtgrYn != ''">
+				leaf_ctgr_yn = #{leafCtgrYn, jdbcType=CHAR},
+			</if>
+			<if test="ctgrLevel != null and ctgrLevel != ''">
+				ctgr_level = #{ctgrLevel, jdbcType=TINYINT},
+			</if>
+			<if test="stdCtgrNo != null and stdCtgrNo != ''">
+				std_ctgr_no = #{stdCtgrNo, jdbcType=VARCHAR},
+			</if>
+			<if test="ctgrNameDispType != null and ctgrNameDispType != ''">
+				ctgr_name_disp_type = #{ctgrNameDispType, jdbcType=CHAR},
+			</if>
+			<if test="pcImageName != null and pcImageName != ''">
+				pc_image_name = #{pcImageName, jdbcType=VARCHAR},
+			</if>
+			<if test="pcImagePathText != null and pcImagePathText != ''">
+				pc_image_path_text = #{pcImagePathText, jdbcType=VARCHAR},
+			</if>
+			<if test="pcImageUrl != null and pcImageUrl != ''">
+				pc_image_url = #{pcImageUrl, jdbcType=VARCHAR},
+			</if>
+			<if test="mobileImageName != null and mobileImageName != ''">
+				mobile_image_name = #{mobileImageName, jdbcType=VARCHAR},
+			</if>
+			<if test="mobileImagePathText != null and mobileImagePathText != ''">
+				mobile_image_path_text = #{mobileImagePathText, jdbcType=VARCHAR},
+			</if>
+			<if test="mobileImageUrl != null and mobileImageUrl != ''">
+				mobile_image_url = #{mobileImageUrl, jdbcType=VARCHAR},
+			</if>
+			<if test="srchFilterUseYn != null and srchFilterUseYn != ''">
+				srch_filter_use_yn = #{srchFilterUseYn, jdbcType=CHAR},
+			</if>
+			<if test="sortSeq != null and sortSeq != ''">
+				sort_seq = #{sortSeq, jdbcType=INTEGER},
+			</if>
+			<if test="dispYn != null and dispYn != ''">
+				disp_yn = #{dispYn, jdbcType=CHAR},
+			</if>
+			<if test="useYn != null and useYn != ''">
+				use_yn = #{useYn, jdbcType=CHAR},
+			</if>
+			<if test="moderNo != null and moderNo != ''">
+				moder_no = #{moderNo, jdbcType=VARCHAR},
+			</if>
+			pc_disp_tmpl_no = #{pcDispTmplNo, jdbcType=VARCHAR},
+			mobile_disp_tmpl_no = #{mobileDispTmplNo, jdbcType=VARCHAR},
+			pc_altrn_text = ISNULL(#{pcAltrnText, jdbcType=VARCHAR}, #{pcImageName, jdbcType=VARCHAR}),
+			mobile_altrn_text = ISNULL(#{mobileAltrnText, jdbcType=VARCHAR}, #{mobileImageName, jdbcType=VARCHAR})
+		</set>
+		WHERE
+			 ctgr_no = #{ctgrNo, jdbcType=VARCHAR}
+    </update>
+
+	<select id="selectActiveSubCategoryCount" parameterType="kr.co.abcmart.bo.display.model.master.DpCategory" resultType="int">
+	/*+ kr.co.abcmart.bo.display.repository.master.DpCategoryDao.selectActiveSubCategoryCount [사용 중인 하위 전시 카테고리 카운트 조회] [이가영] */
+   	WITH CTGR_CTE (CTGR_NO, CTGR_NAME_PATH, CTGR_NO_PATH) AS (
+		SELECT
+			A.CTGR_NO,
+			CONVERT(VARCHAR(255), A.CTGR_NAME) CTGR_NAME_PATH,
+			CONVERT(VARCHAR(255), A.CTGR_NO) CTGR_NO_PATH
+		FROM
+			DP_CATEGORY A WITH (NOLOCK)
+		WHERE
+			(A.UP_CTGR_NO IS NULL OR A.UP_CTGR_NO = '')
+			AND A.USE_YN = 'Y'
+		UNION ALL
+		SELECT
+			B.CTGR_NO,
+			CONVERT(VARCHAR(255), CONVERT(VARCHAR(255), C.CTGR_NAME_PATH) + ' > ' + convert(VARCHAR(255), B.CTGR_NAME)) CTGR_NAME_PATH,
+			CONVERT(VARCHAR(255), CONVERT(VARCHAR(255), C.CTGR_NO_PATH) + ' > ' + convert(VARCHAR(255), B.CTGR_NO)) CTGR_NO_PATH
+		FROM
+			DP_CATEGORY B WITH (NOLOCK), CTGR_CTE C
+		WHERE
+			B.UP_CTGR_NO = C.CTGR_NO
+			AND B.USE_YN = 'Y'
+	)
+	SELECT COUNT(X.CTGR_NO)
+	FROM CTGR_CTE X WITH(NOLOCK)
+	WHERE X.CTGR_NO_PATH LIKE '%'+#{ctgrNo, jdbcType=VARCHAR}+'%'
+    </select>
+
+    <update id="updateStdCtgrNo" parameterType="kr.co.abcmart.bo.display.model.master.DpCategory">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpCategoryDao.updateStdCtgrNo [표준 카테고리 번호 수정] [김진성 2019.11.20] */
+    	UPDATE DP_CATEGORY
+    	   SET STD_CTGR_NO = #{stdCtgrNo, jdbcType=VARCHAR}
+    	     , MODER_NO    = #{moderNo, jdbcType=VARCHAR}
+    	     , MOD_DTM     = GETDATE()
+    	 WHERE CTGR_NO = #{ctgrNo, jdbcType=VARCHAR}
+    </update>
+
+    <select id="selectCategoryListByStdCtgrNo" parameterType="String" resultType="kr.co.abcmart.bo.display.model.master.DpCategory">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpCategoryDao.selectCategoryListByStdCtgrNo [표준 카테고리와 연결된 카테고리 정보를 조회] [김진성 2019.11.20] */
+		SELECT B.SITE_NO, B.CHNNL_NO, B.CHNNL_NAME, A.CTGR_NO, A.CTGR_NAME_PATH
+		  FROM DBO.VIEW_CATEGORY A WITH(NOLOCK)
+		  JOIN SY_SITE_CHNNL B WITH(NOLOCK)
+		    ON B.SITE_NO = A.SITE_NO
+		   AND B.CHNNL_NO = A.CHNNL_NO
+		 WHERE A.STD_CTGR_NO = #{stdCtgrNo, jdbcType=VARCHAR}
+    </select>
+
+    <update id="updateStdCtgrNoReset" parameterType="String">
+    /*+ kr.co.abcmart.bo.display.repository.master.DpCategoryDao.updateStdCtgrNoReset [표준 카테고리 번호 초기화] [김진성 2019.12.26] */
+    	UPDATE DP_CATEGORY
+    	   SET STD_CTGR_NO = NULL
+    	     , MODER_NO    = #{moderNo, jdbcType=VARCHAR}
+    	     , MOD_DTM     = GETDATE()
+    	 WHERE STD_CTGR_NO = #{stdCtgrNo, jdbcType=VARCHAR}
+    </update>
+
+</mapper>

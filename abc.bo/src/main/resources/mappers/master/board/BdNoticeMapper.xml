@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.board.repository.master.BdNoticeDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.board.model.master.BdNotice">
+    
+     /*+ kr.co.abcmart.bo.board.repository.master.BdNoticeDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			bd_notice WITH (NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <sql id="searchKey">
+    	 <trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test="(bean.fromDate != null and bean.fromDate != '') and (bean.toDate != null and bean.toDate != '')">
+				AND NT.RGST_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00')) AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+			</if>
+			<if test="bean.siteNo != null and bean.siteNo !=''">
+				<choose>
+					<when test = "bean.siteNo != null">
+						AND NT.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+					</when>
+				</choose>
+			</if>
+			<if test="bean.dispYn !=null and bean.dispYn !=''">
+				AND NT.DISP_YN = #{bean.dispYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.searchKey != null and bean.searchKey != '' and bean.searchValue != null and bean.searchValue != ''">
+				<choose>
+					<when test="bean.searchKey == 'notcTitleText'">
+			 			AND NT.NOTC_TITLE_TEXT LIKE CONCAT('%', #{bean.searchValue, jdbcType=VARCHAR}, '%')
+			   		</when>
+					<when test="bean.searchKey == 'rgsterName'">
+			   			AND EXISTS (
+	   								SELECT Z.ADMIN_NO
+	   								  FROM SY_ADMIN Z WITH (NOLOCK)
+	   								 WHERE NT.RGSTER_NO = Z.ADMIN_NO
+	   								   AND Z.ADMIN_NAME LIKE CONCAT('%', #{bean.searchValue, jdbcType=VARCHAR}, '%')
+		                  		   )
+			   		</when>
+				</choose>
+			</if>
+		</trim>
+    </sql>
+    
+	<select id="selectBdNoticeCount" parameterType="pageable" resultType="int">
+		/*+ kr.co.abcmart.bo.board.repository.master.BdNoticeDao.selectBdNoticeCount [공지사항관리 조회결과 개수] [신인철] */  
+		SELECT <include refid="Paging.totalCount" />
+		  FROM BD_NOTICE NT WITH(NOLOCK)
+		<include refid="searchKey"></include>
+	</select>
+	
+	<select id="selectTopNoticeARTCount" resultType="int">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdNoticeDao.selectTopNoticeARTCount [상단공지  통합몰 개수조회] [신인철] */
+		SELECT COUNT(TOP_NOTC_YN)
+		  FROM BD_NOTICE WITH(NOLOCK)
+		 WHERE TOP_NOTC_YN = 'Y'
+		   AND SITE_NO IN ('10000', 'ALL') 
+	</select>
+	
+	<select id="selectTopNoticeOTSCount" resultType="int">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdNoticeDao.selectTopNoticeOTSCount [상단공지 OTS 개수조회] [신인철] */
+		SELECT COUNT(TOP_NOTC_YN)
+		  FROM BD_NOTICE WITH(NOLOCK)
+		 WHERE TOP_NOTC_YN = 'Y'
+		   AND SITE_NO IN ('10001', 'ALL') 
+	</select>
+	
+	<select id="selectBdNoticeList" parameterType="pageable" resultType="kr.co.abcmart.bo.board.model.master.BdNotice">
+		/*+ kr.co.abcmart.bo.board.repository.master.BdNoticeDao.selectBdNoticeList [공지사항관리 그리드 조회] [신인철] */  
+		SELECT CASE WHEN NT.TOP_IDX IS NULL
+					THEN CAST(ROW_NUMBER() OVER(ORDER BY NT.TOP_IDX ,NT.RGST_DTM) AS VARCHAR)  
+					ELSE NT.TOP_IDX
+				END TOP_NOTC_CHECK
+			 , NT.NOTC_SEQ
+			 , CASE WHEN NT.SITE_NO = 'ALL'
+			 		THEN '공통'
+			 		ELSE S.SITE_NAME
+				END AS SITE_NAME
+			 , NT.NOTC_TITLE_TEXT
+			 , NT.NOTC_CONT_TEXT
+			 , NT.TOP_NOTC_YN
+			 , NT.DISP_YN
+			 , NT.RGSTER_NO
+  			 , NT.RGST_DTM
+  			 , RG.LOGIN_ID AS RGSTER_ID
+  			 , RG.ADMIN_NAME AS RGSTER_NAME
+	  		 , NT.MODER_NO
+  			 , NT.MOD_DTM
+	  		 , MO.LOGIN_ID AS MODER_ID
+	  		 , MO.ADMIN_NAME AS MODER_NAME
+		  FROM (SELECT CASE WHEN AA.TOP_NOTC_YN = 'Y' THEN '공지' END AS TOP_IDX
+					 , AA.NOTC_SEQ
+					 , AA.SITE_NO
+					 , AA.NOTC_TITLE_TEXT
+					 , AA.NOTC_CONT_TEXT
+					 , AA.TOP_NOTC_YN
+					 , AA.DISP_YN
+					 , AA.RGSTER_NO
+					 , AA.RGST_DTM
+					 , AA.MODER_NO
+					 , AA.MOD_DTM
+				  FROM BD_NOTICE AA WITH (NOLOCK)) NT
+		  LEFT OUTER JOIN SY_ADMIN RG WITH(NOLOCK) ON NT.RGSTER_NO = RG.ADMIN_NO
+		  LEFT OUTER JOIN SY_ADMIN MO WITH(NOLOCK) ON NT.MODER_NO = MO.ADMIN_NO
+		  LEFT OUTER JOIN SY_SITE S WITH(NOLOCK) ON NT.SITE_NO = S.SITE_NO
+		  <include refid="searchKey" />
+		  <choose> 
+			<when test="sortColumn != null">
+		 ORDER BY
+				<if test="sortColumn == 'notcTitleText'.toString()">
+			   NT.NOTC_TITLE_TEXT
+			 	</if>
+				<if test="sortColumn == 'dispYn'.toString()">
+			   NT.DISP_YN
+				</if>
+				<if test="sortColumn == 'rgstDtm'.toString()">
+			   NT.RGST_DTM
+				</if>
+				<if test="sortType == 'DESC'.toString()">
+			   DESC
+			 	</if>
+			</when>
+			<otherwise>
+		 ORDER BY NT.TOP_NOTC_YN DESC, NT.RGST_DTM DESC
+			</otherwise>
+		  </choose>
+		  <include refid="Paging.mssql" />
+	</select>
+	
+	<select id="selectNoticeDetail" parameterType="kr.co.abcmart.bo.board.model.master.BdNotice" resultType="kr.co.abcmart.bo.board.model.master.BdNotice">
+		/*+ kr.co.abcmart.bo.board.repository.master.BdNoticeDao.selectNoticeDetail [공지사항관리 상세 조회] [신인철] */  	
+		SELECT A.NOTC_SEQ
+			 , A.SITE_NO
+			 , A.NOTC_TITLE_TEXT
+			 , A.NOTC_CONT_TEXT
+			 , A.TOP_NOTC_YN
+			 , A.DISP_YN
+			 , A.RGSTER_NO
+			 , A.RGST_DTM
+			 , RG.LOGIN_ID AS RGSTER_ID
+			 , RG.ADMIN_NAME AS RGSTER_NAME
+			 , A.MODER_NO
+			 , A.MOD_DTM
+			 , MO.LOGIN_ID AS MODER_ID
+			 , MO.ADMIN_NAME AS MODER_NAME
+		  FROM BD_NOTICE A 
+		  LEFT OUTER JOIN SY_ADMIN RG ON A.RGSTER_NO = RG.ADMIN_NO
+		  LEFT OUTER JOIN SY_ADMIN MO ON A.MODER_NO = MO.ADMIN_NO
+		 WHERE A.NOTC_SEQ = #{notcSeq, jdbcType=INTEGER}
+	</select>
+	
+	<update id="updateBdNotice" parameterType="kr.co.abcmart.bo.board.model.master.BdNotice">
+		/*+ kr.co.abcmart.bo.board.repository.master.BdNoticeDao.updateBdNotice [공지사항 수정] [신인철] */
+		UPDATE BD_NOTICE
+		   SET SITE_NO		 		= #{siteNo, jdbcType=VARCHAR}
+		     <if test ="notcTitleText != null and notcTitleText != ''">
+		     , NOTC_TITLE_TEXT 		= #{notcTitleText, jdbcType=VARCHAR}
+		     </if>
+		     <if test ="notcContText != null and notcContText != ''">
+		     , NOTC_CONT_TEXT 		= #{notcContText, jdbcType=VARCHAR}
+		     </if>
+		     <if test ="topNotcYn != null and topNotcYn != ''">
+		     , TOP_NOTC_YN			= #{topNotcYn, jdbcType=VARCHAR}
+		     </if>
+			 <if test ="dispYn != null and dispYn != ''">
+		     , DISP_YN 				= #{dispYn, jdbcType=CHAR}
+			 </if>
+		     , MODER_NO 			= #{moderNo, jdbcType=VARCHAR}
+		     , MOD_DTM 			= GETDATE()
+		 WHERE NOTC_SEQ = #{notcSeq, jdbcType=INTEGER}
+	</update>
+	
+	<insert id="insertNotice" useGeneratedKeys="true" keyProperty="notcSeq" parameterType="kr.co.abcmart.bo.board.model.master.BdNotice">
+		/*+ kr.co.abcmart.bo.board.repository.master.BdNoticeDao.updateBdNotice [고객 문의 정보 수정] [신인철] */
+		INSERT INTO BD_NOTICE
+			 ( SITE_NO
+			 , NOTC_TITLE_TEXT
+			 , NOTC_CONT_TEXT
+			 , TOP_NOTC_YN
+			 , DISP_YN
+			 , RGSTER_NO
+			 , RGST_DTM
+			 , MODER_NO
+			 , MOD_DTM	)
+		VALUES 
+			 ( #{siteNo, jdbcType=VARCHAR}
+			 , #{notcTitleText, jdbcType=VARCHAR}
+			 , #{notcContText, jdbcType=VARCHAR}
+			 , #{topNotcYn, jdbcType=VARCHAR}
+			 , #{dispYn, jdbcType=CHAR}
+			 , #{rgsterNo, jdbcType=VARCHAR}
+			 , GETDATE()
+			 , #{moderNo, jdbcType=VARCHAR}
+			 , GETDATE() )	 
+	</insert>
+
+</mapper>

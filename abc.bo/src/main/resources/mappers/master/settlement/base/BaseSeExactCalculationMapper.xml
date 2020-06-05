@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	excclc_seq, excclc_ym, vndr_no, dlvy_day_count, penlty_levy_rate, penlty_exmt_rate, penlty_ocrnc_rate, pymnt_count, pymnt_amt, dlvy_amt_count, dlvy_amt, sell_cmsn_count, sell_cmsn_amt, promo_count, promo_amt, penlty_count, penlty_amt, excclc_trgt_amt, penlty_mdat_amt, excclc_mdat_amt, excclc_amt, excclc_dcsn_yn, excclc_dcsnr_no, excclc_dcsn_dtm, rgster_no, rgst_dtm, moder_no, mod_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	excclc_seq = #{excclcSeq, jdbcType=INTEGER}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculation" resultType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculation">
+    
+     /*+ kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			SE_EXACT_CALCULATION
+		<where> 
+			<if test="excclcSeq != null"> 
+				 excclc_seq = #{excclcSeq, jdbcType=INTEGER}
+			</if> 
+			<if test="excclcYm != null"> 
+				 AND excclc_ym = #{excclcYm, jdbcType=CHAR}
+			</if> 
+			<if test="vndrNo != null"> 
+				 AND vndr_no = #{vndrNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="dlvyDayCount != null"> 
+				 AND dlvy_day_count = #{dlvyDayCount, jdbcType=TINYINT}
+			</if> 
+			<if test="penltyLevyRate != null"> 
+				 AND penlty_levy_rate = #{penltyLevyRate, jdbcType=TINYINT}
+			</if> 
+			<if test="penltyExmtRate != null"> 
+				 AND penlty_exmt_rate = #{penltyExmtRate, jdbcType=TINYINT}
+			</if> 
+			<if test="penltyOcrncRate != null"> 
+				 AND penlty_ocrnc_rate = #{penltyOcrncRate, jdbcType=TINYINT}
+			</if> 
+			<if test="pymntCount != null"> 
+				 AND pymnt_count = #{pymntCount, jdbcType=INTEGER}
+			</if> 
+			<if test="pymntAmt != null"> 
+				 AND pymnt_amt = #{pymntAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="dlvyAmtCount != null"> 
+				 AND dlvy_amt_count = #{dlvyAmtCount, jdbcType=INTEGER}
+			</if> 
+			<if test="dlvyAmt != null"> 
+				 AND dlvy_amt = #{dlvyAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="sellCmsnCount != null"> 
+				 AND sell_cmsn_count = #{sellCmsnCount, jdbcType=INTEGER}
+			</if> 
+			<if test="sellCmsnAmt != null"> 
+				 AND sell_cmsn_amt = #{sellCmsnAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="promoCount != null"> 
+				 AND promo_count = #{promoCount, jdbcType=INTEGER}
+			</if> 
+			<if test="promoAmt != null"> 
+				 AND promo_amt = #{promoAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="penltyCount != null"> 
+				 AND penlty_count = #{penltyCount, jdbcType=INTEGER}
+			</if> 
+			<if test="penltyAmt != null"> 
+				 AND penlty_amt = #{penltyAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="excclcTrgtAmt != null"> 
+				 AND excclc_trgt_amt = #{excclcTrgtAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="penltyMdatAmt != null"> 
+				 AND penlty_mdat_amt = #{penltyMdatAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="excclcMdatAmt != null"> 
+				 AND excclc_mdat_amt = #{excclcMdatAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="excclcAmt != null"> 
+				 AND excclc_amt = #{excclcAmt, jdbcType=INTEGER}
+			</if> 
+			<if test="excclcDcsnYn != null"> 
+				 AND excclc_dcsn_yn = #{excclcDcsnYn, jdbcType=CHAR}
+			</if> 
+			<if test="excclcDcsnrNo != null"> 
+				 AND excclc_dcsnr_no = #{excclcDcsnrNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="excclcDcsnDtm != null"> 
+				 AND excclc_dcsn_dtm = #{excclcDcsnDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="rgsterNo != null"> 
+				 AND rgster_no = #{rgsterNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="rgstDtm != null"> 
+				 AND rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="moderNo != null"> 
+				 AND moder_no = #{moderNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="modDtm != null"> 
+				 AND mod_dtm = #{modDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+	<insert id="insert" useGeneratedKeys="true" keyProperty="excclcSeq">
+
+     /*+ kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO SE_EXACT_CALCULATION
+			 ( excclc_ym, vndr_no, dlvy_day_count, penlty_levy_rate, penlty_exmt_rate, penlty_ocrnc_rate, pymnt_count, pymnt_amt, dlvy_amt_count, dlvy_amt, sell_cmsn_count, sell_cmsn_amt, promo_count, promo_amt, penlty_count, penlty_amt, excclc_trgt_amt, penlty_mdat_amt, excclc_mdat_amt, excclc_amt, excclc_dcsn_yn, excclc_dcsnr_no, excclc_dcsn_dtm, rgster_no, rgst_dtm, moder_no, mod_dtm ) 
+
+		VALUES 
+			 ( #{excclcYm, jdbcType=CHAR}, #{vndrNo, jdbcType=VARCHAR}, #{dlvyDayCount, jdbcType=TINYINT}, #{penltyLevyRate, jdbcType=TINYINT}, #{penltyExmtRate, jdbcType=TINYINT}, #{penltyOcrncRate, jdbcType=TINYINT}, #{pymntCount, jdbcType=INTEGER}, #{pymntAmt, jdbcType=INTEGER}, #{dlvyAmtCount, jdbcType=INTEGER}, #{dlvyAmt, jdbcType=INTEGER}, #{sellCmsnCount, jdbcType=INTEGER}, #{sellCmsnAmt, jdbcType=INTEGER}, #{promoCount, jdbcType=INTEGER}, #{promoAmt, jdbcType=INTEGER}, #{penltyCount, jdbcType=INTEGER}, #{penltyAmt, jdbcType=INTEGER}, #{excclcTrgtAmt, jdbcType=INTEGER}, #{penltyMdatAmt, jdbcType=INTEGER}, #{excclcMdatAmt, jdbcType=INTEGER}, #{excclcAmt, jdbcType=INTEGER}, #{excclcDcsnYn, jdbcType=CHAR}, #{excclcDcsnrNo, jdbcType=VARCHAR}, <choose><when test="excclcDcsnDtm != null">#{excclcDcsnDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{rgsterNo, jdbcType=VARCHAR}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{moderNo, jdbcType=VARCHAR}, <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculation">
+    
+     /*+ kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE SE_EXACT_CALCULATION
+		<set> 
+			<if test="excclcSeq != null"> 
+				excclc_seq = #{excclcSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="excclcYm != null"> 
+				excclc_ym = #{excclcYm, jdbcType=CHAR}, 
+			</if> 
+			<if test="vndrNo != null"> 
+				vndr_no = #{vndrNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="dlvyDayCount != null"> 
+				dlvy_day_count = #{dlvyDayCount, jdbcType=TINYINT}, 
+			</if> 
+			<if test="penltyLevyRate != null"> 
+				penlty_levy_rate = #{penltyLevyRate, jdbcType=TINYINT}, 
+			</if> 
+			<if test="penltyExmtRate != null"> 
+				penlty_exmt_rate = #{penltyExmtRate, jdbcType=TINYINT}, 
+			</if> 
+			<if test="penltyOcrncRate != null"> 
+				penlty_ocrnc_rate = #{penltyOcrncRate, jdbcType=TINYINT}, 
+			</if> 
+			<if test="pymntCount != null"> 
+				pymnt_count = #{pymntCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="pymntAmt != null"> 
+				pymnt_amt = #{pymntAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="dlvyAmtCount != null"> 
+				dlvy_amt_count = #{dlvyAmtCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="dlvyAmt != null"> 
+				dlvy_amt = #{dlvyAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="sellCmsnCount != null"> 
+				sell_cmsn_count = #{sellCmsnCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="sellCmsnAmt != null"> 
+				sell_cmsn_amt = #{sellCmsnAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="promoCount != null"> 
+				promo_count = #{promoCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="promoAmt != null"> 
+				promo_amt = #{promoAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="penltyCount != null"> 
+				penlty_count = #{penltyCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="penltyAmt != null"> 
+				penlty_amt = #{penltyAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="excclcTrgtAmt != null"> 
+				excclc_trgt_amt = #{excclcTrgtAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="penltyMdatAmt != null"> 
+				penlty_mdat_amt = #{penltyMdatAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="excclcMdatAmt != null"> 
+				excclc_mdat_amt = #{excclcMdatAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="excclcAmt != null"> 
+				excclc_amt = #{excclcAmt, jdbcType=INTEGER}, 
+			</if> 
+			<if test="excclcDcsnYn != null"> 
+				excclc_dcsn_yn = #{excclcDcsnYn, jdbcType=CHAR}, 
+			</if> 
+			<if test="excclcDcsnrNo != null"> 
+				excclc_dcsnr_no = #{excclcDcsnrNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="excclcDcsnDtm != null"> 
+				excclc_dcsn_dtm = #{excclcDcsnDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="rgsterNo != null"> 
+				rgster_no = #{rgsterNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="moderNo != null"> 
+				moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="modDtm != null"> 
+				mod_dtm = #{modDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 excclc_seq = #{excclcSeq, jdbcType=INTEGER}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.settlement.model.master.SeExactCalculation">
+    
+     /*+ kr.co.abcmart.bo.settlement.repository.master.SeExactCalculationDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM SE_EXACT_CALCULATION
+		WHERE 
+			 excclc_seq = #{excclcSeq, jdbcType=INTEGER}  
+    </delete>
+</mapper>

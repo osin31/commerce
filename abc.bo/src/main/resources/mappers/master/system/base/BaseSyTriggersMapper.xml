@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyTriggersDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	sched_name, trigger_name, trigger_group, job_name, job_group, description, next_fire_time, prev_fire_time, priority, trigger_state, trigger_type, start_time, end_time, calendar_name, misfire_instr, job_data
+    </sql>
+    
+    <sql id="pk-columns">
+    	sched_name = #{schedName, jdbcType=VARCHAR} AND trigger_group = #{triggerGroup, jdbcType=VARCHAR} AND trigger_name = #{triggerName, jdbcType=VARCHAR}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.system.model.master.SyTriggers" resultType="kr.co.abcmart.bo.system.model.master.SyTriggers">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyTriggersDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			sy_triggers WITH (NOLOCK)
+
+		<where> 
+			<if test="schedName != null"> 
+				 sched_name = #{schedName, jdbcType=VARCHAR}
+			</if> 
+			<if test="triggerName != null"> 
+				 AND trigger_name = #{triggerName, jdbcType=VARCHAR}
+			</if> 
+			<if test="triggerGroup != null"> 
+				 AND trigger_group = #{triggerGroup, jdbcType=VARCHAR}
+			</if> 
+			<if test="jobName != null"> 
+				 AND job_name = #{jobName, jdbcType=VARCHAR}
+			</if> 
+			<if test="jobGroup != null"> 
+				 AND job_group = #{jobGroup, jdbcType=VARCHAR}
+			</if> 
+			<if test="description != null"> 
+				 AND description = #{description, jdbcType=VARCHAR}
+			</if> 
+			<if test="nextFireTime != null"> 
+				 AND next_fire_time = #{nextFireTime, jdbcType=BIGINT}
+			</if> 
+			<if test="prevFireTime != null"> 
+				 AND prev_fire_time = #{prevFireTime, jdbcType=BIGINT}
+			</if> 
+			<if test="priority != null"> 
+				 AND priority = #{priority, jdbcType=INTEGER}
+			</if> 
+			<if test="triggerState != null"> 
+				 AND trigger_state = #{triggerState, jdbcType=VARCHAR}
+			</if> 
+			<if test="triggerType != null"> 
+				 AND trigger_type = #{triggerType, jdbcType=VARCHAR}
+			</if> 
+			<if test="startTime != null"> 
+				 AND start_time = #{startTime, jdbcType=BIGINT}
+			</if> 
+			<if test="endTime != null"> 
+				 AND end_time = #{endTime, jdbcType=BIGINT}
+			</if> 
+			<if test="calendarName != null"> 
+				 AND calendar_name = #{calendarName, jdbcType=VARCHAR}
+			</if> 
+			<if test="misfireInstr != null"> 
+				 AND misfire_instr = #{misfireInstr, jdbcType=SMALLINT}
+			</if> 
+			<if test="jobData != null"> 
+				 AND job_data = #{jobData, jdbcType=VARBINARY}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <insert id="insert" parameterType="kr.co.abcmart.bo.system.model.master.SyTriggers">	
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SyTriggersDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO sy_triggers
+			 ( sched_name, trigger_name, trigger_group, job_name, job_group, description, next_fire_time, prev_fire_time, priority, trigger_state, trigger_type, start_time, end_time, calendar_name, misfire_instr, job_data ) 
+
+		VALUES 
+			 ( #{schedName, jdbcType=VARCHAR}, #{triggerName, jdbcType=VARCHAR}, #{triggerGroup, jdbcType=VARCHAR}, #{jobName, jdbcType=VARCHAR}, #{jobGroup, jdbcType=VARCHAR}, #{description, jdbcType=VARCHAR}, #{nextFireTime, jdbcType=BIGINT}, #{prevFireTime, jdbcType=BIGINT}, #{priority, jdbcType=INTEGER}, #{triggerState, jdbcType=VARCHAR}, #{triggerType, jdbcType=VARCHAR}, #{startTime, jdbcType=BIGINT}, #{endTime, jdbcType=BIGINT}, #{calendarName, jdbcType=VARCHAR}, #{misfireInstr, jdbcType=SMALLINT}, #{jobData, jdbcType=VARBINARY} )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.system.model.master.SyTriggers">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyTriggersDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE sy_triggers
+		<set> 
+			<if test="schedName != null"> 
+				sched_name = #{schedName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="triggerName != null"> 
+				trigger_name = #{triggerName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="triggerGroup != null"> 
+				trigger_group = #{triggerGroup, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="jobName != null"> 
+				job_name = #{jobName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="jobGroup != null"> 
+				job_group = #{jobGroup, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="description != null"> 
+				description = #{description, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="nextFireTime != null"> 
+				next_fire_time = #{nextFireTime, jdbcType=BIGINT}, 
+			</if> 
+			<if test="prevFireTime != null"> 
+				prev_fire_time = #{prevFireTime, jdbcType=BIGINT}, 
+			</if> 
+			<if test="priority != null"> 
+				priority = #{priority, jdbcType=INTEGER}, 
+			</if> 
+			<if test="triggerState != null"> 
+				trigger_state = #{triggerState, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="triggerType != null"> 
+				trigger_type = #{triggerType, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="startTime != null"> 
+				start_time = #{startTime, jdbcType=BIGINT}, 
+			</if> 
+			<if test="endTime != null"> 
+				end_time = #{endTime, jdbcType=BIGINT}, 
+			</if> 
+			<if test="calendarName != null"> 
+				calendar_name = #{calendarName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="misfireInstr != null"> 
+				misfire_instr = #{misfireInstr, jdbcType=SMALLINT}, 
+			</if> 
+			<if test="jobData != null"> 
+				job_data = #{jobData, jdbcType=VARBINARY}, 
+			</if> 
+		</set> 
+		WHERE 
+			 sched_name = #{schedName, jdbcType=VARCHAR} AND trigger_group = #{triggerGroup, jdbcType=VARCHAR} AND trigger_name = #{triggerName, jdbcType=VARCHAR}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.system.model.master.SyTriggers">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyTriggersDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM sy_triggers
+		WHERE 
+			 sched_name = #{schedName, jdbcType=VARCHAR} AND trigger_group = #{triggerGroup, jdbcType=VARCHAR} AND trigger_name = #{triggerName, jdbcType=VARCHAR}  
+    </delete>
+</mapper>

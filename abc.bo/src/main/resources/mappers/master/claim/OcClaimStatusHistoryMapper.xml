@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.claim.repository.master.OcClaimStatusHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimStatusHistory">
+    
+     /*+ kr.co.abcmart.bo.claim.repository.master.OcClaimStatusHistoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			OC_CLAIM_STATUS_HISTORY WITH (NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectClaimHistoryListCount" parameterType="pageable" resultType="int">
+    
+    	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimStatusHistoryDao.selectClaimHistoryListCount [클레임 이력 목록 갯수 조회] [이강수] */ 
+    	
+    	SELECT <include refid="Paging.totalCount" />
+		  FROM OC_CLAIM_STATUS_HISTORY	A WITH (NOLOCK)
+		  LEFT OUTER JOIN SY_ADMIN					B WITH (NOLOCK) ON A.RGSTER_NO = B.ADMIN_NO
+		 WHERE A.CLM_NO 		= #{bean.clmNo, jdbcType=VARCHAR}
+		   AND A.CLM_PRDT_SEQ 	= #{bean.clmPrdtSeq, jdbcType=INTEGER}
+    	
+    </select>
+    
+    <select id="selectClaimHistoryList" parameterType="pageable" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimStatusHistory">
+    
+    	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimStatusHistoryDao.selectClaimHistoryList [클레임 이력 목록 조회] [이강수] */ 
+    	
+    	SELECT A.CLM_PRDT_STAT_CODE
+			 , DBO.FN_CODE_VALUE('CLM_PRDT_STAT_CODE', A.CLM_PRDT_STAT_CODE)	AS CLM_PRDT_STAT_CODE_NAME
+			 , A.RGSTER_NO
+			 , B.LOGIN_ID + '(' + B.ADMIN_NAME + ')'							AS DISPLAY_ADMIN
+			 , A.RGST_DTM
+			 , A.STOCK_GBN_CODE
+			 , A.NOTE_TEXT
+		  FROM OC_CLAIM_STATUS_HISTORY	A WITH (NOLOCK)
+		  LEFT OUTER JOIN SY_ADMIN		B WITH (NOLOCK) ON A.RGSTER_NO = B.ADMIN_NO
+		 WHERE A.CLM_NO 		= #{bean.clmNo, jdbcType=VARCHAR}
+		   AND A.CLM_PRDT_SEQ 	= #{bean.clmPrdtSeq, jdbcType=INTEGER}
+	  ORDER BY A.CLM_STAT_HIST_SEQ
+    	<include refid="Paging.mssql" />
+    	
+    </select>
+    
+    <insert id="insertClaimStatusHistory" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimStatusHistory">
+		/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimStatusHistoryDao.insertClaimStatusHistory [클레임상태이력 등록] [KTH] */
+		<selectKey resultType="short" keyProperty="clmStatHistSeq" order="BEFORE">
+			SELECT ISNULL(MAX(CLM_STAT_HIST_SEQ), 0) + 1
+			  FROM OC_CLAIM_STATUS_HISTORY WITH (NOLOCK)
+			 WHERE CLM_NO = #{clmNo, jdbcType=VARCHAR}
+			   AND CLM_PRDT_SEQ = #{clmPrdtSeq, jdbcType=INTEGER}
+		</selectKey>
+		INSERT INTO OC_CLAIM_STATUS_HISTORY
+			 (
+			   CLM_NO
+			 , CLM_PRDT_SEQ
+			 , CLM_STAT_HIST_SEQ
+			 , CLM_PRDT_STAT_CODE
+			 , STOCK_GBN_CODE
+			 , NOTE_TEXT
+			 , RGSTER_NO
+			 , RGST_DTM
+			 )
+		VALUES
+			 (
+			   #{clmNo, jdbcType=VARCHAR}
+			 , #{clmPrdtSeq, jdbcType=INTEGER}
+			 , #{clmStatHistSeq, jdbcType=TINYINT}
+			 , #{clmPrdtStatCode, jdbcType=VARCHAR}
+			 , #{stockGbnCode, jdbcType=VARCHAR}
+			 , #{noteText, jdbcType=VARCHAR}
+			 , #{rgsterNo, jdbcType=VARCHAR}
+			 , GETDATE()
+			 )
+	</insert>
+	
+	<insert id="insertClaimStatusHistoryByClaimProduct" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimStatusHistory">
+		/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimStatusHistoryDao.insertClaimStatusHistoryByClaimProduct [클레임상품 기준 클레임상태이력 등록] [KTH] */
+		INSERT INTO OC_CLAIM_STATUS_HISTORY
+			 (
+			   CLM_NO
+			 , CLM_PRDT_SEQ
+			 , CLM_STAT_HIST_SEQ
+			 , CLM_PRDT_STAT_CODE
+			 , STOCK_GBN_CODE
+			 , NOTE_TEXT
+			 , RGSTER_NO
+			 , RGST_DTM
+			 )
+		SELECT A.CLM_NO
+			 , A.CLM_PRDT_SEQ
+			 , (
+				SELECT ISNULL(MAX(CLM_STAT_HIST_SEQ), 0) + 1
+				  FROM OC_CLAIM_STATUS_HISTORY WITH (NOLOCK)
+				 WHERE CLM_NO = A.CLM_NO
+				   AND CLM_PRDT_SEQ = A.CLM_PRDT_SEQ
+			   )
+			 , #{clmPrdtStatCode, jdbcType=VARCHAR}
+			 , #{stockGbnCode, jdbcType=VARCHAR}
+			 , #{noteText, jdbcType=VARCHAR}
+			 , #{rgsterNo, jdbcType=VARCHAR}
+			 , GETDATE()
+		 FROM OC_CLAIM_PRODUCT A WITH (NOLOCK)
+		WHERE A.CLM_NO = #{clmNo, jdbcType=VARCHAR}
+		<if test="clmPrdtSeq != null and clmPrdtSeq != ''"> 
+		  AND A.CLM_PRDT_SEQ = #{clmPrdtSeq, jdbcType=INTEGER}
+		</if>
+	</insert>
+
+</mapper>

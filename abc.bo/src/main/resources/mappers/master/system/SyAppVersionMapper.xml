@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyAppVersionDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.system.model.master.SyAppVersion" resultType="kr.co.abcmart.bo.system.model.master.SyAppVersion">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SyAppVersionDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			sy_app_version WITH (NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectAppversionListCount" parameterType="pageable" resultType="int" >
+    	/*+ kr.co.abcmart.bo.system.repository.master.SyAppVersionDao.selectAppversionListCount [앱버전 개수 리스트 가져오기] [최경호]*/
+		SELECT <include refid="Paging.totalCount" />
+			FROM SY_APP_VERSION A with (nolock)
+		       , SY_ADMIN B with (nolock)
+		       , SY_CODE_DETAIL C with (nolock)
+		       , SY_SITE D with (nolock)
+		  WHERE A.RGSTER_NO   = B.ADMIN_NO
+		    AND C.CODE_FIELD  = #{bean.appOsCodeField}
+		    AND A.APP_OS_CODE = C.CODE_DTL_NO
+		    AND A.SITE_NO     = D.SITE_NO
+	</select>
+
+    <select id="selectAppversionList" parameterType="pageable" resultType="kr.co.abcmart.bo.system.model.master.SyAppVersion">
+    	/*+ kr.co.abcmart.bo.system.repository.master.SyAppVersionDao.selectAppversionList [앱버전 정보 리스트 가져오기] [최경호]*/
+		SELECT A.APP_VER_SEQ
+		     , D.SITE_NAME
+		     , C.CODE_DTL_NAME
+		     , A.APP_VER_TEXT
+		     , A.APP_RGST_YMD
+		     , B.LOGIN_ID
+		     , B.ADMIN_NAME
+		     , A.RGST_DTM
+			FROM SY_APP_VERSION A with (nolock)
+		       , SY_ADMIN B with (nolock)
+		       , SY_CODE_DETAIL C with (nolock)
+		       , SY_SITE D with (nolock)
+		  WHERE A.RGSTER_NO   = B.ADMIN_NO
+		    AND C.CODE_FIELD  = #{bean.appOsCodeField}
+		    AND A.APP_OS_CODE = C.CODE_DTL_NO
+		    AND A.SITE_NO     = D.SITE_NO
+		ORDER BY APP_VER_SEQ DESC
+		<include refid="Paging.mssql" />
+    </select>
+
+    <insert id="setAppversionData" parameterType="kr.co.abcmart.bo.system.model.master.SyAppVersion">
+    	/*+ kr.co.abcmart.bo.system.repository.master.SyAppVersionDao.selectAppversionList [앱버전 정보 등록] [최경호]*/
+		INSERT INTO SY_APP_VERSION
+		          ( SITE_NO
+		          , APP_OS_CODE
+		          , APP_VER_TEXT
+		          , APP_RGST_YMD
+		          , RGSTER_NO
+		          , RGST_DTM)
+		     VALUES
+		         ( #{siteNo}
+				 , #{appOsCode}
+				 , #{appVerText}
+				 , #{appRgstYmd}
+				 , #{rgsterNo}
+				 , GETDATE())
+    </insert>
+
+</mapper>

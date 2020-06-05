@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyJobInstanceDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.system.model.master.SyJobInstance">
+    
+     /*+ kr.co.abcmart.bo.system.repository.master.SyJobInstanceDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			sy_job_instance
+ 
+    </select>
+    
+    <select id="selectJobInstanceForPaging" parameterType="pageable" resultType="kr.co.abcmart.bo.system.model.master.SyJobInstance">
+    	/*+ kr.co.abcmart.bo.system.repository.master.SyJobInstanceDao.selectJobInstanceForPaging [페이징 조회 쿼리] [김영현] */
+		SELECT 
+			sji.sched_id,sji.job_name, sje.job_execution_id,sje.create_time,sje.status,
+		    sje.start_time,sje.end_time,sje.exit_message as message 
+		FROM (
+			SELECT
+				<include refid="select-columns" />
+			FROM
+				sy_job_instance a with (nolock)
+			WHERE 
+			<choose>
+				<when test="bean.schedulerHistoryId != null and bean.schedulerHistoryId != ''">
+				scheduler_history_id = #{bean.schedulerHistoryId, jdbcType=VARCHAR} 
+				</when>
+				<otherwise>
+				sched_id=#{bean.schedId, jdbcType=VARCHAR} 
+				</otherwise>
+			</choose>
+			ORDER BY job_instance_id DESC
+			<include refid="Paging.mssql" />
+		) sji
+		JOIN 
+			sy_job_execution sje with (nolock)
+		ON 
+			sji.job_instance_id = sje.job_instance_id
+		ORDER BY sje.last_updated DESC
+	</select>
+	
+	<select id="selectJobInstanceForPagingCount" parameterType="pageable" resultType="Integer">
+    	/*+ kr.co.abcmart.bo.system.repository.master.SyJobInstanceDao.selectJobInstanceForPagingCount [페이징 조회 쿼리] [김영현] */
+		SELECT
+			<include refid="Paging.totalCount" />
+		FROM
+			sy_job_instance a with (nolock)
+		WHERE 
+		<choose>
+			<when test="bean.schedulerHistoryId != null and bean.schedulerHistoryId != ''">
+			scheduler_history_id = #{bean.schedulerHistoryId, jdbcType=VARCHAR} 
+			</when>
+			<otherwise>
+			sched_id=#{bean.schedId, jdbcType=VARCHAR} 
+			</otherwise>
+		</choose>
+	</select>
+
+</mapper>

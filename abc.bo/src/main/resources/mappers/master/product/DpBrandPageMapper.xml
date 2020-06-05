@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.product.repository.master.DpBrandPageDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+	<sql id="select-columns-custom">
+    	brand_no
+    	, disp_gbn_type
+    	, device_code
+    	, brand_page_seq
+    	, site_no
+    	, chnnl_no
+    	<!--
+    	, case
+    		when file_type = 'I' then '이미지'
+    		when file_type = 'M' then '동영상'
+    	  end as file_type
+    	-->
+    	, file_type
+    	, title_text
+    	, image_name
+    	, image_path_text
+    	, image_url
+    	, altrn_text
+    	, cnnctn_type
+    	, link_target_type
+    	, link_info
+    	, text_color_type
+    	, bckg_color_yn
+    	, bckg_color_value
+    	, upload_yn
+    	, movie_play_type
+    	, movie_name
+    	, movie_path_text
+    	, movie_url
+    	, disp_yn
+    	, disp_start_ymd
+    	, disp_end_ymd
+    	, sort_seq
+    	, rgster_no
+    	, rgst_dtm
+    	, moder_no
+    	, mod_dtm
+    </sql>
+
+
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.product.model.master.DpBrandPage">
+
+     /*+ kr.co.abcmart.bo.product.repository.master.DpBrandPageDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			dp_brand_page WITH(NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+
+    <select id="selectBrandPageList" parameterType="pageable" resultType="kr.co.abcmart.bo.product.model.master.DpBrandPage">
+
+ 	   	/*+ kr.co.abcmart.bo.product.repository.master.DpBrandPageDao.selectBrandPageList [브랜드 페이지 목록 조회 쿼리] [백인천] */
+    	SELECT
+    		<include refid="select-columns-custom" />
+    		, image_url as image_view
+    	FROM
+    		dp_brand_page WITH(NOLOCK)
+    	<where>
+			<if test='bean.brandNo != null and bean.brandNo != ""'>
+				AND brand_no = #{bean.brandNo, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.siteNo != null and bean.siteNo != ""'>
+				AND site_no = #{bean.siteNo, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.chnnlNo != null and bean.chnnlNo != ""'>
+				AND chnnl_no = #{bean.chnnlNo, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.deviceCode != null and bean.deviceCode != ""'>
+				AND device_code = #{bean.deviceCode, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.dispGbnType != null and bean.dispGbnType != ""'>
+				AND disp_gbn_type = #{bean.dispGbnType, jdbcType=VARCHAR}
+			</if>
+		</where>
+    	ORDER BY
+			sort_seq ASC
+
+    </select>
+
+	<select id="selectBrandPageListCount" parameterType="pageable" resultType="java.lang.Integer">
+
+    	/*+ kr.co.abcmart.bo.product.repository.master.DpBrandPageDao.selectBrandPageListCount [브랜드 페이지 목록 갯수 조회 쿼리] [백인천] */
+    	SELECT
+    		<include refid="Paging.totalCount" />
+    	FROM
+    		dp_brand_page WITH(NOLOCK)
+    	<where>
+			<if test='bean.brandNo != null and bean.brandNo != ""'>
+				AND brand_no = #{bean.brandNo, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.siteNo != null and bean.siteNo != ""'>
+				AND site_no = #{bean.siteNo, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.chnnlNo != null and bean.chnnlNo != ""'>
+				AND chnnl_no = #{bean.chnnlNo, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.deviceCode != null and bean.deviceCode != ""'>
+				AND device_code = #{bean.deviceCode, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.dispGbnType != null and bean.dispGbnType != ""'>
+				AND disp_gbn_type = #{bean.dispGbnType, jdbcType=VARCHAR}
+			</if>
+		</where>
+
+    </select>
+
+    <select id="getBrandPageCount" parameterType="kr.co.abcmart.bo.product.model.master.DpBrandPage" resultType="java.lang.Integer">
+		/*+ kr.co.abcmart.bo.product.repository.master.DpBrandPageDao.getBrandPageCount [브랜드페이지 수량 조회 쿼리] [백인천] */
+    	SELECT
+    		COUNT(1) AS total_count
+    	FROM
+    		dp_brand_page A WITH(NOLOCK)
+    	<where>
+			<if test='brandNo != null and brandNo != ""'>
+				AND brand_no = #{brandNo, jdbcType=VARCHAR}
+			</if>
+			<if test='siteNo != null and siteNo != ""'>
+				AND site_no = #{siteNo, jdbcType=VARCHAR}
+			</if>
+			<if test='chnnlNo != null and chnnlNo != ""'>
+				AND chnnl_no = #{chnnlNo, jdbcType=VARCHAR}
+			</if>
+			<if test='deviceCode != null and deviceCode != ""'>
+				AND device_code = #{deviceCode, jdbcType=VARCHAR}
+			</if>
+			<if test='dispGbnType != null and dispGbnType != ""'>
+				AND disp_gbn_type = #{dispGbnType, jdbcType=VARCHAR}
+			</if>
+			<if test='brandPageSeq != null and brandPageSeq != ""'>
+				AND brand_page_seq = #{brandPageSeq, jdbcType=INTEGER}
+			</if>
+		</where>
+    </select>
+
+	<select id="selectBrandPageTypeList" parameterType="Object" resultType="kr.co.abcmart.bo.product.model.master.DpBrandPage">
+	   	/*+ kr.co.abcmart.bo.product.repository.master.DpBrandPageDao.selectBrandPageTypeList [브랜드 페이지 목록 조회 쿼리2] [백인천] */
+    	SELECT
+    		<include refid="select-columns" />
+    	FROM
+    		dp_brand_page WITH(NOLOCK)
+    	<where>
+			<if test='brandNo != null and brandNo != ""'>
+				AND brand_no = #{brandNo, jdbcType=VARCHAR}
+			</if>
+			<if test='siteNo != null and siteNo != ""'>
+				AND site_no = #{siteNo, jdbcType=VARCHAR}
+			</if>
+			<if test='chnnlNo != null and chnnlNo != ""'>
+				AND chnnl_no = #{chnnlNo, jdbcType=VARCHAR}
+			</if>
+			<if test='deviceCode != null and deviceCode != ""'>
+				AND device_code = #{deviceCode, jdbcType=VARCHAR}
+			</if>
+			<if test='dispGbnType != null and dispGbnType != ""'>
+				AND disp_gbn_type = #{dispGbnType, jdbcType=VARCHAR}
+			</if>
+		</where>
+    	ORDER BY
+			brand_page_seq ASC
+    </select>
+
+    <insert id="insertBrandPage" parameterType="kr.co.abcmart.bo.product.model.master.DpBrandPage">
+     	/*+ kr.co.abcmart.bo.product.repository.master.DpBrandPageDao.insertBrandPage [브랜드 페이지 저장 쿼리] [백인천] */
+		<selectKey resultType="java.lang.Integer" keyProperty="brandPageSeq" order="BEFORE">
+    		SELECT
+    			ISNULL(MAX(brand_page_seq) + 1, 1) as brandPageSeq
+    		FROM
+    			dp_brand_page WITH(NOLOCK)
+    		WHERE
+    			brand_no = #{brandNo, jdbcType=VARCHAR}
+    			AND disp_gbn_type = #{dispGbnType, jdbcType=VARCHAR}
+    			AND device_code = #{deviceCode, jdbcType=VARCHAR}
+    			AND site_no = #{siteNo, jdbcType=VARCHAR}
+    			AND chnnl_no = #{chnnlNo, jdbcType=VARCHAR}
+    	</selectKey>
+		INSERT INTO dp_brand_page
+			 ( brand_no
+			, disp_gbn_type
+			, device_code
+			, brand_page_seq
+			, site_no
+			, chnnl_no
+			, file_type
+			, title_text
+			, image_name
+			, image_path_text
+			, image_url
+			, altrn_text
+			, cnnctn_type
+			, link_target_type
+			, link_info
+			, text_color_type
+			, bckg_color_yn
+			, bckg_color_value
+			, upload_yn
+			, movie_play_type
+			, movie_name
+			, movie_path_text
+			, movie_url
+			, disp_yn
+			, disp_start_ymd
+			, disp_end_ymd
+			, sort_seq
+			, rgster_no
+			, rgst_dtm )
+		VALUES
+			( #{brandNo, jdbcType=VARCHAR}
+			, #{dispGbnType, jdbcType=VARCHAR}
+			, #{deviceCode, jdbcType=VARCHAR}
+			, #{brandPageSeq, jdbcType=INTEGER}
+			, #{siteNo, jdbcType=VARCHAR}
+			, #{chnnlNo, jdbcType=VARCHAR}
+			, #{fileType, jdbcType=VARCHAR}
+			, #{titleText, jdbcType=VARCHAR}
+			, #{imageName, jdbcType=VARCHAR}
+			, #{imagePathText, jdbcType=VARCHAR}
+			, #{imageUrl, jdbcType=VARCHAR}
+			, #{altrnText, jdbcType=VARCHAR}
+			, #{cnnctnType, jdbcType=VARCHAR}
+			, #{linkTargetType, jdbcType=VARCHAR}
+			, #{linkInfo, jdbcType=VARCHAR}
+			, #{textColorType, jdbcType=VARCHAR}
+			, #{bckgColorYn, jdbcType=VARCHAR}
+			, #{bckgColorValue, jdbcType=VARCHAR}
+			, #{uploadYn, jdbcType=VARCHAR}
+			, #{moviePlayType, jdbcType=VARCHAR}
+			, #{movieName, jdbcType=VARCHAR}
+			, #{moviePathText, jdbcType=VARCHAR}
+			, #{movieUrl, jdbcType=VARCHAR}
+			, #{dispYn, jdbcType=CHAR}
+			, <choose><when test="dispStartYmd != null">convert(date, #{dispStartYmd, jdbcType=VARCHAR})</when><otherwise>getdate()</otherwise></choose>
+			, <choose><when test="dispEndYmd != null">convert(date, #{dispEndYmd, jdbcType=VARCHAR})</when><otherwise>getdate()</otherwise></choose>
+			, #{sortSeq, jdbcType=INTEGER}
+			, #{rgsterNo, jdbcType=VARCHAR}
+			, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )
+    </insert>
+
+	<update id="updateBrandPageDispYn" parameterType="kr.co.abcmart.bo.product.model.master.DpBrandPage">
+	/*+ kr.co.abcmart.bo.product.repository.master.DpBrandPageDao.updateBrandPageDispYn [브랜드 페이지 전시여부 수정] [백인천] */
+		UPDATE DP_BRAND_PAGE
+		   SET DISP_YN = #{dispYn, jdbcType=CHAR}
+		 WHERE BRAND_NO = #{brandNo, jdbcType=VARCHAR}
+		   AND SITE_NO = #{siteNo, jdbcType=VARCHAR}
+	</update>
+
+</mapper>

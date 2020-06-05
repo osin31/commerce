@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.stats.repository.master.SaMemberSnsConnectionStatusDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	total_day, member_type_code, sns_gbn_code, dotw_name, man_member_count, woman_member_count, etc_member_count, total_member_count, rgst_dtm
+    </sql>
+    
+    <sql id="pk-columns">
+    	member_type_code = #{memberTypeCode, jdbcType=VARCHAR} AND sns_gbn_code = #{snsGbnCode, jdbcType=VARCHAR} AND total_day = #{totalDay, jdbcType=DATE}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.stats.model.master.SaMemberSnsConnectionStatus" resultType="kr.co.abcmart.bo.stats.model.master.SaMemberSnsConnectionStatus">
+    
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaMemberSnsConnectionStatusDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			sa_member_sns_connection_status
+		<where> 
+			<if test="totalDay != null"> 
+				 total_day = #{totalDay, jdbcType=DATE}
+			</if> 
+			<if test="memberTypeCode != null"> 
+				 AND member_type_code = #{memberTypeCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="snsGbnCode != null"> 
+				 AND sns_gbn_code = #{snsGbnCode, jdbcType=VARCHAR}
+			</if> 
+			<if test="dotwName != null"> 
+				 AND dotw_name = #{dotwName, jdbcType=VARCHAR}
+			</if> 
+			<if test="manMemberCount != null"> 
+				 AND man_member_count = #{manMemberCount, jdbcType=INTEGER}
+			</if> 
+			<if test="womanMemberCount != null"> 
+				 AND woman_member_count = #{womanMemberCount, jdbcType=INTEGER}
+			</if> 
+			<if test="etcMemberCount != null"> 
+				 AND etc_member_count = #{etcMemberCount, jdbcType=INTEGER}
+			</if> 
+			<if test="totalMemberCount != null"> 
+				 AND total_member_count = #{totalMemberCount, jdbcType=INTEGER}
+			</if> 
+			<if test="rgstDtm != null"> 
+				 AND rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <insert id="insert" parameterType="kr.co.abcmart.bo.stats.model.master.SaMemberSnsConnectionStatus">	
+
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaMemberSnsConnectionStatusDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO sa_member_sns_connection_status
+			 ( total_day, member_type_code, sns_gbn_code, dotw_name, man_member_count, woman_member_count, etc_member_count, total_member_count, rgst_dtm ) 
+
+		VALUES 
+			 ( <choose><when test="totalDay != null">#{totalDay, jdbcType=DATE}</when><otherwise>getdate()</otherwise></choose>, #{memberTypeCode, jdbcType=VARCHAR}, #{snsGbnCode, jdbcType=VARCHAR}, #{dotwName, jdbcType=VARCHAR}, #{manMemberCount, jdbcType=INTEGER}, #{womanMemberCount, jdbcType=INTEGER}, #{etcMemberCount, jdbcType=INTEGER}, #{totalMemberCount, jdbcType=INTEGER}, <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose> )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.stats.model.master.SaMemberSnsConnectionStatus">
+    
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaMemberSnsConnectionStatusDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE sa_member_sns_connection_status
+		<set> 
+			<if test="totalDay != null"> 
+				total_day = #{totalDay, jdbcType=DATE}, 
+			</if> 
+			<if test="memberTypeCode != null"> 
+				member_type_code = #{memberTypeCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="snsGbnCode != null"> 
+				sns_gbn_code = #{snsGbnCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="dotwName != null"> 
+				dotw_name = #{dotwName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="manMemberCount != null"> 
+				man_member_count = #{manMemberCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="womanMemberCount != null"> 
+				woman_member_count = #{womanMemberCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="etcMemberCount != null"> 
+				etc_member_count = #{etcMemberCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="totalMemberCount != null"> 
+				total_member_count = #{totalMemberCount, jdbcType=INTEGER}, 
+			</if> 
+			<if test="rgstDtm != null"> 
+				rgst_dtm = #{rgstDtm, jdbcType=TIMESTAMP}, 
+			</if> 
+		</set> 
+		WHERE 
+			 member_type_code = #{memberTypeCode, jdbcType=VARCHAR} AND sns_gbn_code = #{snsGbnCode, jdbcType=VARCHAR} AND total_day = #{totalDay, jdbcType=DATE}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.stats.model.master.SaMemberSnsConnectionStatus">
+    
+     /*+ kr.co.abcmart.bo.stats.repository.master.SaMemberSnsConnectionStatusDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM sa_member_sns_connection_status
+		WHERE 
+			 member_type_code = #{memberTypeCode, jdbcType=VARCHAR} AND sns_gbn_code = #{snsGbnCode, jdbcType=VARCHAR} AND total_day = #{totalDay, jdbcType=DATE}  
+    </delete>
+</mapper>

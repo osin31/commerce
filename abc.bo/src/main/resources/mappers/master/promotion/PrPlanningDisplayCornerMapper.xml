@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayCornerDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayCorner">
+    
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayCornerDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			PR_PLANNING_DISPLAY_CORNER with (nolock)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectPrPlanningDisplayCornerCount" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayCorner" resultType="Integer">    
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayCornerDao.selectPrPlanningDisplayCornerCount [기획전  코너 카운트 조회] [이가영] */  
+    
+		SELECT 
+			<include refid="Paging.totalCount" />			
+		FROM 
+			PR_PLANNING_DISPLAY_CORNER with (nolock)
+		<where> 
+			<if test="bean.plndpNo != null"> 
+				 plndp_no = #{bean.plndpNo, jdbcType=VARCHAR}
+			</if>
+		</where>
+    </select>
+    
+    <select id="selectPrPlanningDisplayCornerList" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayCorner" resultType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayCorner">    
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayCornerDao.selectPrPlanningDisplayCornerList [기획전 코너 리스트 조회] [이가영] */  
+    
+		SELECT 
+			A.plndp_no,
+			A.plndp_corner_seq,
+			A.plndp_corner_name,
+			A.corner_name_disp_type,
+			A.image_name,
+			A.image_path_text,
+			A.image_url,
+			A.altrn_text,
+			A.pc_disp_type_code,
+			A.mobile_disp_type_code,
+			A.sort_seq,
+			A.corner_desc_text,
+			A.use_yn,
+			A.rgster_no,
+			A.rgst_dtm,
+			A.moder_no,
+			A.mod_dtm
+			<if test="bean.plndpNo != null">
+				, (SELECT COUNT(*) FROM PR_PLANNING_DISPLAY_CORNER_PRODUCT WHERE plndp_no = #{bean.plndpNo, jdbcType=VARCHAR} AND plndp_corner_seq = A.plndp_corner_seq) PRDT_COUNT
+			</if>
+		FROM 
+			PR_PLANNING_DISPLAY_CORNER A with (nolock)
+		<where> 
+			<if test="bean.plndpNo != null"> 
+				 plndp_no = #{bean.plndpNo, jdbcType=VARCHAR}
+			</if>
+		</where>
+		ORDER BY sort_seq
+		<include refid="Paging.mssql" />
+    </select>
+    
+    <insert id="insertPrPlanningDisplayCorner" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayCorner">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayCornerDao.insertPrPlanningDisplayCorner [기획전 코너 등록] [이가영] */
+    
+    	<selectKey resultType="Integer" keyProperty="plndpCornerSeq" order="BEFORE">
+			SELECT ISNULL(MAX(plndp_corner_seq)+1, 1) FROM PR_PLANNING_DISPLAY_CORNER WHERE PLNDP_NO = #{plndpNo, jdbcType=VARCHAR}
+		</selectKey>
+    
+    	INSERT INTO PR_PLANNING_DISPLAY_CORNER (
+    		plndp_no,
+    		plndp_corner_seq,
+    		plndp_corner_name,
+    		corner_name_disp_type,
+    		image_name,
+    		image_path_text,
+    		image_url,
+    		altrn_text,
+    		pc_disp_type_code,
+    		mobile_disp_type_code,
+    		sort_seq,
+    		corner_desc_text,
+    		use_yn,
+    		rgster_no,
+    		rgst_dtm,
+    		moder_no,
+    		mod_dtm
+    	) VALUES (
+    		#{plndpNo, jdbcType=VARCHAR},
+    		#{plndpCornerSeq, jdbcType=INTEGER},
+    		#{plndpCornerName, jdbcType=VARCHAR},
+    		#{cornerNameDispType, jdbcType=CHAR},
+    		#{imageName, jdbcType=VARCHAR},
+    		#{imagePathText, jdbcType=VARCHAR},
+    		#{imageUrl, jdbcType=VARCHAR},
+    		ISNULL(#{altrnText, jdbcType=VARCHAR}, #{imageName, jdbcType=VARCHAR}),
+    		#{pcDispTypeCode, jdbcType=VARCHAR},
+    		#{mobileDispTypeCode, jdbcType=VARCHAR},
+    		#{sortSeq, jdbcType=INTEGER},
+    		#{cornerDescText, jdbcType=VARCHAR},
+    		#{useYn, jdbcType=CHAR},
+    		#{rgsterNo, jdbcType=VARCHAR},
+    		getdate(),
+    		#{moderNo, jdbcType=VARCHAR},
+    		getdate()
+    	)
+    </insert>
+    
+    <update id="updatePrPlanningDisplayCorner" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayCorner">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayCornerDao.updatePrPlanningDisplayCorner [기획전 코너 수정] [이가영] */
+    
+	    UPDATE
+	    	PR_PLANNING_DISPLAY_CORNER
+		<set>
+			<if test="plndpCornerName != null"> 
+				plndp_corner_name = #{plndpCornerName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="cornerNameDispType != null"> 
+				corner_name_disp_type = #{cornerNameDispType, jdbcType=CHAR}, 
+			</if> 
+			<if test="imageName != null"> 
+				image_name = #{imageName, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="imagePathText != null"> 
+				image_path_text = #{imagePathText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="imageUrl != null"> 
+				image_url = #{imageUrl, jdbcType=VARCHAR}, 
+			</if>
+			<if test="pcDispTypeCode != null"> 
+				pc_disp_type_code = #{pcDispTypeCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="mobileDispTypeCode != null"> 
+				mobile_disp_type_code = #{mobileDispTypeCode, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="sortSeq != null"> 
+				sort_seq = #{sortSeq, jdbcType=INTEGER}, 
+			</if> 
+			<if test="cornerDescText != null"> 
+				corner_desc_text = #{cornerDescText, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="useYn != null"> 
+				use_yn = #{useYn, jdbcType=CHAR}, 
+			</if>
+			<if test="moderNo != null">
+				moder_no = #{moderNo, jdbcType=VARCHAR},
+			</if>
+			altrn_text = ISNULL(#{altrnText, jdbcType=VARCHAR}, #{imageName, jdbcType=VARCHAR}),
+			mod_dtm = getdate()
+		</set> 
+		WHERE
+			plndp_corner_seq = #{plndpCornerSeq, jdbcType=INTEGER} AND plndp_no = #{plndpNo, jdbcType=VARCHAR}
+    </update>
+    
+    <delete id="deletePrPlanningDisplayCorner" parameterType="kr.co.abcmart.bo.promotion.model.master.PrPlanningDisplayCorner">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayCornerDao.deletePrPlanningDisplayCorner [기획전 코너 삭제] [이가영] */
+    	
+    	DELETE FROM PR_PLANNING_DISPLAY_CORNER
+		WHERE PLNDP_NO = #{plndpNo, jdbcType=VARCHAR}
+		<if test="cornerSeqArr != null and cornerSeqArr.length > 0">
+		  AND PLNDP_CORNER_SEQ IN 
+			<foreach item="item" index="index" collection="cornerSeqArr" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if> 
+    </delete>
+    
+    <delete id="deletePrPlanningDisplayCornerByPlndpNo" parameterType="String">
+    /*+ kr.co.abcmart.bo.promotion.repository.master.PrPlanningDisplayCornerDao.deletePrPlanningDisplayCorner [기획전 코너 삭제 By plndpNo] [이가영] */
+    	
+    	DELETE FROM PR_PLANNING_DISPLAY_CORNER
+		WHERE 
+			plndp_no = #{plndpNo, jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

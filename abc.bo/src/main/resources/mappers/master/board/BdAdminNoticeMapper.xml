@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.board.repository.master.BdAdminNoticeDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.board.model.master.BdAdminNotice" resultType="kr.co.abcmart.bo.board.model.master.BdAdminNotice">
+
+     /*+ kr.co.abcmart.bo.board.repository.master.BdAdminNoticeDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			bd_admin_notice WITH (NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectAdminNoticeListCount" parameterType="pageable" resultType="int">
+
+    	/*+ kr.co.abcmart.bo.board.repository.master.BdAdminNoticeDao [ 관리자 공지 목록 카운트 조회 쿼리 ] [이강수] */
+
+    	SELECT <include refid="Paging.totalCount" />
+		  FROM BD_ADMIN_NOTICE A with (nolock)
+		  LEFT JOIN SY_ADMIN B with (nolock)
+    		ON A.RGSTER_NO = B.ADMIN_NO
+    	<trim prefix="WHERE" prefixOverrides="AND|OR">
+    		<if test="bean.applySystemType != null and bean.applySystemType != ''">
+    			AND A.APPLY_SYSTEM_TYPE = #{bean.applySystemType, jdbcType=VARCHAR}
+    		</if>
+    		<if test="bean.notcTitleText != null and bean.notcTitleText != ''">
+    			AND A.NOTC_TITLE_TEXT LIKE '%' + #{bean.notcTitleText, jdbcType=VARCHAR} + '%'
+    		</if>
+    		<if test="bean.popupYn != null and bean.popupYn != ''">
+    			AND A.POPUP_YN = #{bean.popupYn, jdbcType=VARCHAR}
+    		</if>
+    		<if test="bean.dispYn != null and bean.dispYn != ''">
+    			AND A.DISP_YN = #{bean.dispYn, jdbcType=VARCHAR}
+    		</if>
+			<if test="bean.adminName != null and bean.adminName != ''">
+    			AND B.ADMIN_NAME LIKE '%' + #{bean.adminName, jdbcType=VARCHAR} + '%'
+    		</if>
+			<if test="bean.loginId != null and bean.loginId != ''">
+    			AND B.LOGIN_ID LIKE '%' + #{bean.loginId, jdbcType=VARCHAR} + '%'
+    		</if>
+    	</trim>
+    </select>
+
+    <select id="selectAdminNoticeList" parameterType="pageable" resultType="kr.co.abcmart.bo.board.model.master.BdAdminNotice">
+
+    	/*+ kr.co.abcmart.bo.board.repository.master.BdAdminNoticeDao [ 관리자 공지 목록 조회 쿼리 ] [이강수] */
+
+    	 SELECT A.ADMIN_NOTC_SEQ
+    		  , CASE WHEN A.APPLY_SYSTEM_TYPE = 'B' THEN 'BO(관리자 시스템)'
+    		         WHEN A.APPLY_SYSTEM_TYPE = 'P' THEN 'PO(업체 시스템)'
+    		         ELSE 'ALL(관리자+파트너)'
+    		    END AS APPLY_SYSTEM_TYPE
+    		  , A.NOTC_TITLE_TEXT
+    		  , A.NOTC_CONT_TEXT
+    		  , A.POPUP_YN
+    		  , A.ALWAYS_POPUP_YN
+    		  , A.POPUP_START_YMD
+    		  , A.POPUP_END_YMD
+    		  , A.DISP_YN
+    		  , A.HIT_COUNT
+    		  , A.RGSTER_NO
+    		  , CONVERT(VARCHAR, A.RGST_DTM, 120) RGST_DTM
+    		  , B.LOGIN_ID
+    		  , B.ADMIN_NAME
+    	   FROM BD_ADMIN_NOTICE A with (nolock)
+		   LEFT JOIN SY_ADMIN B with (nolock)
+    		 ON A.RGSTER_NO = B.ADMIN_NO
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+    		<if test="bean.applySystemType != null and bean.applySystemType != ''">
+    			AND A.APPLY_SYSTEM_TYPE = #{bean.applySystemType, jdbcType=VARCHAR}
+    		</if>
+    		<if test="bean.notcTitleText != null and bean.notcTitleText != ''">
+    			AND A.NOTC_TITLE_TEXT LIKE '%' + #{bean.notcTitleText, jdbcType=VARCHAR} + '%'
+    		</if>
+    		<if test="bean.popupYn != null and bean.popupYn != ''">
+    			AND A.POPUP_YN = #{bean.popupYn, jdbcType=VARCHAR}
+    		</if>
+    		<if test="bean.dispYn != null and bean.dispYn != ''">
+    			AND A.DISP_YN = #{bean.dispYn, jdbcType=VARCHAR}
+    		</if>
+    		<if test="bean.adminName != null and bean.adminName != ''">
+    			AND B.ADMIN_NAME LIKE '%' + #{bean.adminName, jdbcType=VARCHAR} + '%'
+    		</if>
+			<if test="bean.loginId != null and bean.loginId != ''">
+    			AND B.LOGIN_ID LIKE '%' + #{bean.loginId, jdbcType=VARCHAR} + '%'
+    		</if>
+    	</trim>
+    	<choose>
+			<when test="sortColumn != null">
+				ORDER BY
+				<if test="sortColumn == 'rgstDtm'.toString()">
+					A.RGST_DTM
+				</if>
+				<if test="sortColumn == 'notcTitleText'.toString()">
+					A.NOTC_TITLE_TEXT
+				</if> 
+				<if test="sortType == 'DESC'.toString()">
+					DESC
+				</if>
+			</when>
+			<otherwise>
+				ORDER BY A.RGST_DTM DESC
+			</otherwise>
+		</choose>
+     	<include refid="Paging.mssql" />
+
+    </select>
+
+	<select id="selectAdminNotice" parameterType="kr.co.abcmart.bo.board.model.master.BdAdminNotice" resultType="kr.co.abcmart.bo.board.model.master.BdAdminNotice">
+
+		/*+ kr.co.abcmart.bo.board.repository.master.BdAdminNoticeDao [ 관리자 공지 상세 조회 쿼리 ] [이강수] */
+
+    	 SELECT A.ADMIN_NOTC_SEQ
+    	 	  , A.APPLY_SYSTEM_TYPE
+    		  , A.NOTC_TITLE_TEXT
+    		  , A.NOTC_CONT_TEXT
+    		  , A.POPUP_YN
+    		  , A.ALWAYS_POPUP_YN
+    		  , A.POPUP_START_YMD
+    		  , A.POPUP_END_YMD
+    		  , A.DISP_YN
+    		  , A.HIT_COUNT
+    		  , A.RGSTER_NO
+    		  , A.VNDR_ALL_CHOICE_YN
+    		  , CONVERT(VARCHAR, A.RGST_DTM, 120) RGST_DTM
+    		  , B.LOGIN_ID
+    		  , B.ADMIN_NAME
+    		  , A.MODER_NO
+    		  , A.MOD_DTM
+    		  , C.LOGIN_ID AS MODER_ID
+    		  , C.ADMIN_NAME AS MODER_NAME
+    	   FROM BD_ADMIN_NOTICE A with (nolock)
+		   LEFT JOIN SY_ADMIN B with (nolock)
+    		 ON A.RGSTER_NO = B.ADMIN_NO
+    	   LEFT JOIN SY_ADMIN C with (nolock)
+    		 ON A.MODER_NO = C.ADMIN_NO
+		  WHERE A.ADMIN_NOTC_SEQ = #{adminNotcSeq ,jdbcType=VARCHAR}
+
+	</select>
+
+	<insert id="insertAdminNotice" parameterType="kr.co.abcmart.bo.board.model.master.BdAdminNotice">
+
+		/*+ kr.co.abcmart.bo.board.repository.master.BdAdminNoticeDao [ 관리자 공지 등록 쿼리 ] [이강수] */
+
+		INSERT INTO BD_ADMIN_NOTICE ( APPLY_SYSTEM_TYPE
+									, NOTC_TITLE_TEXT
+									, NOTC_CONT_TEXT
+									, POPUP_YN
+									, ALWAYS_POPUP_YN
+									, POPUP_START_YMD
+									, POPUP_END_YMD
+									, DISP_YN
+									, HIT_COUNT
+									, VNDR_ALL_CHOICE_YN
+									, RGSTER_NO
+									, RGST_DTM
+									, MODER_NO
+									, MOD_DTM )
+							 VALUES ( #{applySystemType, jdbcType=VARCHAR}
+						   			, #{notcTitleText, jdbcType=VARCHAR}
+						   			, #{notcContText, jdbcType=VARCHAR}
+						   			, #{popupYn, jdbcType=CHAR}
+						   			, #{alwaysPopupYn, jdbcType=CHAR}
+						   			, #{popupStartYmd, jdbcType=VARCHAR}
+						   			, #{popupEndYmd, jdbcType=VARCHAR}
+						   			, #{dispYn, jdbcType=CHAR}
+						   			, 0
+						   			, #{vndrAllChoiceYn, jdbcType=CHAR}
+						   			, #{rgsterNo, jdbcType=VARCHAR}
+						   			, GETDATE()
+						   			, #{rgsterNo, jdbcType=VARCHAR}
+						   			, GETDATE()  )
+		<selectKey keyProperty="adminNotcSeq" resultType="Integer" order="AFTER">
+			SELECT IDENT_CURRENT('BD_ADMIN_NOTICE') AS adminNotcSeq
+		</selectKey>
+
+	</insert>
+
+	<update id="updateAdminNotice" parameterType="kr.co.abcmart.bo.board.model.master.BdAdminNotice">
+
+		/*+ kr.co.abcmart.bo.board.repository.master.BdAdminNoticeDao [ 관리자 공지 수정 쿼리 ] [이강수] */
+
+		UPDATE BD_ADMIN_NOTICE
+		   SET APPLY_SYSTEM_TYPE  = #{applySystemType, jdbcType=VARCHAR}
+		     , NOTC_TITLE_TEXT	  = #{notcTitleText, jdbcType=VARCHAR}
+		   	 , NOTC_CONT_TEXT	  = #{notcContText, jdbcType=VARCHAR}
+		     , POPUP_YN			  = #{popupYn, jdbcType=CHAR}
+		     , ALWAYS_POPUP_YN	  = #{alwaysPopupYn, jdbcType=CHAR}
+		     , POPUP_START_YMD	  = #{popupStartYmd, jdbcType=VARCHAR}
+		     , POPUP_END_YMD	  = #{popupEndYmd, jdbcType=VARCHAR}
+		     , DISP_YN			  = #{dispYn, jdbcType=CHAR}
+		     , VNDR_ALL_CHOICE_YN =  #{vndrAllChoiceYn, jdbcType=CHAR}
+		     , MODER_NO           = #{moderNo, jdbcType=VARCHAR}
+		     , MOD_DTM            = GETDATE()
+		 WHERE ADMIN_NOTC_SEQ 	  = #{adminNotcSeq ,jdbcType=INTEGER}
+
+	</update>
+
+	<delete id="deleteAdminNotice" parameterType="kr.co.abcmart.bo.board.model.master.BdAdminNotice">
+
+		/*+ kr.co.abcmart.bo.board.repository.master.BdAdminNoticeDao [ 관리자 공지 삭제 쿼리 ] [이강수] */
+
+		DELETE FROM BD_ADMIN_NOTICE
+		 WHERE ADMIN_NOTC_SEQ = #{adminNotcSeq ,jdbcType=INTEGER}
+
+	</delete>
+
+	<update id="updateAdminNoticeHitCount" parameterType="kr.co.abcmart.bo.board.model.master.BdAdminNotice">
+
+		/*+ kr.co.abcmart.bo.board.repository.master.BdAdminNoticeDao [ 관리자 공지 조회수 증가 쿼리 ] [이강수] */
+
+		UPDATE BD_ADMIN_NOTICE
+		   SET HIT_COUNT = (SELECT HIT_COUNT + 1
+		   					  FROM BD_ADMIN_NOTICE WITH (NOLOCK)
+		   					 WHERE ADMIN_NOTC_SEQ = #{adminNotcSeq ,jdbcType=INTEGER})
+		 WHERE ADMIN_NOTC_SEQ 	 = #{adminNotcSeq ,jdbcType=INTEGER}
+
+	</update>
+	
+	<select id="selectAdNoticeForDashboardCount" parameterType="pageable" resultType="Integer">
+		/*+ kr.co.abcmart.bo.board.repository.master.BdAdminNoticeDao [ 대시보드를 위한 공지사항 목록 카운드 ] [이재렬] */
+			SELECT
+				  <include refid="Paging.totalCount" />
+				FROM
+					  BD_ADMIN_NOTICE A WITH (NOLOCK)
+				  LEFT OUTER JOIN 
+	            	BD_ADMIN_NOTICE_TARGET_VENDOR B WITH(NOLOCK)
+	  				    ON		
+	                		A.ADMIN_NOTC_SEQ = B.ADMIN_NOTC_SEQ
+	      			    AND 
+	                		A.DISP_YN = 'Y'
+	   		  	  INNER JOIN 
+	            	SY_ADMIN C WITH (NOLOCK)
+	  		        	ON 
+	  		        	    A.RGSTER_NO = C.ADMIN_NO
+	  		        	<include refid="searchAdNoticeForPo"/>
+		      WHERE 
+		             A.APPLY_SYSTEM_TYPE ='A'
+		          OR 
+		             (A.APPLY_SYSTEM_TYPE = 'P' AND A.VNDR_ALL_CHOICE_YN ='Y')
+		    	  OR 
+		             (A.VNDR_ALL_CHOICE_YN = 'N' AND B.VNDR_NO = #{bean.vndrNoForDashboard, jdbcType=VARCHAR})
+		   			
+	</select>
+	
+	<select id="selectAdNoticeForDashboardTopFive" resultType="kr.co.abcmart.bo.board.model.master.BdAdminNotice">
+		/*+ kr.co.abcmart.bo.board.repository.master.BdAdminNoticeDao [ 대시보드를 위한 공지사항 목록 top 5 ] [이재렬] */
+	 	  SELECT
+				TOP 5 A.ADMIN_NOTC_SEQ
+    		  , CASE WHEN A.APPLY_SYSTEM_TYPE = 'B' THEN 'BO(관리자 시스템)'
+    		         WHEN A.APPLY_SYSTEM_TYPE = 'P' THEN 'PO(업체 시스템)'
+    		         ELSE 'ALL(관리자+파트너)'
+    		    END AS APPLY_SYSTEM_TYPE
+    		  , A.NOTC_TITLE_TEXT
+    		  , A.NOTC_CONT_TEXT
+    		  , A.HIT_COUNT
+    		  , C.LOGIN_ID
+    		  , C.ADMIN_NAME
+          	  , A.RGST_DTM
+			FROM
+				  BD_ADMIN_NOTICE A WITH (NOLOCK)
+			  LEFT OUTER JOIN 
+            	BD_ADMIN_NOTICE_TARGET_VENDOR B WITH(NOLOCK)
+  				    ON		
+                		A.ADMIN_NOTC_SEQ = B.ADMIN_NOTC_SEQ
+      			    AND 
+                		A.DISP_YN = 'Y'
+   		  	  INNER JOIN 
+            	SY_ADMIN C WITH (NOLOCK)
+  		        	ON 
+  		        	    A.RGSTER_NO = C.ADMIN_NO
+	      WHERE 
+	             A.APPLY_SYSTEM_TYPE ='A'
+	          OR 
+	             (A.APPLY_SYSTEM_TYPE = 'P' AND A.VNDR_ALL_CHOICE_YN ='Y')
+	    	  OR 
+	             (A.VNDR_ALL_CHOICE_YN = 'N' AND B.VNDR_NO = #{vndrNo, jdbcType=VARCHAR})
+	      ORDER BY A.RGST_DTM DESC
+
+	</select>
+	
+	<select id="selectAdNoticeForDashboard" parameterType="pageable" resultType="kr.co.abcmart.bo.board.model.master.BdAdminNotice">
+		/*+ kr.co.abcmart.bo.board.repository.master.BdAdminNoticeDao [ 대시보드를 위한 공지사항 목록 ] [이재렬] */
+	 	  SELECT
+				A.ADMIN_NOTC_SEQ
+    		  , CASE WHEN A.APPLY_SYSTEM_TYPE = 'B' THEN 'BO(관리자 시스템)'
+    		         WHEN A.APPLY_SYSTEM_TYPE = 'P' THEN 'PO(업체 시스템)'
+    		         ELSE 'ALL(관리자+파트너)'
+    		    END AS APPLY_SYSTEM_TYPE
+    		  , A.NOTC_TITLE_TEXT
+    		  , A.NOTC_CONT_TEXT
+    		  , A.HIT_COUNT
+    		  , C.LOGIN_ID
+    		  , C.ADMIN_NAME
+          	  , A.RGST_DTM
+			FROM
+				  BD_ADMIN_NOTICE A WITH (NOLOCK)
+			  LEFT OUTER JOIN 
+            	BD_ADMIN_NOTICE_TARGET_VENDOR B WITH(NOLOCK)
+  				    ON		
+                		A.ADMIN_NOTC_SEQ = B.ADMIN_NOTC_SEQ
+      			    AND 
+                		A.DISP_YN = 'Y'
+   		  	  INNER JOIN 
+            	SY_ADMIN C WITH (NOLOCK)
+  		        	ON 
+  		        	    A.RGSTER_NO = C.ADMIN_NO
+  		        	<include refid="searchAdNoticeForPo"/>
+	      WHERE 
+	             A.APPLY_SYSTEM_TYPE ='A'
+	          OR 
+	             (A.APPLY_SYSTEM_TYPE = 'P' AND A.VNDR_ALL_CHOICE_YN ='Y')
+	    	  OR 
+	             (A.VNDR_ALL_CHOICE_YN = 'N' AND B.VNDR_NO = #{bean.vndrNoForDashboard, jdbcType=VARCHAR})
+	    
+	     ORDER BY A.RGST_DTM DESC
+	     <include refid="Paging.mssql" />
+
+	</select>
+	
+	<sql id="searchAdNoticeForPo">
+   		
+   		<if test="bean.applySystemType != null and bean.applySystemType != ''">
+   			AND A.APPLY_SYSTEM_TYPE = #{bean.applySystemType, jdbcType=VARCHAR}
+   		</if>
+   		<if test="bean.notcTitleText != null and bean.notcTitleText != ''">
+   			AND A.NOTC_TITLE_TEXT LIKE CONCAT('%', #{bean.notcTitleText, jdbcType=VARCHAR}, '%')
+   		</if>
+   		<if test="bean.popupYn != null and bean.popupYn != ''">
+   			AND A.POPUP_YN = #{bean.popupYn, jdbcType=VARCHAR}
+   		</if>
+   		<if test="bean.dispYn != null and bean.dispYn != ''">
+   			AND A.DISP_YN = #{bean.dispYn, jdbcType=VARCHAR}
+   		</if>
+   		<if test="bean.adminName != null and bean.adminName != ''">
+   			AND C.ADMIN_NAME LIKE CONCAT('%', #{bean.adminName, jdbcType=VARCHAR}, '%')
+   		</if>
+		<if test="bean.loginId != null and bean.loginId != ''">
+   			AND C.LOGIN_ID = #{bean.loginId, jdbcType=VARCHAR}
+   		</if>
+	
+	</sql>
+	
+	<select id="selectBoMainPopAdminNotice" resultType="String">
+     /*+ kr.co.abcmart.bo.board.repository.master.BdAdminNoticeDao.selectBoMainPopAdminNotice [BO메인팝업 조회 쿼리] [김영현] */
+		SELECT
+			top 3 admin_notc_seq
+		FROM
+			bd_admin_notice WITH (NOLOCK)
+		WHERE
+			apply_system_type in ('A', 'B')
+		AND (
+			always_popup_yn = 'Y'
+			OR (
+				popup_yn = 'Y'
+				<![CDATA[
+				AND popup_start_ymd <= getdate() AND popup_end_ymd >= getdate()
+				]]>
+			)
+		)	
+    </select>
+    
+    <select id="selectPoMainPopAdminNotice" parameterType="String" resultType="String">
+	/*+ kr.co.abcmart.bo.board.repository.master.BdAdminNoticeDao.selectByPrimaryKey [PO메인팝업 조회 쿼리] [김영현] */
+		SELECT TOP 3
+			a.admin_notc_seq
+		FROM
+			bd_admin_notice a with (nolock)
+		LEFT OUTER JOIN
+			bd_admin_notice_target_vendor b with (nolock)
+			ON a.admin_notc_seq = b.admin_notc_seq and a.disp_yn = 'Y'
+		INNER JOIN
+			sy_admin c with (nolock)
+			ON a.rgster_no = c.admin_no
+		WHERE
+			a.apply_system_type = 'A'
+		AND (
+			a.always_popup_yn = 'Y'
+			OR (
+				a.popup_yn = 'Y'
+				AND
+				<![CDATA[
+				popup_start_ymd <= getdate() AND popup_end_ymd >= getdate())
+				]]>
+			)
+		OR (a.apply_system_type = 'P' AND a.vndr_all_choice_yn = 'Y')
+		OR (a.vndr_all_choice_yn = 'N' and b.vndr_no = #{bean.vndrNoForDashboard, jdbcType=VARCHAR})
+		ORDER BY a.rgst_dtm desc
+    </select>
+</mapper>

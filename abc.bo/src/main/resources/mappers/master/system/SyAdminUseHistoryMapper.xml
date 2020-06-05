@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyAdminUseHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.system.model.master.SyAdminUseHistory" resultType="kr.co.abcmart.bo.system.model.master.SyAdminUseHistory">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SyAdminUseHistoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			sy_admin_use_history WITH(NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectAdminUseHistoryListCount" parameterType="pageable" resultType="Integer">
+    	/*+ kr.co.abcmart.bo.system.repository.master.SyAdminUseHistoryDao.selectAdminUseHistoryListCount [관리자 로그인 이력 조회] [이동엽] */
+    	SELECT <include refid="Paging.totalCount" />
+    	  FROM SY_ADMIN_USE_HISTORY A WITH(NOLOCK)
+    	  JOIN SY_ADMIN B WITH(NOLOCK)
+            ON A.ADMIN_NO = B.ADMIN_NO
+     LEFT JOIN SY_CODE_DETAIL C WITH(NOLOCK)
+            ON C.CODE_FIELD = 'LOGIN_FAIL_RSN_CODE'
+           AND A.LOGIN_FAIL_RSN_CODE = C.CODE_DTL_NO
+    	 WHERE A.ADMIN_NO = #{bean.adminNo}
+
+    </select>
+
+    <select id="selectAdminUseHistoryList" parameterType="pageable" resultType="kr.co.abcmart.bo.system.model.master.SyAdminUseHistory">
+    	/*+ kr.co.abcmart.bo.system.repository.master.SyAdminUseHistoryDao.selectAdminUseHistoryList [관리자 로그인 이력 조회] [이동엽] */
+    	SELECT A.ADMIN_NO
+             , A.USE_HIST_SEQ
+             , A.USE_HIST_CLASS_CODE
+             , A.ACCESS_URL
+             , A.USE_CONT_TEXT
+             , A.MENU_NO
+             , A.ACCESS_IP_TEXT
+             , A.SESSION_ID
+             , A.SUCCESS_YN
+             , A.LOGIN_FAIL_RSN_CODE
+             , CASE WHEN A.LOGIN_FAIL_RSN_CODE != ''
+                    THEN C.CODE_DTL_NAME
+                    ELSE '로그인성공'
+                END AS LOGIN_FAIL_RSN_CODE_NAME
+             , A.RGSTER_NO
+             , B.LOGIN_ID + '(' + B.ADMIN_NAME + ')' AS RESTER_NAME
+             , A.RGST_DTM
+          FROM SY_ADMIN_USE_HISTORY A WITH(NOLOCK)
+          JOIN SY_ADMIN B WITH(NOLOCK)
+            ON A.ADMIN_NO = B.ADMIN_NO
+     LEFT JOIN SY_CODE_DETAIL C WITH(NOLOCK)
+            ON C.CODE_FIELD = 'LOGIN_FAIL_RSN_CODE'
+           AND A.LOGIN_FAIL_RSN_CODE = C.CODE_DTL_NO
+         WHERE A.ADMIN_NO = #{bean.adminNo}
+        <choose>
+		 <when test="sortColumn != null">
+		 	ORDER BY
+		 	<choose>
+		 		<when test="sortColumn == 'rgstDtm'.toString()">
+		 			A.RGST_DTM
+		 		</when>
+		 		<when test="sortColumn == 'chngField'.toString()">
+		 			A.CHNG_FIELD
+		 		</when>
+		 	</choose>
+		 	<if test="sortType == 'DESC'.toString()">
+		 		DESC
+		 	</if>
+		 </when>
+		 <otherwise>
+		 	ORDER BY A.RGST_DTM DESC
+		 </otherwise>
+		</choose>
+         <include refid="Paging.mssql" />
+    </select>
+
+
+	<insert id="insertAdminUseHistory" parameterType="kr.co.abcmart.bo.system.model.master.SyAdminUseHistory">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAdminUseHistoryDao.insertAdminUseHistory [관리자 로그인 이력 저장] [유성민] */
+		<selectKey resultType="int" keyProperty="useHistSeq" order="BEFORE">
+			SELECT ISNULL(MAX(USE_HIST_SEQ), 0) + 1
+			  FROM SY_ADMIN_USE_HISTORY
+			 WHERE ADMIN_NO = #{adminNo, jdbcType=VARCHAR}
+		</selectKey>
+		INSERT INTO SY_ADMIN_USE_HISTORY(
+			   ADMIN_NO
+			 , USE_HIST_SEQ
+			 , USE_HIST_CLASS_CODE
+			 , ACCESS_URL
+			 , USE_CONT_TEXT
+			 , MENU_NO
+			 , ACCESS_IP_TEXT
+			 , SESSION_ID
+			 , SUCCESS_YN
+			 , LOGIN_FAIL_RSN_CODE
+			 , RGSTER_NO
+			 , RGST_DTM
+		)VALUES(
+			   #{adminNo, jdbcType=VARCHAR}
+			 , #{useHistSeq, jdbcType=INTEGER}
+			 , #{useHistClassCode, jdbcType=VARCHAR}
+			 , #{accessUrl, jdbcType=VARCHAR}
+			 , #{useContText, jdbcType=VARCHAR}
+			 , #{menuNo, jdbcType=VARCHAR}
+			 , #{accessIpText, jdbcType=VARCHAR}
+			 , #{sessionId, jdbcType=VARCHAR}
+			 , #{successYn, jdbcType=CHAR}
+			 , #{loginFailRsnCode, jdbcType=VARCHAR}
+			 , #{rgsterNo, jdbcType=VARCHAR}
+			 , GETDATE()
+		)
+	</insert>
+
+	<delete id="deleteAdminUseHistory" parameterType="kr.co.abcmart.bo.system.model.master.SyAdminUseHistory">
+	/*+ kr.co.abcmart.bo.system.repository.master.SyAdminUseHistoryDao.deleteAdminUseHistory [관리자 로그인 이력 메뉴 삭제] [유성민] */
+		DELETE FROM SY_ADMIN_USE_HISTORY
+		WHERE MENU_NO = #{menuNo, jdbcType=VARCHAR}
+	</delete>
+
+</mapper>

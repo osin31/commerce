@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.sales.repository.master.IfMaechulDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <sql id="select-columns">
+    	cbcd, maejangcd, iljai, posno, gr_no, seq_no, pan_gbn, hhmm, sawonno, srcmkcd, saleqty, saleamt, salehalin, saleenury, pointamt, coupon, eventgb, won_ilja, won_posno, won_gr_no, regdate, condate, errorstatus, workdiv, ordno, itemsno, mallname, workday, chasu, safe_key, eventpointamt
+    </sql>
+    
+    <sql id="pk-columns">
+    	cbcd = #{cbcd, jdbcType=CHAR} AND gr_no = #{grNo, jdbcType=VARCHAR} AND iljai = #{iljai, jdbcType=VARCHAR} AND maejangcd = #{maejangcd, jdbcType=VARCHAR} AND posno = #{posno, jdbcType=VARCHAR} AND seq_no = #{seqNo, jdbcType=NUMERIC}
+    </sql>
+    
+    <select id="select" parameterType="kr.co.abcmart.bo.sales.model.master.IfMaechul" resultType="kr.co.abcmart.bo.sales.model.master.IfMaechul">
+    
+     /*+ kr.co.abcmart.bo.sales.repository.master.IfMaechulDao.select [기본 조회 쿼리] [Generator] */
+    
+		SELECT 
+			 <include refid="select-columns" />
+		FROM 
+			IF_MAECHUL
+		<where> 
+			<if test="cbcd != null"> 
+				 cbcd = #{cbcd, jdbcType=CHAR}
+			</if> 
+			<if test="maejangcd != null"> 
+				 AND maejangcd = #{maejangcd, jdbcType=VARCHAR}
+			</if> 
+			<if test="iljai != null"> 
+				 AND iljai = #{iljai, jdbcType=VARCHAR}
+			</if> 
+			<if test="posno != null"> 
+				 AND posno = #{posno, jdbcType=VARCHAR}
+			</if> 
+			<if test="grNo != null"> 
+				 AND gr_no = #{grNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="seqNo != null"> 
+				 AND seq_no = #{seqNo, jdbcType=NUMERIC}
+			</if> 
+			<if test="panGbn != null"> 
+				 AND pan_gbn = #{panGbn, jdbcType=BIT}
+			</if> 
+			<if test="hhmm != null"> 
+				 AND hhmm = #{hhmm, jdbcType=VARCHAR}
+			</if> 
+			<if test="sawonno != null"> 
+				 AND sawonno = #{sawonno, jdbcType=VARCHAR}
+			</if> 
+			<if test="srcmkcd != null"> 
+				 AND srcmkcd = #{srcmkcd, jdbcType=VARCHAR}
+			</if> 
+			<if test="saleqty != null"> 
+				 AND saleqty = #{saleqty, jdbcType=NUMERIC}
+			</if> 
+			<if test="saleamt != null"> 
+				 AND saleamt = #{saleamt, jdbcType=NUMERIC}
+			</if> 
+			<if test="salehalin != null"> 
+				 AND salehalin = #{salehalin, jdbcType=NUMERIC}
+			</if> 
+			<if test="saleenury != null"> 
+				 AND saleenury = #{saleenury, jdbcType=NUMERIC}
+			</if> 
+			<if test="pointamt != null"> 
+				 AND pointamt = #{pointamt, jdbcType=NUMERIC}
+			</if> 
+			<if test="coupon != null"> 
+				 AND coupon = #{coupon, jdbcType=NUMERIC}
+			</if> 
+			<if test="eventgb != null"> 
+				 AND eventgb = #{eventgb, jdbcType=VARCHAR}
+			</if> 
+			<if test="wonIlja != null"> 
+				 AND won_ilja = #{wonIlja, jdbcType=VARCHAR}
+			</if> 
+			<if test="wonPosno != null"> 
+				 AND won_posno = #{wonPosno, jdbcType=VARCHAR}
+			</if> 
+			<if test="wonGrNo != null"> 
+				 AND won_gr_no = #{wonGrNo, jdbcType=VARCHAR}
+			</if> 
+			<if test="regdate != null"> 
+				 AND regdate = #{regdate, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="condate != null"> 
+				 AND condate = #{condate, jdbcType=TIMESTAMP}
+			</if> 
+			<if test="errorstatus != null"> 
+				 AND errorstatus = #{errorstatus, jdbcType=CHAR}
+			</if> 
+			<if test="workdiv != null"> 
+				 AND workdiv = #{workdiv, jdbcType=CHAR}
+			</if> 
+			<if test="ordno != null"> 
+				 AND ordno = #{ordno, jdbcType=VARCHAR}
+			</if> 
+			<if test="itemsno != null"> 
+				 AND itemsno = #{itemsno, jdbcType=VARCHAR}
+			</if> 
+			<if test="mallname != null"> 
+				 AND mallname = #{mallname, jdbcType=VARCHAR}
+			</if> 
+			<if test="workday != null"> 
+				 AND workday = #{workday, jdbcType=VARCHAR}
+			</if> 
+			<if test="chasu != null"> 
+				 AND chasu = #{chasu, jdbcType=VARCHAR}
+			</if> 
+			<if test="safeKey != null"> 
+				 AND safe_key = #{safeKey, jdbcType=VARCHAR}
+			</if> 
+			<if test="eventpointamt != null"> 
+				 AND eventpointamt = #{eventpointamt, jdbcType=NUMERIC}
+			</if> 
+		</where>  
+    </select>
+    
+    <!--
+    	※ 경고
+		이 insert SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    
+    <insert id="insert" parameterType="kr.co.abcmart.bo.sales.model.master.IfMaechul">	
+
+     /*+ kr.co.abcmart.bo.sales.repository.master.IfMaechulDao.insert [기본 insert 쿼리] [Generator] */
+    
+		INSERT INTO IF_MAECHUL
+			 ( cbcd, maejangcd, iljai, posno, gr_no, seq_no, pan_gbn, hhmm, sawonno, srcmkcd, saleqty, saleamt, salehalin, saleenury, pointamt, coupon, eventgb, won_ilja, won_posno, won_gr_no, regdate, condate, errorstatus, workdiv, ordno, itemsno, mallname, workday, chasu, safe_key, eventpointamt ) 
+
+		VALUES 
+			 ( #{cbcd, jdbcType=CHAR}, #{maejangcd, jdbcType=VARCHAR}, #{iljai, jdbcType=VARCHAR}, #{posno, jdbcType=VARCHAR}, #{grNo, jdbcType=VARCHAR}, #{seqNo, jdbcType=NUMERIC}, #{panGbn, jdbcType=BIT}, #{hhmm, jdbcType=VARCHAR}, #{sawonno, jdbcType=VARCHAR}, #{srcmkcd, jdbcType=VARCHAR}, #{saleqty, jdbcType=NUMERIC}, #{saleamt, jdbcType=NUMERIC}, #{salehalin, jdbcType=NUMERIC}, #{saleenury, jdbcType=NUMERIC}, #{pointamt, jdbcType=NUMERIC}, #{coupon, jdbcType=NUMERIC}, #{eventgb, jdbcType=VARCHAR}, #{wonIlja, jdbcType=VARCHAR}, #{wonPosno, jdbcType=VARCHAR}, #{wonGrNo, jdbcType=VARCHAR}, <choose><when test="regdate != null">#{regdate, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, <choose><when test="condate != null">#{condate, jdbcType=TIMESTAMP}</when><otherwise>getdate()</otherwise></choose>, #{errorstatus, jdbcType=CHAR}, #{workdiv, jdbcType=CHAR}, #{ordno, jdbcType=VARCHAR}, #{itemsno, jdbcType=VARCHAR}, #{mallname, jdbcType=VARCHAR}, #{workday, jdbcType=VARCHAR}, #{chasu, jdbcType=VARCHAR}, #{safeKey, jdbcType=VARCHAR}, #{eventpointamt, jdbcType=NUMERIC} )  
+    </insert>
+    
+    <!--
+    	※ 경고
+		이 update SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <update id="update" parameterType="kr.co.abcmart.bo.sales.model.master.IfMaechul">
+    
+     /*+ kr.co.abcmart.bo.sales.repository.master.IfMaechulDao.update [기본 update 쿼리] [Generator] */
+    
+		UPDATE IF_MAECHUL
+		<set> 
+			<if test="cbcd != null"> 
+				cbcd = #{cbcd, jdbcType=CHAR}, 
+			</if> 
+			<if test="maejangcd != null"> 
+				maejangcd = #{maejangcd, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="iljai != null"> 
+				iljai = #{iljai, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="posno != null"> 
+				posno = #{posno, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="grNo != null"> 
+				gr_no = #{grNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="seqNo != null"> 
+				seq_no = #{seqNo, jdbcType=NUMERIC}, 
+			</if> 
+			<if test="panGbn != null"> 
+				pan_gbn = #{panGbn, jdbcType=BIT}, 
+			</if> 
+			<if test="hhmm != null"> 
+				hhmm = #{hhmm, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="sawonno != null"> 
+				sawonno = #{sawonno, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="srcmkcd != null"> 
+				srcmkcd = #{srcmkcd, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="saleqty != null"> 
+				saleqty = #{saleqty, jdbcType=NUMERIC}, 
+			</if> 
+			<if test="saleamt != null"> 
+				saleamt = #{saleamt, jdbcType=NUMERIC}, 
+			</if> 
+			<if test="salehalin != null"> 
+				salehalin = #{salehalin, jdbcType=NUMERIC}, 
+			</if> 
+			<if test="saleenury != null"> 
+				saleenury = #{saleenury, jdbcType=NUMERIC}, 
+			</if> 
+			<if test="pointamt != null"> 
+				pointamt = #{pointamt, jdbcType=NUMERIC}, 
+			</if> 
+			<if test="coupon != null"> 
+				coupon = #{coupon, jdbcType=NUMERIC}, 
+			</if> 
+			<if test="eventgb != null"> 
+				eventgb = #{eventgb, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="wonIlja != null"> 
+				won_ilja = #{wonIlja, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="wonPosno != null"> 
+				won_posno = #{wonPosno, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="wonGrNo != null"> 
+				won_gr_no = #{wonGrNo, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="regdate != null"> 
+				regdate = #{regdate, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="condate != null"> 
+				condate = #{condate, jdbcType=TIMESTAMP}, 
+			</if> 
+			<if test="errorstatus != null"> 
+				errorstatus = #{errorstatus, jdbcType=CHAR}, 
+			</if> 
+			<if test="workdiv != null"> 
+				workdiv = #{workdiv, jdbcType=CHAR}, 
+			</if> 
+			<if test="ordno != null"> 
+				ordno = #{ordno, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="itemsno != null"> 
+				itemsno = #{itemsno, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="mallname != null"> 
+				mallname = #{mallname, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="workday != null"> 
+				workday = #{workday, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="chasu != null"> 
+				chasu = #{chasu, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="safeKey != null"> 
+				safe_key = #{safeKey, jdbcType=VARCHAR}, 
+			</if> 
+			<if test="eventpointamt != null"> 
+				eventpointamt = #{eventpointamt, jdbcType=NUMERIC}, 
+			</if> 
+		</set> 
+		WHERE 
+			 cbcd = #{cbcd, jdbcType=CHAR} AND gr_no = #{grNo, jdbcType=VARCHAR} AND iljai = #{iljai, jdbcType=VARCHAR} AND maejangcd = #{maejangcd, jdbcType=VARCHAR} AND posno = #{posno, jdbcType=VARCHAR} AND seq_no = #{seqNo, jdbcType=NUMERIC}   
+    </update>
+    
+    <!--
+    	※ 경고
+		이 delete SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <delete id="delete" parameterType="kr.co.abcmart.bo.sales.model.master.IfMaechul">
+    
+     /*+ kr.co.abcmart.bo.sales.repository.master.IfMaechulDao.delete [기본 delete 쿼리] [Generator] */
+    
+		DELETE FROM IF_MAECHUL
+		WHERE 
+			 cbcd = #{cbcd, jdbcType=CHAR} AND gr_no = #{grNo, jdbcType=VARCHAR} AND iljai = #{iljai, jdbcType=VARCHAR} AND maejangcd = #{maejangcd, jdbcType=VARCHAR} AND posno = #{posno, jdbcType=VARCHAR} AND seq_no = #{seqNo, jdbcType=NUMERIC}  
+    </delete>
+</mapper>

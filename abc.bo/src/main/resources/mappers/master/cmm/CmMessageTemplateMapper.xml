@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.cmm.repository.master.CmMessageTemplateDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.cmm.model.master.CmMessageTemplate">
+
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmMessageTemplateDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			CM_MESSAGE_TEMPLATE WITH (NOLOCK)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+	<select id="selectCmMessageTemplate" parameterType="kr.co.abcmart.bo.cmm.model.master.CmMessageTemplate" resultType="kr.co.abcmart.bo.cmm.model.master.CmMessageTemplate">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmMessageTemplateDao.selectCmMessageTemplate [문자 템플릿 상세 조회][김진성] */
+		SELECT A.MESG_TMPL_SEQ
+		     , A.SEND_TYPE_CODE
+		     , A.MESG_TMPL_NAME
+		     , A.MESG_TYPE_CODE
+		     , A.MESG_CONT_TEXT
+		     , ISNULL(A.SITE_NO, '99999') AS SITE_NO
+		     , A.MESG_ID
+		     , A.FAIL_MESG_CONT_TEXT
+		     , A.USE_YN
+		     , A.RGSTER_NO
+		     , A.RGST_DTM
+		     , A.MODER_NO
+		     , A.MOD_DTM
+		     , A.MODER_NO
+		     , B.LOGIN_ID AS MODER_ID
+		     , B.ADMIN_NAME AS MODER_NAME
+		 FROM CM_MESSAGE_TEMPLATE A WITH (NOLOCK)
+		 LEFT OUTER JOIN SY_ADMIN B WITH (NOLOCK) ON A.MODER_NO = B.ADMIN_NO
+		 WHERE MESG_TMPL_SEQ = #{mesgTmplSeq, jdbcType=INTEGER}
+    </select>
+
+    <!-- 검색 조건 -->
+    <sql id="searchWhere">
+    	<trim prefix="WHERE" prefixOverrides="AND|OR">
+    		<if test="bean.sendProcGbnType != null and bean.sendProcGbnType != ''">
+    	   AND A.SEND_PROC_GBN_TYPE = #{bean.sendProcGbnType, jdbcType=VARCHAR}
+    	    </if>
+    		<if test="bean.siteNo != null and bean.siteNo != ''">
+    	   AND A.SITE_NO <choose><when test="bean.siteNo == '99999'">IS NULL</when><otherwise>= #{bean.siteNo, jdbcType=VARCHAR}</otherwise></choose>
+    	    </if>
+    	    <if test="bean.sendTypeCode != null and bean.sendTypeCode != ''">
+    	   AND A.SEND_TYPE_CODE = #{bean.sendTypeCode, jdbcType=VARCHAR}
+    	    </if>
+    		<if test="bean.mesgTmplName != null and bean.mesgTmplName != ''">
+    	   AND A.MESG_TMPL_NAME LIKE #{bean.mesgTmplName, jdbcType=VARCHAR} + '%'
+    	    </if>
+    	    <if test="bean.mesgTmplSeq != null and bean.mesgTmplSeq != '' ">
+		   AND A.MESG_TMPL_SEQ = #{bean.mesgTmplSeq, jdbcType=INTEGER}
+		  </if>
+    		<if test="bean.mesgTypeCode != null and bean.mesgTypeCode != ''">
+    	   AND A.MESG_TYPE_CODE = #{bean.mesgTypeCode, jdbcType=VARCHAR}
+    	    </if>
+    		<if test="bean.mesgId != null and bean.mesgId != ''">
+    	   AND A.MESG_ID LIKE '%' + #{bean.mesgId, jdbcType=VARCHAR} + '%' 
+    	    </if>
+    		<if test="bean.adminLoginId != null and bean.adminLoginId != ''">
+    	   AND B.LOGIN_ID Like '%' + #{bean.adminLoginId, jdbcType=VARCHAR} + '%'
+    	    </if>
+    		<if test="bean.searchDateKey != null and bean.searchDateKey != ''">
+    			<choose>
+    				<when test="bean.searchDateKey == 'rgstDtm'">
+    	   AND A.RGST_DTM <![CDATA[>=]]> #{bean.fromDtm, jdbcType=TIMESTAMP} AND  A.RGST_DTM <![CDATA[<]]> #{bean.toDtm, jdbcType=TIMESTAMP}
+    	       		</when>
+    	       		<when test="bean.searchDateKey == 'modDtm'">
+    	   AND A.MOD_DTM <![CDATA[>=]]> #{bean.fromDtm, jdbcType=TIMESTAMP} AND  A.MOD_DTM <![CDATA[<]]> #{bean.toDtm, jdbcType=TIMESTAMP}
+    	       		</when>
+    	       	</choose>
+    	    </if>
+    	</trim>
+    </sql>
+
+    <select id="selectCmMessageTemplateListCount" parameterType="pageable" resultType="int">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmMessageTemplateDao.selectCmMessageTemplateListCount [문자 템플릿 검색 결과 개수][김진성] */
+    	SELECT <include refid="Paging.totalCount" />
+    	  FROM CM_MESSAGE_TEMPLATE A WITH (NOLOCK)
+    	  LEFT JOIN SY_ADMIN B WITH (NOLOCK) ON A.MODER_NO = B.ADMIN_NO
+    	<include refid="searchWhere" />
+    </select>
+
+    <insert id="insertCmMessageTemplate" parameterType="kr.co.abcmart.bo.cmm.model.master.CmMessageTemplate" >
+     /*+ kr.co.abcmart.bo.cmm.repository.master.CmMessageTemplateDao.insertCmMessageTemplate [문자 템플릿 검색 결과 리스트][김진성] */
+		INSERT INTO CM_MESSAGE_TEMPLATE (
+		       SITE_NO
+		     , SEND_TYPE_CODE
+		     , MESG_TYPE_CODE
+		     , MESG_TMPL_NAME
+		     , MESG_CONT_TEXT
+		     , MESG_ID
+		     , FAIL_MESG_CONT_TEXT
+		     , SEND_PROC_GBN_TYPE
+		     , USE_YN
+		     , RGSTER_NO
+		     , RGST_DTM
+		     , MODER_NO
+		     , MOD_DTM
+		) VALUES (
+		        <choose><when test="siteNo == '99999'">NULL</when><otherwise>#{siteNo, jdbcType=VARCHAR}</otherwise></choose>
+		     ,  #{sendTypeCode, jdbcType=VARCHAR}
+		     ,  #{mesgTypeCode, jdbcType=VARCHAR}
+		     ,  #{mesgTmplName, jdbcType=VARCHAR}
+		     ,  #{mesgContText, jdbcType=VARCHAR}
+		     ,  #{mesgId, jdbcType=VARCHAR}
+		     ,  #{failMesgContText, jdbcType=VARCHAR}
+		     ,  #{sendProcGbnType, jdbcType=CHAR}
+		     ,  #{useYn, jdbcType=CHAR}
+		     ,  #{rgsterNo, jdbcType=VARCHAR}
+		     , <choose><when test="rgstDtm != null">#{rgstDtm, jdbcType=TIMESTAMP}</when><otherwise>GETDATE()</otherwise></choose>
+		     ,  #{moderNo, jdbcType=VARCHAR}
+		     , <choose><when test="modDtm != null">#{modDtm, jdbcType=TIMESTAMP}</when><otherwise>GETDATE()</otherwise></choose>
+		)
+    </insert>
+
+    <select id="selectCmMessageTemplateList"  parameterType="pageable" resultType="kr.co.abcmart.bo.cmm.model.master.CmMessageTemplate">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmMessageTemplateDao.selectCmMessageTemplateListCount [문자 템플릿 검색 결과 리스트][김진성] */
+		SELECT A.MESG_TMPL_SEQ
+		     , A.MESG_TMPL_NAME
+		     , A.MESG_CONT_TEXT
+		     , A.MESG_TYPE_CODE
+		     , dbo.FN_CODE_VALUE('SEND_TYPE_CODE',  A.SEND_TYPE_CODE) AS  SEND_TYPE_CODE_NAME
+		     , dbo.FN_CODE_VALUE('MESG_TYPE_CODE',  A.MESG_TYPE_CODE) AS  MESG_TYPE_CODE_NAME
+		     , A.MOD_DTM
+		     , A.MESG_ID
+		     , B.LOGIN_ID AS MODER_ID
+		     , B.ADMIN_NAME AS MODER_NAME
+		     , ISNULL(C.SITE_NAME, '공통') AS SITE_NAME
+		     , A.MODER_NO
+		  FROM CM_MESSAGE_TEMPLATE A WITH (NOLOCK)
+		  LEFT JOIN SY_ADMIN B WITH (NOLOCK) ON A.MODER_NO = B.ADMIN_NO
+		  LEFT JOIN SY_SITE C WITH (NOLOCK) ON A.SITE_NO = C.SITE_NO
+		<include refid="searchWhere" />
+		<choose>
+			<when test="sortColumn != null">
+		 ORDER BY
+			 	<if test="sortColumn == 'modDtm'.toString()">
+			 		MOD_DTM
+			 	</if>
+				<if test="sortType == 'DESC'.toString()">
+			 		DESC
+				</if>
+			</when>
+			<otherwise>
+		 ORDER BY A.MOD_DTM DESC
+			</otherwise>
+		  </choose>
+		 
+		<include refid="Paging.mssql" />
+    </select>
+
+     <select id="selectCmMessageTemplateListExcelDown"  parameterType="pageable" resultType="kr.co.abcmart.bo.cmm.model.master.CmMessageTemplate">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmMessageTemplateDao.selectCmMessageTemplateListCount [엑셀에 담을 자동 문자 템플릿 검색 결과 리스트][이재렬] */
+		SELECT A.MESG_TMPL_NAME
+		     , A.MESG_CONT_TEXT
+		     , A.MESG_TYPE_CODE
+		     , dbo.FN_CODE_VALUE('SEND_TYPE_CODE',  A.SEND_TYPE_CODE) AS  SEND_TYPE_CODE_NAME
+		     , dbo.FN_CODE_VALUE('MESG_TYPE_CODE',  A.MESG_TYPE_CODE) AS  MESG_TYPE_CODE_NAME
+		     , A.MOD_DTM
+		     , ISNULL(C.SITE_NAME, '공통') AS SITE_NAME
+		     , A.MODER_NO
+		  FROM CM_MESSAGE_TEMPLATE A WITH (NOLOCK)
+		  LEFT JOIN SY_ADMIN B WITH (NOLOCK) ON A.MODER_NO = B.ADMIN_NO
+		  LEFT JOIN SY_SITE C WITH (NOLOCK) ON A.SITE_NO = C.SITE_NO
+		<include refid="searchWhere" />
+		 ORDER BY A.MESG_TMPL_SEQ DESC
+    </select>
+
+    <update id="updateCmMessageTemplate" parameterType="kr.co.abcmart.bo.cmm.model.master.CmMessageTemplate">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmMessageTemplateDao.updateCmMessageTemplate [문자 템플릿 정보를 수정한다.][김진성] */
+    	UPDATE CM_MESSAGE_TEMPLATE
+    	   SET SITE_NO = <choose><when test="siteNo == '99999'">NULL</when><otherwise>#{siteNo, jdbcType=VARCHAR}</otherwise></choose>
+    	     , SEND_TYPE_CODE = #{sendTypeCode, jdbcType=VARCHAR}
+    	     , MESG_TMPL_NAME = #{mesgTmplName, jdbcType=VARCHAR}
+    	     , MESG_CONT_TEXT = #{mesgContText, jdbcType=VARCHAR}
+    	     , MESG_ID 		  = #{mesgId	  , jdbcType=VARCHAR}
+    	     , FAIL_MESG_CONT_TEXT = #{failMesgContText, jdbcType=VARCHAR}
+    	     , MESG_TYPE_CODE = #{mesgTypeCode, jdbcType=VARCHAR}
+    	     , MODER_NO = #{moderNo, jdbcType=VARCHAR}
+    	     , MOD_DTM = GETDATE()
+    	 WHERE MESG_TMPL_SEQ = #{mesgTmplSeq, jdbcType=INTEGER}
+
+    </update>
+
+    <select id="selectMessageTemplateByMesgId" parameterType="String" resultType="kr.co.abcmart.bo.cmm.model.master.CmMessageTemplate">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmMessageTemplateDao.selectMessageTemplateByMesgId [mesgId로 메세지 템플릿 조회][최경호] */
+		SELECT <include refid="select-columns" />
+			FROM CM_MESSAGE_TEMPLATE A WITH (NOLOCK)
+		  WHERE A.MESG_ID = #{mesgId, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectMessageTemplate" parameterType="kr.co.abcmart.bo.cmm.model.master.CmMessageTemplate" resultType="kr.co.abcmart.bo.cmm.model.master.CmMessageTemplate">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmMessageTemplateDao.selectMessageTemplate [메세지 템플릿 조회][최경호] */
+		SELECT <include refid="select-columns" />
+		  FROM CM_MESSAGE_TEMPLATE A WITH (NOLOCK)
+		 WHERE A.MESG_ID = #{mesgId, jdbcType=VARCHAR}
+		 <if test="siteNo != '' and siteNo != null">
+		   AND ISNULL(SITE_NO, #{siteNo, jdbcType=VARCHAR})  = #{siteNo, jdbcType=VARCHAR}
+		 </if>
+    </select>
+
+    <select id="selectTextMesgSendPopTemplateList" parameterType="kr.co.abcmart.bo.cmm.vo.MsgTemplateSearchVO" resultType="kr.co.abcmart.bo.cmm.model.master.CmMessageTemplate">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmMessageTemplateDao.updateCmMessageTemplate [문자 발송 팝업에서 템플릿 조회][김진성] */
+    	SELECT MESG_TMPL_SEQ
+    	     , SEND_TYPE_CODE
+    	     , MESG_TMPL_NAME
+    	     , MESG_TYPE_CODE
+		<if test="mesgTmplSeq != null and mesgTmplSeq > 0">
+    	     , MESG_CONT_TEXT
+    	</if>
+    	  FROM CM_MESSAGE_TEMPLATE WITH (NOLOCK)
+    	 WHERE MESG_TYPE_CODE = #{mesgTypeCode, jdbcType=VARCHAR}
+    	   AND SEND_PROC_GBN_TYPE = #{sendProcGbnType, jdbcType=VARCHAR}
+    	<if test="siteNo != null and siteNo != ' ' ">
+    	   AND SITE_NO <choose><when test="siteNo == '99999'">IS NULL</when><otherwise>= #{siteNo, jdbcType=VARCHAR}</otherwise></choose>
+    	</if>
+		<if test="mesgTmplSeq != null and mesgTmplSeq > 0">
+    	   AND MESG_TMPL_SEQ = #{mesgTmplSeq, jdbcType=INTEGER}
+		</if>
+    </select>
+    
+    <select id="selectCmMesgIdCount" parameterType="String" resultType="int">
+    /*+ kr.co.abcmart.bo.cmm.repository.master.CmMessageTemplateDao.selectCmMesgIdCount [동일 발송코드 확인][고웅환] */
+    	SELECT <include refid="Paging.totalCount" />
+    	  FROM CM_MESSAGE_TEMPLATE WITH (NOLOCK)
+    	 WHERE MESG_ID = #{mesgId, jdbcType=VARCHAR}
+    </select>
+
+</mapper>

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyAuthorityMenuDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.system.model.master.SyAuthorityMenu" resultType="kr.co.abcmart.bo.system.model.master.SyAuthorityMenu">
+		SELECT
+			 <include refid="select-columns" />
+		FROM
+			sy_authority_menu with (nolock)
+		WHERE
+			 auth_no = #{authNo, jdbcType=VARCHAR} AND menu_no = #{menuNo, jdbcType=VARCHAR}
+    </select>
+
+	<!--
+		Auth(ROLE) 권한에 따른 menu(resource) 정보들을 불러온다.
+		해당 정보로 각 user의 접근 url을 체크한다.
+	 -->
+	<select id="getAuthorizedUrls" parameterType="string" resultType="kr.co.abcmart.bo.system.model.master.SyAuthorityMenu">
+  		/*+ kr.co.abcmart.bo.system.repository.master.SyAuthorityMenuDao.getAuthorizedUrls [Auth(ROLE) 권한에 따른 menu]*/
+  		SELECT
+			sas.auth_apply_system_type, sam.menu_no, sam.auth_no, sm.rsrc_type, sm.rsrc_url, sm.sort_seq
+		FROM
+			sy_authority_menu sam with (nolock)
+			JOIN sy_menu sm with (nolock)
+			ON sam.menu_no = sm.menu_no
+			AND sm.use_yn = 'Y'
+			AND sm.disp_yn = 'Y'
+			JOIN sy_authority sas with (nolock)
+			ON sam.auth_no = sas.auth_no
+			AND sas.use_yn = 'Y'
+		WHERE sam.use_yn = 'Y'
+		  AND sas.auth_no = #{authNo, jdbcType=VARCHAR}
+		  AND ISNULL(sm.rsrc_url, '') != ''
+
+	</select>
+
+
+
+	<update id="updateAuthorityGroupMenu" parameterType="kr.co.abcmart.bo.system.model.master.SyAuthorityMenu">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAuthorityMenuDao.updateAuthorityGroupMenu [권한그룹메뉴 등록/수정] [유성민]*/
+		MERGE SY_AUTHORITY_MENU A
+		USING (SELECT 1 AS X) X
+		   ON A.AUTH_NO = #{authNo, jdbcType=VARCHAR}
+		  AND A.MENU_NO = #{menuNo, jdbcType=VARCHAR}
+		WHEN MATCHED THEN
+			UPDATE
+			   SET A.USE_YN = #{useYn, jdbcType=CHAR}
+				 , A.MODER_NO = #{moderNo, jdbcType=VARCHAR}
+				 , A.MOD_DTM = GETDATE()
+		WHEN NOT MATCHED THEN
+			INSERT
+				( AUTH_NO
+				, MENU_NO
+				, USE_YN
+				, RGSTER_NO
+				, RGST_DTM
+				, MODER_NO
+				, MOD_DTM
+				)
+			VALUES
+				( #{authNo, jdbcType=VARCHAR}
+				, #{menuNo, jdbcType=VARCHAR}
+				, #{useYn, jdbcType=CHAR}
+				, #{rgsterNo, jdbcType=VARCHAR}
+				, GETDATE()
+				, #{moderNo, jdbcType=VARCHAR}
+				, GETDATE()
+				)
+				;
+	</update>
+
+	<select id="selectAuthorityGroupMenuCount" parameterType="kr.co.abcmart.bo.system.model.master.SyAuthorityMenu" resultType="int">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAuthorityMenuDao.selectAuthorityGroupMenuCount [권한그룹메뉴 조회] [유성민]*/
+		SELECT <include refid="Paging.totalCount" />
+		  FROM SY_AUTHORITY_MENU with (nolock)
+		 WHERE AUTH_NO = #{authNo, jdbcType=VARCHAR}
+	</select>
+
+	<select id="selectAuthorityGroupMenuList" parameterType="kr.co.abcmart.bo.system.model.master.SyAuthorityMenu" resultType="kr.co.abcmart.bo.system.model.master.SyAuthorityMenu">
+		/*+ kr.co.abcmart.bo.system.repository.master.SyAuthorityMenuDao.selectAuthorityGroupMenuList [권한그룹메뉴 조회] [유성민]*/
+		WITH MENU_CTE
+		AS (
+			SELECT MENU_NO
+				 , UP_MENU_NO
+				 , MENU_NAME
+				 , MENU_GBN_TYPE
+				 , CONVERT(VARCHAR(255), RIGHT('000' + CONVERT(VARCHAR(3), SORT_SEQ), 3)) DEPTH_SORT
+				 , MENU_LEVEL
+				 , USE_YN
+				 , AUTH_APPLY_SYSTEM_TYPE
+			  FROM SY_MENU with (nolock)
+			 WHERE ISNULL(UP_MENU_NO, '') = ''
+		 UNION ALL
+			SELECT A.MENU_NO
+				 , A.UP_MENU_NO
+				 , A.MENU_NAME
+				 , A.MENU_GBN_TYPE
+				 , CONVERT(VARCHAR(255), B.DEPTH_SORT + ' > ' + RIGHT('000' + CONVERT(VARCHAR(3), A.SORT_SEQ), 3) + A.MENU_NO) DEPTH_SORT
+				 , A.MENU_LEVEL
+				 , A.USE_YN
+				 , A.AUTH_APPLY_SYSTEM_TYPE
+			  FROM SY_MENU A with (nolock)
+			 INNER JOIN MENU_CTE B
+				ON A.UP_MENU_NO = B.MENU_NO
+			 WHERE (CASE WHEN A.MENU_NO = '10000'
+						 THEN #{authApplySystemType}
+						 ELSE A.AUTH_APPLY_SYSTEM_TYPE
+					END) = #{authApplySystemType}
+		 )
+		 SELECT A.MENU_NO
+			  , A.MENU_GBN_TYPE
+			  , A.MENU_NAME
+			  , A.MENU_LEVEL as "level"
+			  , ISNULL(B.USE_YN, 'N') AS USE_YN
+			  , (CASE WHEN B.USE_YN = 'Y' THEN 1 ELSE 0 END) AS USE_YN_CODE
+			  , (SELECT (CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END)
+				   FROM MENU_CTE Z
+				  WHERE Z.UP_MENU_NO = A.MENU_NO ) AS "haveChild"
+			  , A.AUTH_APPLY_SYSTEM_TYPE
+		   FROM MENU_CTE A
+		   LEFT OUTER JOIN SY_AUTHORITY_MENU B with (nolock)
+		     ON A.MENU_NO = B.MENU_NO
+		    AND B.AUTH_NO = #{authNo, jdbcType=VARCHAR}
+		  ORDER BY A.DEPTH_SORT
+	</select>
+
+	<delete id="deleteMenu" parameterType="kr.co.abcmart.bo.system.model.master.SyAuthorityMenu">
+	/*+ kr.co.abcmart.bo.system.repository.master.SyAuthorityMenuDao.deleteMenu [권한 메뉴 삭제 쿼리] [유성민] */
+		DELETE FROM sy_authority_menu
+		WHERE menu_no = #{menuNo, jdbcType=VARCHAR}
+	</delete>
+
+	<delete id="deleteAuthorityMenu" parameterType="kr.co.abcmart.bo.system.model.master.SyAuthorityMenu">
+	/*+ kr.co.abcmart.bo.system.repository.master.SyAuthorityMenuDao.deleteAuthorityMenu [권한그룹 메뉴 삭제 쿼리] [유성민] */
+		DELETE FROM sy_authority_menu
+		WHERE AUTH_NO = #{authNo, jdbcType=VARCHAR}
+	</delete>
+
+</mapper>

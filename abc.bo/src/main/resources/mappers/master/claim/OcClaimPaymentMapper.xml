@@ -1,0 +1,1160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.claim.repository.master.OcClaimPaymentDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment">
+    
+     /*+ kr.co.abcmart.bo.claim.repository.master.OcClaimPaymentDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			OC_CLAIM_PAYMENT WITH (NOLOCK)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+
+	<select id="selectClaimPaymentList" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment">
+	
+	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimPaymentDao.selectClaimPaymentList [클레임 결제 목록 조회 쿼리 - 주문상세 클레임 탭] [KTH] [이강수] */
+		
+		SELECT A.CLM_NO
+			 , A.CLM_PYMNT_SEQ
+			 , A.REDEMP_RFND_GBN_TYPE
+			 , A.PYMNT_DTM
+			 , A.DEVICE_CODE
+			 , A.MAIN_PYMNT_MEANS_YN
+			 , A.PYMNT_MEANS_CODE
+			 , DBO.FN_CODE_VALUE('PYMNT_MEANS_CODE', A.PYMNT_MEANS_CODE) AS PYMNT_MEANS_CODE_NAME
+			 , A.PYMNT_VNDR_CODE
+			 , DBO.FN_CODE_VALUE('PYMNT_VNDR_CODE', A.PYMNT_VNDR_CODE) AS PYMNT_VNDR_CODE_NAME
+			 , A.PYMNT_ORGAN_CODE_TEXT
+			 , A.PYMNT_ORGAN_NAME
+			 , A.PYMNT_ORGAN_NO_TEXT
+			 , A.INTRST_FREE_YN
+			 , A.INSTMT_TERM_COUNT
+			 , A.CARD_GBN_TYPE
+			 , A.CARD_TYPE
+			 , A.PYMNT_APRV_NO_TEXT
+			 , A.PYMNT_TODO_AMT
+			 , A.PYMNT_AMT
+			 , A.CARD_PART_CNCL_PSBLT_YN
+			 , A.CASH_RCPT_ISSUE_YN
+			 , A.ESCR_APPLY_YN
+			 , A.ESCR_APRV_NO_TEXT
+			 , A.BANK_CODE
+			 , DBO.FN_CODE_VALUE('BANK_CODE', A.BANK_CODE) AS BANK_CODE_NAME
+			 , A.ACNT_NO_TEXT
+			 , A.ACNT_HLDR_NAME
+			 , A.ACNT_CRTFC_YN
+			 , A.VRTL_ACNT_ISSUE_DTM
+			 , A.VRTL_ACNT_EXPR_DTM
+			 , A.GIFT_CARD_PIN_NO_TEXT
+			 , A.REDEMP_RFND_MEMO_TEXT
+			 , A.PROC_IMPSBLT_YN
+			 , A.PROC_IMPSBLT_RSN_TEXT
+			 , A.PROC_IMPSBLT_CMLPT_DTM
+			 , A.REDEMP_RFND_OPETR_NO
+			 , A.REDEMP_RFND_OPETR_DTM
+			 , A.MMNY_PROC_TRGT_YN
+			 , A.OCRNC_RSN_CODE
+			 , DBO.FN_CODE_VALUE('OCRNC_RSN_CODE', A.OCRNC_RSN_CODE) AS OCRNC_RSN_CODE_NAME
+			 , A.PYMNT_STAT_CODE
+			 , DBO.FN_CODE_VALUE('PYMNT_STAT_CODE', A.PYMNT_STAT_CODE) AS PYMNT_STAT_CODE_NAME
+			 , DBO.FN_CODE_ADDINFO ('PYMNT_STAT_CODE', A.PYMNT_STAT_CODE, 1) AS PYMNT_STAT_CODE_ADDINFO_NAME
+			 , A.RSPNS_CODE_TEXT
+			 , A.RSPNS_MESG_TEXT
+			 , A.PYMNT_LOG_INFO
+			 , A.HIST_GBN_TYPE
+			 , A.VNDR_NO
+			 , A.REDEMP_AMT_RNDM_PROC_YN
+			 , A.MOD_DTM
+			 , A.MODER_NO
+			 , B.SITE_NO
+			 , B.CLM_GBN_CODE
+			 , B.RGST_DTM
+			 , C.LOGIN_ID + '(' + C.ADMIN_NAME + ')' AS CLM_HANDLER
+		  FROM OC_CLAIM_PAYMENT    A WITH (NOLOCK)
+		  JOIN OC_CLAIM		       B WITH (NOLOCK) ON A.CLM_NO   = B.CLM_NO
+		  LEFT OUTER JOIN SY_ADMIN C WITH (NOLOCK) ON A.MODER_NO = C.ADMIN_NO
+		<where> 
+			<if test="clmNo != null"> 
+			   AND A.CLM_NO = #{clmNo, jdbcType=VARCHAR}
+			</if>
+			<if test="clmPymntSeq != null"> 
+			   AND A.CLM_PYMNT_SEQ = #{clmPymntSeq, jdbcType=TINYINT}
+			</if>
+			<if test="mmnyProcTrgtYn != null"> 
+			   AND A.MMNY_PROC_TRGT_YN = #{mmnyProcTrgtYn, jdbcType=CHAR}
+			</if>
+			<if test="orderNo != null"> 
+			   AND B.ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+			</if>
+			<if test="orgOrderNo != null"> 
+			   AND B.ORG_ORDER_NO = #{orgOrderNo, jdbcType=VARCHAR}
+			</if>
+		</where>
+
+	</select>
+	
+	<select id="selectRefundRedempListCount" parameterType="pageable" resultType="int">
+    	
+    	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimPaymentDao.selectRefundRedempListCount [환불/환수 목록 갯수 조회 쿼리] [이강수] */  
+    	
+		 SELECT <include refid="Paging.totalCount" />
+		   FROM OC_CLAIM_PAYMENT    	A WITH (NOLOCK)
+		   JOIN OC_CLAIM		    	B WITH (NOLOCK) ON A.CLM_NO    = B.CLM_NO
+		   LEFT OUTER JOIN MB_MEMBER	C WITH (NOLOCK) ON B.MEMBER_NO = C.MEMBER_NO
+		   LEFT OUTER JOIN SY_ADMIN 	D WITH (NOLOCK) ON A.MODER_NO  = D.ADMIN_NO
+    	<trim prefix="WHERE" prefixOverrides="AND|OR">
+				 AND A.REDEMP_RFND_GBN_TYPE = #{bean.redempRfndGbnType, jdbcType=CHAR}
+				 AND A.MMNY_PROC_TRGT_YN 	= 'Y'
+				 AND A.HIST_GBN_TYPE		= #{bean.histGbnType, jdbcType=CHAR}
+    		<if test='bean.siteNo != null and bean.siteNo != ""'> 
+				 AND B.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.clmGbnCode != null and bean.clmGbnCode != ""'> 
+				 AND B.CLM_GBN_CODE = #{bean.clmGbnCode, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.searchBuyerName != null and bean.searchBuyerName != ""'> 
+				 AND B.BUYER_NAME = #{bean.searchBuyerName, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.searchLoginId != null and bean.searchLoginId != ""'> 
+				 AND C.LOGIN_ID = #{bean.searchLoginId, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.searchBuyerHdphnNoText != null and bean.searchBuyerHdphnNoText != ""'> 
+				 AND B.BUYER_HDPHN_NO_TEXT = #{bean.searchBuyerHdphnNoText, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.buyerHdphnBackNo != null and bean.buyerHdphnBackNo !=""'>
+				AND RIGHT(REPLACE(B.BUYER_HDPHN_NO_TEXT, '-', ''), 4) = #{bean.buyerHdphnBackNo, jdbcType=VARCHAR}
+			</if>			
+			<if test='bean.orgOrderNo != null and bean.orgOrderNo != ""'> 
+				 AND B.ORG_ORDER_NO = #{bean.orgOrderNo, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.pymntStatCode != null and bean.pymntStatCode != ""'>
+				<if test='bean.pymntStatCode == bean.pymntStatCodeRefundAccept'>
+					-- 결제상태 : 환불접수
+					AND A.PYMNT_STAT_CODE = #{bean.pymntStatCodeRefundAccept, jdbcType=VARCHAR}
+					-- 환불접수 상태 시 처리불가여부 N
+					AND (
+							A.PROC_IMPSBLT_YN = 'N'
+						 OR A.PROC_IMPSBLT_YN IS NULL
+					)
+				</if>
+				<if test='bean.pymntStatCode == bean.pymntStatCodeRefundComplete'>
+					-- 결제상태 : 환불완료
+					AND A.PYMNT_STAT_CODE = #{bean.pymntStatCodeRefundComplete, jdbcType=VARCHAR}
+				</if>
+				<if test='bean.pymntStatCode == bean.pymntStatCodeRedempAccept'>
+					-- 결제상태 : 환수접수
+					AND A.PYMNT_STAT_CODE = #{bean.pymntStatCodeRedempAccept, jdbcType=VARCHAR}
+					-- 가상계좌입금기한 이내 인지 체크
+					AND DATEDIFF( DD, ISNULL(A.VRTL_ACNT_EXPR_DTM, GETDATE()), GETDATE() ) &lt;= 0
+				</if>
+				<if test='bean.pymntStatCode == bean.pymntStatCodeRedempComplete'>
+					-- 결제상태 : 환수완료
+					AND A.PYMNT_STAT_CODE = #{bean.pymntStatCodeRedempComplete, jdbcType=VARCHAR}
+				</if>
+				<if test='bean.pymntStatCode == "Y"'>
+					-- 결제상태 : 환수접수
+					AND A.PYMNT_STAT_CODE = #{bean.pymntStatCodeRedempAccept, jdbcType=VARCHAR}
+					-- 가상계좌입금기한을 넘겨 입금기한만료했는지 체크
+					AND DATEDIFF( DD, A.VRTL_ACNT_EXPR_DTM, GETDATE() ) &gt; 0
+				</if>
+			</if>
+			<if test='bean.rfndAcntExistYn != null and bean.rfndAcntExistYn != ""'>
+				 <if test='bean.rfndAcntExistYn == "Y"'>
+				 	AND (A.BANK_CODE IS NOT NULL OR A.BANK_CODE != '')
+	                AND (A.ACNT_NO_TEXT IS NOT NULL OR A.ACNT_NO_TEXT != '')
+	                AND (A.ACNT_HLDR_NAME IS NOT NULL OR A.ACNT_HLDR_NAME != '')
+				 </if>
+				 <if test='bean.rfndAcntExistYn == "N"'>
+				 	AND (A.BANK_CODE IS NULL OR A.BANK_CODE = '')
+	                AND (A.ACNT_NO_TEXT IS NULL OR A.ACNT_NO_TEXT = '')
+	                AND (A.ACNT_HLDR_NAME IS NULL OR A.ACNT_HLDR_NAME = '')			 	
+				 </if>
+			</if>
+			<if test='bean.procImpsbltYn != null and bean.procImpsbltYn != ""'> 
+				 AND A.PROC_IMPSBLT_YN = #{bean.procImpsbltYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.dateGbnType == 'R' and bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+           		 AND A.RGST_DTM BETWEEN CONVERT(DATE, #{bean.fromDate, jdbcType=VARCHAR}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate, jdbcType=VARCHAR}))
+        	</if>
+        	<if test="bean.dateGbnType == 'M' and bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+           		 AND A.MOD_DTM BETWEEN CONVERT(DATE, #{bean.fromDate, jdbcType=VARCHAR}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate, jdbcType=VARCHAR}))
+        	</if>
+    	</trim>
+    	
+    </select>
+    
+    <select id="selectRefundRedempList" parameterType="pageable" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment">
+    
+    	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimPaymentDao.selectRefundRedempList [환불/환수 목록 조회 쿼리] [이강수] */  
+
+		 SELECT A.REDEMP_RFND_GBN_TYPE
+		 	  , A.OCRNC_RSN_CODE
+			  , DBO.FN_CODE_VALUE('OCRNC_RSN_CODE', A.OCRNC_RSN_CODE) AS OCRNC_RSN_CODE_NAME
+			  , (SELECT SITE_NAME FROM SY_SITE WITH (NOLOCK) WHERE SITE_NO = B.SITE_NO) AS CLM_SITE_NAME
+			  , B.CLM_GBN_CODE
+			  , DBO.FN_CODE_VALUE('CLM_GBN_CODE', B.CLM_GBN_CODE) AS CLM_GBN_CODE_NAME
+			  , A.CLM_NO
+			  , A.CLM_PYMNT_SEQ
+			  , B.ORG_ORDER_NO
+			  , B.MEMBER_NO
+			  , C.LOGIN_ID
+			  , CASE WHEN B.MEMBER_NO = #{bean.nonMemberNo, jdbcType=VARCHAR}
+					 THEN ( SELECT BUYER_NAME
+					 		  FROM OC_ORDER WITH (NOLOCK)
+					 		 WHERE ORDER_NO = B.ORG_ORDER_NO )
+					 ELSE C.MEMBER_NAME
+					 END AS MEMBER_NAME
+			  , B.BUYER_NAME
+			  , A.PYMNT_AMT
+			  , A.PYMNT_STAT_CODE
+			  , DBO.FN_CODE_ADDINFO ('PYMNT_STAT_CODE', A.PYMNT_STAT_CODE, 1) AS PYMNT_STAT_CODE_NAME
+			  , ISNULL( A.PROC_IMPSBLT_YN, 'N') AS PROC_IMPSBLT_YN
+			  , A.PROC_IMPSBLT_RSN_TEXT
+			  , DBO.FN_CODE_VALUE('BANK_CODE', A.BANK_CODE) AS BANK_CODE_NAME
+			  , A.ACNT_NO_TEXT
+			  , A.ACNT_HLDR_NAME
+			  , A.RGST_DTM
+			  , A.VRTL_ACNT_EXPR_DTM
+			  , D.LOGIN_ID	AS ADMIN_ID
+			  , D.ADMIN_NAME
+			  , A.MOD_DTM
+			  , A.MODER_NO
+			  , C.MEMBER_TYPE_CODE
+			  , A.REDEMP_RFND_OPETR_NO
+			  , A.REDEMP_RFND_OPETR_DTM
+			  , A.REDEMP_AMT_RNDM_PROC_YN
+			  , CONVERT(CHAR(10), GETDATE(), 102) AS STR_NOW_TIME
+			  , CASE WHEN A.OCRNC_RSN_CODE = '10003' -- 발생사유가 클레임배송비 일시에
+			         THEN (
+							 SELECT DBO.FN_CODE_VALUE('PYMNT_MEANS_CODE', PYMNT_MEANS_CODE)
+							   FROM OC_CLAIM_PAYMENT WITH (NOLOCK)
+							  WHERE CLM_NO = A.CLM_NO
+							    AND REDEMP_RFND_GBN_TYPE = 'E'
+							    AND HIST_GBN_TYPE        = 'P'
+							    AND OCRNC_RSN_CODE       = '10003'
+					      )
+					 ELSE STUFF(
+									(
+									 SELECT ', ' + DBO.FN_CODE_VALUE('PYMNT_MEANS_CODE', PYMNT_MEANS_CODE)
+									   FROM OC_ORDER_PAYMENT WITH (NOLOCK)
+									  WHERE ORDER_NO = B.ORG_ORDER_NO 
+										AND PYMNT_STAT_CODE = '10001' FOR XML PATH('')
+									)
+								  , 1
+								  , 1
+								  , ''
+						  )
+				     END AS PYMNT_MEANS_CODE_STUFF
+			    
+		   FROM OC_CLAIM_PAYMENT    	A WITH (NOLOCK)
+		   JOIN OC_CLAIM		    	B WITH (NOLOCK) ON A.CLM_NO    = B.CLM_NO
+		   LEFT OUTER JOIN MB_MEMBER	C WITH (NOLOCK) ON B.MEMBER_NO = C.MEMBER_NO
+		   LEFT OUTER JOIN SY_ADMIN 	D WITH (NOLOCK) ON A.MODER_NO  = D.ADMIN_NO
+    	<trim prefix="WHERE" prefixOverrides="AND|OR">
+				 AND A.REDEMP_RFND_GBN_TYPE = #{bean.redempRfndGbnType, jdbcType=CHAR}
+				 AND A.MMNY_PROC_TRGT_YN 	= 'Y'
+				 AND A.HIST_GBN_TYPE		= #{bean.histGbnType, jdbcType=CHAR}
+    		<if test='bean.siteNo != null and bean.siteNo != ""'> 
+				 AND B.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.clmGbnCode != null and bean.clmGbnCode != ""'> 
+				 AND B.CLM_GBN_CODE = #{bean.clmGbnCode, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.searchBuyerName != null and bean.searchBuyerName != ""'> 
+				 AND B.BUYER_NAME = #{bean.searchBuyerName, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.searchLoginId != null and bean.searchLoginId != ""'> 
+				 AND C.LOGIN_ID = #{bean.searchLoginId, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.searchBuyerHdphnNoText != null and bean.searchBuyerHdphnNoText != ""'> 
+				 AND B.BUYER_HDPHN_NO_TEXT = #{bean.searchBuyerHdphnNoText, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.buyerHdphnBackNo != null and bean.buyerHdphnBackNo !=""'>
+				AND RIGHT(REPLACE(B.BUYER_HDPHN_NO_TEXT, '-', ''), 4) = #{bean.buyerHdphnBackNo, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.orgOrderNo != null and bean.orgOrderNo != ""'> 
+				 AND B.ORG_ORDER_NO = #{bean.orgOrderNo, jdbcType=VARCHAR}
+			</if>
+			<if test='bean.pymntStatCode != null and bean.pymntStatCode != ""'>
+				<if test='bean.pymntStatCode == bean.pymntStatCodeRefundAccept'>
+					-- 결제상태 : 환불접수
+					AND A.PYMNT_STAT_CODE = #{bean.pymntStatCodeRefundAccept, jdbcType=VARCHAR}
+					-- 환불접수 상태 시 처리불가여부 N
+					AND (
+							A.PROC_IMPSBLT_YN = 'N'
+						 OR A.PROC_IMPSBLT_YN IS NULL
+					)
+				</if>
+				<if test='bean.pymntStatCode == bean.pymntStatCodeRefundComplete'>
+					-- 결제상태 : 환불완료
+					AND A.PYMNT_STAT_CODE = #{bean.pymntStatCodeRefundComplete, jdbcType=VARCHAR}
+				</if>
+				<if test='bean.pymntStatCode == bean.pymntStatCodeRedempAccept'>
+					-- 결제상태 : 환수접수
+					AND A.PYMNT_STAT_CODE = #{bean.pymntStatCodeRedempAccept, jdbcType=VARCHAR}
+					-- 가상계좌입금기한 이내 인지 체크
+					AND DATEDIFF( DD, ISNULL(A.VRTL_ACNT_EXPR_DTM, GETDATE()), GETDATE() ) &lt;= 0
+				</if>
+				<if test='bean.pymntStatCode == bean.pymntStatCodeRedempComplete'>
+					-- 결제상태 : 환수완료
+					AND A.PYMNT_STAT_CODE = #{bean.pymntStatCodeRedempComplete, jdbcType=VARCHAR}
+				</if>
+				<if test='bean.pymntStatCode == "Y"'>
+					-- 결제상태 : 환수접수
+					AND A.PYMNT_STAT_CODE = #{bean.pymntStatCodeRedempAccept, jdbcType=VARCHAR}
+					-- 가상계좌입금기한을 넘겨 입금기한만료했는지 체크
+					AND DATEDIFF( DD, A.VRTL_ACNT_EXPR_DTM, GETDATE() ) &gt; 0
+				</if>
+			</if>
+			<if test='bean.rfndAcntExistYn != null and bean.rfndAcntExistYn != ""'>
+				 <if test='bean.rfndAcntExistYn == "Y"'>
+				 	AND (A.BANK_CODE IS NOT NULL OR A.BANK_CODE != '')
+	                AND (A.ACNT_NO_TEXT IS NOT NULL OR A.ACNT_NO_TEXT != '')
+	                AND (A.ACNT_HLDR_NAME IS NOT NULL OR A.ACNT_HLDR_NAME != '')
+				 </if>
+				 <if test='bean.rfndAcntExistYn == "N"'>
+				 	AND (A.BANK_CODE IS NULL OR A.BANK_CODE = '')
+	                AND (A.ACNT_NO_TEXT IS NULL OR A.ACNT_NO_TEXT = '')
+	                AND (A.ACNT_HLDR_NAME IS NULL OR A.ACNT_HLDR_NAME = '')			 	
+				 </if>
+			</if>
+			<if test='bean.procImpsbltYn != null and bean.procImpsbltYn != ""'> 
+				 AND A.PROC_IMPSBLT_YN = #{bean.procImpsbltYn, jdbcType=CHAR}
+			</if>
+			<if test="bean.dateGbnType == 'R' and bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+           		 AND A.RGST_DTM BETWEEN CONVERT(DATE, #{bean.fromDate, jdbcType=VARCHAR}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate, jdbcType=VARCHAR}))
+        	</if>
+        	<if test="bean.dateGbnType == 'M' and bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+           		 AND A.MOD_DTM BETWEEN CONVERT(DATE, #{bean.fromDate, jdbcType=VARCHAR}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate, jdbcType=VARCHAR}))
+        	</if>
+    	</trim>
+ 		<choose>
+			<when test="sortColumn != null">
+				ORDER BY
+				<if test="sortColumn == 'rgstDtm'.toString()">
+					A.RGST_DTM
+				</if>
+				<if test="sortColumn == 'modDtm'.toString()">
+					A.MOD_DTM
+				</if>
+				<if test="sortColumn == 'pymntAmt'.toString()">
+					A.PYMNT_AMT
+				</if>
+				<if test="sortType == 'DESC'.toString()">
+					DESC
+				</if>
+			</when>
+			<otherwise>
+				ORDER BY A.RGST_DTM DESC
+			</otherwise>
+		</choose>
+		<include refid="Paging.mssql" />
+		
+    </select>
+    
+    <update id="updateRefundRedempProcess" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment">
+    
+    	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimPaymentDao.updateRefundRedempProcess [환불/환수 처리상태 업데이트] [이강수] */
+    	
+    	UPDATE OC_CLAIM_PAYMENT
+   		   SET MODER_NO		   		  = #{moderNo, jdbcType=VARCHAR}
+   		     , MOD_DTM		   		  = GETDATE()
+   		     , REDEMP_RFND_OPETR_NO   = #{moderNo, jdbcType=VARCHAR}
+		 	 , REDEMP_RFND_OPETR_DTM  = GETDATE()
+			 , PROC_IMPSBLT_YN		  = 'Y'
+			 , PROC_IMPSBLT_RSN_TEXT  = #{procImpsbltRsnText, jdbcType=VARCHAR}
+			 , PROC_IMPSBLT_CMLPT_DTM = GETDATE()
+		 WHERE CLM_NO 			= #{clmNo, jdbcType=VARCHAR}
+		   AND CLM_PYMNT_SEQ 	= #{clmPymntSeq, jdbcType=INTEGER}
+    	
+    </update>
+    
+    <update id="updateRefundProcessComplete" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment">
+    
+    	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimPaymentDao.updateRefundProcessComplete [환불 입금완료 확인 처리] [이강수] */
+    	
+    	UPDATE OC_CLAIM_PAYMENT
+   		   SET MODER_NO		   		  = #{moderNo, jdbcType=VARCHAR}
+   		     , MOD_DTM		   		  = GETDATE()
+   		     , REDEMP_RFND_OPETR_NO   = #{moderNo, jdbcType=VARCHAR}
+		 	 , REDEMP_RFND_OPETR_DTM  = GETDATE()
+		 	 , PYMNT_DTM              = GETDATE()
+   		     , PYMNT_STAT_CODE 		  = #{pymntStatCode, jdbcType=VARCHAR}
+   			 , PROC_IMPSBLT_YN		  = #{procImpsbltYn, jdbcType=VARCHAR}
+		 WHERE CLM_NO 				  = #{clmNo, jdbcType=VARCHAR}
+		  <if test='isRefundProcCmplt == "N"'>
+		   AND CLM_PYMNT_SEQ 		  = #{clmPymntSeq, jdbcType=INTEGER}
+		  </if>
+		  <if test='isRefundProcCmplt == "Y"'>
+    	   AND OCRNC_RSN_CODE		  = #{ocrncRsnCode, jdbcType=VARCHAR}
+    	   AND HIST_GBN_TYPE		  = #{histGbnType, jdbcType=VARCHAR}
+    	   AND MMNY_PROC_TRGT_YN	  = #{mmnyProcTrgtYn, jdbcType=VARCHAR}
+    	  </if>
+    	
+    </update>
+    
+    <select id="selectRefundRedempListForAllExcel" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment" resultType="kr.co.abcmart.bo.claim.vo.OcClaimPaymentExcelVo">
+    
+    	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimPaymentDao.selectRefundRedempListForAllExcel [환불/환수 전체 목록  엑셀 조회] [이강수] */  
+    
+		 SELECT (SELECT SITE_NAME FROM SY_SITE WITH (NOLOCK) WHERE SITE_NO = B.SITE_NO) AS CLM_SITE_NAME
+		 	  , DBO.FN_CODE_VALUE('CLM_GBN_CODE', B.CLM_GBN_CODE) AS CLM_GBN_CODE_NAME
+			  , DBO.FN_CODE_VALUE('OCRNC_RSN_CODE', A.OCRNC_RSN_CODE) AS OCRNC_RSN_CODE_NAME
+			  , A.CLM_NO
+			  , B.ORG_ORDER_NO
+			  , C.LOGIN_ID
+			  , B.MEMBER_NO
+			  , B.BUYER_NAME
+			  , C.MEMBER_NAME
+			  , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY, A.PYMNT_AMT ),1),'.00','') AS STR_PYMNT_AMT
+			  , A.PYMNT_STAT_CODE
+			  , DBO.FN_CODE_ADDINFO ('PYMNT_STAT_CODE', A.PYMNT_STAT_CODE, 1) AS PYMNT_STAT_CODE_NAME
+			  , ISNULL( A.PROC_IMPSBLT_YN, 'N') AS PROC_IMPSBLT_YN
+			  , ISNULL( A.PROC_IMPSBLT_RSN_TEXT, '') AS PROC_IMPSBLT_RSN_TEXT
+			  , DBO.FN_CODE_VALUE('BANK_CODE', A.BANK_CODE) AS BANK_CODE_NAME
+			  , ISNULL( A.ACNT_NO_TEXT, '' ) AS ACNT_NO_TEXT
+			  , A.ACNT_HLDR_NAME
+			  , REPLACE(CONVERT(CHAR(19), A.RGST_DTM, 20),'-','.')	AS RGST_DTM
+			  , REPLACE(CONVERT(CHAR(19), A.MOD_DTM, 20),'-','.')	AS MOD_DTM
+			  , D.LOGIN_ID		AS CLM_HANDLER_ID
+			  , D.ADMIN_NAME  	AS CLM_HANDLER_NAME
+			  , CONVERT(CHAR(6), GETDATE(), 12)				AS STR_NOW_DTM
+			  , CONVERT(CHAR(6), A.VRTL_ACNT_EXPR_DTM, 12)	AS STR_VRTL_ACNT_EXPR_DTM
+			  , A.REDEMP_AMT_RNDM_PROC_YN
+			  , CASE WHEN A.OCRNC_RSN_CODE = '10003' -- 발생사유가 클레임배송비 일시에
+			         THEN (
+							 SELECT DBO.FN_CODE_VALUE('PYMNT_MEANS_CODE', PYMNT_MEANS_CODE)
+							   FROM OC_CLAIM_PAYMENT WITH (NOLOCK)
+							  WHERE CLM_NO = A.CLM_NO
+							    AND REDEMP_RFND_GBN_TYPE = 'E'
+							    AND HIST_GBN_TYPE        = 'P'
+							    AND OCRNC_RSN_CODE       = '10003'
+					      )
+					 ELSE STUFF(
+									(
+									 SELECT ', ' + DBO.FN_CODE_VALUE('PYMNT_MEANS_CODE', PYMNT_MEANS_CODE)
+									   FROM OC_ORDER_PAYMENT WITH (NOLOCK)
+									  WHERE ORDER_NO = B.ORG_ORDER_NO 
+										AND PYMNT_STAT_CODE = '10001' FOR XML PATH('')
+									)
+								  , 1
+								  , 1
+								  , ''
+						  )
+				     END AS PYMNT_MEANS_CODE_STUFF
+			    
+		   FROM OC_CLAIM_PAYMENT    	A WITH (NOLOCK)
+		   JOIN OC_CLAIM		    	B WITH (NOLOCK) ON A.CLM_NO    = B.CLM_NO
+		   LEFT OUTER JOIN MB_MEMBER	C WITH (NOLOCK) ON B.MEMBER_NO = C.MEMBER_NO
+		   LEFT OUTER JOIN SY_ADMIN 	D WITH (NOLOCK) ON A.MODER_NO  = D.ADMIN_NO
+    	<trim prefix="WHERE" prefixOverrides="AND|OR">
+				 AND A.REDEMP_RFND_GBN_TYPE = #{redempRfndGbnType, jdbcType=CHAR}
+				 AND A.MMNY_PROC_TRGT_YN 	= 'Y'
+				 AND A.HIST_GBN_TYPE		= 'P'
+    		<if test='siteNo != null and siteNo != ""'> 
+				 AND B.SITE_NO = #{siteNo, jdbcType=VARCHAR}
+			</if>
+			<if test='clmGbnCode != null and clmGbnCode != ""'> 
+				 AND B.CLM_GBN_CODE = #{clmGbnCode, jdbcType=VARCHAR}
+			</if>
+			<if test='searchBuyerName != null and searchBuyerName != ""'> 
+				 AND B.BUYER_NAME = #{searchBuyerName, jdbcType=VARCHAR}
+			</if>
+			<if test='searchLoginId != null and searchLoginId != ""'> 
+				 AND C.LOGIN_ID = #{searchLoginId, jdbcType=VARCHAR}
+			</if>
+			<if test='searchBuyerHdphnNoText != null and searchBuyerHdphnNoText != ""'> 
+				 AND B.BUYER_HDPHN_NO_TEXT = #{searchBuyerHdphnNoText, jdbcType=VARCHAR}
+			</if>
+			<if test='buyerHdphnBackNo != null and buyerHdphnBackNo !=""'>
+				AND RIGHT(REPLACE(B.BUYER_HDPHN_NO_TEXT, '-', ''), 4) = #{buyerHdphnBackNo, jdbcType=VARCHAR}
+			</if>		
+			<if test='orgOrderNo != null and orgOrderNo != ""'> 
+				 AND B.ORG_ORDER_NO = #{orgOrderNo, jdbcType=VARCHAR}
+			</if>
+			<if test='pymntStatCode != null and pymntStatCode != ""'> 
+				<if test='pymntStatCode == pymntStatCodeRefundAccept'>
+					AND A.PYMNT_STAT_CODE = #{pymntStatCodeRefundAccept, jdbcType=VARCHAR}
+					-- 환불접수 상태 시 처리불가여부 N
+					AND (
+							A.PROC_IMPSBLT_YN = 'N'
+						 OR A.PROC_IMPSBLT_YN IS NULL
+					)
+				</if>
+				<if test='pymntStatCode == pymntStatCodeRefundComplete'>
+					AND A.PYMNT_STAT_CODE = #{pymntStatCodeRefundComplete, jdbcType=VARCHAR}
+				</if>
+				<if test='pymntStatCode == pymntStatCodeRedempAccept'>
+					AND A.PYMNT_STAT_CODE = #{pymntStatCodeRedempAccept, jdbcType=VARCHAR}
+					AND DATEDIFF( DD, ISNULL(A.VRTL_ACNT_EXPR_DTM, GETDATE()), GETDATE() ) &lt;= 0
+				</if>
+				<if test='pymntStatCode == pymntStatCodeRedempComplete'>
+					AND A.PYMNT_STAT_CODE = #{pymntStatCodeRedempComplete, jdbcType=VARCHAR}
+				</if>
+				<if test='pymntStatCode == "Y"'>
+					AND A.PYMNT_STAT_CODE = #{pymntStatCodeRedempAccept, jdbcType=VARCHAR}
+					AND DATEDIFF( DD, A.VRTL_ACNT_EXPR_DTM, GETDATE() ) &gt; 0
+				</if>
+			</if>
+			<if test='rfndAcntExistYn != null and rfndAcntExistYn != ""'>
+				 <if test='rfndAcntExistYn == "Y"'>
+				 	AND (A.BANK_CODE IS NOT NULL OR A.BANK_CODE != '')
+	                AND (A.ACNT_NO_TEXT IS NOT NULL OR A.ACNT_NO_TEXT != '')
+	                AND (A.ACNT_HLDR_NAME IS NOT NULL OR A.ACNT_HLDR_NAME != '')
+				 </if>
+				 <if test='rfndAcntExistYn == "N"'>
+				 	AND (A.BANK_CODE IS NULL OR A.BANK_CODE = '')
+	                AND (A.ACNT_NO_TEXT IS NULL OR A.ACNT_NO_TEXT = '')
+	                AND (A.ACNT_HLDR_NAME IS NULL OR A.ACNT_HLDR_NAME = '')			 	
+				 </if>
+			</if>
+			<if test='procImpsbltYn != null and procImpsbltYn != ""'> 
+				 AND A.PROC_IMPSBLT_YN = #{procImpsbltYn, jdbcType=CHAR}
+			</if>
+			<if test="dateGbnType == 'R' and fromDate != null and fromDate != '' and toDate != null and toDate !=''">
+           		 AND A.RGST_DTM BETWEEN CONVERT(DATE, #{fromDate, jdbcType=VARCHAR}) AND DATEADD(DD, 1, CONVERT(DATE, #{toDate, jdbcType=VARCHAR}))
+        	</if>
+        	<if test="dateGbnType == 'M' and fromDate != null and fromDate != '' and toDate != null and toDate !=''">
+           		 AND A.MOD_DTM BETWEEN CONVERT(DATE, #{fromDate, jdbcType=VARCHAR}) AND DATEADD(DD, 1, CONVERT(DATE, #{toDate, jdbcType=VARCHAR}))
+        	</if>
+    	</trim>
+    	<choose>
+			<when test="sortColumn != null">
+				ORDER BY
+				<if test="sortColumn == 'rgstDtm'">
+					A.RGST_DTM
+				</if>
+				<if test="sortColumn == 'modDtm'">
+					A.MOD_DTM
+				</if>
+				<if test="sortColumn == 'pymntAmt'">
+					A.PYMNT_AMT
+				</if>
+				<if test="sortType == 'desc'">
+					DESC
+				</if>
+			</when>
+			<otherwise>
+				ORDER BY A.RGST_DTM DESC
+			</otherwise>
+		</choose>
+		
+    </select>
+    
+    <select id="selectRefundRedempListForExcel" parameterType="kr.co.abcmart.bo.claim.vo.OcClaimPaymentExcelVo" resultType="kr.co.abcmart.bo.claim.vo.OcClaimPaymentExcelVo">
+    
+    	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimPaymentDao.selectRefundRedempListForExcel [환불/환수 선택 목록  엑셀 조회] [이강수] */  
+    
+		 SELECT (SELECT SITE_NAME FROM SY_SITE WITH (NOLOCK) WHERE SITE_NO = B.SITE_NO) AS CLM_SITE_NAME
+		 	  , DBO.FN_CODE_VALUE('CLM_GBN_CODE', B.CLM_GBN_CODE) AS CLM_GBN_CODE_NAME
+			  , DBO.FN_CODE_VALUE('OCRNC_RSN_CODE', A.OCRNC_RSN_CODE) AS OCRNC_RSN_CODE_NAME
+			  , A.CLM_NO
+			  , B.ORG_ORDER_NO
+			  , C.LOGIN_ID
+			  , B.MEMBER_NO
+			  , B.BUYER_NAME
+			  , C.MEMBER_NAME
+			  , REPLACE(CONVERT(VARCHAR, CONVERT( MONEY, A.PYMNT_AMT ),1),'.00','') AS STR_PYMNT_AMT
+			  , A.PYMNT_STAT_CODE
+			  , DBO.FN_CODE_ADDINFO ('PYMNT_STAT_CODE', A.PYMNT_STAT_CODE, 1) AS PYMNT_STAT_CODE_NAME
+			  , ISNULL( A.PROC_IMPSBLT_YN, 'N') AS PROC_IMPSBLT_YN
+			  , ISNULL( A.PROC_IMPSBLT_RSN_TEXT, '') AS PROC_IMPSBLT_RSN_TEXT		
+			  , DBO.FN_CODE_VALUE('BANK_CODE', A.BANK_CODE) AS BANK_CODE_NAME
+			  , ISNULL( A.ACNT_NO_TEXT, '' ) AS ACNT_NO_TEXT
+			  , A.ACNT_HLDR_NAME
+			  , REPLACE(CONVERT(CHAR(19), A.RGST_DTM, 20),'-','.')	AS RGST_DTM
+			  , REPLACE(CONVERT(CHAR(19), A.MOD_DTM, 20),'-','.')	AS MOD_DTM
+			  , D.LOGIN_ID		AS CLM_HANDLER_ID
+			  , D.ADMIN_NAME  	AS CLM_HANDLER_NAME
+			  , REPLACE(CONVERT(CHAR(19), A.MOD_DTM, 20),'-','.')	AS MOD_DTM
+			  , CONVERT(CHAR(6), GETDATE(), 12)				AS STR_NOW_DTM
+			  , CONVERT(CHAR(6), A.VRTL_ACNT_EXPR_DTM, 12)	AS STR_VRTL_ACNT_EXPR_DTM
+			  , A.REDEMP_AMT_RNDM_PROC_YN
+			  , CASE WHEN A.OCRNC_RSN_CODE = '10003' -- 발생사유가 클레임배송비 일시에
+			         THEN (
+							 SELECT DBO.FN_CODE_VALUE('PYMNT_MEANS_CODE', PYMNT_MEANS_CODE)
+							   FROM OC_CLAIM_PAYMENT WITH (NOLOCK)
+							  WHERE CLM_NO = A.CLM_NO
+							    AND REDEMP_RFND_GBN_TYPE = 'E'
+							    AND HIST_GBN_TYPE        = 'P'
+							    AND OCRNC_RSN_CODE       = '10003'
+					      )
+					 ELSE STUFF(
+									(
+									 SELECT ', ' + DBO.FN_CODE_VALUE('PYMNT_MEANS_CODE', PYMNT_MEANS_CODE)
+									   FROM OC_ORDER_PAYMENT WITH (NOLOCK)
+									  WHERE ORDER_NO = B.ORG_ORDER_NO 
+										AND PYMNT_STAT_CODE = '10001' FOR XML PATH('')
+									)
+								  , 1
+								  , 1
+								  , ''
+						  )
+				     END AS PYMNT_MEANS_CODE_STUFF
+			    
+		   FROM OC_CLAIM_PAYMENT    	A WITH (NOLOCK)
+		   JOIN OC_CLAIM		    	B WITH (NOLOCK) ON A.CLM_NO    = B.CLM_NO
+		   LEFT OUTER JOIN MB_MEMBER	C WITH (NOLOCK) ON B.MEMBER_NO = C.MEMBER_NO
+		   LEFT OUTER JOIN SY_ADMIN 	D WITH (NOLOCK) ON A.MODER_NO  = D.ADMIN_NO
+    	<trim prefix="WHERE" prefixOverrides="AND|OR">
+    		   AND A.REDEMP_RFND_GBN_TYPE = #{redempRfndGbnType, jdbcType=CHAR}
+			   AND A.MMNY_PROC_TRGT_YN 	= 'Y'
+			   AND A.HIST_GBN_TYPE		= 'P'
+			<if test="clmNos.length > 0">
+			   AND A.CLM_NO IN 
+			   <foreach item="item" index="index" collection="clmNos" open="(" close=")" separator="," >
+					#{item.clmNo, jdbcType=VARCHAR}
+			   </foreach>
+			</if>
+		</trim>
+		ORDER BY A.RGST_DTM DESC
+		
+	</select>
+	
+	<insert id="insertClaimPayment" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment">
+		/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimPaymentDao.insertClaimPayment [클레임결제 등록] [KTH] */
+		<selectKey resultType="short" keyProperty="clmPymntSeq" order="BEFORE">
+			SELECT ISNULL(MAX(CLM_PYMNT_SEQ), 0) + 1
+			  FROM OC_CLAIM_PAYMENT WITH (NOLOCK)
+			 WHERE CLM_NO = #{clmNo, jdbcType=VARCHAR}
+		</selectKey>
+		INSERT INTO OC_CLAIM_PAYMENT
+			 (
+			   CLM_NO
+			 , CLM_PYMNT_SEQ
+			 , REDEMP_RFND_GBN_TYPE
+			 , PYMNT_DTM
+			 , DEVICE_CODE
+			 , MAIN_PYMNT_MEANS_YN
+			 , PYMNT_MEANS_CODE
+			 , PYMNT_VNDR_CODE
+			 , PYMNT_ORGAN_CODE_TEXT
+			 , PYMNT_ORGAN_NAME
+			 , PYMNT_ORGAN_NO_TEXT
+			 , INTRST_FREE_YN
+			 , INSTMT_TERM_COUNT
+			 , CARD_GBN_TYPE
+			 , CARD_TYPE
+			 , PYMNT_APRV_NO_TEXT
+			 , PYMNT_TODO_AMT
+			 , PYMNT_AMT
+			 , CARD_PART_CNCL_PSBLT_YN
+			 , CASH_RCPT_ISSUE_YN
+			 , ESCR_APPLY_YN
+			 , ESCR_APRV_NO_TEXT
+			 , BANK_CODE
+			 , ACNT_NO_TEXT
+			 , ACNT_HLDR_NAME
+			 , ACNT_CRTFC_YN
+			 , VRTL_ACNT_ISSUE_DTM
+			 , VRTL_ACNT_EXPR_DTM
+			 , GIFT_CARD_PIN_NO_TEXT
+			 , REDEMP_RFND_MEMO_TEXT
+			 , PROC_IMPSBLT_YN
+			 , PROC_IMPSBLT_RSN_TEXT
+			 , PROC_IMPSBLT_CMLPT_DTM
+			 , REDEMP_RFND_OPETR_NO
+			 , REDEMP_RFND_OPETR_DTM
+			 , MMNY_PROC_TRGT_YN
+			 , OCRNC_RSN_CODE
+			 , PYMNT_STAT_CODE
+			 , RSPNS_CODE_TEXT
+			 , RSPNS_MESG_TEXT
+			 , PYMNT_LOG_INFO
+			 , HIST_GBN_TYPE
+			 , VNDR_NO
+			<if test="redempAmtRndmProcYn != null">
+			 , REDEMP_AMT_RNDM_PROC_YN
+			</if>
+			 , RGSTER_NO
+			 , RGST_DTM
+			 , MODER_NO
+			 , MOD_DTM
+			 )
+		VALUES
+			 (
+			   #{clmNo, jdbcType=VARCHAR}
+			 , #{clmPymntSeq, jdbcType=TINYINT}
+			 , #{redempRfndGbnType, jdbcType=CHAR}
+			 , #{pymntDtm, jdbcType=TIMESTAMP}
+			 , #{deviceCode, jdbcType=VARCHAR}
+			 , #{mainPymntMeansYn, jdbcType=CHAR}
+			 , #{pymntMeansCode, jdbcType=VARCHAR}
+			 , #{pymntVndrCode, jdbcType=VARCHAR}
+			 , #{pymntOrganCodeText, jdbcType=VARCHAR}
+			 , #{pymntOrganName, jdbcType=VARCHAR}
+			 , #{pymntOrganNoText, jdbcType=VARCHAR}
+			 , #{intrstFreeYn, jdbcType=CHAR}
+			 , #{instmtTermCount, jdbcType=TINYINT}
+			 , #{cardGbnType, jdbcType=CHAR}
+			 , #{cardType, jdbcType=CHAR}
+			 , #{pymntAprvNoText, jdbcType=VARCHAR}
+			 , #{pymntTodoAmt, jdbcType=INTEGER}
+			 , #{pymntAmt, jdbcType=INTEGER}
+			 , #{cardPartCnclPsbltYn, jdbcType=CHAR}
+			 , #{cashRcptIssueYn, jdbcType=CHAR}
+			 , #{escrApplyYn, jdbcType=CHAR}
+			 , #{escrAprvNoText, jdbcType=VARCHAR}
+			 , #{bankCode, jdbcType=VARCHAR}
+			 , #{acntNoText, jdbcType=VARCHAR}
+			 , #{acntHldrName, jdbcType=VARCHAR}
+			 , #{acntCrtfcYn, jdbcType=CHAR}
+			 , #{vrtlAcntIssueDtm, jdbcType=TIMESTAMP}
+			 , #{vrtlAcntExprDtm, jdbcType=TIMESTAMP}
+			 , #{giftCardPinNoText, jdbcType=VARCHAR}
+			 , #{redempRfndMemoText, jdbcType=VARCHAR}
+			 , #{procImpsbltYn, jdbcType=CHAR}
+			 , #{procImpsbltRsnText, jdbcType=VARCHAR}
+			 , #{procImpsbltCmlptDtm, jdbcType=TIMESTAMP}
+			 , #{redempRfndOpetrNo, jdbcType=VARCHAR}
+			 , #{redempRfndOpetrDtm, jdbcType=TIMESTAMP}
+			 , #{mmnyProcTrgtYn, jdbcType=CHAR}
+			 , #{ocrncRsnCode, jdbcType=VARCHAR}
+			 , #{pymntStatCode, jdbcType=VARCHAR}
+			 , #{rspnsCodeText, jdbcType=VARCHAR}
+			 , #{rspnsMesgText, jdbcType=VARCHAR}
+			 , #{pymntLogInfo, jdbcType=VARCHAR}
+			 , #{histGbnType, jdbcType=VARCHAR}
+			 , #{vndrNo, jdbcType=VARCHAR}
+			<if test="redempAmtRndmProcYn != null">
+			 , #{redempAmtRndmProcYn, jdbcType=CHAR}
+			</if>
+			 , #{rgsterNo, jdbcType=TIMESTAMP}
+			 , GETDATE()
+			 , #{moderNo, jdbcType=TIMESTAMP}
+			 , GETDATE()
+			 )
+	</insert>
+	
+	<update id="updateClaimPaymentRequestVirtualAccount" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment">
+		/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimPaymentDao.updateClaimPaymentRequestVirtualAccount [가상계좌요청시 클레임결제 수정] [KTH] */
+		UPDATE OC_CLAIM_PAYMENT
+		   SET PYMNT_DTM = GETDATE()
+			 , PYMNT_ORGAN_CODE_TEXT = #{pymntOrganCodeText, jdbcType=VARCHAR}
+			 , PYMNT_ORGAN_NAME = #{pymntOrganName, jdbcType=VARCHAR}
+			 , PYMNT_ORGAN_NO_TEXT = #{pymntOrganNoText, jdbcType=VARCHAR}
+			 , PYMNT_APRV_NO_TEXT = #{pymntAprvNoText, jdbcType=VARCHAR}
+			 , BANK_CODE = #{bankCode, jdbcType=VARCHAR}
+			 , ACNT_NO_TEXT = #{acntNoText, jdbcType=VARCHAR}
+			 , ACNT_HLDR_NAME = #{acntHldrName, jdbcType=VARCHAR}
+			 , VRTL_ACNT_ISSUE_DTM = #{vrtlAcntIssueDtm, jdbcType=TIMESTAMP}
+			 , VRTL_ACNT_EXPR_DTM = #{vrtlAcntExprDtm, jdbcType=TIMESTAMP}
+			 , PYMNT_STAT_CODE = #{pymntStatCode, jdbcType=VARCHAR}
+			 , RSPNS_CODE_TEXT = #{rspnsCodeText, jdbcType=VARCHAR}
+			 , RSPNS_MESG_TEXT = #{rspnsMesgText, jdbcType=VARCHAR}
+			 , PYMNT_LOG_INFO = #{pymntLogInfo, jdbcType=VARCHAR}
+			 , MODER_NO = #{moderNo, jdbcType=VARCHAR}
+			 , MOD_DTM = GETDATE()
+		 WHERE CLM_NO = #{clmNo, jdbcType=VARCHAR}
+		   AND CLM_PYMNT_SEQ = #{clmPymntSeq, jdbcType=TINYINT}
+	</update>
+	
+	<select id="selectOrderClaimPaymentList" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment">
+		/*+ kr.co.abcmart.bo.order.repository.master.OcOrderPaymentDao.selectOrderClaimPaymentList [클레임 취소가능 잔여금액 목록] [KTH] */  
+		SELECT A.ORDER_NO
+			 , A.DEVICE_CODE
+			 , A.MAIN_PYMNT_MEANS_YN
+			 , A.PYMNT_MEANS_CODE
+			 , A.PYMNT_VNDR_CODE
+			 , A.PYMNT_ORGAN_CODE_TEXT
+			 , A.PYMNT_ORGAN_NAME
+			 , A.PYMNT_ORGAN_NO_TEXT
+			 , A.PYMNT_APRV_NO_TEXT
+			 , A.INTRST_FREE_YN
+			 , A.INSTMT_TERM_COUNT
+			 , A.CARD_GBN_TYPE
+			 , A.CARD_TYPE
+			 , A.PYMNT_APRV_NO_TEXT
+			 , A.PYMNT_TODO_AMT
+			 , A.PYMNT_AMT
+			 , A.CARD_PART_CNCL_PSBLT_YN
+			 , A.CASH_RCPT_ISSUE_YN
+			 , A.CASH_RCPT_APRV_NO
+			 , A.CASH_RCPT_DEAL_NO
+			 , A.ESCR_APPLY_YN
+			 , A.ESCR_APRV_NO_TEXT
+			 , A.ESCR_SEND_RSPNS_CODE_TEXT
+			 , A.ESCR_SEND_DTM
+			 , A.VRTL_ACNT_ISSUE_DTM
+			 , A.VRTL_ACNT_EXPR_DTM
+			 , A.GIFT_CARD_PIN_NO_TEXT
+			 , A.PYMNT_STAT_CODE
+			 , A.PYMNT_DTM
+			 , B.ORG_ORDER_NO
+		     , dbo.FN_CODE_VALUE( 'DEVICE_CODE' , A.DEVICE_CODE ) AS DEVICE_CODE_NAME
+		     , dbo.FN_CODE_VALUE( 'PYMNT_MEANS_CODE' , A.PYMNT_MEANS_CODE ) AS PYMNT_MEANS_CODE_NAME
+		     , dbo.FN_CODE_VALUE( 'PYMNT_VNDR_CODE', A.PYMNT_VNDR_CODE ) AS PYMNT_VNDR_CODE_NAME
+		     , dbo.FN_CODE_VALUE( 'PYMNT_STAT_CODE', A.PYMNT_STAT_CODE ) AS PYMNT_STAT_CODE_NAME
+			 , ISNULL(C.ACCUMULATED_PYMNT_CNCL_AMT, 0) AS ACCUMULATED_PYMNT_CNCL_AMT
+			 , A.PYMNT_AMT - ISNULL(C.ACCUMULATED_PYMNT_CNCL_AMT, 0) AS REMAIN_PYMNT_CNCL_AMT
+			 , ISNULL(D.REAL_PYMNT_CNCL_AMT, 0) AS REAL_PYMNT_CNCL_AMT
+			 , A.PYMNT_AMT - ISNULL(D.REAL_PYMNT_CNCL_AMT, 0) AS REAL_REMAIN_PYMNT_CNCL_AMT
+			 , ISNULL(E.THIS_PYMNT_CNCL_AMT, 0) AS THIS_PYMNT_CNCL_AMT
+		  FROM OC_ORDER_PAYMENT A  WITH (NOLOCK)
+		  JOIN OC_ORDER B WITH (NOLOCK)
+			ON A.ORDER_NO = B.ORDER_NO
+		  LEFT OUTER JOIN (
+				SELECT SUM(OCP.PYMNT_AMT) AS ACCUMULATED_PYMNT_CNCL_AMT
+					 , OCP.PYMNT_MEANS_CODE
+				  FROM OC_CLAIM_PAYMENT	OCP WITH (NOLOCK)
+				  JOIN OC_CLAIM	OC WITH (NOLOCK)
+					ON OCP.CLM_NO = OC.CLM_NO
+				   AND OCP.REDEMP_RFND_GBN_TYPE = #{redempRfndGbnType, jdbcType=CHAR}
+				   AND OCP.MMNY_PROC_TRGT_YN = #{mmnyProcTrgtYn, jdbcType=CHAR}
+				<if test='histGbnType != null'>
+				   AND OCP.HIST_GBN_TYPE = #{histGbnType, jdbcType=CHAR}
+				</if>
+				<if test='ocrncRsnCode != null'>
+				   AND OCP.OCRNC_RSN_CODE = #{ocrncRsnCode, jdbcType=VARCHAR}
+				</if>
+				 WHERE OC.ORG_ORDER_NO = #{orgOrderNo, jdbcType=VARCHAR}
+				 GROUP BY OCP.PYMNT_MEANS_CODE
+			   ) C
+			ON A.PYMNT_MEANS_CODE = C.PYMNT_MEANS_CODE
+		  LEFT OUTER JOIN (
+				SELECT SUM(OCP.PYMNT_AMT) AS REAL_PYMNT_CNCL_AMT
+					 , OCP.PYMNT_MEANS_CODE
+				  FROM OC_CLAIM_PAYMENT	OCP WITH (NOLOCK)
+				  JOIN OC_CLAIM	OC WITH (NOLOCK)
+					ON OCP.CLM_NO = OC.CLM_NO
+				   AND OCP.REDEMP_RFND_GBN_TYPE = #{redempRfndGbnType, jdbcType=CHAR}
+				   AND OCP.MMNY_PROC_TRGT_YN = #{mmnyProcTrgtYn, jdbcType=CHAR}
+				<if test='histGbnType != null'>
+				   AND OCP.HIST_GBN_TYPE = #{histGbnType, jdbcType=CHAR}
+				</if>
+				<if test='ocrncRsnCode != null'>
+				   AND OCP.OCRNC_RSN_CODE = #{ocrncRsnCode, jdbcType=VARCHAR}
+				</if>
+				<if test='pymntStatCode != null'>
+				   AND OCP.PYMNT_STAT_CODE = #{pymntStatCode, jdbcType=VARCHAR}
+				</if>
+				 WHERE OC.ORG_ORDER_NO = #{orgOrderNo, jdbcType=VARCHAR}
+				 GROUP BY OCP.PYMNT_MEANS_CODE
+			   ) D
+			ON A.PYMNT_MEANS_CODE = D.PYMNT_MEANS_CODE
+		  LEFT OUTER JOIN (
+				SELECT ISNULL(OCP.PYMNT_AMT, 0) AS THIS_PYMNT_CNCL_AMT
+					 , OCP.PYMNT_MEANS_CODE
+				  FROM OC_CLAIM_PAYMENT	OCP WITH (NOLOCK)
+				  JOIN OC_CLAIM	OC WITH (NOLOCK)
+					ON OCP.CLM_NO = OC.CLM_NO
+				   AND OCP.REDEMP_RFND_GBN_TYPE = #{redempRfndGbnType, jdbcType=CHAR}
+				   AND OCP.MMNY_PROC_TRGT_YN = #{mmnyProcTrgtYn, jdbcType=CHAR}
+				<if test='histGbnType != null'>
+				   AND OCP.HIST_GBN_TYPE &lt;> #{histGbnType, jdbcType=CHAR}
+				</if>
+				<if test='ocrncRsnCode != null'>
+				   AND OCP.OCRNC_RSN_CODE = #{ocrncRsnCode, jdbcType=VARCHAR}
+				</if>
+				 WHERE OC.CLM_NO = #{clmNo, jdbcType=VARCHAR}
+			   ) E
+			ON A.PYMNT_MEANS_CODE = E.PYMNT_MEANS_CODE
+		 WHERE B.ORG_ORDER_NO = #{orgOrderNo, jdbcType=VARCHAR}
+		   AND B.ORDER_NO = #{orgOrderNo, jdbcType=VARCHAR}
+		   AND A.PYMNT_STAT_CODE = #{orderPymntStatCode, jdbcType=VARCHAR}
+		 ORDER BY A.ORDER_PYMNT_SEQ ASC
+    </select>
+    
+	<select id="selectClmPymntListInOrderTab" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment">
+	
+	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimPaymentDao.selectClmPymntListInOrderTab [환수/환불금액관리 목록 조회 쿼리 - 주문상세 클레임 탭] [이강수] */
+		
+		SELECT A.CLM_NO
+			 , A.CLM_PYMNT_SEQ
+			 , A.REDEMP_RFND_GBN_TYPE
+			 , A.PYMNT_DTM
+			 , A.DEVICE_CODE
+			 , A.MAIN_PYMNT_MEANS_YN
+			 , A.PYMNT_MEANS_CODE
+			 , DBO.FN_CODE_VALUE('PYMNT_MEANS_CODE', A.PYMNT_MEANS_CODE) AS PYMNT_MEANS_CODE_NAME
+			 , A.PYMNT_VNDR_CODE
+			 , DBO.FN_CODE_VALUE('PYMNT_VNDR_CODE', A.PYMNT_VNDR_CODE) AS PYMNT_VNDR_CODE_NAME
+			 , A.PYMNT_ORGAN_CODE_TEXT
+			 , A.PYMNT_ORGAN_NAME
+			 , A.PYMNT_ORGAN_NO_TEXT
+			 , A.INTRST_FREE_YN
+			 , A.INSTMT_TERM_COUNT
+			 , A.CARD_GBN_TYPE
+			 , A.CARD_TYPE
+			 , A.PYMNT_APRV_NO_TEXT
+			 , A.PYMNT_TODO_AMT
+			 , A.PYMNT_AMT
+			 , A.CARD_PART_CNCL_PSBLT_YN
+			 , A.CASH_RCPT_ISSUE_YN
+			 , A.ESCR_APPLY_YN
+			 , A.ESCR_APRV_NO_TEXT
+			 , A.BANK_CODE
+			 , DBO.FN_CODE_VALUE('BANK_CODE', A.BANK_CODE) AS BANK_CODE_NAME
+			 , A.ACNT_NO_TEXT
+			 , A.ACNT_HLDR_NAME
+			 , A.ACNT_CRTFC_YN
+			 , A.VRTL_ACNT_ISSUE_DTM
+			 , A.VRTL_ACNT_EXPR_DTM
+			 , A.GIFT_CARD_PIN_NO_TEXT
+			 , A.REDEMP_RFND_MEMO_TEXT
+			 , A.PROC_IMPSBLT_YN
+			 , A.PROC_IMPSBLT_RSN_TEXT
+			 , A.PROC_IMPSBLT_CMLPT_DTM
+			 , A.REDEMP_RFND_OPETR_NO
+			 , A.REDEMP_RFND_OPETR_DTM
+			 , A.MMNY_PROC_TRGT_YN
+			 , A.OCRNC_RSN_CODE
+			 , DBO.FN_CODE_VALUE('OCRNC_RSN_CODE', A.OCRNC_RSN_CODE) AS OCRNC_RSN_CODE_NAME
+			 , A.PYMNT_STAT_CODE
+			 , DBO.FN_CODE_ADDINFO ('PYMNT_STAT_CODE', A.PYMNT_STAT_CODE, 1) AS PYMNT_STAT_CODE_NAME
+			 , A.RSPNS_CODE_TEXT
+			 , A.RSPNS_MESG_TEXT
+			 , A.PYMNT_LOG_INFO
+			 , A.HIST_GBN_TYPE
+			 , A.VNDR_NO
+			 , A.REDEMP_AMT_RNDM_PROC_YN
+			 , A.MOD_DTM
+			 , A.MODER_NO
+			 , (SELECT SITE_NAME FROM SY_SITE WITH (NOLOCK) WHERE SITE_NO = B.SITE_NO) AS CLM_SITE_NAME
+			 , B.CLM_GBN_CODE
+			 , B.RGST_DTM
+			 , C.LOGIN_ID + '(' + C.ADMIN_NAME + ')' AS CLM_HANDLER
+ 			 , CONVERT(CHAR(6), GETDATE(), 12)				AS STR_NOW_DTM
+			 , CONVERT(CHAR(6), A.VRTL_ACNT_EXPR_DTM, 12)	AS STR_VRTL_ACNT_EXPR_DTM
+		  FROM OC_CLAIM_PAYMENT    A WITH (NOLOCK)
+		  JOIN OC_CLAIM		       B WITH (NOLOCK) ON A.CLM_NO   = B.CLM_NO
+		  LEFT OUTER JOIN SY_ADMIN C WITH (NOLOCK) ON A.MODER_NO = C.ADMIN_NO
+		 WHERE B.ORG_ORDER_NO 		= #{orgOrderNo, jdbcType=VARCHAR}
+		   AND A.MMNY_PROC_TRGT_YN 	= 'Y'
+		   AND A.HIST_GBN_TYPE		= 'P'
+	  ORDER BY A.CLM_NO DESC, A.CLM_PYMNT_SEQ DESC
+
+	</select>
+    
+    <select id="selectClaimPaymentListBackend" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment">
+    	/*+ kr.co.abcmart.bo.order.repository.master.OcOrderPaymentDao.selectClaimPaymentListBackend [클레임 결제 목록 조회 쿼리 - backend] [이강수] */  
+    	
+		SELECT A.CLM_NO
+			 , A.CLM_PYMNT_SEQ
+			 , A.REDEMP_RFND_GBN_TYPE
+			 , A.PYMNT_DTM
+			 , A.DEVICE_CODE
+			 , A.MAIN_PYMNT_MEANS_YN
+			 , A.PYMNT_MEANS_CODE
+			 , DBO.FN_CODE_VALUE('PYMNT_MEANS_CODE', A.PYMNT_MEANS_CODE) AS PYMNT_MEANS_CODE_NAME
+			 , A.PYMNT_VNDR_CODE
+			 , A.PYMNT_ORGAN_CODE_TEXT
+			 , A.PYMNT_ORGAN_NAME
+			 , A.PYMNT_ORGAN_NO_TEXT
+			 , A.INTRST_FREE_YN
+			 , A.INSTMT_TERM_COUNT
+			 , A.CARD_GBN_TYPE
+			 , A.CARD_TYPE
+			 , A.PYMNT_APRV_NO_TEXT
+			 , A.PYMNT_TODO_AMT
+			 , A.PYMNT_AMT
+			 , A.CARD_PART_CNCL_PSBLT_YN
+			 , A.CASH_RCPT_ISSUE_YN
+			 , A.ESCR_APPLY_YN
+			 , A.ESCR_APRV_NO_TEXT
+			 , A.BANK_CODE
+			 , DBO.FN_CODE_VALUE('BANK_CODE', A.BANK_CODE) AS BANK_CODE_NAME
+			 , A.ACNT_NO_TEXT
+			 , A.ACNT_HLDR_NAME
+			 , A.ACNT_CRTFC_YN
+			 , A.VRTL_ACNT_ISSUE_DTM
+			 , A.VRTL_ACNT_EXPR_DTM
+			 , A.GIFT_CARD_PIN_NO_TEXT
+			 , A.REDEMP_RFND_MEMO_TEXT
+			 , A.PROC_IMPSBLT_YN
+			 , A.PROC_IMPSBLT_RSN_TEXT
+			 , A.PROC_IMPSBLT_CMLPT_DTM
+			 , A.REDEMP_RFND_OPETR_NO
+			 , A.REDEMP_RFND_OPETR_DTM
+			 , A.MMNY_PROC_TRGT_YN
+			 , A.OCRNC_RSN_CODE
+			 , DBO.FN_CODE_VALUE('OCRNC_RSN_CODE', A.OCRNC_RSN_CODE) AS OCRNC_RSN_CODE_NAME
+			 , A.PYMNT_STAT_CODE
+			 , DBO.FN_CODE_ADDINFO ('PYMNT_STAT_CODE', A.PYMNT_STAT_CODE, 1) AS PYMNT_STAT_CODE_NAME
+			 , A.RSPNS_CODE_TEXT
+			 , A.RSPNS_MESG_TEXT
+			 , A.HIST_GBN_TYPE
+			 , A.VNDR_NO
+			 , A.MOD_DTM
+			 , A.MODER_NO
+			 , B.ORDER_NO
+			 , B.ORG_ORDER_NO
+		  FROM OC_CLAIM_PAYMENT A WITH (NOLOCK)
+		  JOIN OC_CLAIM B WITH (NOLOCK)
+		    ON A.CLM_NO = B.CLM_NO
+		 WHERE A.CLM_NO = #{clmNo, jdbcType=VARCHAR}
+		<if test='redempRfndGbnType != null and redempRfndGbnType != ""'>
+			AND A.REDEMP_RFND_GBN_TYPE = #{redempRfndGbnType, jdbcType=VARCHAR}	-- 환수환불구분
+		</if>
+		<if test='mmnyProcTrgtYn != null and mmnyProcTrgtYn != ""'>
+			AND A.MMNY_PROC_TRGT_YN = #{mmnyProcTrgtYn, jdbcType=VARCHAR}		-- 자사처리여부YN
+		</if>
+		<if test='histGbnType != null and histGbnType != ""'>
+			AND A.HIST_GBN_TYPE = #{histGbnType, jdbcType=VARCHAR}				-- 이력구분
+		</if>
+		<if test='orderNo != null and orderNo != ""'>
+			AND B.ORDER_NO = #{orderNo, jdbcType=VARCHAR}
+		</if>
+		<if test='orgOrderNo != null and orgOrderNo != ""'>
+			AND B.ORG_ORDER_NO = #{orgOrderNo, jdbcType=VARCHAR}
+		</if>
+    
+    </select>
+    
+	<update id="updateClaimPaymentForCancel" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment">
+		/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimPaymentDao.updateClaimPaymentForCancel [결제취소 상태 업데이트] [KTH] */
+		UPDATE OC_CLAIM_PAYMENT
+		   SET PYMNT_DTM = GETDATE()
+			 , PYMNT_STAT_CODE = #{pymntStatCode, jdbcType=VARCHAR}
+			 , RSPNS_CODE_TEXT = #{rspnsCodeText, jdbcType=VARCHAR}
+			 , RSPNS_MESG_TEXT = #{rspnsMesgText, jdbcType=VARCHAR}
+			 , PYMNT_LOG_INFO = #{pymntLogInfo, jdbcType=VARCHAR}
+			 , MODER_NO = #{moderNo, jdbcType=VARCHAR}
+			 , MOD_DTM = GETDATE()
+		 WHERE CLM_NO = #{clmNo, jdbcType=VARCHAR}
+		   AND CLM_PYMNT_SEQ = #{clmPymntSeq, jdbcType=TINYINT}
+	</update>
+    
+    <select id="selectOrgOrderRedempAmt" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaim" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment">
+    	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimPaymentDao.selectOrgOrderRedempAmt [원주문의 총 환수금액 목록 조회 쿼리] [KTH] */
+    	
+		SELECT DBO.FN_CODE_VALUE('OCRNC_RSN_CODE', A.OCRNC_RSN_CODE) AS OCRNC_RSN_CODE_NAME
+			 , ISNULL(SUM(A.PYMNT_AMT), 0) REDEMP_AMT
+		  FROM OC_CLAIM_PAYMENT A WITH (NOLOCK)
+		  JOIN OC_CLAIM			B WITH (NOLOCK)
+			ON A.CLM_NO = B.CLM_NO
+		 WHERE A.REDEMP_RFND_GBN_TYPE	= #{redempRefundGbnType, jdbcType=VARCHAR} -- 환수
+		   AND A.MMNY_PROC_TRGT_YN		= #{mmnyProcTrgtYn, jdbcType=VARCHAR} -- 재경처리N
+		   AND A.HIST_GBN_TYPE			= #{histGbnType, jdbcType=VARCHAR} -- 이력
+		   AND B.ORG_ORDER_NO			= #{orgOrderNo, jdbcType=VARCHAR}
+		<if test='clmStatCodes != null'>
+		   AND B.CLM_STAT_CODE IN -- 취소:환불접수, 취소:취소완료, 반품:환불접수, 반품:반품완료
+		    <foreach item="item" index="index" collection="clmStatCodes" open="(" close=")" separator="," >
+				#{item}
+			</foreach> 
+		</if>
+		 GROUP BY A.OCRNC_RSN_CODE
+		 ORDER BY A.OCRNC_RSN_CODE    	
+    	
+    </select>
+    
+    <select id="selectOrgOrderRefundAmt" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaim" resultType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment">
+    	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimPaymentDao.selectOrgOrderRefundAmt [원주문의 총 환불금액 목록 조회 쿼리] [KTH] */
+    	
+		SELECT dbo.FN_CODE_VALUE( 'PYMNT_MEANS_CODE' , A.PYMNT_MEANS_CODE ) AS PYMNT_MEANS_CODE_NAME
+			 , ISNULL(C.REFUND_AMT, 0) AS REFUND_AMT
+		  FROM OC_ORDER_PAYMENT A  WITH (NOLOCK)
+		  JOIN OC_ORDER			B WITH (NOLOCK)
+			ON A.ORDER_NO = B.ORDER_NO
+		  LEFT OUTER JOIN (
+				SELECT SUM(OCP.PYMNT_AMT) AS REFUND_AMT
+					 , OCP.PYMNT_MEANS_CODE
+				  FROM OC_CLAIM_PAYMENT	OCP WITH (NOLOCK)
+				  JOIN OC_CLAIM			OC  WITH (NOLOCK)
+					ON OCP.CLM_NO = OC.CLM_NO
+				   AND OCP.REDEMP_RFND_GBN_TYPE = #{redempRefundGbnType, jdbcType=VARCHAR} -- 환불
+				   AND OCP.MMNY_PROC_TRGT_YN 	= #{mmnyProcTrgtYn, jdbcType=VARCHAR} -- 재경처리N
+				   AND OCP.HIST_GBN_TYPE 		= #{histGbnType, jdbcType=VARCHAR} -- 일반결제
+				 WHERE OC.ORG_ORDER_NO 			= #{orgOrderNo, jdbcType=VARCHAR}
+				 <if test='clmStatCodes != null'>
+				   AND OC.CLM_STAT_CODE IN -- 취소:환불접수, 취소:취소완료, 반품:환불접수, 반품:반품완료
+				    <foreach item="item" index="index" collection="clmStatCodes" open="(" close=")" separator="," >
+						#{item}
+					</foreach>
+				 </if>
+				 GROUP BY OCP.PYMNT_MEANS_CODE
+			   ) C
+			ON A.PYMNT_MEANS_CODE	= C.PYMNT_MEANS_CODE
+		 WHERE B.ORG_ORDER_NO		= #{orgOrderNo, jdbcType=VARCHAR}
+		   AND B.ORDER_NO			= #{orgOrderNo, jdbcType=VARCHAR}
+		   AND A.PYMNT_STAT_CODE = #{orderPymntStatCode, jdbcType=VARCHAR}
+		 ORDER BY A.PYMNT_MEANS_CODE ASC    	
+    	
+    </select>
+    
+    <delete id="deleteClaimPayment" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment">
+		/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimPaymentDao.deleteClaimPayment [클레임결제 삭제] [KTH] */
+    	DELETE OC_CLAIM_PAYMENT
+    	 WHERE CLM_NO = #{clmNo, jdbcType=VARCHAR}
+		<if test='clmPymntSeq != null'>
+    	   AND CLM_PYMNT_SEQ = #{clmPymntSeq, jdbcType=TINYINT}
+    	</if>
+		<if test='redempRfndGbnType != null'>
+    	   AND REDEMP_RFND_GBN_TYPE = #{redempRfndGbnType, jdbcType=CHAR}
+		</if>
+		<if test='mmnyProcTrgtYn != null'>
+    	   AND MMNY_PROC_TRGT_YN = #{mmnyProcTrgtYn, jdbcType=CHAR}
+		</if>
+		<if test='ocrncRsnCode != null'>
+    	   AND OCRNC_RSN_CODE = #{ocrncRsnCode, jdbcType=VARCHAR}
+		</if>
+		<if test='histGbnType != null'>
+    	   AND HIST_GBN_TYPE = #{histGbnType, jdbcType=CHAR}
+		</if>
+    </delete>
+    
+    <update id="updatePaymentRefundAccountInfo" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment">
+    	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimPaymentDao.updatePaymentRefundAccountInfo [환불계좌정보 업데이트] [KTH] */
+    	UPDATE OC_CLAIM_PAYMENT
+   		   SET MODER_NO = #{moderNo, jdbcType=VARCHAR}
+   		     , MOD_DTM = GETDATE()
+   		     , BANK_CODE = #{bankCode, jdbcType=VARCHAR}
+		 	 , ACNT_NO_TEXT = #{acntNoText, jdbcType=VARCHAR}
+			 , ACNT_HLDR_NAME = #{acntHldrName, jdbcType=VARCHAR}
+		 WHERE CLM_NO = #{clmNo, jdbcType=VARCHAR}
+		   -- AND (ISNULL(BANK_CODE, '') = '' OR ISNULL(ACNT_NO_TEXT, '') = '' OR ISNULL(ACNT_HLDR_NAME, '') = '')
+		<if test='clmPymntSeq != null'>
+    	   AND CLM_PYMNT_SEQ = #{clmPymntSeq, jdbcType=TINYINT}
+    	</if>
+		<if test='redempRfndGbnType != null'>
+    	   AND REDEMP_RFND_GBN_TYPE = #{redempRfndGbnType, jdbcType=CHAR}
+		</if>
+		<if test='mmnyProcTrgtYn != null'>
+    	   AND MMNY_PROC_TRGT_YN = #{mmnyProcTrgtYn, jdbcType=CHAR}
+		</if>
+		<if test='ocrncRsnCode != null'>
+    	   AND OCRNC_RSN_CODE = #{ocrncRsnCode, jdbcType=VARCHAR}
+		</if>
+		<if test='histGbnType != null'>
+    	   AND HIST_GBN_TYPE = #{histGbnType, jdbcType=CHAR}
+		</if>
+		<if test='pymntStatCode != null'> 
+    	   AND PYMNT_STAT_CODE = #{pymntStatCode, jdbcType=VARCHAR}
+		</if>
+    	<if test="pymntStatCodes != null and pymntStatCodes.length > 0">
+		   AND PYMNT_STAT_CODE IN 
+		   <foreach item="item" index="index" collection="pymntStatCodes" open="(" close=")" separator="," >
+				#{item}
+		   </foreach>
+		</if>
+    </update>
+    
+	<select id="selectValidateRefundPymnt" parameterType="kr.co.abcmart.bo.claim.model.master.OcClaimPayment" resultType="int">
+	/*+ kr.co.abcmart.bo.claim.repository.master.OcClaimPaymentDao.selectValidateRefundPymnt [재경팀환불금 이중 등록 방지 카운트] [이강수] */
+		
+		SELECT COUNT(*)
+		  FROM OC_CLAIM_PAYMENT WITH (NOLOCK)
+         WHERE CLM_NO 		           = #{clmNo, jdbcType=VARCHAR}
+           AND MMNY_PROC_TRGT_YN       = 'Y'
+		   AND REDEMP_RFND_GBN_TYPE    = 'F'
+		   AND CARD_PART_CNCL_PSBLT_YN = 'N'
+		   AND CASH_RCPT_ISSUE_YN      = 'N'
+		   AND ESCR_APPLY_YN           = 'N'
+		   AND PYMNT_MEANS_CODE        = #{pymntMeansCode, jdbcType=VARCHAR}
+		   AND OCRNC_RSN_CODE          = #{ocrncRsnCode, jdbcType=VARCHAR}
+		   AND PYMNT_AMT               = #{pymntAmt, jdbcType=INTEGER}
+		   AND REDEMP_RFND_MEMO_TEXT   = #{redempRfndMemoText, jdbcType=VARCHAR}
+
+	</select>
+	
+</mapper>

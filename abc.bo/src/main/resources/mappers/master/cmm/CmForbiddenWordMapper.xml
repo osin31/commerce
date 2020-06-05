@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.cmm.repository.master.CmForbiddenWordDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+	<resultMap id="cmForbiddenWordResult" type="kr.co.abcmart.bo.cmm.model.master.CmForbiddenWord">
+	    <id property="forbidWordSeq" column="forbid_word_seq"/>
+	    <result property="forbidWordType" column="forbid_word_type"/>
+	    <result property="forbidWordText" column="forbid_word_text"/>
+	    <result property="rgstDtm" column="rgst_dtm"/>
+	    <result property="modDtm" column="mod_dtm"/>
+	    <association property="rgster" resultMap="rgsterResultMap"/>
+	    <association property="moder" resultMap="moderResultMap"/>
+	</resultMap>
+    
+    <resultMap id="rgsterResultMap" type="kr.co.abcmart.bo.system.model.master.SyAdmin">
+    	<id property="adminNo" column="rgster_no"/>
+     	<result property="loginId" column="rgster_login_id"/>
+     	<result property="adminName" column="rgster_name"/>
+    </resultMap>
+    
+    <resultMap id="moderResultMap" type="kr.co.abcmart.bo.system.model.master.SyAdmin">
+     	<id property="adminNo" column="moder_no"/>
+     	<result property="loginId" column="moder_login_id"/>
+     	<result property="adminName" column="moder_name"/>
+    </resultMap>
+    
+    <select id="selectByPrimaryKey" parameterType="kr.co.abcmart.bo.cmm.model.master.CmForbiddenWord" resultType="kr.co.abcmart.bo.cmm.model.master.CmForbiddenWord">
+    	/*+ kr.co.abcmart.bo.cmm.repository.master.CmForbiddenWordDao.selectByPrimaryKey [code generator] [김영현] */
+		SELECT
+			<include refid="select-columns" />
+		FROM 
+			cm_forbidden_word a with (nolock)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectTopWithSyAdminByForbidWordTypeOrderbyModDtmDesc" parameterType="kr.co.abcmart.bo.cmm.model.master.CmForbiddenWord" resultMap="cmForbiddenWordResult">
+    	/*+ kr.co.abcmart.bo.cmm.repository.master.CmForbiddenWordDao.selectTopWithSyAdminByForbidWordTypeOrderbyModDtmDesc [최근 수정된 금지어 조회 with sy_admin] [김영현]  */
+		SELECT TOP 1
+			a.forbid_word_seq
+			, a.forbid_word_type
+			, a.forbid_word_text
+			, a.rgster_no
+			, a.rgst_dtm
+			, a.moder_no
+			, a.mod_dtm
+			, b.admin_no as rgster_no 	
+			, b.login_id as rgster_login_id
+			, b.admin_name as rgster_name
+			, c.admin_no as moder_no 	
+			, c.login_id as moder_login_id
+			, c.admin_name as moder_name
+		FROM 
+			cm_forbidden_word a with (nolock)
+		LEFT JOIN
+			sy_admin b with (nolock)
+		ON	a.rgster_no = b.admin_no
+		LEFT JOIN
+			sy_admin c with (nolock)
+		ON	a.moder_no = c.admin_no 
+		WHERE
+			forbid_word_type = #{forbidWordType, jdbcType=CHAR}			
+		ORDER BY
+			mod_dtm DESC 
+    </select>
+    
+	<select id="selectTopByForbidWordTypeOrderbyModDtmDesc" parameterType="kr.co.abcmart.bo.cmm.model.master.CmForbiddenWord" resultType="kr.co.abcmart.bo.cmm.model.master.CmForbiddenWord">
+		/*+ kr.co.abcmart.bo.cmm.repository.master.CmForbiddenWordDao.selectTopByForbidWordTypeOrderbyModDtmDesc [최근 수정된 금지어 조회] [김영현] */
+		SELECT TOP 1
+			<include refid="select-columns" />		
+		FROM 
+			cm_forbidden_word a with (nolock)
+		WHERE
+			forbid_word_type = #{forbidWordType, jdbcType=CHAR}			
+		ORDER BY
+			mod_dtm DESC 
+    </select>
+    
+    <insert id="insertIdentity" parameterType="kr.co.abcmart.bo.cmm.model.master.CmForbiddenWord">
+		/*+ kr.co.abcmart.bo.cmm.repository.master.CmForbiddenWordDao.insertIdentity [금지어 등록] [김영현] */
+		INSERT INTO cm_forbidden_word
+			 ( forbid_word_type, forbid_word_text, rgster_no, rgst_dtm, moder_no, mod_dtm )
+		VALUES 
+			 ( #{forbidWordType, jdbcType=CHAR}
+			 , #{forbidWordText, jdbcType=VARCHAR}
+			 , #{rgsterNo, jdbcType=VARCHAR}
+			 , getdate()
+			 , #{moderNo, jdbcType=VARCHAR}
+			 , getdate() )  
+    </insert>
+    
+    <update id="updateIdentity" parameterType="kr.co.abcmart.bo.cmm.model.master.CmForbiddenWord">
+    	/*+ kr.co.abcmart.bo.cmm.repository.master.CmForbiddenWordDao.updateIdentity [금지어 수정] [김영현] */
+		UPDATE cm_forbidden_word
+		<set>
+			forbid_word_type = #{forbidWordType, jdbcType=CHAR},
+			forbid_word_text = #{forbidWordText, jdbcType=VARCHAR},
+			moder_no = #{moderNo, jdbcType=VARCHAR}, 
+			mod_dtm = getdate()
+		</set> 
+		WHERE 
+			 forbid_word_seq = #{forbidWordSeq, jdbcType=INTEGER}   
+    </update>
+
+</mapper>

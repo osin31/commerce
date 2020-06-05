@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.member.repository.master.MbMemberInterestStoreDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.member.model.master.MbMemberInterestStore">
+    
+     /*+ kr.co.abcmart.bo.member.repository.master.MbMemberInterestStoreDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			mb_member_interest_store with (nolock)
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="selectMemberInterestStore" parameterType="String" resultType="kr.co.abcmart.bo.member.model.master.MbMemberInterestStore">
+    	
+    	/*+ kr.co.abcmart.bo.member.repository.master.MbMemberInterestStoreDao.selectMemberInterestStore [회원 단골매장 조회] [이동엽] */
+    	
+    	SELECT DISTINCT CASE WHEN A.SITE_NO = '10000' THEN CONCAT('[A-RT] ', B.STORE_NAME)
+                             WHEN A.SITE_NO = '10001' THEN CONCAT('[OTS] ', B.STORE_NAME)
+                         END AS STORE_NAME
+		  FROM MB_MEMBER_INTEREST_STORE A WITH (NOLOCK)
+		  JOIN CM_STORE B WITH (NOLOCK)
+		    ON A.STORE_NO = B.STORE_NO
+		 WHERE A.MEMBER_NO = #{memberNo}
+    </select>
+
+</mapper>

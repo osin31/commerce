@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.promotion.repository.master.PrCouponVendorShareRateDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.promotion.model.master.PrCouponVendorShareRate">
+
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponVendorShareRateDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			PR_COUPON_VENDOR_SHARE_RATE
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <delete id="deleteByCpnNo" parameterType="String">
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponVendorShareRateDao.deleteByCpnNo [쿠폰 입점사 삭제 쿼리] [이지훈] */
+
+		DELETE FROM PR_COUPON_VENDOR_SHARE_RATE
+		WHERE
+			 CPN_NO = #{cpnNo, jdbcType=VARCHAR}
+    </delete>
+
+     <select id="selectPrCouponVendorShareRateListByCpnNo" parameterType="String" resultType="kr.co.abcmart.bo.promotion.model.master.PrCouponVendorShareRate">
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponVendorShareRateDao.selectPrCouponVendorShareRateListByCpnNo [쿠폰 입점사 조회 쿼리] [이지훈] */
+     	SELECT
+			CVSR.CPN_NO
+			,CVSR.VNDR_NO
+			,CVSR.SHARE_RATE
+			,(SELECT VNDR_NAME FROM VD_VENDOR VV WHERE VV.VNDR_NO = CVSR.VNDR_NO) AS VNDR_NAME
+		FROM
+			PR_COUPON_VENDOR_SHARE_RATE CVSR WITH(NOLOCK)
+		WHERE
+			 CPN_NO = #{cpnNo, jdbcType=VARCHAR}
+     </select>
+
+     <delete id="deleteNotCouponProductVendor" parameterType="String">
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponVendorShareRateDao.deleteNotCouponProductVendor [쿠폰 상품 없는 업체 정보 삭제] [김진성 2020.02.17] */
+     	DELETE COUPON_VENDOR
+     	  FROM PR_COUPON_VENDOR_SHARE_RATE COUPON_VENDOR
+     	 WHERE COUPON_VENDOR.CPN_NO = #{cpnNo, jdbcType=VARCHAR}
+     	   AND NOT EXISTS (
+     	   					SELECT 1
+     	   					  FROM PD_PRODUCT X
+     	   					  JOIN PR_COUPON_APPLY_PRODUCT Y
+     	   					    ON X.PRDT_NO = Y.PRDT_NO
+     	   					 WHERE Y.CPN_NO = COUPON_VENDOR.CPN_NO
+     	   					   AND X.VNDR_NO = COUPON_VENDOR.VNDR_NO
+     	                  )
+     </delete>
+
+     <select id="selectCouponProductVendorList" parameterType="String" resultType="String">
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponVendorShareRateDao.selectCouponProductVendorList [쿠폰 업체 정보 조회] [김진성 2020.02.17] */
+     	SELECT A.VNDR_NO
+<!--      	     , CPN_NO, A.SHARE_RATE, B.VNDR_NAME -->
+     	  FROM PR_COUPON_VENDOR_SHARE_RATE A
+     	  JOIN VD_VENDOR B
+     	    ON A.VNDR_NO = B.VNDR_NO
+     	 WHERE A.CPN_NO = #{cpnNo, jdbcType=VARCHAR}
+     </select>
+
+     <select id="selectVendorCouponShareRateList" parameterType="Map" resultType="kr.co.abcmart.bo.promotion.model.master.PrCouponVendorShareRate">
+     /*+ kr.co.abcmart.bo.promotion.repository.master.PrCouponVendorShareRateDao.selectVendorCouponShareRateList [쿠폰 번호 와 업체 코드 정보로 입점사 분담율 조회] [김진성 2020.02.17] */
+		   SELECT VENDOR.VNDR_NO, VENDOR.VNDR_NAME, ISNULL(COUPON_VENDOR.SHARE_RATE, 0) AS SHARE_RATE
+		     FROM VD_VENDOR VENDOR
+		LEFT JOIN PR_COUPON_VENDOR_SHARE_RATE COUPON_VENDOR
+		       ON VENDOR.VNDR_NO = COUPON_VENDOR.VNDR_NO
+		      AND COUPON_VENDOR.CPN_NO = #{cpnNo, jdbcType=VARCHAR}
+		    WHERE VENDOR.VNDR_NO IN
+
+	<foreach item="item" index="index" collection="vndrNoList" open="		                            (" close="		                            )" separator="		                           	," >
+					#{item}
+	</foreach>
+     </select>
+
+
+</mapper>

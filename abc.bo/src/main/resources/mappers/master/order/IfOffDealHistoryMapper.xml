@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.order.repository.master.IfOffDealHistoryDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.order.model.master.IfOffDealHistory">
+    
+     /*+ kr.co.abcmart.bo.order.repository.master.IfOffDealHistoryDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT
+			<include refid="select-columns" />
+		FROM 
+			IF_OFF_DEAL_HISTORY
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+    <select id="readOfflineOrderListCount"  parameterType="pageable" resultType="int">
+		 /*+ kr.co.abcmart.bo.order.repository.master.IfOffDealHistoryDao.readOfflineOrderListCount [오프라인 주문 조회 ] */  
+		SELECT COUNT(1) AS TOTAL_COUNT 
+		  FROM IF_OFF_DEAL_HISTORY A
+		  JOIN MB_MEMBER B
+		    ON A.SAFE_KEY = B.SAFE_KEY
+		   AND A.SAFE_KEY_SEQ = B.SAFE_KEY_SEQ
+		  LEFT OUTER JOIN PD_PRODUCT C
+		    ON A.PRODUCT_CD = C.VNDR_PRDT_NO_TEXT
+		  JOIN CM_STORE D
+		    ON A.STORE_CD = D.STORE_ID_TEXT
+		 WHERE B.MEMBER_NO = #{bean.memberNo, jdbcType=VARCHAR}	-- 회원번호 
+		<if test="bean.orderNo != null and bean.orderNo !=''">
+		--거래번호
+			AND CONCAT( A.SALE_DATE , A.POS_NO , A.DEAL_NO )  = #{bean.orderNo, jdbcType=VARCHAR}	-- 주문번호
+		</if>
+		-- 기간
+		<if test="bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+			<choose>
+				<when test="bean.orderDateKey == 'orderDtm'">
+					AND A.SALE_DATE BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+				</when>
+			</choose>
+		</if>
+		-- 주문취소여부  chkCancel
+		<if test=" bean.chkCancelAll == null and bean.chkCancel != null and bean.chkCancel !='' ">
+			<if test="bean.chkCancel == 'cancel' ">
+				AND A.RETURN_FLAG = '0'
+			</if>
+			<if test="bean.chkCancel == 'part' ">
+				AND A.RETURN_FLAG = '1' 
+			</if>
+		</if>
+	</select>
+	
+    <select id="readOfflineOrderList"  parameterType="pageable" resultType="kr.co.abcmart.bo.order.model.master.IfOffDealHistory">
+		 /*+ kr.co.abcmart.bo.order.repository.master.IfOffDealHistoryDao.readOfflineOrderList [오프라인 주문 조회 ] */  
+		SELECT D.STORE_NAME -- 먜장명
+		     , A.DEAL_NO -- 거래번호
+		     , C.PRDT_NAME -- 상품명
+		     , CONVERT(VARCHAR(10), CONVERT(DATE, CONVERT(VARCHAR(8), A.SALE_DATE ))) AS SALE_DATE -- 판매일자 
+		     , A.SALE_PRICE -- 실판매가 
+		     , A.RETURN_FLAG -- 0 주문 , 1 취소 
+		  FROM IF_OFF_DEAL_HISTORY A
+		  JOIN MB_MEMBER B
+		    ON A.SAFE_KEY = B.SAFE_KEY
+		   AND A.SAFE_KEY_SEQ = B.SAFE_KEY_SEQ
+		  LEFT OUTER JOIN PD_PRODUCT C  
+		    ON A.PRODUCT_CD = C.VNDR_PRDT_NO_TEXT
+		  JOIN CM_STORE D
+		    ON A.STORE_CD = D.STORE_ID_TEXT
+		 WHERE B.MEMBER_NO = #{bean.memberNo, jdbcType=VARCHAR}	-- 회원번호 
+		
+		<if test="bean.orderNo != null and bean.orderNo !=''">
+		--거래번호
+			AND CONCAT( A.SALE_DATE , A.POS_NO , A.DEAL_NO )  = #{bean.orderNo, jdbcType=VARCHAR}	-- 주문번호
+		</if>
+		-- 기간
+		<if test="bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+			<choose>
+				<when test="bean.orderDateKey == 'orderDtm'">
+					AND A.SALE_DATE BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+				</when>
+			</choose>
+		</if>
+		-- 주문취소여부  chkCancel
+		<if test=" bean.chkCancelAll == null and bean.chkCancel != null and bean.chkCancel !='' ">
+			<if test="bean.chkCancel == 'cancel' ">
+				AND A.RETURN_FLAG = '0'
+			</if>
+			<if test="bean.chkCancel == 'part' ">
+				AND A.RETURN_FLAG = '1' 
+			</if>
+		</if>
+		ORDER BY A.SALE_DATE DESC
+		<include refid="Paging.mssql" />		
+	</select>
+	
+	<select id="selectOffDealHistory"  parameterType="kr.co.abcmart.bo.order.model.master.IfOffDealHistory" resultType="kr.co.abcmart.bo.order.model.master.IfOffDealHistory">
+		 /*+ kr.co.abcmart.bo.order.repository.master.IfOffDealHistoryDao.selectOffDealHistory [오프라인 단건 조회(상품후기용)] [황성준] */
+		 SELECT
+			<include refid="select-columns" />
+		FROM 
+			IF_OFF_DEAL_HISTORY WITH (NOLOCK)
+		<where>
+			AND safe_key = #{safeKey, jdbcType=VARCHAR}
+			AND safe_key_seq = #{safeKeySeq, jdbcType=VARCHAR}
+			AND sale_date = #{saleDate, jdbcType=VARCHAR}
+			AND store_cd = #{storeCd, jdbcType=VARCHAR}
+			AND pos_no = #{posNo, jdbcType=VARCHAR}
+			AND deal_no = #{dealNo, jdbcType=VARCHAR}
+			AND product_cd = #{productCd, jdbcType=VARCHAR}
+			AND size_cd = #{sizeCd, jdbcType=VARCHAR}
+		</where>   
+	</select>
+
+</mapper>

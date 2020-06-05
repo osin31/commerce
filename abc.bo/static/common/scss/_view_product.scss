@@ -1,0 +1,7 @@
+@import 'scss_header';
+
+/* 상품관리 > 상품상세 tab scroll */
+.prod-detail-scroll {
+	overflow-y: auto;
+	// height: calc(100vh - 238px);
+}

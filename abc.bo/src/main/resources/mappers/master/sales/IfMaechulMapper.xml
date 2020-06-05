@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.sales.repository.master.IfMaechulDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+     	
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.sales.model.master.IfMaechul">
+    
+     /*+ kr.co.abcmart.bo.sales.repository.master.IfMaechulDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */  
+    
+		SELECT 
+			<include refid="select-columns" />
+		FROM 
+			IF_MAECHUL
+		WHERE 
+			<include refid="pk-columns" /> 
+    </select>
+    
+     <select id="selectIfMaechulListCount" parameterType="pageable" resultType="int">
+    
+    /*+  kr.co.abcmart.bo.sales.repository.master.IfMaechulDao.selectIfMaechulListCount [자사 매출 목록 갯수 조회 카운트 ] [이상호] */  
+    
+    	 SELECT <include refid="Paging.totalCount" />
+		   FROM IF_MAECHUL IM WITH(NOLOCK)
+	      JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH(NOLOCK)
+	        ON IM.OrdNo = OODH.DLVY_ID_TEXT
+	      JOIN OC_ORDER OO WITH(NOLOCK)
+	        ON OODH.ORDER_NO = OO.ORDER_NO
+    	 <trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test='bean.siteNo != null and bean.siteNo != ""'> 
+				 AND OO.SITE_NO = #{bean.siteNo}
+			</if>
+			<if test='bean.srcmkcd != null and bean.srcmkcd != ""'> 
+				 AND SrcmkCd = 'AK'+#{bean.srcmkcd}
+			</if>
+			<if test='bean.ordno != null and bean.ordno != ""'> 
+				 AND OO.ORDER_NO = #{bean.ordno}
+			</if>
+			
+			<if test="bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+           		 AND RegDate BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+        	</if>
+        	
+			
+        	<if test='bean.salesCnclGbnType == "order"'>
+   				AND Pan_Gbn = convert(bit, 1)
+   			</if>
+   			<if test='bean.salesCnclGbnType == "return"'>
+   				AND Pan_Gbn = convert(bit, 0)
+   			</if>
+   			
+    	 </trim>
+    </select>
+    
+     <select id="selectIfMaechulList" parameterType="pageable" resultType="kr.co.abcmart.bo.sales.model.master.IfMaechul">
+    
+    /*+  kr.co.abcmart.bo.sales.repository.master.IfMaechulDao.selectIfMaechulList [자사 매출목록 조회 쿼리] [이상호] */  
+    		SELECT ROW_NUMBER() OVER(ORDER BY RegDate DESC) AS row_seq
+    		     , IM.CBCd
+			     , IM.MaejangCd
+			     , IM.Iljai
+			     , IM.PosNo
+			     , IM.Gr_No
+			     , IM.Seq_No
+			     , CASE WHEN Convert(bit,IM.Pan_Gbn) = 1 THEN '매출' 
+			            ELSE '취소' 
+			       END AS pan
+			     , IM.Hhmm
+			     , IM.SawonNo
+			     , IM.SrcmkCd
+			     , IM.SaleQty
+			     , IM.SaleAmt
+			     , IM.SaleHalin
+			     , IM.SaleEnury
+			     , IM.PointAmt
+			     , IM.Coupon
+			     , IM.EVENTGB
+			     , IM.Won_Ilja
+			     , IM.Won_PosNo
+			     , IM.Won_Gr_No
+			     , IM.RegDate
+			     , IM.ConDate
+			     , IM.ErrorStatus
+			     , IM.WorkDiv
+			     , IM.OrdNo
+			     , IM.ItemSno
+			     , IM.MallName
+			     , IM.WorkDay
+			     , IM.Chasu
+			     , IM.safe_key
+			     , IM.EventPointAmt 
+		  FROM IF_MAECHUL IM WITH(NOLOCK)
+     	  JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH(NOLOCK)
+       		ON IM.OrdNo = OODH.DLVY_ID_TEXT
+		  JOIN OC_ORDER OO WITH(NOLOCK)
+        	ON OODH.ORDER_NO = OO.ORDER_NO
+		  <trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test='bean.siteNo != null and bean.siteNo != ""'> 
+				 AND OO.SITE_NO = #{bean.siteNo}
+			</if>
+			<if test='bean.srcmkcd != null and bean.srcmkcd != ""'> 
+				 AND SrcmkCd = 'AK'+#{bean.srcmkcd}
+			</if>
+			<if test='bean.ordno != null and bean.ordno != ""'> 
+				AND OO.ORDER_NO  = #{bean.ordno}
+			</if>
+			
+			<if test="bean.fromDate != null and bean.fromDate != '' and bean.toDate != null and bean.toDate !=''">
+           		 AND RegDate BETWEEN CONVERT(DATE, #{bean.fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{bean.toDate}))
+        	</if>
+        	
+			
+        	<if test='bean.salesCnclGbnType == "order"'>
+   				AND Pan_Gbn = convert(bit, 1)
+   			</if>
+   			<if test='bean.salesCnclGbnType == "return"'>
+   				AND Pan_Gbn = convert(bit, 0)
+   			</if>
+    	 </trim>
+ 		
+			ORDER BY RegDate DESC
+		<include refid="Paging.mssql" />
+    </select>
+    
+    
+     <select id="selectIfMaechulAllExcelList" parameterType="kr.co.abcmart.bo.sales.model.master.IfMaechul" resultType="kr.co.abcmart.bo.sales.vo.IfMeaechulExcelVo">
+    
+    /*+kr.co.abcmart.bo.sales.repository.master.IfMaechulDao.selectIfMaechulAllExcelList [엑셀 목록 조회 쿼리] [이상호] */  
+    	      	SELECT IM.CBCd AS cbcd
+		     , IM.MaejangCd AS maejangcd
+		     , IM.Iljai AS iljai
+		     , IM.PosNo AS posno
+		     , IM.Gr_No AS grNo
+		     , CONVERT(VARCHAR,IM.Seq_No) AS seqNo
+		     , CASE WHEN Convert(bit,IM.Pan_Gbn) = 1 THEN '매출' 
+			        ELSE '취소' 
+		       END AS pan
+		     , IM.Hhmm AS hhmm
+		     , IM.SawonNo AS sawonno
+		     , IM.SrcmkCd AS srcmkcd
+		     , CONVERT(VARCHAR,IM.SaleQty) AS saleqty
+		     , CONVERT(VARCHAR,IM.SaleAmt) AS saleamt
+		     , CONVERT(VARCHAR,IM.SaleHalin)AS salehalin
+		     , CONVERT(VARCHAR,IM.SaleEnury)AS saleenury
+		     , CONVERT(VARCHAR,IM.PointAmt)AS pointamt
+		     , CONVERT(VARCHAR,IM.Coupon)AS coupon
+		     , IM.EVENTGB AS eventgb
+		     , IM.Won_Ilja AS wonIlja
+		     , IM.Won_PosNo AS wonPosno
+		     , IM.Won_Gr_No AS wonGrNo
+		     , CONVERT(CHAR(10),IM.RegDate,23) AS regdate
+		     , IM.ErrorStatus AS errorstatus
+		     , IM.WorkDiv AS workdiv
+		     , IM.OrdNo AS ordno
+		     , IM.ItemSno AS itemsno
+		     , IM.MallName AS mallname
+		     , IM.WorkDay AS workday
+		     , IM.Chasu AS chasu
+		     , IM.safe_key AS safeKey
+		     , CONVERT(VARCHAR,IM.EventPointAmt) AS eventpointamt
+		 FROM IF_MAECHUL IM WITH(NOLOCK)
+     	  JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH(NOLOCK)
+       		ON IM.OrdNo = OODH.DLVY_ID_TEXT
+		  JOIN OC_ORDER OO WITH(NOLOCK)
+        	ON OODH.ORDER_NO = OO.ORDER_NO
+		 <trim prefix="WHERE" prefixOverrides="AND|OR">
+    	 	<if test='siteNo != null and siteNo != ""'> 
+				 AND OO.SITE_NO = #{siteNo}
+			</if>
+			<if test='srcmkcd != null and srcmkcd != ""'> 
+				 AND SrcmkCd = 'AK'+#{srcmkcd}
+			</if>
+			<if test='ordno != null and ordno != ""'> 
+				AND OO.ORDER_NO = #{ordno}
+			</if>
+			
+			<if test="fromDate != null and fromDate != '' and toDate != null and toDate !=''">
+           		 AND RegDate BETWEEN CONVERT(DATE, #{fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{toDate}))
+        	</if>
+        	<if test='salesCnclGbnType == "order"'>
+   				AND Pan_Gbn = convert(bit, 1)
+   			</if>
+   			<if test='salesCnclGbnType == "return"'>
+   				AND Pan_Gbn = convert(bit, 0)
+   			</if>
+    	 </trim>
+    </select>
+    
+   
+    
+    <select id="getIfMaechulSelector" parameterType="kr.co.abcmart.bo.sales.model.master.IfMaechul" resultType="kr.co.abcmart.bo.sales.model.master.IfMaechul">
+	/*+ kr.co.abcmart.bo.sales.model.master.IfMaechulDao.getIfMaechulSelector [매출 내역 조회 ] [이상호] */
+		SELECT ISNULL(SUM(TT.SaleAmt), 0) AS saleAmtSum
+			 , ISNULL(SUM(TT.SaleEnury), 0) AS saleEnurySum
+			 , ISNULL(SUM(TT.PointAmt), 0) AS pointAmtSum
+			 , ISNULL(SUM(TT.EventPointAmt), 0) AS eventPointAmtSum
+		  FROM (       
+				SELECT  IM.SaleAmt
+				    , IM.SaleEnury
+				    , IM.PointAmt
+				    , IM.EventPointAmt 
+				FROM IF_MAECHUL IM WITH(NOLOCK)
+				JOIN OC_ORDER_DELIVERY_HISTORY OODH WITH(NOLOCK)
+				  ON IM.OrdNo = OODH.DLVY_ID_TEXT
+				JOIN OC_ORDER OO WITH(NOLOCK)
+				  ON OODH.ORDER_NO = OO.ORDER_NO
+				 <trim prefix="WHERE" prefixOverrides="AND|OR">
+		    	 	<if test='siteNo != null and siteNo != ""'> 
+						 AND OO.SITE_NO = #{siteNo}
+					</if>
+					<if test='srcmkcd != null and srcmkcd != ""'> 
+						 AND SrcmkCd = 'AK'+#{srcmkcd}
+					</if>
+					<if test='ordno != null and ordno != ""'> 
+						AND OO.ORDER_NO = #{ordno}
+					</if>
+					
+					<if test="fromDate != null and fromDate != '' and toDate != null and toDate !=''">
+		           		 AND RegDate BETWEEN CONVERT(DATE, #{fromDate}) AND DATEADD(DD, 1, CONVERT(DATE, #{toDate}))
+		        	</if>
+		        	<if test='salesCnclGbnType == "order"'>
+		   				AND Pan_Gbn = convert(bit, 1)
+		   			</if>
+		   			<if test='salesCnclGbnType == "return"'>
+		   				AND Pan_Gbn = convert(bit, 0)
+		   			</if>
+		    	 </trim>
+				)TT
+	</select>
+</mapper>

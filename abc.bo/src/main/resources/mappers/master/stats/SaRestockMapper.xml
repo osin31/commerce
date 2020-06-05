@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.stats.repository.master.SaRestockStatusDao">
+
+	<sql id="restock-stats-search">
+		<if test="(bean.fromDate != null and bean.fromDate != '') and (bean.toDate != null and bean.toDate != '' )">
+   			AND B.RGST_DTM BETWEEN CONVERT(DATETIME, CONCAT(#{bean.fromDate, jdbcType=VARCHAR}, ' 00:00:00'))
+   			AND CONVERT(DATETIME, CONCAT(#{bean.toDate, jdbcType=VARCHAR}, ' 23:59:59'))
+  			</if>
+    	<if test="bean.siteNo != null and bean.siteNo != ''">
+    		AND A.SITE_NO = #{bean.siteNo, jdbcType=VARCHAR}
+    	</if>
+		<if test='bean.mmnyPrdtYn != null and bean.mmnyPrdtYn != ""'>
+			 AND A.MMNY_PRDT_YN = #{bean.mmnyPrdtYn, jdbcType=CHAR}
+			 <if test='bean.chnnlNo != null and bean.chnnlNo != ""'>
+				AND B.CHNNL_NO = #{bean.chnnlNo, jdbcType=VARCHAR}
+			</if>
+		</if>
+		<if test="bean.vndrNo != null and bean.vndrNo != ''">
+			AND A.VNDR_NO = #{bean.vndrNo, jdbcType=VARCHAR}
+		</if>
+		<!-- 검색어 -->
+   		<if test='bean.searchKeywordType != null and bean.searchKeywordType != ""'>
+   			<if test='bean.searchKeyword != null and bean.searchKeyword != ""'>
+    			<choose>
+    				<!-- 상품명 -->
+	    			<when test='bean.searchKeywordType == "prdt-name"'>
+	    				AND A.PRDT_NAME LIKE '%'+#{bean.searchKeyword, jdbcType=VARCHAR}+'%'
+	    			</when>
+    				<!-- 상품번호 -->
+	    			<when test='bean.searchKeywordType == "prdt-no"'>
+	    				AND A.PRDT_NO LIKE '%'+#{bean.searchKeyword, jdbcType=VARCHAR}+'%'
+	    			</when>
+    				<!-- 스타일정보 -->
+	    			<when test='bean.searchKeywordType == "style-info"'>
+	    				AND A.STYLE_INFO LIKE '%'+#{bean.searchKeyword, jdbcType=VARCHAR}+'%'
+	    			</when>
+	    		</choose>
+	    	</if>
+		</if>
+		<if test='bean.brandName != null and bean.brandName != ""'>
+			AND A.brand_no IN ( SELECT brand_no FROM dp_brand WHERE brand_name like #{bean.brandName, jdbcType=VARCHAR} + '%' OR brand_en_name like #{bean.brandName, jdbcType=VARCHAR} + '%' )
+		</if>
+    </sql>
+
+    <sql id="restock-stats-from">
+    	FROM PD_PRODUCT A WITH(NOLOCK)
+		JOIN MB_MEMBER_INTEREST_PRODUCT B WITH(NOLOCK)
+		ON A.PRDT_NO = B.PRDT_NO
+		AND B.WRHS_ALERT_REQ_YN = 'Y'
+		AND B.WRHS_ALERT_TYPE = 'N'
+		JOIN PD_PRODUCT_OPTION D WITH(NOLOCK)
+		ON A.PRDT_NO = D.PRDT_NO
+		AND B.PRDT_OPTN_NO = D.PRDT_OPTN_NO
+		LEFT JOIN SA_SALES_ORDER E WITH(NOLOCK)
+		ON B.PRDT_OPTN_NO = E.PRDT_OPTN_NO
+		AND A.PRDT_NO = E.PRDT_NO
+		AND B.ORDER_NO = E.ORDER_NO
+    </sql>
+
+    <sql id="restock-product-stats-select-columns">
+		, SUM(CASE WHEN WRHS_ALERT_STAT_CODE ='10000' THEN 1 ELSE 0 END) AS READY_RESTOCK
+		, SUM(CASE WHEN WRHS_ALERT_STAT_CODE ='10001' THEN 1 ELSE 0 END) AS SUCCESS_RESTOCK
+		, SUM(CASE WHEN WRHS_ALERT_STAT_CODE ='10002' THEN 1 ELSE 0 END) AS CANCEL_RESTOCK
+		, SUM(CASE WHEN WRHS_ALERT_STAT_CODE ='10003' THEN 1 ELSE 0 END) AS END_DTM_RESTOCK
+
+		, SUM(CASE WHEN E.SALES_CNCL_GBN_TYPE = 'S' THEN 1 ELSE 0 END) AS BUY_COUNT
+		, SUM(CASE WHEN E.SALES_CNCL_GBN_TYPE = 'S' THEN E.SELL_AMT ELSE 0 END) AS SELL_PRICE
+	</sql>
+
+	<select id="productRestockCount" parameterType="pageable" resultType="int">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaRestockStatusDao.productRestockCount [재입고 알림 서비스 상품별 통계 count] [변지은] */
+	    SELECT <include refid="Paging.totalCount"/>
+	    FROM (
+		    SELECT <include refid="Paging.totalCount"/>
+		    <include refid="restock-stats-from"/>
+		    JOIN DP_BRAND C WITH(NOLOCK)
+			ON A.BRAND_NO = C.BRAND_NO
+			<where>
+		    	<include refid="restock-stats-search"/>
+			</where>
+			GROUP BY C.BRAND_NAME, D.PRDT_NO, D.PRDT_OPTN_NO, D.OPTN_NAME, A.PRDT_NAME
+		) CNT
+	</select>
+
+	<select id="productRestockStats" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaRestockStatus">
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaRestockStatusDao.productRestockStats [재입고 알림 서비스 상품별 통계] [변지은] */
+  	  	SELECT
+			  SELECT_SEQ
+			, BRAND_NAME
+			, PRODUCT_NAME
+			, PRODUCT_NO
+			, SIZE_CODE
+			, OPTION_NAME
+			, READY_RESTOCK
+			, SUCCESS_RESTOCK
+			, CANCEL_RESTOCK
+			, END_DTM_RESTOCK
+			, BUY_COUNT
+			, SELL_PRICE
+  	  	FROM (
+  	  		SELECT
+		  		  CONVERT(VARCHAR,ROW_NUMBER() OVER(ORDER BY BRAND_NAME)) AS SELECT_SEQ
+	   	  		, C.BRAND_NAME
+				, A.PRDT_NAME AS PRODUCT_NAME
+				, D.PRDT_NO AS PRODUCT_NO
+				, D.PRDT_OPTN_NO AS SIZE_CODE
+				, D.OPTN_NAME AS OPTION_NAME
+				<include refid="restock-product-stats-select-columns"/>
+			<include refid="restock-stats-from"/>
+			JOIN DP_BRAND C WITH(NOLOCK)
+			ON A.BRAND_NO = C.BRAND_NO
+			<where>
+				<include refid="restock-stats-search"/>
+			</where>
+			GROUP BY C.BRAND_NAME , D.PRDT_NO, D.PRDT_OPTN_NO, D.OPTN_NAME, A.PRDT_NAME
+			<if test='bean.isExcel == null or bean.isExcel == ""'>
+				ORDER BY C.BRAND_NAME ASC
+				<include refid="Paging.mssql" />
+			</if>
+			UNION ALL
+		  	SELECT
+	  	  		  '합계' AS SELECT_SEQ
+	   	  		, '' AS BRAND_NAME
+				, '' AS PRODUCT_NAME
+				, '' AS PRODUCT_NO
+				, '' AS SIZE_CODE
+				, '' AS OPTION_NAME
+				<include refid="restock-product-stats-select-columns"/>
+	  		<include refid="restock-stats-from"/>
+	  		JOIN DP_BRAND C WITH(NOLOCK)
+			ON A.BRAND_NO = C.BRAND_NO
+			<where>
+				<include refid="restock-stats-search"/>
+			</where>
+  	  	) A
+  	  	ORDER BY CASE WHEN A.SELECT_SEQ = '합계' THEN 0 ELSE A.SELECT_SEQ END
+    </select>
+
+    <sql id="restock-date-stats-select-columns">
+		, SUM(CASE WHEN WRHS_ALERT_STAT_CODE ='10000' THEN 1 ELSE 0 END) AS READY_RESTOCK
+		, SUM(CASE WHEN WRHS_ALERT_STAT_CODE ='10001' THEN 1 ELSE 0 END) AS SUCCESS_RESTOCK
+		, SUM(CASE WHEN WRHS_ALERT_STAT_CODE ='10002' THEN 1 ELSE 0 END) AS CANCEL_RESTOCK
+		, SUM(CASE WHEN WRHS_ALERT_STAT_CODE ='10003' THEN 1 ELSE 0 END) AS END_DTM_RESTOCK
+
+		, SUM(CASE WHEN E.SALES_CNCL_GBN_TYPE = 'S' THEN 1 ELSE 0 END) AS BUY_COUNT
+		, SUM(CASE WHEN E.SALES_CNCL_GBN_TYPE = 'S' THEN E.SELL_AMT ELSE 0 END) AS SELL_PRICE
+	</sql>
+
+	<select id="dateRestockCount" parameterType="pageable" resultType="int">
+	 	/*+ kr.co.abcmart.bo.stats.repository.master.SaRestockStatusDao.dateRestockCount [재입고 알림 서비스 기간별 통계 count] [변지은] */
+	  	SELECT <include refid="Paging.totalCount"/>
+		<include refid="restock-stats-from"/>
+		<where>
+		    <include refid="restock-stats-search"/>
+		</where>
+	</select>
+
+	<select id="dateRestockStats" parameterType="pageable" resultType="kr.co.abcmart.bo.stats.model.master.SaRestockStatus"  >
+    	/*+ kr.co.abcmart.bo.stats.repository.master.SaRestockStatusDao.dateRestockStats [재입고 알림 서비스 기간별 통계] [변지은] */
+		SELECT
+			  ALERT_SEND_DTM
+			, READY_RESTOCK
+			, SUCCESS_RESTOCK
+			, CANCEL_RESTOCK
+			, END_DTM_RESTOCK
+			, BUY_COUNT
+			, SELL_PRICE
+		FROM (
+   	  		SELECT
+	   	  		'합계' AS ALERT_SEND_DTM
+				<include refid="restock-date-stats-select-columns"/>
+	  		<include refid="restock-stats-from"/>
+	  		<where>
+				<include refid="restock-stats-search"/>
+	  		</where>
+			UNION
+		  	SELECT
+	   	  		CONCAT(CONVERT(CHAR(10), B.RGST_DTM, 23),'(', DATENAME(WEEKDAY,B.RGST_DTM), ')') AS ALERT_SEND_DTM
+				<include refid="restock-date-stats-select-columns"/>
+			<include refid="restock-stats-from"/>
+			<where>
+				<include refid="restock-stats-search"/>
+			</where>
+			GROUP BY CONCAT(CONVERT(CHAR(10), B.RGST_DTM, 23),'(', DATENAME(WEEKDAY,B.RGST_DTM), ')')
+			<if test='bean.isExcel == null or bean.isExcel == ""'>
+				ORDER BY CONCAT(CONVERT(CHAR(10), B.RGST_DTM, 23),'(', DATENAME(WEEKDAY,B.RGST_DTM), ')') DESC
+				<include refid="Paging.mssql" />
+			</if>
+		) A
+		ORDER BY A.ALERT_SEND_DTM DESC
+    </select>
+</mapper>

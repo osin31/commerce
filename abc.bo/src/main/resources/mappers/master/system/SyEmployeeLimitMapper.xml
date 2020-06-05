@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.abcmart.bo.system.repository.master.SyEmployeeLimitDao">
+
+    <!--
+    	※ 경고
+		이 select SQL은  Code Generator를 통하여 생성 되었습니다.
+     	기본 쿼리 이고 수시로 변경 될 소지가 있기 떄문에 Generator로 변경 하는 것이 아닌 직접 수정은 하지 마십시요.
+
+    -->
+    <select id="selectByPrimaryKey" parameterType="Object" resultType="kr.co.abcmart.bo.system.model.master.SyEmployeeLimit">
+
+     /*+ kr.co.abcmart.bo.system.repository.master.SyEmployeeLimitDao.selectByPrimaryKey [기본 PK 조회 쿼리] [Generator] */
+
+		SELECT
+			<include refid="select-columns" />
+		FROM
+			sy_employee_limit with (nolock)
+		WHERE
+			<include refid="pk-columns" />
+    </select>
+
+    <select id="selectEmployeeLimit" parameterType="kr.co.abcmart.bo.system.model.master.SyEmployeeLimit" resultType="kr.co.abcmart.bo.system.model.master.SyEmployeeLimit">
+    	/*+ kr.co.abcmart.bo.system.repository.master.SyEmployeeLimitDao.selectEmployeeLimit [월별 임직원 포인트 조회] [이동엽] */
+
+    	SELECT EMP_SEQ
+			 , APPLY_MONTH_TEXT
+			 , LIMIT_AMT
+			 , USE_AMT
+			 , REMAIN_AMT
+			 , RGSTER_NO
+			 , RGST_DTM
+			 , MODER_NO
+			 , MOD_DTM
+		  FROM SY_EMPLOYEE_LIMIT with (nolock)
+		 WHERE EMP_SEQ = #{empSeq}
+		   AND APPLY_MONTH_TEXT = #{applyMonthText}
+    </select>
+
+</mapper>
