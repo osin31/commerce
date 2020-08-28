@@ -34,7 +34,7 @@
 		</div>
 		<!-- E : content-header -->
 
-		<!-- S : search-wrap -->
+		<!-- S : search-wrap --> 
 		<div class="search-wrap">
 			<div class="search-inner">
 				<table class="tbl-search">
