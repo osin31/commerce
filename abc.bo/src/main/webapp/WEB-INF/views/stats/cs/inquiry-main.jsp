@@ -78,7 +78,7 @@
 										<c:forEach var="yearData" begin="${thisYear-10}" end="${thisYear}">
 											<option value="${yearData}" ${yearData eq thisYear ? ' selected' : '' }>${yearData}</option>
 										</c:forEach>
-									</select
+									</select>
 									<!-- e : 년별 선택시 -->
 									<!-- s : 월별 선택시 -->
 									<select class="ui-sel month" title="시작 기간 선택" id="month-from-date" style="display: none;">

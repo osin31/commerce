@@ -98,7 +98,7 @@
 										<c:forEach var="yearData" begin="${thisYear-10}" end="${thisYear+10}"  >
 											<option value="${yearData}" <c:if test="${yearData eq thisYear}">selected</c:if>>${yearData}</option>
 										</c:forEach>
-									</select
+									</select>
 									<!-- e : 년별 선택시 -->
 
 									<!-- s : 월별 선택시 -->

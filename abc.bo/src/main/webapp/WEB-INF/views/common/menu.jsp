@@ -2,8 +2,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page trimDirectiveWhitespaces="true" %>
 
-<script src="/static/common/js/biz/usermenu/abcmart.user.menu.js<%=_DP_REV%>"></script>
-
 <!-- S : header-container -->
 <div class="header-container js-header-container">
 	<c:choose>
